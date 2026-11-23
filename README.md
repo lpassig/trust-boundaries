@@ -11,6 +11,14 @@ Two self-contained point-and-click stories, with separate saved progress:
 
 Both stories have two independent verification routes (known contact or official record), a source-card puzzle, solo or limited-helper proofreading before delivery, exact sharing approval, recoverable detours, optional notebook discoveries, and a closing epilogue. An ending changes after recorded detours. Sound is optional, there is no real-time countdown, and the keyboard supports the whole game. Nova’s expandable explanations retain source-linked standards and explicitly label optional integrations.
 
+### Nova’s product roles
+
+Nova’s technical journey names IBM Agent Identity and IBM Verify, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. IBM Identity Protection appears as an optional risk input. The “Who does what?” map separates identity and delegation, workflow coordination, runtime restrictions, credential brokering, application enforcement and security signals. The Vault receipt shows illustrative subject/actor/audience/RAR fields without generating credentials.
+
+This mapping takes the supplied architecture presentations into account and links public vendor documentation. Vault’s OAuth resource-server path is kept distinct from the classic JWT login flow. The brokered-credential and direct OAuth/MCP paths use their own audiences; client-token passthrough is not presented as a valid MCP pattern. Registry reconciliation and SSF/CAEP receiver actions are labeled configured integrations. No supplied decks, speaker notes, rollout dates or licensing material are published with the game.
+
+`v2/products.js` contains these product descriptions and Nova-only event wording. Existing saves and the rules engine remain compatible. Alex’s story uses its existing wording.
+
 ### Build and play
 
 ```sh
