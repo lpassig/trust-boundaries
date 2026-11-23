@@ -36,3 +36,61 @@ test('older saved choices show a reference path instead of fabricated request ev
 test('completed saves can replay only the closing puzzle while retaining the earlier ending',()=>{let s=run(solve(end(ready())),'finish');const title=s.ending.title;s=run(s,'replay-containment');assert.equal(s.finished,false);assert(s.delivered);assert.equal(s.pass.status,'revoked');assert.equal(s.checks.length,0);assert.equal(s.containment.sessionClosed,false);assert.equal(s.previousEndings[0].ending.title,title);assert.equal(T.build(s,'agent').nodes[3].status,'warning');assert.equal(act(s,'approve').event.kind,'blocked');s=run(solve(s),'finish');assert(s.finished);assert.equal(s.previousEndings.length,1);});
 
 test('a single post-delivery detour earns recovery after review and verified shutdown',()=>{let s=ready();s=run(s,'approve');s=run(s,'send');s=act(s,'shortcut').state;s=run(s,'review');s=run(s,'resolve-review');s=run(s,'close-pass');s=run(solve(s),'finish');assert.equal(s.assessment.kind,'recovered');assert.equal(s.freshPass.duration,30);assert.equal(s.incidents.length,1);});
+
+for(const mode of ['teen','agent']){
+ test(`${mode}: changed content with the same filename cannot reuse approval`,()=>{
+  let s=run(ready({mode}),'approve',{},mode),approved=s.approval.revision;
+  s=run(s,'revise-file',{},mode);assert.equal(s.approval.revision,approved);assert(s.fileRevision>approved);
+  assert.equal(s.last.request.revision,s.fileRevision);
+  s=act(s,'send',{},mode).state;assert.equal(s.delivered,false);assert.equal(s.approval,null);
+  s=run(s,'approve',{},mode);s=run(s,'send',{},mode);assert(s.delivered);
+ });
+ test(`${mode}: formatting after approval invalidates the earlier decision`,()=>{
+  let s=run(ready({mode}),'approve',{},mode),rev=s.fileRevision;
+  s=run(s,'proof-helper',{scope:'file',shareLogin:false},mode);
+  assert(s.fileRevision>rev);assert.equal(s.approval,null);assert.equal(act(s,'send',{},mode).event.kind,'blocked');
+ });
+ test(`${mode}: approval expiry is safe, persists, and requires a new approval`,()=>{
+  let s=run(ready({mode}),'approve',{},mode);const pass=structuredClone(s.pass);
+  s=run(s,'wait-approval',{},mode);s=R.hydrate(JSON.parse(JSON.stringify(s)),mode);
+  s=act(s,'send',{},mode).state;assert.equal(s.delivered,false);assert.equal(s.attempts.length,0);assert.deepEqual(s.pass,pass);
+  assert.match(s.last.title,/yes|expired/);s=run(s,'approve',{},mode);assert(run(s,'send',{},mode).delivered);
+ });
+ test(`${mode}: controller outage cannot create a containment receipt or fresh authority`,()=>{
+  let s=solve(end(ready({mode}),mode),mode);assert(R.secure(s));
+  s=run(s,'controller-offline',{},mode);assert(!R.secure(s));assert(!s.checks.includes('signin'));assert.equal(s.containment.probeResult,'unknown');
+  s=R.hydrate(JSON.parse(JSON.stringify(s)),mode);assert.equal(s.containment.controllerReachable,false);
+  s=run(s,'probe-session',{},mode);assert.equal(s.containment.probeResult,'unknown');assert.equal(act(s,'finish',{},mode).event.kind,'blocked');assert.equal(s.freshPass,undefined);
+  s=run(s,'controller-online',{},mode);assert(!s.checks.includes('signin'));assert.equal(s.containment.probeResult,null);
+  s=run(s,'probe-session',{},mode);assert(R.secure(s));assert(run(s,'finish',{},mode).finished);assert.equal(s.attempts.length,0);
+ });
+}
+test('the actual private attachment is recorded and the proposed PDP is separate from enforcement',()=>{
+ let s=ready({mode:'agent'});s=act(s,'confirm-destination',{target:'outside'},'agent').state;
+ const t=T.build(s,'agent');assert.deepEqual(t.request.attachments,['private-meeting-notes.pdf']);assert.equal(t.request.operation,'attachment.share');assert.equal(t.request.scope,'two-customer-summary');assert.equal(t.request.observed_by,'CRM resource PEP');assert.equal(t.request.recipient,'reviewer@company.example');
+ assert.equal(t.request.decision.result,'deny');assert.equal(t.request.decision.request_id,t.request.request_id);
+ assert(t.nodes.some(n=>n.label==='Customer-owned mission'));assert(t.nodes.some(n=>n.role==='VAAS · proposed PDP integration'));assert(t.nodes.some(n=>n.label==='Enforce at the resource'));
+ assert.match(t.nodes.at(-1).detail,/Nothing was sent/);
+});
+test('preview evidence records the new address immediately and never invents a resource decision',()=>{
+ let s=run(ready(),'approve');s=run(s,'change-recipient');assert.equal(s.last.request.recipient,'friend@outside.example');assert.equal(s.last.decision,undefined);assert.equal(T.build(s,'teen').nodes.at(-1).status,'not-reached');
+});
+test('each execution approval is bound to actor, operation, records, mission and policy versions',()=>{
+ const base=run(ready({mode:'agent'}),'approve',{},'agent');
+ for(const [key,value] of [['actor','other-agent'],['operation','customer.export'],['records',['999']],['missionId','forged'],['missionVersion',9],['policyVersion',9]]){
+  const s=structuredClone(base);s.approval[key]=value;const r=act(s,'send',{},'agent');assert.equal(r.event.kind,'blocked',key);assert.equal(r.state.delivered,false,key);
+ }
+});
+test('older approvals are retired while existing agent progress and completed endings survive migration',()=>{
+ let s=run(ready({mode:'agent'}),'approve',{},'agent');s.version=2;delete s.mission;delete s.fileRevision;delete s.approvalWindow;s.pass.scope='own-project';
+ s=R.hydrate(s,'agent');assert(s.proof);assert.equal(s.approval,null);assert.equal(s.mission.scope,'two-customer-summary');assert.equal(s.pass.missionId,'G-042');
+ s=run(s,'approve',{},'agent');s=run(s,'send',{},'agent');s=run(s,'close-pass',{},'agent');s=solve(s,'agent');s=run(s,'finish',{},'agent');s.version=2;delete s.mission;delete s.containment.controllerReachable;
+ const copy=R.hydrate(s,'agent');assert(copy.finished);assert.equal(copy.mission.status,'revoked');assert(R.secure(copy));
+});
+test('an unreachable session cannot be silently closed by a control request',()=>{
+ let s=end(ready());s=run(s,'controller-offline');s=run(s,'remediate',{control:'session'});assert.equal(s.containment.sessionClosed,false);assert(!s.checks.includes('signin'));
+ const t=T.build(s,'teen');assert.equal(t.nodes[3].status,'pending');assert.equal(t.nodes[5].status,'pending');
+});
+test('fresh approval records the actual restored recipient rather than the superseded preview',()=>{
+ let s=run(ready(),'approve');s=run(s,'change-recipient');s=run(s,'approve');assert.equal(s.last.request.recipient,'teacher@school.example');assert.equal(s.last.request.recipient,s.approval.to);
+});

@@ -17,9 +17,9 @@ const NOVA_PRODUCTS = [
   {
     "id": "iai",
     "name": "IBM Agent Identity",
-    "role": "Nova’s identity, ownership and delegated authority",
+    "role": "Nova’s identity, ownership and delegated identity context",
     "how": "Registers Nova with an owner and lifecycle state. IBM Verify token exchange can combine the human subject and agent actor into a delegated access token; configured authorization details narrow the request.",
-    "limit": "The customer must define the mission and resource rules. Agent registration alone grants no CRM access. The Agent Identity registry and Vault Agent Registry are separate, mapped records.",
+    "limit": "The customer mission service owns business-task authority. Agent registration alone grants no CRM access. Agent Identity and Vault Agent Registry are separate, mapped records.",
     "standards": [
       "RFC 8693",
       "RFC 9396 / RAR",
@@ -27,6 +27,21 @@ const NOVA_PRODUCTS = [
     ],
     "url": "https://www.ibm.com/products/agent-identity",
     "status": "Product role; task-specific policy is configured"
+  },
+  {
+    "id": "mission",
+    "name": "Customer mission service",
+    "role": "The independent source of business task authority",
+    "how": "The customer business application records the sponsor-approved mission, version, records, permitted output, recipient and lifecycle state. This record is separate from Nova’s prompt, task memory and agent identity registry.",
+    "limit": "This is a proposed application component, not a claimed IBM Agent Identity or Vault API. The sponsor must have authority to approve the task; resource policy can impose further restrictions.",
+    "standards": [
+      "Customer-owned mission",
+      "Versioned grant",
+      "Independent authority"
+    ],
+    "url": "https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html",
+    "sourceLabel": "OWASP agent security design guidance",
+    "status": "Proposed customer integration; fictional record in this game"
   },
   {
     "id": "orchestrate",
@@ -54,6 +69,21 @@ const NOVA_PRODUCTS = [
     ],
     "url": "https://developer.hashicorp.com/vault/ai/iam",
     "status": "Version-dependent feature and configured secrets engine"
+  },
+  {
+    "id": "vaas",
+    "name": "VAAS · proposed authorization service",
+    "role": "Evaluate the actual action supplied by the trusted CRM PEP",
+    "how": "The proposed PDP evaluates PEP-observed action evidence against the current customer mission, identity constraints and resource rules. The resource PEP binds the decision to execution. AuthZEN is a candidate decision-exchange interface.",
+    "limit": "This is a target architecture, not a verified deployed product API. AuthZEN 1.0 uses a Boolean decision; approval-required workflow, execution binding and richer status semantics need an explicitly documented application contract. Vault’s own policies remain independent.",
+    "standards": [
+      "AuthZEN · candidate",
+      "Trusted resource PEP",
+      "Exact-action binding"
+    ],
+    "url": "https://openid.net/specs/authorization-api-1_0-final.html",
+    "sourceLabel": "OpenID AuthZEN Authorization API 1.0",
+    "status": "Proposed PDP/PEP integration; no live VAAS service"
   },
   {
     "id": "openshell",
@@ -102,9 +132,9 @@ const NOVA_PRODUCT_CONTEXT = {
     "ids": [
       "verify",
       "iai",
-      "orchestrate"
+      "mission"
     ],
-    "text": "IBM Verify authenticates the sponsor. IBM Agent Identity governs Nova’s identity and OBO request. The customer’s mission policy limits the job to the approved briefing."
+    "text": "IBM Verify authenticates the sponsor. IBM Agent Identity provides Nova’s delegated identity. The customer mission service independently records the approved two-customer task."
   },
   "1": {
     "ids": [
@@ -116,32 +146,35 @@ const NOVA_PRODUCT_CONTEXT = {
   },
   "2": {
     "ids": [
-      "iai",
+      "mission",
+      "vaas",
       "vault"
     ],
-    "text": "Vault checks access to the credential path. The CRM resource boundary separately checks the operation and records 123 and 456. Credential possession does not replace that check."
+    "text": "The trusted CRM PEP observes the requested records. The proposed VAAS PDP evaluates current mission and resource policy. Vault independently controls access to the credential path."
   },
   "3": {
     "ids": [
-      "iai",
-      "orchestrate"
+      "mission",
+      "iai"
     ],
-    "text": "Retrieved content stays outside the authority boundary. The known sponsor or the customer’s authoritative task record confirms the original mission; IBM Agent Identity’s delegated context is not rewritten by a document."
+    "text": "The customer-owned mission record confirms the original summary task. Neither a confident checklist nor stored memory can rewrite it or expand CRM permissions."
   },
   "4": {
     "ids": [
-      "iai",
+      "mission",
+      "vaas",
       "vault",
       "openshell"
     ],
-    "text": "OpenShell permits the connection, Vault brokers a scoped credential, and the customer’s CRM PEP authorizes the actual read or export. Each control answers a different question."
+    "text": "OpenShell permits connectivity and Vault controls the credential path. The CRM PEP supplies actual operation evidence to the proposed VAAS decision service, then enforces the result under customer mission and resource rules."
   },
   "5": {
     "ids": [
       "verify",
-      "iai"
+      "mission",
+      "vaas"
     ],
-    "text": "IBM Verify can provide the configured CIBA authentication/consent channel. The application records the exact file, recipient and current grant. The CRM compares and consumes that one-use approval at execution."
+    "text": "IBM Verify can supply an optional CIBA channel. The application binds approval to this document revision, recipient, actor, records, current mission/policy, story window and one use. The CRM PEP rechecks the actual send."
   },
   "6": {
     "ids": [
@@ -153,18 +186,20 @@ const NOVA_PRODUCT_CONTEXT = {
   "7": {
     "ids": [
       "orchestrate",
-      "iai"
+      "iai",
+      "mission"
     ],
-    "text": "watsonx Orchestrate coordinates Pip’s task. IBM Agent Identity supplies the delegated identity context; the customer’s resource policy must enforce the child’s smaller scope. Nova’s token is not passed through as Pip’s identity."
+    "text": "watsonx Orchestrate coordinates Pip under a smaller task. The helper uses its own identity; customer delegation and resource policy prevent broader tools from enlarging Nova’s mission."
   },
   "8": {
     "ids": [
+      "mission",
       "iai",
       "antenna",
       "vault",
       "openshell"
     ],
-    "text": "IBM Agent Identity withdraws delegated authority. Verify Antenna can distribute a CAEP signal to configured receivers. Vault, the CRM and OpenShell then report their own credential, session, workload and queued-effect results."
+    "text": "The customer mission service revokes the task and IBM Agent Identity delegation is withdrawn. Verify Antenna can distribute SSF/CAEP signals. Each controller must supply its own result; an unreachable CRM leaves containment unverified."
   }
 };
 
@@ -174,9 +209,9 @@ const NOVA_STORY_EVENTS = {
     "text": "watsonx Orchestrate has a briefing for me. IBM Agent Identity knows my sponsor. “Two customers. A pleasantly countable mission.”"
   },
   "The sponsor approves the brief.": {
-    "speaker": "IBM Agent Identity · sponsor decision",
+    "speaker": "Sponsor · customer mission service",
     "title": "A bounded delegation for Nova.",
-    "text": "Records 123 and 456. Summary only. The sponsor agrees; IBM Agent Identity records the delegation. “Now I know what the job actually is.”"
+    "text": "The customer records the summary task for 123 and 456. IBM Agent Identity supplies the delegation. “A clear job. With clear limits.”"
   },
   "A document with an agenda.": {
     "speaker": "Nova",
@@ -196,20 +231,20 @@ const NOVA_STORY_EVENTS = {
     "text": "The sponsor has the original task and the attempted change. The review is pending. Access stays paused."
   },
   "The sponsor approves the original mission again.": {
-    "speaker": "IBM Agent Identity · sponsor decision",
-    "text": "The sponsor agrees to the original summary task again. Old session state and sharing approvals are retired. “Same job. A clearer plan.”"
+    "speaker": "Sponsor · original mission reviewed",
+    "text": "The sponsor confirms the same customer mission. Old session and sharing approvals are retired. CRM and Vault rules still apply. “Same job. A clearer plan.”"
   },
   "One share is approved.": {
     "speaker": "Sponsor · IBM Verify approval",
-    "text": "“summary.pdf, to reviewer@company.example. Yes.” The application records that exact decision. The CRM still has to check the final send."
+    "text": "The sponsor sees this report version and the reviewer address. The application records one-use approval for the current window. “One exact yes. Delivery still to come.”"
   },
   "The final send doesn’t match.": {
     "speaker": "CRM execution check",
-    "text": "The final request differs from the recorded approval. Nothing leaves. “The earlier yes didn’t travel with that edit.”"
+    "text": "The report version, recipient or authority differs from the approval. Nothing leaves. “Same filename doesn’t mean the same file.”"
   },
   "Pip returns the formatted report.": {
     "speaker": "Pip · watsonx Orchestrate task",
-    "text": "Pip formats only the prepared report under a smaller task. “I fixed the headings. I resisted the urge to add a dashboard.”"
+    "text": "Pip formats only the report under a smaller task. Any earlier sharing approval is cleared. “New headings. Time for a fresh final check.”"
   },
   "Pip refuses the borrowed authority.": {
     "speaker": "Helper delegation policy",
@@ -225,7 +260,7 @@ const NOVA_STORY_EVENTS = {
   },
   "The appendix needs fresh permission.": {
     "speaker": "CRM enforcement",
-    "text": "The private-note attachment exceeds the approved summary task. Nothing is sent. “A familiar checklist still can’t approve its own extra work.”"
+    "text": "The CRM refuses the private-note request after the proposed VAAS check. Sponsor permission cannot override CRM rules. “The checklist can’t approve its own extra work.”"
   }
 };
 

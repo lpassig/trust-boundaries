@@ -25,6 +25,14 @@ Saved V2 progress migrates to the new state schema. Completed players can choose
 
 ### Nova’s product roles
 
+The mission-bound update makes the customer mission service, trusted CRM PEP, proposed VAAS PDP, resource enforcement and outcome visible in Nova’s optional trace. VAAS and the mission service are target integration components; AuthZEN is a candidate PEP/PDP interface. Its standard decision is Boolean; approval workflow and execution binding are application contracts. IBM Agent Identity retains its identity/delegation role, and Vault keeps its independent credential policy.
+
+Sharing approval binds the document revision, recipient, actor, operation, records, mission and policy version, story approval window, session generation and one use. Formatting after approval clears it. Optional challenges keep an earlier approval visible while changing the report revision or advancing past the story window, so the final check can refuse it. Revision binding is simulated; there is no cryptographic digest or real-time token clock.
+
+The closing puzzle includes an optional session-controller outage. No response is unknown, never proof of sign-out. Closure cannot be confirmed while the controller is unreachable; restoring contact requires a fresh status test. Results are explicitly limited to the tested route. Alex’s journey separately explains parental permission for phone use and school permission for private group notes.
+
+Saves migrate to schema 3 without losing task progress or completed endings. Older undelivered approvals are retired because they lack revision binding; players simply request a fresh approval. The request trace accurately records private-note attachments, customer IDs, recipient and mission scope. Earlier request records without the new evidence fields are displayed as a reference path.
+
 Nova’s technical journey names IBM Agent Identity and IBM Verify, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. IBM Identity Protection appears as an optional risk input. The “Who does what?” map separates identity and delegation, workflow coordination, runtime restrictions, credential brokering, application enforcement and security signals. The Vault receipt shows illustrative subject/actor/audience/RAR fields without generating credentials.
 
 This mapping takes the supplied architecture presentations into account and links public vendor documentation. Vault’s OAuth resource-server path is kept distinct from the classic JWT login flow. The brokered-credential and direct OAuth/MCP paths use their own audiences; client-token passthrough is not presented as a valid MCP pattern. Registry reconciliation and SSF/CAEP receiver actions are labeled configured integrations. No supplied decks, speaker notes, rollout dates or licensing material are published with the game.
@@ -50,13 +58,13 @@ Visit `/v2/`. GitHub Pages publishes `main` → `/docs`; V2 lives in `docs/v2/in
 - `v2/`: source HTML, styling, story content, pure rules, and UI.
 - `dist/art.js` and `dist/protocols.js`: shared artwork and primary-source technical mappings.
 - `build-v2.py`: embeds the sources into offline and hosted HTML, and adds a V2 invitation to the classic hosted page.
-- `tests/v2.test.cjs`: 33 rules tests covering both worlds, both verification routes, both proofreading choices, pending review, reloads, exact approval, bounded helpers, revoked access, and ending behavior.
+- `tests/v2.test.cjs`: 47 rules tests covering both worlds, both verification routes, both proofreading choices, pending review, reloads, exact approval, bounded helpers, revoked access, and ending behavior.
 
 ```sh
 node --test tests/v2.test.cjs tests/engine.test.cjs
 ```
 
-Browser QA completed Alex’s contact/solo route and Nova’s official-record/helper route, including a recovered scope mistake, a harmless helper question, both shutdown repair orders, reload during partial repair, manual request-trace controls, the normal recovery ending, and replay of the closing investigation. Mobile checks at 390px found no horizontal page or dialogue overflow; desktop and keyboard controls were checked. The rules tests total 46 passes across both editions.
+Browser QA completed Alex’s contact/solo route and Nova’s official-record/helper route, including a recovered scope mistake, a harmless helper question, both shutdown repair orders, reload during partial repair, manual request-trace controls, the normal recovery ending, and replay of the closing investigation. Mobile checks at 390px found no horizontal page or dialogue overflow; desktop and keyboard controls were checked. The mission-bound update was also browser-checked for separate school permission, changed-file refusal, approval-window expiry, Nova’s permitted and denied VAAS/PEP traces, controller outage, reload while unverified, recovery and both endings. The product map and trace fit a 390px mobile viewport. The rules tests total 60 passes across both editions.
 
 This is a fictional, client-side learning simulation. All decisions and receipts are scripted; no identity protocol, school service, CRM, or real security boundary is connected. Timings and endings are illustrative game policies.
 

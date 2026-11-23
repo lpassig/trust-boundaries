@@ -1,5 +1,6 @@
 /* Primary-source review: 2026-11-23. Optional integrations are not native-product claims. */
 const PROTOCOL_SOURCES = {
+ authzen:{name:'OpenID AuthZEN Authorization API 1.0',url:'https://openid.net/specs/authorization-api-1_0-final.html'},
  oidc:{name:'OpenID Connect Core 1.0',url:'https://openid.net/specs/openid-connect-core-1_0.html'},
  ciba:{name:'CIBA Core 1.0 — Final',url:'https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html'},
  rar:{name:'RFC 9396 — Rich Authorization Requests',url:'https://www.rfc-editor.org/rfc/rfc9396.html'},
@@ -32,7 +33,7 @@ const AGENT_PROTOCOLS = [
  {
   title:'Authorize the actual CRM read',tags:['OAuth access token','RFC 8707','MCP · if used','Vault · optional'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
   how:'For an HTTP MCP path, the server validates its access-token audience and validity. Resource indicators identify the intended service. The trusted tool PEP must also check the actual operation and records. Vault can constrain access to Vault and broker credentials where configured.',
-  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The VAAS-to-PEP decision contract is proposed.',
+  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The VAAS-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
   evidence:{audience:'https://crm.example',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','resource','vault']
  },
  {
@@ -43,15 +44,15 @@ const AGENT_PROTOCOLS = [
  },
  {
   title:'An allowed endpoint still needs an action decision',tags:['OAuth / RAR','Resource PEP','VAAS PDP · proposed'],status:'Application authorization; exact CRM policy is an integration',
-  how:'The resource checks the final action and record scope. OAuth access and any supported RAR constraints supply authorization context; the customer mission and resource policy determine whether this report operation is permitted.',
-  boundary:'The runtime allows connectivity. The action-aware resource boundary separately denies an out-of-mission export. An unavailable or unverifiable decision must not silently permit execution.',
-  evidence:{network:'allowed',attempted_action:'customer.export',mission:'summary only',resource_decision:'deny'},sources:['rar','openshell','owasp']
+  how:'The trusted resource PEP observes actual parameters and obtains a proposed VAAS PDP decision against the customer-owned mission and resource policy. AuthZEN can carry the evaluation exchange; the resource still binds and enforces the result at execution.',
+  boundary:'The runtime allows connectivity. The action-aware resource boundary separately denies an out-of-mission export. An unavailable or unverifiable sensitive-action decision must not silently permit execution. AuthZEN uses a Boolean decision; approval workflow, richer statuses and execution-binding fields are application extensions.',
+  evidence:{network:'allowed',attempted_action:'customer.export',mission:'summary only',resource_decision:'deny'},sources:['authzen','rar','openshell','owasp']
  },
  {
   title:'Human consent and exact-action execution are separate checks',tags:['CIBA · optional','RAR · optional','One-use action approval','Execution PEP'],status:'Proposed approval integration; binding is application-enforced',
-  how:'CIBA can authenticate a human and obtain consent through a separate device. The application must separately bind its approval to the actor, exact file, recipient, current grant, expiry, and one execution. The executing PEP verifies and consumes that approval.',
-  boundary:'CIBA’s binding_message helps the person correlate devices; it is not a cryptographic signature over the CRM action. CIBA plus RAR is not assumed to be a universally supported profile. Changed parameters require a new decision.',
-  evidence:{file:'summary.pdf',recipient:'reviewer@company.example',approval_id:'example APR',execution:'compare then consume once'},sources:['ciba','rar','owasp']
+  how:'CIBA can authenticate a human and obtain consent through a separate device. The application must separately bind its approval to the actor, document revision or content digest, records, recipient, current mission/policy version, expiry, and one execution. The executing PEP verifies and consumes that approval.',
+  boundary:'CIBA’s binding_message helps the person correlate devices; it is not a cryptographic signature over the CRM action. CIBA plus RAR is not assumed to be a universally supported profile. Changed content or parameters require a new decision. The simulation binds a document revision and demonstrates expiry through an explicit story event. It implements no cryptographic digest or real-time token expiry.',
+  evidence:{file:'summary.pdf',recipient:'reviewer@company.example',approval_id:'example APR',revision:'bound to the approved report revision',expiry:'explicit story-window event',execution:'compare then consume once'},sources:['ciba','rar','owasp']
  },
  {
   title:'Authorize a persistent write without creating new authority',tags:['Memory PEP','Namespace policy','Provenance'],status:'Application control; not a CIBA or SSF feature',
@@ -68,7 +69,7 @@ const AGENT_PROTOCOLS = [
  {
   title:'Distribute the revocation signal, then verify its effect',tags:['SSF','CAEP session-revoked','RFC 7009 · where supported','Runtime stop'],status:'Proposed cross-system integration; four outcomes are checked separately',
   how:'SSF can distribute signed Security Event Tokens; CAEP defines session-revoked semantics. Receivers validate and correlate the signal, then apply their enforcement policy. Token revocation, applicable Vault lease revocation, runtime stop, and in-flight reconciliation are separate operations.',
-  boundary:'Delivery or acknowledgement of an event is not proof of containment. Receivers, self-contained tokens, leases, and queued actions can behave differently. The game requires their observed status before fresh authorization.',
+  boundary:'Delivery or acknowledgement of an event is not proof of containment. Receivers, self-contained tokens, leases, and queued actions can behave differently. The game requires observed results for the tested route before fresh authorization. An unreachable controller leaves an unknown, unverified state; these checks do not prove coverage of every possible endpoint.',
   evidence:{illustrative_header:{typ:'secevent+jwt',alg:'ES256',kid:'example-key'},illustrative_decoded_SET:{iss:'https://idp.example',iat:1795424400,aud:'https://resource.example',jti:'example-event-042',sub_id:{format:'opaque',id:'session-G-042'},events:{'https://schemas.openid.net/secevent/caep/event-type/session-revoked':{}}},signature_and_delivery:'not implemented in this game'},sources:['ssf','caep','revoke','leases','openshell']
  }
 ];
