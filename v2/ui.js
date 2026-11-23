@@ -1360,12 +1360,19 @@ function storyComparison(){
  </details>`;
 }
 
-function showPractice(step=0,selected=null){
+function showPractice(answers=[],selected=null){
  const {intro,decisions}=PRACTICE_CASE;
+ const step=answers.length;
  const decision=decisions[step];
  if(!decision){
-  showReference('Staffing brief complete',`<p>The task record sets the scope. The service applies its own rules. Confirm what will be sent, then verify which access actually closed.</p>
-   <div class="actions">${button('Apply this at work',()=>showBuyerGuide(()=>showPractice(step),'Back to the staffing recap'))}${button('Back to the ending',showEnding,'secondary')}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
+  const review=decisions.map(({question,options,answer,explanation},index)=>{
+   const choice=answers[index];
+   return `<li><b>${esc(question)}</b><br>Your choice · ${esc(options[choice])}
+   ${choice===answer?'':`<br>Best fit · ${esc(options[answer])}`}<br>${esc(explanation)}</li>`;
+  }).join('');
+  showReference('Staffing brief complete',`<p>Pick a decision you can explain. Who set the rule, what applied it, and what evidence would you save?</p>
+   <details class="debrief"><summary>Review your decisions</summary><ul class="route-list">${review}</ul></details>
+   <div class="actions">${button('Apply this at work',()=>showBuyerGuide(()=>showPractice(answers),'Back to the staffing recap'))}${button('Back to the ending',showEnding,'secondary')}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
    'PRACTICE CASE');
   return;
  }
@@ -1377,8 +1384,8 @@ function showPractice(step=0,selected=null){
    <p>Your choice: ${esc(decision.options[selected])}</p>
    ${correct?'':`<p>Better choice: ${esc(decision.options[decision.answer])}</p>`}
    <p>${esc(decision.explanation)}</p>
-  </div><div class="actions">${button(step+1===decisions.length?'Finish the case':'Next decision',()=>showPractice(step+1))}</div>`
-  :choices(decision.options.map((option,index)=>[option,'',()=>showPractice(step,index)]));
+  </div><div class="actions">${button(step+1===decisions.length?'Finish the case':'Next decision',()=>showPractice([...answers,selected]))}</div>`
+  :choices(decision.options.map((option,index)=>[option,'',()=>showPractice(answers,index)]));
  showReference(answered?'What would happen?':decision.question,
   `${answered?'':`<p>${esc(intro)}</p>`}<div class="message-card"><p>${esc(decision.situation)}</p></div>
   ${body}<div class="actions">${button('Back to the ending',showEnding,'secondary')}</div>`,

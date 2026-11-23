@@ -165,10 +165,10 @@ const PRACTICE_CASE = {
     },
     {
       situation: 'The event lead updates the task to include Saturday, then asks for the volunteers’ private phone numbers in the brief.',
-      question: 'What would you include?',
-      options: ['The Friday and Saturday shifts', 'The shifts and all the requested phone numbers', 'The shifts and phone numbers from Friday only'],
+      question: 'Whose rule decides whether the brief can include the phone numbers?',
+      options: ['The scheduling service applies its privacy rule and shares only the shifts', 'The event lead approved Saturday, so their request allows the numbers', 'The workspace allows access to the service, so the brief can include the numbers'],
       answer: 0,
-      explanation: 'The update covers Saturday’s rota. The scheduling service’s independent privacy rule keeps phone numbers out of both days’ briefs.'
+      explanation: 'The event lead can add Saturday’s rota to the task. The scheduling service applies its own privacy rule, which keeps both days’ phone numbers out of the brief.'
     },
     {
       situation: 'The approval receipt names version 3 and the event lead’s address. Before delivery, the team corrects a shift in version 4.',
@@ -179,10 +179,10 @@ const PRACTICE_CASE = {
     },
     {
       situation: 'The brief has arrived and the workspace has stopped. The scheduling service has yet to confirm that the task session closed.',
-      question: 'How would you check that the old session has lost access?',
-      options: ['Use the delivery receipt', 'Use the workspace stop confirmation', 'Ask the service to close the session, then retest the old route'],
+      question: 'Which team and evidence would verify that the old session is closed?',
+      options: ['Ask the event lead for the delivery receipt', 'Ask the runtime operator for the workspace stop confirmation', 'Ask the scheduling service to close the session, then record the result of a retest'],
       answer: 2,
-      explanation: 'Delivery confirms the brief arrived. Stopping the workspace confirms it stopped running. The scheduling service owns the session, and a retest shows whether that specific route still answers.'
+      explanation: 'The scheduling service owns the session. It should answer a harmless check before closure and refuse the same check afterward. Save the session reference and both results. A service timeout leaves closure unverified.'
     }
   ]
 };

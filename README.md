@@ -49,7 +49,7 @@ Each buyer card opens its product’s technical setup and pilot checklist. **Acc
 
 **Start with a work problem** opens the buyer guide from the first screen. Each pilot card explains the outcome, what the buyer’s team owns, and the first test. The secondary cards include a worked watsonx Orchestrate file handoff and a Verify Antenna exercise that tracks signal delivery, receiver action, and the independent CRM retest.
 
-**Apply this at work** opens the buyer guide from Alex’s ending and from the staffing case recap. Its four main options link to Pip’s activity record, Morgan’s revision comparison, the Vault lease and CRM retest, and the OpenShell boundary exercise. The guide uses recorded Nova evidence when available and labels independent worked examples for the other paths.
+**Apply this at work** opens the buyer guide from Alex’s ending and from the staffing case recap. The recap keeps each choice and its explanation available for review. The four main product options link to Pip’s activity record, Morgan’s revision comparison, the Vault lease and CRM retest, and the OpenShell boundary exercise. The guide uses recorded Nova evidence when available and labels independent worked examples for the other paths.
 
 Nova’s first CRM trace shows discovery through protected resource metadata (RFC 9728), the resource-specific access token (RFC 8707), and the separate Vault and CRM checks. **Deployment options** in Explore Architecture links SCIM, Dynamic Client Registration, SPIFFE/SVID, Transaction Tokens and A2A to the configured example. The same reference opens from Pip’s result.
 
