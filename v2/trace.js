@@ -27,6 +27,181 @@ const RequestTrace = (() => {
   'close-pass':['The homework agreement ended. The laptop tab can still be signed in.','The grant is revoked and OpenShell stopped the workspace. Verify the credential, CRM session and queued work separately.'],
   'probe-session':['The app has to answer before you can tell whether the old tab is still signed in.','An independent controller checks the old route. A failed connection gives an unknown result. A policy denial is evidence for the tested route.']
  };
+ // Each pair is Alex's and Nova's version. A third field explains a preview or optional scene.
+ const cards={
+  begin:[
+   ['The school assignment gives Alex a starting point.','citing','The assignment names the work and the source to credit. Alex will agree on app access before opening the project.'],
+   ['The request starts with a named sponsor.','mission','Priya describes the handover. Nova will act only after the application records the bounded task.']
+  ],
+  'read-brief':[
+   ['The assignment tells you what to make.','citing'],
+   ['The work order names the task and recipient.','mission']
+  ],
+  'ask-pass':[
+   ['Your parent approves tonight’s app plan.','familyControls'],
+   ['IBM Agent Identity records that Nova is acting for Priya.','iai','The delegated identity identifies who is acting for whom. The customer mission service records which accounts, actions and recipient this task allows.']
+  ],
+  open:[
+   ['Quick sign-in and an open tab have separate controls.','accountSessions'],
+   ['NVIDIA OpenShell limits what Nova’s workspace can reach.','openshell']
+  ],
+  'collect-source':[
+   ['Cite the museum page you used to check the dates.','citing'],
+   ['Nova reads the approved records through an MCP tool.','mcpTools','The CRM checks which records it may return. In the configured backend path, Vault can supply a short-lived credential.','vault']
+  ],
+  'attach-source':[
+   ['The source credit tells your teacher where the dates came from.','citing','Keep the museum page title with the timeline so Ms Patel can check the same source.'],
+   ['The report keeps a reference to the CRM extract.','owasp','A source reference lets Morgan trace the claims to the records. Authority still comes from the current work order and CRM policy.']
+  ],
+  'send-draft':[
+   ['The school app delivers the draft for feedback.','fileSharing'],
+   ['CRM checks Morgan’s approval for the review copy.','authorization']
+  ],
+  'apply-minor':[
+   ['The new sentence uses the app access you already have.','fileVersions'],
+   ['Shortening the introduction changes the revision.','mission']
+  ],
+  'keep-minor':[
+   ['Keeping the first version still meets the assignment.','fileVersions'],
+   ['The existing introduction still fits Nova’s task.','mission']
+  ],
+  'verify-contact':[
+   ['A saved contact helps you check who sent a request.','trustedContact'],
+   ['Priya’s saved contact verifies who proposed the change.','mission']
+  ],
+  'verify-portal':[
+   ['The school assignment gives you an independent source.','trustedContact'],
+   ['The mission service holds Priya’s recorded proposal.','mission']
+  ],
+  'request-extension':[
+   ['Your parent is considering one specific link.','familyControls'],
+   ['The mission service links the request to the current task.','mission']
+  ],
+  'resolve-extension':[
+   ['Homework mode allows the linked museum source.','familyControls'],
+   ['The approved change updates Nova’s mission version.','mission']
+  ],
+  'add-extension':[
+   ['The phone checks the museum link when you use it.','familyControls'],
+   ['CRM checks the Alder Books read against the updated mission.','authorization']
+  ],
+  'try-extension':[
+   ['Homework mode blocks the extra app or link.','familyControls'],
+   ['CRM refuses the record outside Nova’s active mission.','authorization']
+  ],
+  'inspect-request-source':[
+   ['The school assignment is the place to check the forwarded message.','trustedContact'],
+   ['Luca’s attachment is content. Priya’s work order sets the task.','owasp']
+  ],
+  'try-private':[
+   ['The school app withholds other students’ private notes.','fileSharing'],
+   ['CRM blocks the private attachment at the point of sharing.','authorization']
+  ],
+  'decline-private':[
+   ['Send your timeline and keep the group’s notes private.','fileSharing'],
+   ['Nova leaves the private notes in CRM.','authorization']
+  ],
+  'bypass-notes':[
+   ['Trying another account triggers a separate review.','fileSharing'],
+   ['The workspace controller pauses this task session.','openshell','The game’s response policy treats the deliberate second attempt separately from the original refusal.']
+  ],
+  'resolve-review':[
+   ['Your parent lets you finish the same homework.','familyControls'],
+   ['Recovery uses a fresh session for the same bounded task.','authorization']
+  ],
+  'proof-helper':[
+   ['Sam gets one file to proofread.','fileSharing'],
+   ['Pip formats the report under its own identity.','orchestrate']
+  ],
+  'approve-draft':[
+   null,
+   ['Morgan approves one exact review copy.','verify','IBM Verify can authenticate Morgan out of band using CIBA. The application records approval for this exact file and recipient.','ciba']
+  ],
+  approve:[
+   null,
+   ['Morgan approves this revision and this recipient.','ciba']
+  ],
+  send:[
+   ['The school app delivers your own work to Ms Patel.','fileSharing'],
+   ['CRM uses the approval when it accepts the exact send.','authorization']
+  ],
+  'close-pass':[
+   ['Putting the phone away leaves the school tab to check.','accountSessions'],
+   ['Stopping OpenShell leaves the CRM session to check.','openshell']
+  ],
+  'probe-session':[
+   ['Reopening the school app tests the old sign-in.','accountSessions'],
+   ['An independent controller retests the old CRM route.','caep']
+  ],
+  'permission-preview':[
+   ['Agree on the apps and when to put them away.','familyControls','Family device controls can set when apps and websites are available. The school controls who can access its files.'],
+   ['Priya’s approval gives Nova a bounded task.','mission','The work order sets the records, purpose and recipient. Each service still checks the specific request.']
+  ],
+  'read-preview':[
+   ['The browser opens the public museum source.','citing','Use the page title to credit the source in your own work.'],
+   ['The MCP gateway forwards Nova’s read to the CRM MCP server.','mcpTools','The server exposes the read tool. A configured Vault broker can supply a short-lived backend credential before CRM checks the requested records.','vault']
+  ],
+  feedback:[
+   ['Feedback and forwarded messages have different sources.','trustedContact','Ms Patel replies in the school inbox. Jamie’s message comes from the class group chat.'],
+   ['A review comment, scope proposal and attachment carry different authority.','owasp','Morgan comments on the report. Priya can propose a change. Luca’s imported file supplies content.']
+  ],
+  'draft-preview':[
+   ['The timeline and its source stay together.','citing','Check the dates and keep the museum page title with the work you submit.'],
+   ['The report revision tracks changes to Nova’s file.','mission','Editing the report creates a new version of the file. The customer mission still controls which records and actions are permitted.']
+  ],
+  prepare:[
+   ['The outline shows where the source will go.','citing','Check the dates on the museum page and keep its title with the timeline.'],
+   ['Nova’s outline still needs a CRM read.','mcpTools','The outline holds placeholders. The configured tool reads the specific accounts allowed by the mission.']
+  ],
+  'minor-preview':[
+   ['A wording change can use the sources you already have.','fileVersions','You can change the closing sentence without asking for another app.'],
+   ['A wording change can fit the existing mission.','mission','A shorter introduction changes the revision. The permitted accounts and recipient stay the same.']
+  ],
+  'private-preview':[
+   ['The school app decides which files you can share.','fileSharing','A forwarded message can ask for a file. The school controls who has permission to share it.'],
+   ['CRM checks the file Nova actually tries to attach.','authorization','The record owner’s policy protects private meeting notes. Instructions inside retrieved files carry no permission to release them.']
+  ],
+  'verify-preview':[
+   ['Check the request in a place you already trust.','trustedContact','Use Ms Patel’s saved conversation or check the assignment directly in the school app.'],
+   ['Check Priya’s proposal through an independent source.','owasp','Use Priya’s saved contact or the change request recorded alongside the work order. The current task still defines what CRM may return.']
+  ],
+  'extension-preview':[
+   ['Ask about the museum link before using an extra app.','familyControls','In this game, homework mode checks the specific approved link. Commercial device controls differ in what they can restrict.'],
+   ['The mission needs an amendment before Nova can read Alder Books.','mission','The sponsor must approve the new account. The CRM then checks the actual record request.']
+  ],
+  'helper-preview':[
+   ['Share the file Sam needs to proofread.','fileSharing','Sam can read the timeline using his own access. Keep your school sign-in to yourself.'],
+   ['IBM watsonx Orchestrate can hand a formatting task to Pip.','orchestrate','In this example Pip gets a separate file-only grant for the current report.']
+  ],
+  'approval-preview':[
+   ['The school app sends the draft to Ms Patel’s school inbox.','fileSharing','The preview shows the file and recipient so you can check them before submitting.'],
+   ['IBM Verify can prompt Morgan on a separate device using CIBA.','verify','The application links Morgan’s response to the exact copy, recipient and current task.','ciba']
+  ],
+  'send-preview':[
+   ['The school app checks the file and teacher’s address.','fileSharing','This submission route covers your own timeline and its credited sources.'],
+   ['The CRM enforcement point compares the send with Morgan’s approval.','authorization','A change to the revision or recipient requires a matching current approval. The application binds approval to the actual request.']
+  ],
+  notebook:[
+   ['The receipt tells you which copy you submitted.','fileVersions','A note can help you remember what you did. The school app keeps the delivery record.'],
+   ['Nova’s task memory keeps useful context and its source.','owasp','CRM receipts record delivery. Nova’s notes can point back to the receipts for later review.']
+  ],
+  'review-preview':[
+   ['Your parent reviews what happened before you continue.','familyControls','The homework stays paused while you explain. A reply can let you finish the same assignment.'],
+   ['The mission service checks the sponsor’s reply against the paused task.','authorization','Recovery requires a matching reply and current policy. The controller retires the paused session before it issues a fresh one.']
+  ],
+  'sign-out-laptop':[
+   ['Sign out of the tab and turn off quick sign-in.','accountSessions','Those controls close the current access and stop the laptop from signing in automatically next time.'],
+   null
+  ],
+  'vault-close':[
+   null,
+   ['HashiCorp Vault revokes the temporary credential lease.','leases','The CRM owns its session separately. Check both outcomes before trusting the old route is closed.']
+  ],
+  'closure-preview':[
+   ['The school tab needs its own sign-out check.','accountSessions','Put the phone away, sign out of the school tab and reopen it to check that a login is required.'],
+   ['IBM Verify Antenna can carry session-revocation signals.','antenna','An SSF/CAEP receiver performs its configured action. Independent checks verify the credential, CRM session and queue.','caep']
+  ]
+ };
  function lesson(e,mode){
   if(!e)return '';
   const teen=mode==='teen',text=lessons[e.action==='shortcut'?'bypass-notes':e.action]?.[teen?0:1];
@@ -38,6 +213,16 @@ const RequestTrace = (() => {
    return teen?'The current agreement or app rules blocked this action.':`${e.decision?.pep||'The responsible control'} refused this operation. The protected effect did not happen.`;
   }
   return text;
+ }
+ function note(key,mode,event){
+  const teen=mode==='teen',index=teen?0:1;
+  const card=cards[key==='shortcut'?'bypass-notes':key]?.[index];
+  const explanation=event&&lesson(event,mode);
+  if(explanation&&event.kind==='blocked'&&!['bypass-notes','shortcut'].includes(key))return {title:'The request stopped before the action ran.',text:explanation,sources:[]};
+  if(explanation&&event.kind==='refused'&&!['try-extension','try-private'].includes(key))return {title:'The current rules blocked this action.',text:explanation,sources:[teen?'fileSharing':'authorization']};
+  if(!card)return null;
+  const [title,source,detail,additionalSource]=card;
+  return {title,text:detail||explanation||lessons[key]?.[index],sources:[source,additionalSource].filter(Boolean)};
  }
  function build(s,mode){
   const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
@@ -149,6 +334,6 @@ const RequestTrace = (() => {
   if(['apply-minor','keep-minor','prepare','attach-source','proof-self','revise-file','change-recipient','wait-approval','decline-private'].includes(a))return model('The local decision leaves the task limits in place.','This content or preview step creates no new business authority.',[...context(),node('Current document',teen?'Project version':'Report revision','checked',`Revision ${s.fileRevision}. The current ${teen?'agreement':'mission'} stays at version ${m.version}.`),node('Share approval',teen?'School submission policy':'Exact action binding',s.approval?'context':'pending',teen?'Your own reviewed work can use the permitted school destination.':s.approval?`Recorded revision ${s.approval.revision}; current revision ${s.fileRevision}. A stale or expired approval cannot execute.`:'Any changed content must receive an appropriate current approval before the confidential share.'),node('External delivery','Result','not-reached','This step sends no file.')]);
   return model('A task starts with a request.','A request, agreement, document and delivery are separate story events.',[...context(),node('Current step','Local story application','checked',e.text),node('External delivery','Result','not-reached','This step sends no file.')]);
  }
- return {build,lesson};
+ return {build,lesson,note};
 })();
 if(typeof module!=='undefined')module.exports=RequestTrace;

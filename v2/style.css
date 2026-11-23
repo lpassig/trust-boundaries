@@ -119,9 +119,12 @@ dialog #dialog-scroll{font-size:12px;color:var(--muted);margin:0 0 4px}
 dialog[open]:not(.is-reference){display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;max-height:75dvh}
 dialog:not(.is-reference) #dialog-body{grid-row:3;min-height:0}
 dialog:not(.is-reference) #dialog-actions{grid-row:4}
-#dialog-lesson{grid-row:5;border-top:1px solid var(--line);padding-top:8px;margin-top:8px;max-height:18dvh;overflow:auto}
-#dialog-lesson summary{cursor:pointer;color:var(--accent);min-height:32px;font-weight:650}
-dialog #dialog-lesson p{font-size:14px;line-height:1.45;margin:2px 0}
+#dialog-lesson{grid-row:5;border-top:1px solid var(--line);padding-top:6px;margin-top:8px}
+#dialog-lesson summary{cursor:pointer;color:var(--accent);min-height:40px;padding:7px 0;font-weight:650;font-size:14px;line-height:1.45}
+#lesson-body{padding:0 6px 4px 15px;max-height:min(22dvh,148px);overflow:auto;overscroll-behavior:contain}
+dialog #lesson-text{font-size:14px;line-height:1.45;margin:0 0 6px}
+#lesson-sources a{display:block;color:var(--accent);font-size:13px;line-height:1.5;padding:3px 0}
+#lesson-trace{padding:6px 0;font-size:13px}
 .architecture-topology{display:grid;gap:10px}
 .architecture-topology article{padding:14px;border:1px solid var(--line);border-radius:12px}
 .architecture-topology h4{font-size:15px;margin:0 0 8px;color:var(--accent)}
@@ -168,15 +171,6 @@ dialog #dialog-lesson p{font-size:14px;line-height:1.45;margin:2px 0}
   font-weight: 700;
 }
 
-.product-moment {
-  color: var(--muted);
-  font-size: .9rem;
-  border-left: 2px solid var(--accent);
-  padding-left: 10px;
-}
-.product-moment button {
-  margin-left: 4px;
-}
 .evidence-pair {
   display: grid;
   gap: 10px;

@@ -14,7 +14,14 @@ const PROTOCOL_SOURCES = {
  vault:{name:'Vault Agentic IAM',url:'https://developer.hashicorp.com/vault/ai/iam'},
  leases:{name:'Vault lease, renew, and revoke',url:'https://developer.hashicorp.com/vault/docs/concepts/lease'},
  spiffe:{name:'SPIFFE workload identity concepts',url:'https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'},
- owasp:{name:'OWASP AI Agent Security',url:'https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html'}
+ owasp:{name:'OWASP AI Agent Security',url:'https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html'},
+ mcpTools:{name:'MCP tools specification',url:'https://modelcontextprotocol.io/specification/latest/server/tools'},
+ familyControls:{name:'Apple’s parental controls example',url:'https://support.apple.com/en-us/105121'},
+ trustedContact:{name:'FTC guidance on checking a message',url:'https://consumer.ftc.gov/articles/how-recognize-avoid-phishing-scams'},
+ fileSharing:{name:'Google Drive sharing permissions example',url:'https://support.google.com/drive/answer/2494822'},
+ fileVersions:{name:'Google Docs version history example',url:'https://support.google.com/docs/answer/190843'},
+ accountSessions:{name:'Google Account sessions and sign-out example',url:'https://support.google.com/accounts/answer/3067630'},
+ citing:{name:'Library of Congress guide to citing sources',url:'https://www.loc.gov/programs/teachers/getting-started-with-primary-sources/citing/'}
 };
 const PROTOCOL_NOTE='Educational mapping only: these exchanges are not sent. CIBA, SSF/CAEP, token exchange, and external authorization service integration depend on deployment support; they are not claimed as native OpenShell or Vault features. Durations are simulated; production signature, expiry, and token validation are not implemented here.';
 const AGENT_PROTOCOLS = [

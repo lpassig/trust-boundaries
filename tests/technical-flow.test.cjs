@@ -29,6 +29,25 @@ test('under-the-hood notes describe the observed outcome without claiming execut
  assert.match(T.lesson(blocked.event,'agent'),/before execution/);
  assert.match(T.lesson(act(start('teen'),'collect-source').event,'teen'),/museum page/);
 });
+test('source notes identify the product or control in both journeys',()=>{
+ const nova=T.note('ask-pass','agent');
+ assert.equal(nova.title,'IBM Agent Identity records that Nova is acting for Priya.');
+ assert.deepEqual(nova.sources,['iai']);
+ assert.match(nova.text,/customer mission service/);
+ const alex=T.note('ask-pass','teen');
+ assert.match(alex.title,/Your parent/);
+ assert.deepEqual(alex.sources,['familyControls']);
+ assert.deepEqual(T.note('read-preview','agent').sources,['mcpTools','vault']);
+ assert.deepEqual(T.note('approval-preview','agent').sources,['verify','ciba']);
+});
+test('a refused note has its own label and never reuses the successful read explanation',()=>{
+ const s=start();s.authority.resource.records=['123'];
+ const denied=act(s,'collect-source');
+ const note=T.note(denied.event.action,'agent',denied.event);
+ assert.match(note.title,/blocked/);
+ assert.doesNotMatch(note.text,/short-lived credential|approved records/);
+ assert.deepEqual(note.sources,['authorization']);
+});
 test('checking the linked sponsor proposal verifies its origin without changing authority',()=>{
  let s=sourced();for(const a of ['approve-draft','send-draft'])s=run(s,a);
  const result=act(s,'verify-portal');
