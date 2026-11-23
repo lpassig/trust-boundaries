@@ -96,7 +96,7 @@ const RequestTrace = (() => {
   ],
   'try-private':[
    ['The school app withholds other students’ private notes.','fileSharing'],
-   ['CRM blocks the private attachment at the point of sharing.','authorization']
+   ['CRM’s policy enforcement point (PEP) blocks the attachment.','authorization','The policy evaluator uses trusted facts about the file and the current task. CRM enforces the decision at the point of sharing.']
   ],
   'decline-private':[
    ['Send your timeline and keep the group’s notes private.','fileSharing'],
@@ -350,9 +350,9 @@ const RequestTrace = (() => {
     }else if(['customer.read','attachment.share'].includes(r.operation)){
      nodes.push(node('CRM tool','MCP · reference path','reference','An MCP server can expose CRM operations. This record contains no evidence that the operation used an MCP gateway.'));
     }
-    nodes.push(node('Read the authoritative mission','Customer mission service','checked',`${d.mission_id} version ${d.mission_version}; policy version ${d.policy_version}; allowed summary records ${d.allowed_records.join(', ')}. Owner: ${d.authority_source}.`));
     nodes.push(node('Observe the actual operation','Trusted CRM resource PEP','checked',`${r.operation}${r.resource?'; source '+r.resource:''}; requested records ${r.records.join(', ')||'none'}${r.file?'; file '+r.file:''}${r.recipient?'; recipient '+r.recipient:''}. Evidence comes from the operation, not Nova’s explanation.`));
-    nodes.push(node('Evaluate the exact request','Authorization decision service · proposed PDP integration',denied?'blocked':'checked',`${d.result.toUpperCase()}: ${d.reason} AuthZEN is a candidate interface. Richer approval and execution-binding semantics remain an application contract.`));
+    nodes.push(node('Read the authoritative mission','Policy information point (PIP)','checked',`${d.mission_id} version ${d.mission_version}; policy version ${d.policy_version}; allowed summary records ${d.allowed_records.join(', ')}. Owner: ${d.authority_source}.`));
+    nodes.push(node('Evaluate the exact request','Policy decision point (PDP) · example integration',denied?'blocked':'checked',`${d.result.toUpperCase()}: ${d.reason} AuthZEN is a candidate interface. Richer approval and execution-binding semantics remain an application contract.`));
    }
    if(r.approval_at_attempt){
     const approval=r.approval_at_attempt;

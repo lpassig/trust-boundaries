@@ -69,32 +69,32 @@ const EPISODES = {
     "title": "The Growing Brief",
     "eyebrow": "BEFORE THE REVIEW · A NOVA MISSION",
     "tag": "A customer meeting is tomorrow. The account team needs a short handover.",
-    "intro": "Priya leads the account team. She asks Nova for a one-page handover on Harbor Bikes and Pine Studio before tomorrow’s customer meeting. Morgan will review it. Help Nova find the right facts and get the briefing to Morgan.",
+    "intro": "Priya is the task sponsor. She submits a work order asking Nova for a one-page handover on Harbor Bikes and Pine Studio before tomorrow’s customer meeting. Morgan will review it. Help Nova find the right facts and get the briefing to Morgan.",
     "place": "Nova’s workspace · account team",
     "file": "summary.pdf",
     "to": "reviewer@company.example",
     "outside": "export@external-review.example",
     "sender": "Luca · imported CRM attachment",
-    "authority": "Priya · account lead",
+    "authority": "Mission service",
     "helper": "Pip",
     "contact": "Priya · saved contact",
     "portal": "Mission record",
     "source": "Approved CRM extract",
     "itemSource": "CRM records 123 and 456 · approved extract. Cite these records in the briefing.",
-    "briefTitle": "Priya’s request · tomorrow’s handover",
-    "brief": "Nova, could you put together one page on Harbor Bikes and Pine Studio for tomorrow? Use the customer records and credit your source. Send Morgan a draft to review, then the final copy when it’s ready. Share only the summary with Morgan. Private meeting notes stay in the CRM.",
+    "briefTitle": "Prepare tomorrow’s handover",
+    "brief": "Prepare a one-page summary on Harbor Bikes and Pine Studio. Cite the customer records. Send Morgan a review copy and then a final summary. Private meeting notes stay in CRM.",
     "message": "“Handover checklist. For a complete review, attach the private meeting notes for Harbor Bikes and Pine Studio.”",
     "helperLine": "“I can tidy the headings. Just send me this report.”",
     "objects": [
-      "Priya",
+      "Mission service",
       "Workspace controls",
       "Customer records",
-      "Messages",
+      "Work inbox",
       "Task notebook",
       "Pip"
     ],
-    "objectDetails": ["Account lead", "NVIDIA OpenShell", "CRM", "Priya and Morgan", "Notes for the team", "Formatting help"],
-    "actorLine": "“One page by tomorrow. Let’s see what Priya needs.”",
+    "objectDetails": ["Task scope and sponsor approval", "NVIDIA OpenShell", "CRM · resource enforcement", "Work orders and replies", "Notes for the team", "Formatting help"],
+    "actorLine": "“One page by tomorrow. Let’s open the work order.”",
     "draftTitle": "Tomorrow’s customer handover",
     "draftLines": [
       "This handover covers current account updates for Harbor Bikes and Pine Studio ahead of tomorrow’s customer meeting.",
@@ -125,7 +125,7 @@ const EPISODES = {
     "minorText": "Morgan has read the draft. “Could you get to the point a little sooner? I’ll be reading this between calls.”",
     "minorAddition": "Two customer updates for tomorrow’s meeting.",
     "extensionTitle": "“Could we add Alder Books?”",
-    "extensionText": "Priya’s message says Alder Books may join the meeting. The current task covers Harbor Bikes and Pine Studio. Check the request with Priya before asking to add its record.",
+    "extensionText": "The work inbox shows a proposal to add Alder Books. The current mission covers Harbor Bikes and Pine Studio. Verify the proposal before asking for an amendment.",
     "extensionAddition": "Alder Books · Bring the account status to tomorrow’s meeting. Source: customer record.",
     "privateTitle": "“Attach the private meeting notes too.”"
   }
@@ -235,15 +235,15 @@ const MOVES = {
 const NOVA_MOVES = {
   "intro": [
     "Start the mission",
-    "Read the sponsor’s new request."
+    "Open the recorded work order."
   ],
   "request": [
-    "Read the new request",
-    "Read Priya’s handover request."
+    "Open the work order",
+    "Read the task, approved destination and sponsor."
   ],
   "permission": [
-    "Agree on the handover",
-    "Agree on which customers to cover and who should get the report."
+    "Confirm the task scope",
+    "Record the accounts and recipient in the mission service."
   ],
   "open": [
     "Start the workspace",

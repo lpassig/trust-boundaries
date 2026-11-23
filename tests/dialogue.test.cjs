@@ -61,6 +61,11 @@ test('permission and service replies point to the responsible control even when 
  assert.equal(I.nextObject('teen','open','phone'),'laptop');
  assert.equal(I.eventSource('teen','Alex','open'),'laptop');
  assert.equal(I.eventSource('agent','Nova','open'),'phone');
+ assert.equal(I.eventSource('agent','Nova','read-brief'),'workOrder');
+ assert.equal(I.eventSource('agent','Nova','ask-pass'),'missionControl');
+ assert.equal(I.eventSource('agent','Sponsor','verify-contact'),'sponsorMessage');
+ assert.equal(I.eventSource('agent','Sponsor','verify-portal'),'workOrder');
+ assert.equal(I.nextObject('agent','request','brief'),'workOrder');
  assert.equal(I.eventSource('agent','Nova','collect-source'),'source');
  assert.equal(I.eventSource('teen','School receipt','send-draft'),'laptop');
 });
@@ -68,18 +73,19 @@ test('permission and service replies point to the responsible control even when 
 for(const mode of ['teen','agent']){
  test(`${mode}: shared scene beats distinguish a reviewer's message, the outside source and the resource denial`,()=>{
   const s=helperReview(mode),teen=mode==='teen';
-  assert.deepEqual(Array.from(I.availableTools(R.fresh())),[]);
-  assert.deepEqual(Array.from(I.availableTools(s)),['source','reviewer']);
+  assert.deepEqual(Array.from(I.availableTools(R.fresh(),mode)),[]);
+  const tools=teen?[]:['workOrder','policyConsole'];
+  assert.deepEqual(Array.from(I.availableTools(s,mode)),[...tools,'source','reviewer']);
   const approved=teen?s:R.act(s,mode,'approve-draft').state;
   const replied=R.act(approved,mode,'send-draft').state;
-  assert.deepEqual(Array.from(I.availableTools(replied)),['source','reviewer','outside']);
+  assert.deepEqual(Array.from(I.availableTools(replied,mode)),[...tools,'source','reviewer','outside']);
   const compared=R.act(replied,mode,'inspect-request-source');
   const denied=R.act(compared.state,mode,'try-private');
   const source=event=>I.speechSource(mode,I.eventSource(mode,event.speaker,event.action,event.kind));
   assert.equal(source(compared.event).tool,'outside');
   assert.equal(source(compared.event).object,teen?'phone':'laptop');
   assert.equal(source(denied.event).key,'laptop');
-  assert.equal(I.speechSource(mode,'reviewer').name,teen?'Ms Patel':'Morgan');
+  assert.equal(I.speechSource(mode,'reviewer').name,teen?'Ms Patel':'Morgan · reviewer');
   assert.equal(denied.state.paused,false);
   const early=R.act(replied,mode,'try-extension');
   assert.equal(source(early.event).key,teen?'homework':'laptop');

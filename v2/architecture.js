@@ -4,7 +4,7 @@ const ArchitectureReference = (() => {
   ['People and authority', ['people','verify','iai','mission']],
   ['Where Nova works', ['orchestrate','openshell','vault']],
   ['Model and tool connections', ['aiGateway','mcpGateway','mcpTool']],
-  ['Decisions and effects', ['authorization','crm']],
+  ['Decisions and effects', ['policyContext','authorization','crm']],
   ['Signals and response', ['risk','antenna','controllers']]
  ];
  const components = {
@@ -37,9 +37,15 @@ const ArchitectureReference = (() => {
    detail:'The tool carries the request to CRM. The current work order and customer data policy determine which records CRM can return.',
    sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools']]
   },
-  authorization:{name:'Authorization decision service',product:'authorization',kind:'Proposed integration',summary:'Evaluates the action the CRM observes against current task and resource rules.'},
+  policyContext:{
+   name:'Policy information point (PIP)',kind:'Architecture role',
+   summary:'Supplies trusted facts for policy evaluation, including current task scope and resource attributes.',
+   detail:'The policy evaluator obtains identity, mission and resource attributes from authoritative sources. This role can be implemented with several sources and adapters.',
+   sources:[['OASIS policy roles and terminology','https://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html']]
+  },
+  authorization:{name:'Policy decision point (PDP)',product:'authorization',kind:'Proposed integration',summary:'Evaluates the action the CRM observes against current task and resource rules.'},
   crm:{
-   name:'Customer CRM',kind:'Customer application',
+   name:'Customer CRM · resource PEP',kind:'Policy enforcement point',
    summary:'Checks the actual read, attachment or send at the point of use and owns the result.',
    detail:'Its enforcement point observes the operation, records, file revision and recipient. It enforces hard data restrictions and compares each confidential share with a current, single-use approval.'
   },
@@ -63,7 +69,10 @@ const ArchitectureReference = (() => {
     ['mcpGateway','The configured MCP gateway checks that the tool call can proceed and forwards it to the CRM MCP server.'],
     ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.'],
     ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.'],
-    ['crm','The CRM enforcement point verifies the caller and reads authoritative record IDs and policy. It checks the actual operation before returning approved fields.']
+    ['crm','The CRM enforcement point (PEP) verifies the caller and observes the actual record IDs and read operation.'],
+    ['policyContext','Supply current identity, mission and resource attributes from authoritative systems.'],
+    ['authorization','Evaluate whether the current policy and mission permit the observed read.'],
+    ['crm','Enforce the result. Return only permitted fields and record the outcome.']
    ],
    result:'Nova reads the two accounts and can cite them in the handover.'
   },
@@ -180,7 +189,7 @@ const ArchitectureReference = (() => {
 
  const technical = {
   topology:[
-   ['Authority plane',['verify','iai','mission','authorization'],'Identity and current mission state come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
+   ['Authority plane',['verify','iai','mission','policyContext','authorization'],'Identity and current mission state come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
    ['Data plane',['openshell','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
    ['Credential path',['vault','crm'],'The connector or broker obtains a separate credential for the configured backend. CRM owns any service session it establishes.'],
    ['Response plane',['antenna','controllers'],'A configured transmitter sends a signal to receivers. Controllers report and verify resource, credential, workload and queue outcomes.']

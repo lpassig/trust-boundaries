@@ -2,17 +2,20 @@
 const StoryInteractions = (() => {
  function nextObject(mode,stage,fallback){
   if(mode==='teen'&&stage==='open')return 'laptop';
+  if(mode==='agent'&&['intro','request'].includes(stage))return 'workOrder';
   if(mode==='agent'&&stage==='changes')return 'brief';
   if(mode==='agent'&&['draft-approval','approval'].includes(stage))return 'reviewer';
   return fallback;
  }
  function objectView(s,mode,key){
+  if(mode==='agent'&&key==='policyConsole')return key;
   if(s.paused)return 'parent';
   if(s.message&&!s.delivered&&(mode==='teen'&&key==='phone'||mode==='agent'&&key==='brief'))return 'changes';
   return key;
  }
- function availableTools(s){
+ function availableTools(s,mode){
   return [
+   ...(mode==='agent'&&s.started?['workOrder','policyConsole']:[]),
    ...(s.draft?['source','reviewer']:[]),
    ...(s.message?['outside']:[])
   ];
@@ -30,17 +33,17 @@ const StoryInteractions = (() => {
   const unavailable=instruction=>({targets:[],instruction:instruction||'This is a reference item at this step. Look closer, or put it away to continue.'});
   const use=(target,label,instruction,route,action)=>({targets:[target],label,instruction,route,action});
   if(!s.started||s.finished)return unavailable('This task has no remaining item actions. You can still look closer at your records.');
-  if(id==='brief'||id==='pass')return use('parent',s.ended?'Discuss the closing checks':teen?'Discuss the homework plan':'Discuss the mission',teen?'Choose Parent to discuss the current homework plan.':'Choose Priya to discuss the current customer-owned mission.','parent');
-  if(id==='checklist'&&s.ended&&s.checks.length===4)return use('parent',teen?'Show the closing evidence':'Present the closure evidence',teen?'Choose Parent to review the finished homework and closing checks.':'Choose Priya to present this task’s closure evidence.','parent');
+  if(id==='brief'||id==='pass')return use('parent',s.ended?'Discuss the closing checks':teen?'Discuss the homework plan':'Check the mission',teen?'Choose Parent to discuss the current homework plan.':'Choose Mission service to inspect the task and its current scope.','parent');
+  if(id==='checklist'&&s.ended&&s.checks.length===4)return use('parent',teen?'Show the closing evidence':'Present the closure evidence',teen?'Choose Parent to review the finished homework and closing checks.':'Choose Mission service to present this task’s closure evidence.','parent');
   if(s.paused)return unavailable(teen?'Put this item away and talk to your parent while the phone is paused.':'Put this item away and request sponsor review while the mission is paused.');
   if(id==='vault'&&!teen&&s.opened)return use('phone','Inspect the credential receipt','Choose Workspace controls to inspect the recorded Vault credential path. This does not test live credential or service status.','credential');
   const active=s.pass?.status==='active'&&s.mission?.status==='active'&&!s.ended;
   if(!active)return unavailable(s.ended?'Task access has ended. Put this item away to continue the independent closing checks.':id==='contact'?'Keep this contact for later requests. Put it away to read the new assignment and agree on the task.':'Agree on this task before using its working items. You can look closer or put this item away.');
-  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose Phone to check the new messages with your saved teacher contact.':'Choose Messages to verify the new requests with the known sponsor.','action','verify-contact');
+  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose Phone to check the new messages with your saved teacher contact.':'Choose Work inbox to verify the new requests with the known sponsor.','action','verify-contact');
   if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use('laptop','Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
   if(id==='draft'&&s.draft&&!s.delivered)return {...use('laptop',teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:['laptop','helper'],routes:{laptop:'draft',helper:'helper'}};
   if(id==='approval'&&s.approval&&!s.approval.used&&!s.delivered)return use('laptop','Review the approved share','Choose Customer records to review the current share. The resource still checks the exact operation before delivery.',s.approval.purpose==='draft-review'?'draftReview':'send');
-  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose Phone to revisit the teacher’s clarification.':'Choose Messages to revisit the verified requests.','changes');
+  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose Phone to revisit the teacher’s clarification.':'Choose Work inbox to revisit the verified requests.','changes');
   if(id==='delivery'&&s.delivered&&!s.notes.length)return use('notebook','Keep the receipt with a note',teen?'Choose Notebook to save the submission receipt with a note.':'Choose Task notebook to save the delivery receipt with its source.','action','write-note');
   if(id==='contact')return unavailable(s.evidence.includes('contact')?'These requests have already been independently checked. Look closer at the contact, or put it away.':'Keep this contact for later requests. There is no new request to verify yet.');
   if(id==='source'&&s.caption)return unavailable('This source is already credited in the draft. Look closer, or put it away.');
@@ -58,21 +61,23 @@ const StoryInteractions = (() => {
  function speechSource(mode,key){
   const teen=mode==='teen';
   const sources={
-   reviewer:{name:teen?'Ms Patel':'Morgan',kind:'Message',channel:teen?'School inbox · on your phone':'Review inbox · Messages',point:teen?[526,404]:[449,173],object:teen?'phone':'brief',tool:'reviewer'},
-   sponsorMessage:{name:'Priya',kind:'Message',channel:'Work messages',point:[449,173],object:'brief'},
+   reviewer:{name:teen?'Ms Patel':'Morgan · reviewer',kind:'Message',channel:teen?'School inbox · on your phone':'Work inbox · review approval',point:teen?[526,404]:[449,173],object:teen?'phone':'brief',tool:'reviewer'},
+   sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief'},
+   workOrder:{name:'Work order',kind:'Reading',channel:'Customer mission service',point:[449,173],object:'brief',tool:'workOrder'},
+   policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
    outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
    extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop'},
    homework:{name:'Homework mode',kind:'On screen',channel:'Phone',point:[526,404],object:'phone'},
    stop:{name:teen?'Homework controls':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone'},
-   missionControl:{name:'Mission service',kind:'On screen',point:[524,401],object:'phone'},
+   missionControl:{name:'Mission service',kind:'On screen',point:[250,230],object:'parent'},
    vaultControl:{name:'Task credential · Vault',kind:'On screen',point:[524,401],object:'phone'},
    outbox:{name:teen?'School outbox':'Task queue',kind:'On screen',point:teen?[716,259]:[349,441],object:teen?'laptop':'notebook'},
    hero:{name:teen?'Alex':'Nova',kind:'Thought',point:teen?[636,329]:[516,214]},
-   parent:{name:teen?'Parent':'Priya · account lead',kind:'Conversation',point:teen?[298,291]:[250,230]},
+   parent:{name:teen?'Parent':'Priya · task sponsor',kind:'Conversation',point:teen?[298,291]:[250,230]},
    phone:{name:teen?'Phone · messages':'Workspace controls · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
-   laptop:{name:teen?'School app':'Customer records',kind:'On screen',point:teen?[716,259]:[716,254]},
-   brief:{name:teen?'Assignment card':'Messages',kind:'Reading',point:teen?[449,167]:[449,173]},
+   laptop:{name:teen?'School app':'Customer records · CRM',kind:'On screen',point:teen?[716,259]:[716,254]},
+   brief:{name:teen?'Assignment card':'Work inbox',kind:'Reading',point:teen?[449,167]:[449,173]},
    notebook:{name:teen?'Notebook':'Task notebook',kind:'Reading',point:teen?[471,424]:[349,441]},
    helper:{name:teen?'Sam':'Pip',kind:'Speaking',point:teen?[747,329]:[839,385]},
    pocket:{name:'Selected item',kind:'Look closer',point:teen?[636,329]:[516,214]}
@@ -81,18 +86,18 @@ const StoryInteractions = (() => {
  }
  function eventSource(mode,speaker='',action='',kind=''){
   if(kind==='blocked'&&(speaker==='Alex'||speaker==='Nova'))return 'hero';
-  if(action==='read-brief')return 'brief';
-  if(action==='ask-pass')return 'parent';
+  if(action==='read-brief')return mode==='teen'?'brief':'workOrder';
+  if(action==='ask-pass')return mode==='teen'?'parent':'missionControl';
   if(action==='open')return mode==='teen'?'laptop':'phone';
   if(action==='collect-source')return 'source';
   if(action==='add-extension')return 'extra';
-  if(action==='verify-portal')return mode==='teen'?'laptop':'brief';
+  if(action==='verify-portal')return mode==='teen'?'laptop':'workOrder';
   if(['send-draft','send','try-private','prepare','apply-minor','keep-minor','attach-source'].includes(action))return 'laptop';
   if(action==='try-extension')return mode==='teen'?'homework':'laptop';
   if(['bypass-notes','shortcut'].includes(action))return 'stop';
   if(['inspect-request-source','decline-private'].includes(action))return 'outside';
   if(action==='verify-contact')return mode==='teen'?'reviewer':'sponsorMessage';
-  if(mode==='agent'&&action==='resolve-extension')return kind==='refused'?'missionControl':'sponsorMessage';
+  if(mode==='agent'&&['request-extension','resolve-extension','review','resolve-review'].includes(action))return 'missionControl';
   if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
   if(mode==='agent'&&/Approver|Morgan/.test(speaker))return 'reviewer';
   if(/Parent|Sponsor|Supervisor|Priya/.test(speaker))return 'parent';
@@ -104,7 +109,7 @@ const StoryInteractions = (() => {
  function objectStatus(s,mode,key){
   const teen=mode==='teen';
   if(s.message&&!s.delivered&&key===(teen?'phone':'brief')){
-   return teen?'Ms Patel and Jamie':'Priya, Morgan and a source note';
+   return teen?'Ms Patel and Jamie':'Review feedback and proposed change';
   }
   if(key!=='laptop')return '';
   if(s.ended&&s.containment?.controllerReachable){

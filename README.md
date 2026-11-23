@@ -13,6 +13,8 @@ Play [Trust Boundaries on GitHub Pages](https://lpassig.github.io/trust-boundari
 
 Both journeys give the player a source to open, a reviewer to hear from, and an outside request to inspect. Alex uses the Riverside Museum website and Ms Patel’s school inbox and can read Jamie’s forwarded message in the class group chat. Nova opens the CRM tool, reads Morgan’s review inbox and inspects the document Luca uploaded. These controls appear as the work reaches each stage. In both journeys the speaker, current screen and next action have separate cues.
 
+Nova’s work order names Priya as task sponsor. The work inbox carries replies, and the mission service records the approved scope. The Policy console shows the policy information point (PIP), policy decision point (PDP) and policy enforcement point (PEP) and links to the current trace when a decision exists.
+
 ### Playable choices and outcomes
 
 Small edits update the document revision without changing mission authority. Nova’s genuine expansion requires independent clarification, a pending request, a matching authorized reply, a new recorded agreement/mission version, and a separate permitted resource read. Alex can take Ms Patel’s school-app suggestion straight to his parent; teacher clarification remains optional. The smaller task remains a valid route. Declined additions can be reconsidered, and an approved addition can be left unread. The report’s actual record set is distinct from the mission’s permitted set; exact sharing approval binds what is included. Small-edit choices can be changed before submission and invalidate older review when content changes. An approved expansion never overrides independent private-data rules.
