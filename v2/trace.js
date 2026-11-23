@@ -1,6 +1,44 @@
 /* Fictional operation replay. This visualizer makes no live authentication or API calls. */
 const RequestTrace = (() => {
  const node=(label,role,status,detail)=>({label,role,status,detail});
+ const lessons={
+  'read-brief':['The assignment tells Alex what to make. Tonight’s app agreement is a separate step.','The work order describes the requested job. The mission service records the limits Nova can act under.'],
+  'ask-pass':['Your parent sets which apps you can use tonight. The school still decides whose files you can share.','The mission service records the accounts, deliverable and reviewer. Nova’s identity and the CRM’s own rules still apply.'],
+  open:['Quick sign-in and the school tab are separate. You’ll turn off quick sign-in and check that the tab asks for a login.','OpenShell controls what the workspace can reach. The CRM service session and backend credential have their own lifecycles.'],
+  'collect-source':['The museum page confirms your dates. The school app holds your draft, so the page title must be added to it.','Nova sends a read through the MCP gateway and CRM MCP server. CRM checks the specific records before returning their allowed fields.'],
+  'send-draft':['Ms Patel can give feedback now because the school app sent a draft. Your final submission is still ahead.','CRM checked Morgan’s approval for this exact review copy. The final copy has its own approval.'],
+  'apply-minor':['A sentence using the same source fits the app agreement you already have.','This changes the report revision. The mission still covers the same records and recipient.'],
+  'keep-minor':['The teacher’s wording was optional. Your timeline still uses the source you checked.','The wording suggestion was optional. The current mission continues with its existing scope.'],
+  'verify-contact':['You checked a conversation you already knew belonged to Ms Patel. She can explain the assignment.','You confirmed the proposal through Priya’s saved contact. The mission service still has to approve a scope change.'],
+  'verify-portal':['The school app’s assignment gives you an independent way to check what Ms Patel asked for.','The sponsor-owned change request verifies who proposed the addition. The active mission stays at its current version.'],
+  'request-extension':['Your parent is considering one specific museum source. The original agreement still applies while you wait.','The mission service records the pending change against the current mission and session generation. The existing scope stays in force.'],
+  'resolve-extension':['Your parent allowed the linked source. The homework app profile checks that specific link when you use it.','The authorized reply updates the mission version. A separate request still has to pass the CRM’s record policy.'],
+  'add-extension':['The phone allowed the museum source covered by your updated plan. The extra detail and credit go into your timeline.','CRM authorized the Alder Books read under the amended mission. The report now includes that record with its source.'],
+  'try-extension':['The phone’s homework setting checks which link you can open. Your school app remains available.','The gateway forwarded the tool call. CRM refused Alder Books because that record is outside the active mission.'],
+  'inspect-request-source':['Jamie’s forwarded text and Ms Patel’s school assignment come from different places. The school assignment tells you what to submit.','The attachment is retrieved content. The owner-controlled work order supplies the scope for the CRM request.'],
+  'try-private':['The school app checks the file you tried to attach. It withholds the group’s private notes.','OpenShell allows the connection. CRM checks the actual attachment and blocks the private file before it leaves.'],
+  'decline-private':['You kept the group notes private and can still submit your own work.','Nova left the notes in CRM. The approved summary can still be sent.'],
+  'bypass-notes':['The first refusal left the rest of your homework open. The separate attempt to use another account triggered a pause.','The resource denied the attachment. A separate deliberate bypass attempt triggered the controller’s pause.'],
+  'resolve-review':['Your parent let you finish the same homework. The school app still protects the group notes.','The sponsor reply was matched and policy checked again. A new session generation keeps the same bounded work.'],
+  'proof-helper':['Sam receives the project file so he can proofread it with his own access.','Pip receives file-only formatting rights under its own identity. Its output is a new revision and needs current share approval.'],
+  'approve-draft':['','The approval records the exact review copy and recipient. A separate CRM request actually sends it.'],
+  approve:['','Morgan’s approval is bound to this revision, recipient and task. CRM checks the actual send.'],
+  send:['The school app submitted your timeline to Ms Patel. Signing out closes the laptop session separately.','CRM checked the actual send against current policy and the one-use approval. The recipient now has the file.'],
+  'close-pass':['The homework agreement ended. The laptop tab can still be signed in.','The grant is revoked and OpenShell stopped the workspace. Verify the credential, CRM session and queued work separately.'],
+  'probe-session':['The app has to answer before you can tell whether the old tab is still signed in.','An independent controller checks the old route. A failed connection gives an unknown result. A policy denial is evidence for the tested route.']
+ };
+ function lesson(e,mode){
+  if(!e)return '';
+  const teen=mode==='teen',text=lessons[e.action==='shortcut'?'bypass-notes':e.action]?.[teen?0:1];
+  if(!text)return '';
+  if(e.kind==='blocked'&&!['bypass-notes','shortcut'].includes(e.action))return teen?'This step stopped before the app could do the requested work.':'A prerequisite stopped the action before execution.';
+  if(e.kind==='refused'&&!['try-extension','try-private'].includes(e.action)){
+   if(e.action==='resolve-review')return 'The sponsor’s reply is one input to the review. The controller keeps the session paused until current policy permits recovery.';
+   if(e.action==='resolve-extension')return 'The mission service still needs current policy to approve a scope change. The existing scope stays in force.';
+   return teen?'The current agreement or app rules blocked this action.':`${e.decision?.pep||'The responsible control'} refused this operation. The protected effect did not happen.`;
+  }
+  return text;
+ }
  function build(s,mode){
   const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
   const recorded=r?.recordVersion===3,draftShare=a==='send-draft',share=a==='send'||draftShare;
@@ -34,6 +72,10 @@ const RequestTrace = (() => {
    node(teen?'Your parent’s app decision':'Customer mission authority',teen?'Parent + school resource rules':'Authorized sponsor + resource constraints',a==='request-extension'?'pending':'checked',a==='request-extension'?'The reply is pending. No permission expanded.':`The authorized reply records version ${m.version}. An ordinary instruction could not make that change.`),
    node(teen?'Updated homework apps':'Refreshed delegated scope',teen?'Phone app agreement':'IBM Agent Identity + configured issuer',a==='request-extension'?'not-reached':'checked',a==='request-extension'?'Existing scope stays in force.':'Old session generation and sharing approvals are retired. The existing task is preserved and scope expands only by the approved addition.'),
    node('Read the additional material','Independent resource PEP','not-reached','Permission itself does not open the extra source or customer record. Use the approved addition next.')
+  ]);
+  if(['verify-contact','verify-portal'].includes(a))return model(teen?'Verify what the teacher asked for.':'Verify the origin of the proposed change.','A source check verifies the request. Changing effective access requires a separate decision.',[
+   node('Check independent evidence',a==='verify-contact'?(teen?'Saved conversation with Ms Patel':'Saved contact for Priya'):(teen?'School assignment':'Sponsor-owned proposal linked to the work order'),'checked',e.text),
+   node('Scope decision','Current agreement and policy','not-reached','The verification leaves the existing agreement and any resource restrictions in force.')
   ]);
   if(a==='bypass-notes'||a==='shortcut')return model('A known boundary was deliberately bypassed.','The ordinary refusal did not suspend the task. This later bypass attempt did.',[
    ...context(),node('Known refusal','Resource policy','context','The private-note request had already been refused.'),node('Alternate access attempt','Trusted enforcement controller','blocked','The deliberate bypass is stopped before a protected effect. Independent review can recover only the current bounded task.'),node('Disclosure','External effect','not-reached','No private notes were sent.')
@@ -80,7 +122,8 @@ const RequestTrace = (() => {
      nodes.push(
       node('Send the record request','Nova’s MCP client · NVIDIA OpenShell','checked','Nova’s client sends the call for the requested records from its governed workspace.'),
       node('Forward the tool call','MCP gateway','checked','The configured gateway accepts this tool call and forwards it to the CRM MCP server.'),
-      node('Call the customer records service','CRM MCP server','checked','The server exposes the read tool to Nova’s client through the gateway. It calls the CRM with the requested account records.')
+      node('Resolve the tool call','CRM MCP server','checked','The server validates its HTTP authorization and maps the tool call to a CRM read. The configured connector uses a separate backend credential.'),
+      node('Obtain scoped source access if configured','Configured broker + HashiCorp Vault','reference','A broker obtains the short-lived backend credential before the CRM read. Vault authorizes its own credential path. The CRM owns its service session and still decides record access.')
      );
     }else if(['customer.read','attachment.share'].includes(r.operation)){
      nodes.push(node('CRM tool','MCP · reference path','reference','An MCP server can expose CRM operations. This record contains no evidence that the operation used an MCP gateway.'));
@@ -94,7 +137,7 @@ const RequestTrace = (() => {
     nodes.push(node('Compare approval with the attempted send','Recorded approval + actual CRM request',denied?'blocked':'checked',
      `Approved revision ${approval.revision} to ${approval.to}, policy version ${approval.policyVersion}. Actual revision ${r.revision} to ${r.recipient}, policy version ${d.policy_version}. Request ${r.request_id} links the check to its outcome.`));
    }
-   if(!teen&&r.operation==='customer.read'&&!denied){
+   if(!teen&&r.operation==='customer.read'&&!denied&&r.tool_route!=='crm-mcp-gateway'){
     nodes.push(node('Use scoped source access','Configured broker + HashiCorp Vault','reference','In this deployment pattern the broker uses a short-lived source-read credential outside the model context. CRM still checks the record scope. Expiry limits reuse of the credential, and CRM manages its existing session separately.'));
    }
    nodes.push(node(teen?'The responsible control checks this operation':'Enforce at the resource',teen?d.pep:'CRM resource PEP',denied?'blocked':'checked',teen?(denied?`Refused at ${d.pep}: ${d.reason} The rest of the homework can continue.`:`Permitted at ${d.pep}: ${d.reason} Device/app permission and the resource’s own rules remain distinct.`):share?(denied?`The resource refuses the actual send: ${d.reason} No approval is consumed for delivery.`:`The actual revision ${r.revision}, records, recipient and current authority match the one-use human approval.`):'The resource enforces this request under the current mission and its own policy.'));
@@ -103,9 +146,9 @@ const RequestTrace = (() => {
   }
   if(['approve','approve-draft'].includes(a)&&s.approval)return model('Approve one exact business share.','The human sees the current copy and its purpose before approval; the CRM must still check the actual send.',[...context(),node('Human sees the transaction','Designated approver · optional IBM Verify/CIBA','checked',`${s.approval.purpose==='draft-review'?'Review copy':'Final delivery'}: ${r.file} revision ${s.approval.revision}, records ${r.records.join(', ')}, recipient ${r.recipient}. Policy version ${s.approval.policyVersion}. The application binds the approval to this actor, mission, copy, window and single use.`),node('Delivery','Resource PEP','not-reached','Approval alone has not delivered anything.')]);
   if(a==='open')return model('Open the task workspace.','The service session is introduced here, so its later closure is a known loose end.',[...context(),node('Runtime and task access ready','Configured controllers','checked','The workspace and task service session are open. No source data has been read yet.'),node('First useful resource read','Resource PEP','not-reached','Build the outline, then open the agreed source.')]);
-  if(['apply-minor','keep-minor','prepare','attach-source','proof-self','revise-file','change-recipient','wait-approval'].includes(a))return model('A document change is not a mission change.','This local content or preview step creates no new business authority.',[...context(),node('Current document',teen?'Project version':'Report revision','checked',`Revision ${s.fileRevision}. The current ${teen?'agreement':'mission'} stays at version ${m.version}.`),node('Share approval',teen?'School submission policy':'Exact action binding',s.approval?'context':'pending',teen?'Your own reviewed work can use the permitted school destination.':s.approval?`Recorded revision ${s.approval.revision}; current revision ${s.fileRevision}. A stale or expired approval cannot execute.`:'Any changed content must receive an appropriate current approval before the confidential share.'),node('External delivery','Result','not-reached','This step sends no file.')]);
+  if(['apply-minor','keep-minor','prepare','attach-source','proof-self','revise-file','change-recipient','wait-approval','decline-private'].includes(a))return model('The local decision leaves the task limits in place.','This content or preview step creates no new business authority.',[...context(),node('Current document',teen?'Project version':'Report revision','checked',`Revision ${s.fileRevision}. The current ${teen?'agreement':'mission'} stays at version ${m.version}.`),node('Share approval',teen?'School submission policy':'Exact action binding',s.approval?'context':'pending',teen?'Your own reviewed work can use the permitted school destination.':s.approval?`Recorded revision ${s.approval.revision}; current revision ${s.fileRevision}. A stale or expired approval cannot execute.`:'Any changed content must receive an appropriate current approval before the confidential share.'),node('External delivery','Result','not-reached','This step sends no file.')]);
   return model('A task starts with a request.','A request, agreement, document and delivery are separate story events.',[...context(),node('Current step','Local story application','checked',e.text),node('External delivery','Result','not-reached','This step sends no file.')]);
  }
- return {build};
+ return {build,lesson};
 })();
 if(typeof module!=='undefined')module.exports=RequestTrace;

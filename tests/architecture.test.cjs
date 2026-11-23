@@ -16,4 +16,17 @@ test('architecture steps resolve to a component and threat links resolve to a re
   for(const [component] of flow.steps)assert(mapIds.includes(component),id+': '+component);
  }
  for(const threat of architecture.threats)assert(architecture.flows[threat.flow],threat.title);
+ for(const [plane,components] of architecture.technical.topology){
+  for(const id of components)assert(mapIds.includes(id),plane+': '+id);
+ }
+});
+
+test('example decision binds the PEP observation to the approval and live versions',()=>{
+ const {decisionExample:request,decisionResponse:response}=architecture.technical;
+ assert.equal(response.request_id,request.request_id);
+ assert.equal(response.action_digest,request.approval.action_digest);
+ assert.equal(response.enforcement.consume_approval_id,request.approval.id);
+ assert.equal(response.enforcement.expected_mission_version,request.mission.version);
+ assert.equal(response.enforcement.expected_policy_version,request.mission.policy_version);
+ assert.equal(response.enforcement.expected_session_generation,request.identity.session_generation);
 });

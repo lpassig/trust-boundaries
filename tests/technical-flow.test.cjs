@@ -14,8 +14,28 @@ test('Nova’s CRM read follows the MCP client, gateway and server before CRM au
  const roles=['Nova’s MCP client · NVIDIA OpenShell','MCP gateway','CRM MCP server'];
  const startIndex=nodes.findIndex(n=>n.role===roles[0]);
  assert.deepEqual(nodes.slice(startIndex,startIndex+3).map(n=>n.role),roles);
+ const credentialIndex=nodes.findIndex(n=>n.role==='Configured broker + HashiCorp Vault');
+ assert(credentialIndex>startIndex+2);
+ assert(credentialIndex<nodes.findIndex(n=>n.role==='Trusted CRM resource PEP'));
  assert(nodes.findIndex(n=>n.label==='Enforce at the resource')>startIndex+2);
  assert.equal(act(start('teen'),'collect-source').event.request.tool_route,undefined);
+});
+test('under-the-hood notes describe the observed outcome without claiming execution after a denial',()=>{
+ const s=start();s.authority.resource.records=['123'];
+ const denied=act(s,'collect-source');
+ assert.match(T.lesson(denied.event,'agent'),/refused this operation/);
+ assert.doesNotMatch(T.lesson(denied.event,'agent'),/returning their allowed fields/);
+ const blocked=act(R.fresh(),'collect-source');
+ assert.match(T.lesson(blocked.event,'agent'),/before execution/);
+ assert.match(T.lesson(act(start('teen'),'collect-source').event,'teen'),/museum page/);
+});
+test('checking the linked sponsor proposal verifies its origin without changing authority',()=>{
+ let s=sourced();for(const a of ['approve-draft','send-draft'])s=run(s,a);
+ const result=act(s,'verify-portal');
+ assert.match(result.event.text,/linked change request/);
+ assert.deepEqual(result.state.mission,s.mission);
+ assert.equal(result.state.generation,s.generation);
+ assert.equal(T.build(result.state,'agent').nodes.at(-1).status,'not-reached');
 });
 test('Alder Books uses the same route and CRM can deny or permit the read',()=>{
  const s=feedback(),denied=act(s,'try-extension');

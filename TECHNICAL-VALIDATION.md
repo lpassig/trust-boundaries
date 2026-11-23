@@ -1,6 +1,6 @@
 # Technical sequence validation
 
-Reviewed 23 November 2026 against the supplied mission-bound authorization reference architecture, the earlier framework/journey notes, and both supplied IBM Agent Identity and Vault decks. This review concerns an educational simulation. It does not certify a deployed integration.
+Reviewed 23 November 2026 against the supplied mission-bound authorization reference architecture, the framework/journey notes, and the supplied identity, Vault, execution security and maturity presentations. This review concerns an educational simulation. It does not certify a deployed integration.
 
 ## Result
 
@@ -22,6 +22,14 @@ The sequence is consistent with the reference architecture after the corrections
 | Memory | Save receipt-based reminder | Save delivery-sourced task note | Notes cannot issue authority or rewrite audit evidence |
 | End task | Homework profile ends; school tab may remain | Mission withdrawn, runtime stopped; credential/session/queue checked separately | Revocation controls future access and cannot recall delivered copies |
 | Verify closure | School controls test the old access route | Independent controllers revoke/check/retest | Unknown is not denied; evidence covers only the tested route |
+
+## Educational review
+
+The most useful choices teach a cause and a consequence: the app checks a link, the CRM withholds a private attachment, or the controller verifies the old route. Each key outcome now offers an **Under the hood** explanation, with a manually stepped trace for the technical details. Alex uses a fictional managed homework app profile that evaluates the specific museum link. Commercial parental-control products vary in what they can enforce.
+
+Scope verification looks up a sponsor-owned proposal linked to the original work order. The active work order on its own describes current scope. The UI and trace distinguish verification of a proposal, approval of an amendment and authorization of the later read.
+
+Nova’s technical read resolves the tool call at the MCP server, obtains any configured backend credential, and then reaches the CRM enforcement point. CIBA, OAuth/RAR, AuthZEN and SSF/CAEP show distinct interfaces. Production requirements such as content digests, atomic approval consumption with a durable operation record, replay handling and revocation measurement are illustrated in the technical reference.
 
 ## Corrections made
 
@@ -56,4 +64,4 @@ All rules execute in editable browser state. There are no signed tokens, real cr
 
 ## Verification
 
-`node --test tests/*.test.cjs` passes **172 tests**, including the full two-journey route matrix. Thirty-four technical-flow regressions cover current read limits, independent ceilings, amendment refusal, both sharing stages, missing policy context, helper identity/attenuation, current school destinations and save migration. Alex’s video tests also reject unrelated recommendations, recheck the allowed video at use time, and preserve older photo permissions without silently authorizing YouTube. Schema 5 and earlier progress migrates to schema 6 without inventing historical helper evidence. The suite also covers evidence retained after a refused send, the separate runtime and CRM results on private attachments, and Alex’s combined sign-out followed by independent verification. Additional checks verify that comparing untrusted content does not change authority and that the school sign-in indicator requires a confirmed retest. Existing tests cover first-share causality, stale/mismatched approvals, ordinary refusal versus deliberate bypass, receipt-only queues, independent post-stop controls, controller outage and revoked task closure.
+`node --test tests/*.test.cjs` passes **175 tests**, including the full two-journey route matrix. Thirty-six technical-flow regressions cover current read limits, independent ceilings, amendment refusal, both sharing stages, missing policy context, helper identity/attenuation, current school destinations and save migration. Alex’s video tests also reject unrelated recommendations, recheck the allowed video at use time, and preserve older photo permissions without silently authorizing YouTube. Schema 5 and earlier progress migrates to schema 6 without inventing historical helper evidence. The suite also covers evidence retained after a refused send, the separate runtime and CRM results on private attachments, and Alex’s combined sign-out followed by independent verification. Additional checks verify that comparing untrusted content does not change authority and that the school sign-in indicator requires a confirmed retest. Existing tests cover first-share causality, stale/mismatched approvals, ordinary refusal versus deliberate bypass, receipt-only queues, independent post-stop controls, controller outage and revoked task closure.

@@ -61,9 +61,9 @@ const ArchitectureReference = (() => {
     ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
     ['openshell','Nova’s MCP client sends the read request from inside the governed workspace.'],
     ['mcpGateway','The configured MCP gateway checks that the tool call can proceed and forwards it to the CRM MCP server.'],
-    ['mcpTool','The server exposes the CRM read tool and calls the customer records service.'],
-    ['vault','For the configured source path, the broker uses a Vault-scoped credential. CRM owns its separate service session.'],
-    ['crm','Check the actual read of Harbor Bikes and Pine Studio against current task and resource policy before returning records.']
+    ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.'],
+    ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.'],
+    ['crm','The CRM enforcement point verifies the caller and reads authoritative record IDs and policy. It checks the actual operation before returning approved fields.']
    ],
    result:'Nova reads the two accounts and can cite them in the handover.'
   },
@@ -71,7 +71,7 @@ const ArchitectureReference = (() => {
    title:'Add a customer',
    premise:'Priya suggests adding Alder Books after Morgan receives the review copy.',
    steps:[
-    ['people','Confirm the request via Priya’s saved contact or the current work order.'],
+    ['people','Confirm the request via Priya’s saved contact or the sponsor-owned change request linked to the work order.'],
     ['mission','Record the request. The original two accounts stay in scope while approval is pending.'],
     ['authorization','Check that the sponsor, agent ceiling and CRM policy permit the addition.'],
     ['mission','Record the approved scope and retire the old session generation.'],
@@ -84,11 +84,11 @@ const ArchitectureReference = (() => {
    premise:'Morgan may approve a review copy for feedback and later a separate final copy.',
    steps:[
     ['people','Morgan sees the file, revision, accounts and intended recipient.'],
-    ['verify','A configured CIBA channel can authenticate Morgan and collect consent.'],
-    ['authorization','Application policy binds approval to this action, current authority, expiry and one use.'],
-    ['crm','Compare the actual request with the approval. Enforce current resource policy before sending and record the outcome.']
+    ['verify','A configured CIBA flow authenticates Morgan out of band. The workflow correlates the authentication result with its own immutable transaction preview.'],
+    ['authorization','Bind the recorded approval to the actor, file digest, recipient, record set, mission and policy versions, session generation, expiry and one-use ID. The game uses file revision as a proxy for the digest.'],
+    ['crm','Rebuild the action from the actual request. Atomically consume the matching approval with a durable send intent and record the outcome. Make retries idempotent.']
    ],
-   result:'Each approved copy travels once. A changed revision, destination or expired approval blocks the send.'
+   result:'A changed revision, destination or expired approval blocks the send. The application must handle duplicate requests and ambiguous downstream acknowledgements.'
   },
   refuse:{
    title:'Block a private attachment',
@@ -112,6 +112,17 @@ const ArchitectureReference = (() => {
     ['crm','Require a fresh exact approval before sharing the revised report with Morgan.']
    ],
    result:'Pip formats the file without borrowing Nova’s credentials or obtaining CRM read or send rights.'
+  },
+  recover:{
+   title:'Pause and recover bounded access',
+   premise:'A separate deliberate attempt follows a known resource denial. The controller pauses the current task session.',
+   steps:[
+    ['controllers','Apply the pause to the current session generation and preserve the incident evidence.'],
+    ['people','Send the authorized sponsor a review request tied to this incident, mission and session generation.'],
+    ['authorization','Correlate the reply and re-read authoritative policy. Hold the pause if the reply is stale or a required service is unavailable.'],
+    ['mission','After a valid review, retire the paused generation and issue a new bounded session. Pending replies and send approvals for the retired generation cannot authorize actions.']
+   ],
+   result:'Recovery restores only the current permitted scope. The original refusal and the review outcome remain in the audit trail.'
   },
   stop:{
    title:'Stop and verify access',
@@ -167,7 +178,82 @@ const ArchitectureReference = (() => {
 
  const outsideCoverage = 'The stories illustrate controls through scripted outcomes. Live prompt-injection detection, poisoned persistent memory, supply-chain compromise, sandbox escapes and coverage of unmanaged routes require separate implementation and testing. A verified stop covers the tested route.';
 
- return {groups,components,flows,threats,outsideCoverage};
+ const technical = {
+  topology:[
+   ['Authority plane',['verify','iai','mission','authorization'],'Identity and current mission state come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
+   ['Data plane',['openshell','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
+   ['Credential path',['vault','crm'],'The connector or broker obtains a separate credential for the configured backend. CRM owns any service session it establishes.'],
+   ['Response plane',['antenna','controllers'],'A configured transmitter sends a signal to receivers. Controllers report and verify resource, credential, workload and queue outcomes.']
+  ],
+  evidence:[
+   ['Subject, actor and session','Identity issuer and session controller','Sponsor identity, Nova’s authenticated identity, delegation chain and current session generation.'],
+   ['Purpose and limits','Customer mission service','Tenant, task owner, version, permitted operations, record set, destination, expiry and revocation state.'],
+   ['Actual operation and target','CRM policy enforcement point (PEP)','Canonical operation, resolved record IDs, normalized recipient, file digest, record classifications and resource version.'],
+   ['Human approval','Approval store','Approver identity, approval ID, canonical action hash, binding versions, expiry and consumption state.'],
+   ['Outcome','CRM receipt and independent control logs','Decision ID, request correlation ID, committed or denied effect, and per-route containment status.']
+  ],
+  decisionExample:{
+   request_id:'demo-req-27',tenant:'accounts-demo',
+   identity:{subject:'sponsor-001',actor:'nova-042',session_generation:10},
+   mission:{id:'G-042',version:2,policy_version:1},
+   observed_action:{operation:'report.send',record_ids:['123','456','789'],file:'summary.pdf',content_digest:'<sha-256-of-canonical-file>',recipient:'reviewer@company.example'},
+   approval:{id:'demo-approval-final-4',approver:'morgan-01',purpose:'final',action_digest:'<sha-256-of-canonical-action>',single_use:true},
+   evidence_source:'CRM resource PEP'
+  },
+  decisionResponse:{
+   request_id:'demo-req-27',decision_id:'demo-decision-27',effect:'permit',
+   action_digest:'<sha-256-of-canonical-action>',
+   valid_until:'2026-11-23T16:05:00Z',
+   enforcement:{expected_mission_version:2,expected_policy_version:1,expected_session_generation:10,consume_approval_id:'demo-approval-final-4',operation_id:'demo-send-27'}
+  },
+  sections:[
+   {
+    title:'Effective authority and trusted evidence',
+    paragraphs:[
+     'Permit only when the verified principal’s authority, the agent or child ceiling, active mission scope, resource policy and any required exact approval allow the same observed operation. Missing or stale required evidence fails closed for that operation.',
+     'A policy information point (PIP) supplies verified attributes. The PDP evaluates them. The PEP controls the effect and verifies the decision against the actual request. Treat retrieved documents, tool output and agent memory as untrusted content. They can suggest an action. Authoritative stores determine its permission.'
+    ],
+    sources:[['OpenID AuthZEN Authorization API','https://openid.net/specs/authorization-api-1_0-final.html']]
+   },
+   {
+    title:'MCP authorization, token audiences and backend credentials',
+    paragraphs:[
+     'Use the MCP authorization profile on protected HTTP endpoints. Validate issuer, lifetime and intended audience at each resource boundary. In the proxy configuration, the gateway terminates the client-facing session and the gateway-to-server hop uses credentials intended for the upstream MCP server. The connector uses a separate credential for the CRM backend.',
+     'Where a trusted issuer supports RFC 8693, it can exchange subject and actor context for a narrower token. RFC 9396 carries structured authorization details when the authorization server and resource implement the specific type. A Vault-scoped OAuth token is validated by Vault, which applies its own policies and can issue supported short-lived target credentials. CRM still evaluates record and field access.',
+     'The OpenShell gateway manages sandbox lifecycle. Its supervisor mediates sandbox egress. The MCP gateway handles tool traffic on this configured route. IBM watsonx Orchestrate AI Gateway handles model routing and supported agent integrations.'
+    ],
+    sources:[['MCP HTTP authorization','https://modelcontextprotocol.io/specification/latest/basic/authorization'],['RFC 8707 resource indicators','https://www.rfc-editor.org/rfc/rfc8707'],['RFC 8693 token exchange','https://www.rfc-editor.org/rfc/rfc8693'],['RFC 9396 rich authorization requests','https://www.rfc-editor.org/rfc/rfc9396'],['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam'],['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture']]
+   },
+   {
+    title:'Approval binding, race conditions and commit',
+    paragraphs:[
+     'The application binds a CIBA authentication result, if used, to its own approval record. Bind the approver and purpose to the actor, exact content and recipient, record set, current versions, expiry and a one-use grant. A preview, request arrival and successful delivery are separate events.',
+     'Check authority again at the point of effect. Fence execution on the current mission version and session generation. Use an atomic compare-and-consume with a durable outbox or equivalent commit boundary. Deduplicate retries with a stable operation ID. If the downstream send result is ambiguous, reconcile against its receipt before retrying.',
+     'AuthZEN can carry a subject, action, resource and context to the PDP and return a Boolean decision. Correlation, a content digest, approval lifecycle, expiry and execution binding in the example are application contracts.'
+    ],
+    sources:[['OpenID CIBA Core','https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html'],['OpenID AuthZEN Authorization API','https://openid.net/specs/authorization-api-1_0-final.html']]
+   },
+   {
+    title:'Delegation and isolation',
+    paragraphs:[
+     'Pip has its own identity and a child grant for one file version and a formatting operation. Intersect the parent’s current authority with Pip’s ceiling and the file policy. Set independent expiry and depth limits. Keep the parent credential out of the child context.',
+     'For this production pattern, persist parent and child IDs and input/output digests. The CRM reauthorizes sharing of the changed report. OpenShell limits files, processes and network reachability. Hard confidentiality rules remain at the resource PEP.'
+    ],
+    sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['RFC 8693 delegation semantics','https://www.rfc-editor.org/rfc/rfc8693']]
+   },
+   {
+    title:'Failure, revocation and observable containment',
+    paragraphs:[
+     'Restored access requires correlated review, current policy and a fresh session generation. Deny new governed operations when the current grant or required policy context cannot be validated. Treat an unavailable status endpoint as unknown. Keep previously accepted external effects in the record.',
+     'Revoke the grant and invalidate stale decisions. Stop the workload. Revoke the credential and close service-owned sessions separately. Cancel queued work and prevent committing in-flight changes when the authorization generation is stale. Independently retest each covered route and record the verdict with time and owner.',
+     'SSF delivers security events between configured peers. CAEP session-revoked events can prompt receiver-specific action. Correlate delivery, receiver enforcement and a resource probe separately. Measure each interval before claiming a revocation SLO.'
+    ],
+    sources:[['OpenID Shared Signals Framework','https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html'],['OpenID CAEP','https://openid.net/specs/openid-caep-1_0-final.html']]
+   }
+  ]
+ };
+
+ return {groups,components,flows,threats,outsideCoverage,technical};
 })();
 
 if(typeof module!=='undefined')module.exports=ArchitectureReference;
