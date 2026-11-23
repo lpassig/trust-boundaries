@@ -95,6 +95,7 @@ const EPISODES = {
     "actorLine": "“First, agree on the job. Then open the tools.”",
     "draftTitle": "Customer briefing · 123 & 456",
     "draftLines": [
+      "This briefing brings together the current account position and proposed review points from the requested customer records, to support the upcoming account discussion.",
       "123 · Renewal discussion ready for review.",
       "456 · Follow-up requested by the account team.",
       "Recommendation · Reviewer confirms the next steps."
@@ -120,7 +121,7 @@ const EPISODES = {
     "requestLabel": "Internal checklist’s extra request",
     "minorTitle": "“Can you shorten the introduction?”",
     "minorText": "The known sponsor asks for a clearer opening using the same approved records, output and reviewer.",
-    "minorAddition": "Introduction shortened for the current customer review. No new records or recipients.",
+    "minorAddition": "A concise account briefing for the upcoming review.",
     "extensionTitle": "“Please include customer 789 as well.”",
     "extensionText": "The sponsor offers an optional third-customer summary. It is a genuine request, but the active mission still covers only 123 and 456.",
     "extensionAddition": "789 · Account review added under the approved mission amendment. Source: approved CRM extract.",
@@ -424,6 +425,6 @@ const SUBMISSION_PROTOCOL = {
 };
 const CLOSING_PROTOCOL = {
  title:'Close the current task without preauthorizing the next one',tags:['SSF / CAEP · optional','Task-scoped revocation','Observed evidence'],
- how:'Mission withdrawal, applicable task-credential revocation, service-session closure, runtime stop and reconciliation of an actually scheduled follow-up have separate outcomes. This story checks one covered route and records its result.',
+ how:'Independent controllers use separate control authority after the agent runtime stops. Mission withdrawal, applicable task-credential revocation, service-session closure, runtime stop and reconciliation of an actually scheduled follow-up have separate outcomes. This story checks one covered route and records its result.',
  boundary:'A delivered report is not recalled. An unreachable controller stays unverified. Alex’s normal school account is not disabled. Completion issues no future mission or grant; the next task starts with a fresh agreement.',sources:['ssf','caep','leases','authzen']
 };
