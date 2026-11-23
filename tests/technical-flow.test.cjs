@@ -66,6 +66,31 @@ test('Alder Books uses the same route and CRM can deny or permit the read',()=>{
  assert.equal(approved.event.decision.result,'permit');
  assert.equal(approved.state.extensionAdded,true);
 });
+test('The CRM result compares an observed Alder Books refusal with the amended read',()=>{
+ const denied=act(feedback(),'try-extension');
+ const first=T.crmReadDecision(denied.state);
+ assert.equal(first.call,'customer.read(789)');
+ assert.equal(first.mission,'G-042 v1');
+ assert.equal(first.permit,false);
+ assert.match(first.reason,/outside the current mission/);
+ let amended=R.hydrate(denied.state,'agent');
+ for(const action of ['request-extension','resolve-extension','add-extension'])amended=run(amended,action);
+ const second=T.crmReadDecision(amended);
+ assert.equal(second.call,first.call);
+ assert.equal(second.mission,'G-042 v2');
+ assert.equal(second.permit,true);
+ assert.equal(second.earlierMission,first.mission);
+});
+test('The CRM result never displays an earlier refusal for a skipped or unrecorded attempt',()=>{
+ for(const previous of [feedback(),act(feedback(),'try-extension').state]){
+  for(const entry of previous.history)delete entry.missionVersion;
+  let amended=previous;
+  for(const action of ['request-extension','resolve-extension','add-extension'])amended=run(amended,action);
+  assert.equal(T.crmReadDecision(amended).earlierMission,null);
+ }
+ const beforeCall=act(R.fresh(),'collect-source');
+ assert.equal(T.crmReadDecision(beforeCall.state),null);
+});
 for(const control of ['mission','principal','agent','resource']){
  test(`source read rechecks the current ${control} record limit before fetching`,()=>{
   const s=start();(control==='mission'?s.mission:s.authority[control]).records=['123'];const before=s.fileRevision,r=act(s,'collect-source');

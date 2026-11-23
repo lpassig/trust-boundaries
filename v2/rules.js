@@ -227,7 +227,9 @@ const StoryRules = (() => {
    if(!teen&&operation==='customer.read'&&decision)e.request.tool_route='crm-mcp-gateway';
    if(!teen&&action==='try-private'&&decision)e.request.runtime_result={boundary:'NVIDIA OpenShell',destination:'CRM',result:'reachable'};
    if(decision)e.decision={...decision,request_id:id,decision_id:'example-decision-'+(s.history.length+1)};
-   s.last=e;s.history.push({action,kind:e.kind,topic:e.topic});
+   const entry={action,kind:e.kind,topic:e.topic};
+   if(!teen&&action==='try-extension'&&decision?.result==='deny')entry.missionVersion=e.request.mission_version;
+   s.last=e;s.history.push(entry);
   }
   return {state:s,event:e};
  }

@@ -85,6 +85,16 @@ function bind(){for(const[id,callback]of button.bindings){const el=document.getE
 function choices(items){return `<div class="choices">${items.map(([title,detail,fn,style])=>button(title,fn,'choice '+(style||''),detail)).join('')}</div>`;}
 function show(title,body,label,noteKey){modal(title,body,label);bind();if(noteKey)showNote(noteKey);}
 function showReference(title,body,label){modal(title,body,label,true);bind();}
+function productDetails(title,entries){
+ const items=entries.map(([id,text])=>{
+  const p=productById(id);
+  return `<li><b>${esc(p.name)}</b> · ${esc(text)} <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">Documentation</a></li>`;
+ });
+ return `<details class="debrief"><summary>${esc(title)}</summary><ul class="route-list">${items.join('')}</ul></details>`;
+}
+function approvalProduct(){
+ return productDetails('IBM Verify and CIBA',[['verify','A configured CIBA flow can prompt Morgan on a separate device. The application binds the approval to the exact report revision and recipient. CRM checks that binding at send time.']]);
+}
 function showNote(key,event){
  const note=RequestTrace.note(key,mode,event);
  if(!note?.text||!dialog.open||dialog.classList.contains('is-reference'))return;
@@ -118,11 +128,13 @@ function showSavedReply(event){
  if(!event)return;
  if(isSchoolRecipientRefusal(event))return showSchoolRecipientRefusal(event);
  if(isRefusedShare(event))return showRefusedShare(event);
+ if(!teen()&&event.decision?.result==='deny'&&RequestTrace.crmReadDecision(state(),event))return showCrmReadRefusal(event);
  if(state().ended&&!state().finished)return showChecks();
  if(event.action==='collect-source'&&stage()==='source'&&state().source)return showSource();
  if(event.action==='add-extension'&&event.kind==='story'&&state().extensionAdded&&!state().delivered)return showExtensionRead(event);
  if(event.action==='inspect-request-source'&&!state().delivered&&!state().paused)return showRequestSource();
  if(event.action==='ask-helper-account'&&event.kind==='story')return showHelperAccountReply(event);
+ if(event.action==='proof-helper'&&event.kind==='story'&&state().proof)return showHelperResult();
  if(event.kind==='story'&&(event.action==='change-recipient'||!teen()&&['revise-file','wait-approval'].includes(event.action)))return showSend();
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
  show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
@@ -135,6 +147,7 @@ function perform(action,payload={}){
  }
  if(isSchoolRecipientRefusal(ev))showSchoolRecipientRefusal(ev);
  else if(isRefusedShare(ev))showRefusedShare(ev);
+ else if(!teen()&&ev?.decision?.result==='deny'&&RequestTrace.crmReadDecision(state(),ev))showCrmReadRefusal(ev);
  else if(ev?.kind==='blocked'||ev?.kind==='refused'){
   const continuation=state().paused?showParent:action==='try-private'?showPrivate:action==='try-extension'?showExtension:nextMove;
   const label=action==='try-private'?(teen()?'Back to Jamie’s message':'Back to the source note'):'Continue';
@@ -431,7 +444,7 @@ function showParent(){speakingObject=teen()?'parent':'missionControl';
 function showFinalApproval(){
  const s=state(),e=episode();
  speakingObject='reviewer';
- show('Ask Morgan to approve the final copy.',`<div class="receipt"><b>${esc(e.file)} · revision ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${esc(customerNames(StoryRules.reportRecords(s)))} · summary only</p><p><b>Follow-up sentence</b><br>${esc(StoryRules.reportFollowUp(s))}</p></div>${choices([
+ show('Ask Morgan to approve the final copy.',`${approvalProduct()}<div class="receipt"><b>${esc(e.file)} · revision ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${esc(customerNames(StoryRules.reportRecords(s)))} · summary only</p><p><b>Follow-up sentence</b><br>${esc(StoryRules.reportFollowUp(s))}</p></div>${choices([
   ['Ask Morgan to approve this copy','Morgan approves a particular file and destination.',()=>perform('approve'),'good'],
   ['Inspect the report again','Check its current content and sources.',showDraft]
  ])}`,undefined,'approval-preview');
@@ -461,13 +474,34 @@ function showCrmRead(action='collect-source'){
  speakingObject=first?'source':'extra';
  const records=first?'Harbor Bikes and Pine Studio':'Alder Books';
  const steps=[
-  ['Nova’s MCP client','Sends the call from OpenShell.'],
-  ['MCP gateway','Checks and forwards the call.'],
-  ['CRM MCP server','Runs the tool by calling CRM.'],
-  ['Customer records (CRM)','Checks which records it can return.']
+  ['Nova’s MCP client','Sends the call over the route allowed by NVIDIA OpenShell.'],
+  ['Configured MCP gateway','Checks and forwards the tool call.'],
+  ['CRM MCP server','Exposes the read tool and calls CRM.'],
+  ['CRM','Enforces access to the requested records.']
  ];
+ const products=productDetails('Why these products are in the read path',[
+  ['iai','Identifies Nova and supplies the context that it is acting under Priya’s delegation. The customer mission supplies the approved account list.'],
+  ['openshell','Limits where the running agent can connect. The CRM route is allowed here.'],
+  ['vault','In the brokered setup, the connector can get a short-lived credential without exposing it to Nova. CRM still checks which records the request may read.']
+ ]);
  show('Request '+records,
-  `<p>Nova’s workspace sends this request through four steps.</p><ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol><div class="actions">${button(first?'Request the two records':'Request Alder Books',()=>perform(action))}${button('Inspect policy roles',()=>showPolicyConsole(()=>showCrmRead(action)),'secondary')}${button(first?'Back to the draft':'Back to the optional request',first?showDraft:()=>showExtension(),'secondary')}</div>`,undefined,'read-preview');
+  `${products}<ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol><div class="actions">${button(first?'Request the two records':'Request Alder Books',()=>perform(action))}${button('Inspect policy roles',()=>showPolicyConsole(()=>showCrmRead(action)),'secondary')}${button(first?'Back to the draft':'Back to the optional request',first?showDraft:()=>showExtension(),'secondary')}</div>`,first?'FIRST RECORD READ':'OPTIONAL ACCOUNT READ','read-preview');
+}
+
+function crmDecisionSummary(event){
+ const outcome=RequestTrace.crmReadDecision(state(),event);
+ if(!outcome)return '';
+ const {call,mission,permit,reason,earlierMission}=outcome;
+ return `<section class="crm-decision" aria-label="CRM decision">
+  <p><b>CRM PEP</b> observed <code>${esc(call)}</code>. <b>PIP</b> supplied ${esc(mission)} and current policy facts.</p>
+  <p><b>PDP</b> ${permit?'allowed':'denied'} the read. <b>CRM PEP</b> ${permit?'returned the requested '+(event.action==='collect-source'?'records.':'record.'):'returned no data.'}</p>
+  ${earlierMission?`<p>Same read · ${esc(earlierMission)} denied → ${esc(mission)} allowed.</p>`:event.action==='try-extension'?'':`<p>${esc(reason)}</p>`}
+ </section>`;
+}
+function showCrmReadRefusal(event){
+ speakingObject='laptop';
+ const next=event.action==='collect-source'?showSourceTool:()=>showExtension();
+ show(event.title,`${crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">${button('Continue',next)}${button('Follow this request',openTrace,'secondary')}</div>`,'A PERMISSION CHECK');
 }
 
 function showSource(){
@@ -476,7 +510,7 @@ function showSource(){
  speakingObject='source';
  const lines=teen()?e.draftLines:e.draftLines.slice(1,3);
  show(teen()?'The museum page confirms your dates.':'CRM returned the two approved records.',
-  `<div class="paper"><h3>${teen()?'Riverside Museum · The railway comes to town':'Customer records for tomorrow’s meeting'}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div>${choices([
+  `${!teen()&&s.last?.action==='collect-source'?crmDecisionSummary(s.last):''}<div class="paper"><h3>${teen()?'Riverside Museum · The railway comes to town':'Customer records for tomorrow’s meeting'}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div>${choices([
    ...(!s.caption&&!s.delivered?[['Add this source',teen()?'Put the museum page title under your timeline.':'Credit Harbor Bikes and Pine Studio below the handover.',()=>perform('attach-source',{source:'original'}),'good']]:[]),
    [s.delivered?'See the delivery receipt':'Back to the draft','',s.delivered?showDelivery:showDraft],
    ...(!teen()&&s.last?.action==='collect-source'?[['Follow the CRM request','See which services handled the read.',openTrace]]:[])
@@ -531,7 +565,7 @@ function showDecisionResult(event){
 function showExtensionRead(event){
  speakingObject='extra';
  const title=teen()?state().extraSource==='museum-photo'?'The museum photo is in your timeline.':'YouTube · Our station’s story':'CRM returned the Alder Books record';
- show(title,`<p>${esc(event.text)}</p><div class="actions">${button('Back to the other requests',showChanges)}${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}</div>`,undefined,'add-extension');
+ show(title,`${teen()?'':crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">${button('Back to the other requests',showChanges)}${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}</div>`,undefined,'add-extension');
 }
 function showDraftReview(){speakingObject='laptop';
  const s=state(),e=episode();if(!s.caption)return showDraft();if(s.message)return showChanges();
@@ -539,10 +573,18 @@ function showDraftReview(){speakingObject='laptop';
  if(!teen()&&!matched)speakingObject='reviewer';
  const title=teen()?'Send a first draft for feedback.':matched?'Send the draft Morgan approved.':'Ask Morgan to approve the draft.';
  const lines=draftLines(s,e);
- show(title,`<p>${teen()?'Your teacher has not seen this file yet. This sends a draft for feedback; you will submit the final version after responding to the replies.':matched?'Morgan approved this copy for the work inbox. The final copy will get its own approval.':'Send Morgan an approval request for this exact file and destination.'}</p><div class="paper"><p class="eyebrow">REVIEW COPY · ${teen()?'VERSION':'REVISION'} ${s.fileRevision}</p><h3>${esc(teen()&&!s.proof?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}<p class="source-line">${esc(e.caption)}</p></div><div class="receipt"><b>${esc(e.file)} · ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${teen()?'Your own timeline, with its museum source.':esc(customerNames(StoryRules.reportRecords(s)))+' · Summary only'}</p>${matched?`<p>Recorded one-use review-copy approval · revision ${a.revision}</p>`:''}</div>${choices([[teen()?'Send draft to my teacher':matched?'Send the approved review copy':'Ask Morgan to approve this draft',teen()?'Send it to Ms Patel in the school app.':matched?'The CRM checks this draft, records, recipient and current authority.':'Morgan sees the exact draft and its destination.',()=>perform(teen()||matched?'send-draft':'approve-draft'),'good'],['Back to the draft','Nothing is sent by opening this preview.',showDraft]])}`,teen()?'FIRST DRAFT · NOT FINAL SUBMISSION':'FIRST CONFIDENTIAL SHARE',matched?'approve-draft':'approval-preview');
+ show(title,`<p>${teen()?'Your teacher has not seen this file yet. This sends a draft for feedback; you will submit the final version after responding to the replies.':matched?'Morgan approved this copy for the work inbox. The final copy will get its own approval.':'Send Morgan an approval request for this exact file and destination.'}</p>${!teen()&&!matched?approvalProduct():''}<div class="paper"><p class="eyebrow">REVIEW COPY · ${teen()?'VERSION':'REVISION'} ${s.fileRevision}</p><h3>${esc(teen()&&!s.proof?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}<p class="source-line">${esc(e.caption)}</p></div><div class="receipt"><b>${esc(e.file)} · ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${teen()?'Your own timeline, with its museum source.':esc(customerNames(StoryRules.reportRecords(s)))+' · Summary only'}</p>${matched?`<p>Recorded one-use review-copy approval · revision ${a.revision}</p>`:''}</div>${choices([[teen()?'Send draft to my teacher':matched?'Send the approved review copy':'Ask Morgan to approve this draft',teen()?'Send it to Ms Patel in the school app.':matched?'The CRM checks this draft, records, recipient and current authority.':'Morgan sees the exact draft and its destination.',()=>perform(teen()||matched?'send-draft':'approve-draft'),'good'],['Back to the draft','Nothing is sent by opening this preview.',showDraft]])}`,teen()?'FIRST DRAFT · NOT FINAL SUBMISSION':'FIRST CONFIDENTIAL SHARE',matched?'approve-draft':'approval-preview');
 }
 function showDraftReceipt(){speakingObject='laptop';const s=state(),r=s.draftReview;show(teen()?'Your teacher has the draft.':'Morgan has the draft.',`<div class="receipt"><b>${esc(r.file)} · ${teen()?'version':'revision'} ${r.revision} sent for feedback</b><p class="address">${esc(r.to)}</p><p>${teen()?'The school app confirms draft delivery.':'The CRM confirms this exact, approved review copy. The one-use approval is consumed.'}</p></div><p>${teen()?'A little later, Ms Patel reads it and replies in the school inbox. Jamie forwards a message from the class chat. You’ll submit the final copy when you’re ready.':'Morgan asks for a shorter introduction. Priya sends news about one more account. An attachment uploaded by Luca also turns up in Customer records.'}</p><div class="actions">${button(teen()?'Read the replies on my phone':'Read the new messages',showChanges)}${button('Back to the room',close,'secondary')}</div>`,'DRAFT DELIVERY CONFIRMED','send-draft');}
-function showHelperResult(){speakingObject='helper';const s=state();show(teen()?'Sam has read this version.':'Pip has formatted this version.',`<p>${esc(s.last.text)}</p><p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');}
+function showHelperResult(){
+ speakingObject='helper';
+ const comparison=teen()
+  ?'<details class="debrief"><summary>See how Nova handles this</summary><p>Sam can read your timeline with his own account. Nova gives Pip just the handover to format. Pip’s own identity and formatting-only grant let it finish that file without signing in as Nova or reading CRM.</p></details>'
+  :productDetails('Why use IBM watsonx Orchestrate here?',[['orchestrate','In this deployment, it coordinates the handoff. Pip uses its own identity and a separate formatting-only grant for this report. The task gives Pip no CRM access or share permission.']]);
+ show(teen()?'Sam has read this version.':'Pip has formatted this version.',
+  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,
+  teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');
+}
 
 function showHelperAccountReply(event){
  const s=state();
@@ -738,10 +780,15 @@ function showChecks(){
  const confirmed=alex?'Your parent calls for dinner. Your phone is put away and Ms Patel has your project.':'Morgan has the handover. OpenShell stopped Nova’s workspace.';
  const signIn=alex&&routeChecked?'<div class="receipt"><b>School app</b><p>Sign in to open your project.</p></div>':'';
  const result=s.last?.topic===8&&s.last.action!=='close-pass'&&s.last.action!=='replay-containment'
-  ? `<div class="request-result"><b>Last check</b><p>${esc(s.last.text)}</p></div>`:'';
+  ? `<div class="request-result"><b>${s.last.action==='probe-session'?esc(s.last.title):'Last check'}</b><p>${esc(s.last.text)}</p></div>`:'';
+ const compare=alex&&routeChecked?'<details class="debrief"><summary>See how Nova checks sign-out</summary><p>Putting your phone away left the school tab open. In Nova’s mission, OpenShell stops the workspace, Vault retires the task credential, and CRM closes its own session. Nova’s closing checks try the old CRM route again to see what actually stopped.</p></details>':'';
+ const testOldSession=!alex&&c.controllerReachable&&!c.sessionClosed&&c.probeResult===null&&s.checks.includes('device');
+ const prompt=testOldSession?'<p>OpenShell has stopped. Would the old CRM session still answer a status check?</p>':'';
+ const options=testOldSession?[next,['Test the old CRM session now','Ask the controller to try a harmless status read before closing the session.',()=>perform('probe-session')]]:[next];
+ const signals=!alex&&routeChecked?productDetails('Where SSF and CAEP fit',[['antenna','Verify Antenna can exchange a CAEP session-revoked event over SSF. Configured receivers carry out their own controls. A CRM closure receipt and a repeat status check give separate evidence for the old route.']]):'';
  const layers=['pass','device','signin',...(s.queueScheduled||!alex?['queue']:[])];
  const details=`<details class="debrief"><summary>${alex?'What was checked?':'View closure details'}</summary><ul class="route-list">${layers.map(layer=>`<li><b>${esc(episode().checks[{pass:0,signin:1,device:2,queue:3}[layer]])}</b><br>${esc(checkText(layer))}</li>`).join('')}</ul><div class="actions">${button(alex?'Explore the sign-out checks':'Explore session and controller tests',showAccessPuzzle,'secondary')}${button(alex?'See what happened':'Follow the closure trace',openTrace,'secondary')}</div></details>`;
- show(title,`<p>${confirmed}</p>${signIn}${result}${details}${choices([next])}<div class="actions">${button('Back to the room',close,'secondary')}</div>`,alex?'BEFORE DINNER':'MISSION CLOSURE',speakingObject==='vaultControl'?'vault-close':'closure-preview');
+ show(title,`<p>${confirmed}</p>${prompt}${signIn}${result}${compare}${signals}${details}${choices(options)}<div class="actions">${button('Back to the room',close,'secondary')}</div>`,alex?'BEFORE DINNER':'MISSION CLOSURE',speakingObject==='vaultControl'?'vault-close':'closure-preview');
 }
 function showAccessPuzzle(){speakingObject='laptop';
  if(!state().ended)return showParent();const c=state().containment;
@@ -753,6 +800,7 @@ function novaDebrief(s){
  return '<ul class="route-list">'
   +'<li><b>Build</b><br>Nova started in an OpenShell workspace with a separate identity and scoped access to its sources.</li>'
   +'<li><b>Authorize</b><br>CRM checked the approved final copy for '+esc(customers)+'. The private notes stayed out.</li>'
+  +(s.extensionAdded?'':`<li><b>Original two-account task completed</b><br>${s.extensionOmitted?'The Alder Books amendment was approved. Nova left that record unread.':'The handover was complete with Harbor Bikes and Pine Studio.'}</li>`)
   +'<li><b>Resist</b><br>The mission and runtime stopped. The credential, CRM session and queue were checked separately. The delivered copy stayed with the reviewer.</li>'
   +'</ul><p class="sources"><a href="https://blog.iamidentity.ai/blog/ai-agent-not-a-secret-manager/" target="_blank" rel="noopener noreferrer">Credential custody</a> · <a href="https://blog.iamidentity.ai/blog/litellm-breach-standing-credentials/" target="_blank" rel="noopener noreferrer">Credential lifetime case study</a> · <a href="https://blog.iamidentity.ai/blog/agent-policy-lifecycle/" target="_blank" rel="noopener noreferrer">Policy review and drift</a></p>';
 }

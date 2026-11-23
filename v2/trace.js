@@ -255,6 +255,17 @@ const RequestTrace = (() => {
   const effect=event?effects[key==='shortcut'?'bypass-notes':key]?.[index]:'';
   return {title,text:detail||explanation||lessons[key]?.[index],sources:[source,additionalSource].filter(Boolean),effect};
  }
+ function crmReadDecision(s,event=s.last){
+  const r=event?.request,d=event?.decision;
+  if(r?.recordVersion!==3||r.operation!=='customer.read'||r.tool_route!=='crm-mcp-gateway'||
+    d?.pep!=='CRM resource PEP'||d.request_id!==r.request_id||!['permit','deny'].includes(d.result))return null;
+  const earlier=r.action==='add-extension'&&d.result==='permit'
+   ?s.history.findLast(entry=>entry.action==='try-extension'&&entry.kind==='refused'&&
+    Number.isInteger(entry.missionVersion)&&entry.missionVersion<r.mission_version)
+   :null;
+  return {call:`${r.operation}(${r.records.join(', ')})`,mission:`${r.mission_id} v${r.mission_version}`,
+   permit:d.result==='permit',reason:d.reason,earlierMission:earlier?`${r.mission_id} v${earlier.missionVersion}`:null};
+ }
  function build(s,mode){
   const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
   const recorded=r?.recordVersion===3,draftShare=a==='send-draft',share=a==='send'||draftShare;
@@ -371,6 +382,6 @@ const RequestTrace = (() => {
   if(['apply-minor','keep-minor','prepare','attach-source','proof-self','revise-file','change-recipient','wait-approval','decline-private'].includes(a))return model('The local decision leaves the task limits in place.','This content or preview step creates no new business authority.',[...context(),node('Current document',teen?'Project version':'Report revision','checked',`Revision ${s.fileRevision}. The current ${teen?'agreement':'mission'} stays at version ${m.version}.`),node('Share approval',teen?'School submission policy':'Exact action binding',s.approval?'context':'pending',teen?'Your own reviewed work can use the permitted school destination.':s.approval?`Recorded revision ${s.approval.revision}; current revision ${s.fileRevision}. A stale or expired approval cannot execute.`:'Any changed content must receive an appropriate current approval before the confidential share.'),node('External delivery','Result','not-reached','This step sends no file.')]);
   return model('A task starts with a request.','A request, agreement, document and delivery are separate story events.',[...context(),node('Current step','Local story application','checked',e.text),node('External delivery','Result','not-reached','This step sends no file.')]);
  }
- return {build,lesson,note};
+ return {build,lesson,note,crmReadDecision};
 })();
 if(typeof module!=='undefined')module.exports=RequestTrace;

@@ -17,6 +17,8 @@ Nova’s work order names Priya as task sponsor. The work inbox carries replies,
 
 The room shows a **Next** action above the scene. Players can use that button or the highlighted hotspot to advance. Other objects describe their role. Optional task choices appear within the relevant dialogue, and selected items still show their supported **Use here** targets.
 
+Nova’s CRM read results show the observed operation, mission version, policy decision and CRM outcome in the story. The Alder Books result compares the old and new mission versions when the player tried both reads. Expandable product notes appear at reads, approval, the helper handoff and closure. Alex’s proofread and sign-out results offer optional comparisons with the corresponding Nova scenes.
+
 ### Playable choices and outcomes
 
 Small edits update the document revision without changing mission authority. Nova’s genuine expansion requires independent clarification, a pending request, a matching authorized reply, a new recorded agreement/mission version, and a separate permitted resource read. Alex can take Ms Patel’s school-app suggestion straight to his parent; teacher clarification remains optional. The smaller task remains a valid route. Declined additions can be reconsidered, and an approved addition can be left unread. The report’s actual record set is distinct from the mission’s permitted set; exact sharing approval binds what is included. Small-edit choices can be changed before submission and invalidate older review when content changes. An approved expansion never overrides independent private-data rules.
@@ -57,7 +59,7 @@ Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compat
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, 12 dialogue and 38 technical-flow and two architecture tests bring the current game’s total to **179**.
+- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, 12 dialogue and 40 technical-flow and two architecture tests bring the current game’s total to **181**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

@@ -108,6 +108,10 @@ dialog #dialog-scroll{font-size:12px;color:var(--muted);margin:0 0 4px}
 .tool-route li{padding:7px 4px;color:var(--ink);font-size:14px}
 .tool-route li::marker{color:var(--accent);font-weight:750}
 .tool-route span{display:block;color:var(--muted);font-size:13px;line-height:1.4;margin-top:3px}
+.crm-decision{border-inline-start:3px solid var(--accent);padding:4px 12px;margin:10px 0 14px;background:#ffffff08}
+dialog:not(.is-reference) .crm-decision p{font-size:14px;line-height:1.45;margin:5px 0}
+dialog:not(.is-reference):has(.crm-decision) #dialog-body{max-height:min(36dvh,288px)}
+.crm-decision code{overflow-wrap:anywhere}
 @media(max-width:560px){
  .scene-speech{margin:12px 10px 8px;padding:15px;gap:10px}.scene-speech h2{font-size:21px}
  dialog:not(.is-reference){width:calc(100% - 20px);margin:14px 10px 12px;padding:14px}
