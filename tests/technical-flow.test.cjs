@@ -95,6 +95,22 @@ test('the worked buyer example builds a separate handoff, edited copy and closur
  assert.equal(example.containment.sessionClosed,true);
  assert.equal(example.containment.probeResult,'denied');
 });
+test('the buyer approval exercise refuses the old approval and sends the same edit only after reapproval',()=>{
+ const example=R.buyerExample({stopAtEdit:true});
+ const denied=act(example,'send');
+ assert.equal(denied.event.decision.result,'deny');
+ assert.equal(denied.state.delivered,false);
+ assert.equal(denied.event.request.approval_at_attempt.revision,example.fileRevision-1);
+ const preview=R.approvalPreview(denied.state,'final');
+ const approved=run(denied.state,'approve',{preview});
+ assert.equal(approved.delivered,false);
+ const sent=act(approved,'send');
+ assert.equal(sent.event.decision.result,'permit');
+ assert.equal(sent.state.delivered,true);
+ assert.equal(sent.event.request.revision,denied.event.request.revision);
+ assert.equal(sent.event.request.recipient,preview.to);
+ assert.equal(example.delivered,false);
+});
 test('under-the-hood notes describe the observed outcome without claiming execution after a denial',()=>{
  const s=start();s.authority.resource.records=['123'];
  const denied=act(s,'collect-source');

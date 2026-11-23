@@ -290,13 +290,14 @@ const StoryRules = (() => {
   if(s.reviewPending&&(!s.paused||s.reviewPending.generation!==s.generation||s.reviewPending.scope!==s.pass?.scope||s.reviewPending.missionVersion!==s.mission.version))return d;
   return s;
  }
- function buyerExample(){
+ function buyerExample({stopAtEdit=false}={}){
   const actions=[
    ['begin'],['read-brief'],['ask-pass',{scope:'task'}],['open'],['prepare'],['collect-source'],['attach-source'],
    ['approve-draft'],['send-draft'],['keep-minor'],['decline-extension'],['decline-private'],
-   ['proof-helper',{scope:'file',shareLogin:false}],['approve'],['revise-file'],['approve'],['send'],['close-pass'],
-   ['remediate',{control:'session'}],['remediate',{control:'credential'}],['probe-session']
+   ['proof-helper',{scope:'file',shareLogin:false}],['approve'],['revise-file']
   ];
+  if(!stopAtEdit)actions.push(['approve'],['send'],['close-pass'],['remediate',{control:'session'}],
+   ['remediate',{control:'credential'}],['probe-session']);
   return actions.reduce((s,[action,payload])=>act(s,'agent',action,payload).state,fresh());
  }
  return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportFollowUp,reportShare,approvalPreview,approvalMatches,alexExtra,buyerExample};

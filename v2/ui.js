@@ -425,7 +425,7 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
 
 function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='Back to the story',selected=null){
  const reopen=()=>showBuyerGuide(exit,exitLabel,selected);
- const productMap=()=>showProductMap(selected?.pilot.evidence,reopen);
+ const productMap=()=>showProductMap('',reopen);
  const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot&&!need.pilot.secondary);
  const choose=need=>showBuyerGuide(exit,exitLabel,need);
  const sources=need=>`<p class="sources">${need.sources.map(([name,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p>`;
@@ -436,33 +436,94 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
    <li><b>What your team owns</b><br>${esc(pilot.integration)}</li>
    <li><b>First pilot test</b><br>${esc(pilot.test)}</li></ul>
    <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}</div>
-   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}${button('Open the technical product map',productMap,'secondary')}</div>`,
+   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}${button('Open technical setup',()=>showBuyerSetup(selected,reopen),'secondary')}</div>`,
    'BUYER GUIDE');
  }
  const secondary=choices(NOVA_BUYER_NEEDS.filter(need=>need.pilot?.secondary).map(need=>[need.product,need.pilot.label,()=>choose(need)]));
  const other=NOVA_BUYER_NEEDS.filter(need=>!need.pilot).map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p>${sources(need)}</details>`).join('');
- showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>choose(need)]))}
+ showReference('What problem do you have today?',`${choices([
+   ...candidates.map(need=>[need.pilot.label,'',()=>choose(need)]),
+   ['Access still works after the job ends','Find which control to check first.',()=>showBuyerAccess(reopen)]
+  ])}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
   <div class="actions">${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
+function showBuyerSetup(need,back){
+ const product=productById(need.pilot.evidence);
+ showReference(`${product.name} technical setup`,`<div class="receipt"><b>What your team connects</b><p>${esc(need.pilot.integration)}</p></div>
+  <p>${esc(need.fit)}</p>${productCard(product,true)}
+  <div class="actions">${button('Back to the buyer card',back)}${button('Open the full technical product map',()=>showProductMap(product.id,()=>showBuyerSetup(need,back)),'secondary')}</div>`,
+  'TECHNICAL SETUP');
+}
+
+const accessChecks={
+ credential:{symptom:'The old credential opens a new connection',owner:'Credential issuer · HashiCorp Vault in this example',
+  check:'Revoke the credential’s lease and try to open one new connection with the old credential. Verify that the attempt is refused.',pilot:'vault'},
+ session:{symptom:'An already-open service session still responds',owner:'Service session owner · CRM in this example',
+  check:'Have CRM close that exact session, then try a harmless status read on the old route. A refusal verifies that route. An unavailable controller leaves it unverified.'},
+ workspace:{symptom:'The agent’s workspace is still running',owner:'Runtime operator · NVIDIA OpenShell in this example',
+  check:'Stop the named sandbox generation and verify the runtime reports that the workload stopped. Check queued work and service sessions separately.',pilot:'openshell'}
+};
+function showBuyerAccess(back,key=null){
+ if(!key)return showReference('What still works?',`${choices(Object.entries(accessChecks).map(([id,check])=>[check.symptom,'',()=>showBuyerAccess(back,id)]))}
+  <div class="actions">${button('Back to the buyer guide',back,'secondary')}</div>`,'ACCESS AFTER THE JOB');
+ const {symptom,owner,check,pilot}=accessChecks[key];
+ const reopen=()=>showBuyerAccess(back,key);
+ const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
+ const openPilot=need?button(`Open the ${need.product} pilot`,()=>showBuyerGuide(reopen,'Back to the access check',need),key==='credential'?'primary':'secondary'):'';
+ const evidence=key==='credential'?'':button('See the stop and retest evidence',()=>showRuntimeIncident(reopen,null,'Back to the access check'));
+ showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li></ul>
+  <div class="actions">${evidence}${openPilot}
+  ${button('Check another symptom',()=>showBuyerAccess(back),'secondary')}</div>`,'ACCESS AFTER THE JOB');
+}
 function showBuyerEvidence(product,back){
  if(product==='openshell')return showRuntimeExercise(back);
  if(product==='antenna')return showBuyerSignal(back);
- const read=s=>['iai','orchestrate'].includes(product)?s.helperReceipts.at(-1):product==='verify'
-  ?s.history.findLast(entry=>entry?.approvalComparison)?.approvalComparison
-  :s.sourceLease&&{lease:s.sourceLease,containment:s.containment};
+ if(product==='verify')return showBuyerApprovalEvidence(back);
+ const read=s=>product==='vault'?s.sourceLease&&{lease:s.sourceLease,containment:s.containment}:s.helperReceipts.at(-1);
  const recorded=read(states.agent);
  const evidence=recorded||read(StoryRules.buyerExample());
  const origin=recorded?'Recorded in your Nova playthrough.':'Worked example from Nova’s story.';
  if(product==='iai')return showHelperAudit(evidence,null,back,origin);
  if(product==='orchestrate')return showBuyerHandoff(evidence,origin,back);
- if(product==='vault')return showBuyerVault(evidence,origin,back);
- const {approved,current}=evidence;
- showReference('What changed after Morgan approved?',`<p>${origin}</p>
+ return showBuyerVault(evidence,origin,back);
+}
+function showBuyerApprovalEvidence(back){
+ const recorded=states.agent.history.findLast(entry=>entry?.approvalComparison)?.approvalComparison;
+ if(!recorded)return showBuyerApproval(back);
+ const {approved,current}=recorded;
+ showReference('What changed after Morgan approved?',`<p>Recorded in your Nova playthrough.</p>
   ${shareWording(approved,current,'Edited')}${shareComparison(approved,current,'Edited copy')}
   <p>IBM Verify can authenticate Morgan on a separate device. The application ties the approval to the original copy. CRM needs a matching approval before sending the revised copy.</p>
-  <div class="actions">${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
+  <div class="actions">${button('Run the approval test',()=>showBuyerApproval(back))}${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
+}
+function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true})){
+ const {approved,current}=trial.history.findLast(entry=>entry.approvalComparison).approvalComparison;
+ const last=trial.last;
+ const advance=(action,payload)=>showBuyerApproval(back,StoryRules.act(trial,'agent',action,payload).state);
+ let title='What changed after Morgan approved?';
+ let evidence=shareWording(approved,current,'Edited')+shareComparison(approved,current,'Edited copy');
+ let next;
+ if(trial.delivered){
+  title='CRM delivered the edited copy';
+  evidence=`<div class="receipt"><b>CRM delivery confirmed</b><p>${esc(last.request.file)} · revision ${esc(last.request.revision)}</p><p>To ${esc(last.request.recipient)}</p><p>${esc(last.decision.reason)}</p></div>`;
+  next=button('Replay the approval test',()=>showBuyerApproval(back),'secondary');
+ }else if(last.action==='approve'){
+  title='Morgan approved the edited copy';
+  evidence=`<div class="receipt"><b>Revision ${esc(trial.approval.revision)} approved</b><p>To ${esc(trial.approval.to)}</p><p>CRM still checks the actual send.</p></div>`;
+  next=button('Retry the edited send',()=>advance('send'));
+ }else if(last.action==='send'){
+  title='CRM refused the edited send';
+  evidence=`<div class="receipt"><b>Nothing was delivered</b><p>${esc(last.decision.reason)}</p><p>CRM saw revision ${esc(last.request.revision)}. The approval named revision ${esc(last.request.approval_at_attempt.revision)}.</p></div>`+evidence;
+  const preview=StoryRules.approvalPreview(trial,'final');
+  next=button('Reapprove the edited copy',()=>showMorganRequest(preview,()=>advance('approve',{preview}),()=>showBuyerApproval(back,trial)));
+ }else{
+  next=button('Try the edited send',()=>advance('send'));
+ }
+ showReference(title,`<p>Worked example from Nova’s story.</p>${evidence}
+  <p>IBM Verify can authenticate Morgan on a separate device. The application records which copy Morgan approved, and CRM checks that approval before sending.</p>
+  <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
 }
 function showBuyerVault({lease,containment},origin,back){
  const vault=containment?.credentialRevoked?'Lease revoked':'Revocation pending';
@@ -606,14 +667,17 @@ function showParent(){speakingObject=teen()?'parent':'missionControl';
 function showFinalApproval(){return showMorganApproval('final',showDraft);}
 function showMorganApproval(purpose,back){
  const preview=StoryRules.approvalPreview(state(),purpose);
- const draft=purpose==='draft-review';
+ showMorganRequest(preview,()=>perform(purpose==='draft-review'?'approve-draft':'approve',{preview}),back);
+}
+function showMorganRequest(preview,approve,back){
+ const draft=preview.purpose==='draft-review';
  showReference('Morgan’s approval request',`<div class="receipt">
   <b>${draft?'Review copy':'Final delivery'} · ${esc(preview.file)} · revision ${preview.revision}</b>
   <p>To <span class="address">${esc(preview.to)}</span></p>
   <p><b>Follow-up sentence</b><br>${esc(preview.followUpSentence)}</p>
   <p>${esc(customerNames(preview.records))} · summary only</p>
  </div><p>With IBM Verify and CIBA configured, Morgan can authenticate and respond on a separate device. The application binds that response to this copy and destination. CRM checks the actual send.</p>
- <div class="actions">${button('Approve as Morgan',()=>perform(draft?'approve-draft':'approve',{preview}))}${button('Back without approving',back,'secondary')}</div>`,
+ <div class="actions">${button('Approve as Morgan',approve)}${button('Back without approving',back,'secondary')}</div>`,
  'SIMULATED VIEW ON MORGAN’S DEVICE');
 }
 function showWorkspace(){
@@ -760,7 +824,8 @@ function showSupervisorFailure(back,status='frozen'){
   ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
-function showRuntimeIncident(back,crmReachable=null){
+function showRuntimeIncident(back,crmReachable=null,backLabel='Back to runtime and containment'){
+ const check=reachable=>showRuntimeIncident(back,reachable,backLabel);
  const evidence=crmReachable===null?null:DecisionLab.incidentStatus(crmReachable);
  const rows=evidence?[
   ['Customer mission service','Mission withdrawn'],['OpenShell','Sandbox generation S-04 stopped'],
@@ -771,9 +836,9 @@ function showRuntimeIncident(back,crmReachable=null){
   ${evidence?`<div class="receipt"><b>${evidence.verified?'Containment verified for this tested route':'Partial containment'}</b><p>${evidence.verified?'The independent retest refused the old route.':'The workload stopped, but CRM did not confirm closure. Keep the incident open.'}</p></div>
   <ul class="route-list">${rows.map(([owner,result])=>`<li><b>${esc(owner)}</b><br>${esc(result)}</li>`).join('')}</ul>
   <p>Review any completed or in-flight work separately. A completed delivery stays delivered.</p>`:''}
-  <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>showRuntimeIncident(back,true))}${button('Simulate CRM being unreachable',()=>showRuntimeIncident(back,false),'secondary')}`
-   :evidence.verified?button('Replay the incident check',()=>showRuntimeIncident(back),'secondary'):button('Restore CRM contact and verify',()=>showRuntimeIncident(back,true))}
-  ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+  <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>check(true))}${button('Simulate CRM being unreachable',()=>check(false),'secondary')}`
+   :evidence.verified?button('Replay the incident check',()=>check(null),'secondary'):button('Restore CRM contact and verify',()=>check(true))}
+  ${button(backLabel,back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
 function showReadComparison(pair,back){

@@ -265,7 +265,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Verify',
     fit:'Evaluate it when an agent needs someone to review a sensitive request on a separate device.',
     example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
-    pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Compare Morgan’s approved and edited copies',
+    pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Test the old approval',
       outcome:'Morgan can review this send on a separate device. IBM Verify can confirm Morgan’s identity and collect the response.',
       integration:'Connect your application to IBM Verify with CIBA. Your application links the response to the exact document and recipient. CRM checks that link when sending.',
       test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.'},
@@ -276,10 +276,10 @@ const NOVA_BUYER_NEEDS = [
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
-    pilot:{label:'Our connector password stays active after jobs end',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
+    pilot:{label:'Our connector uses a long-lived password',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
       outcome:'Give the data connector a short-lived credential for the job. Vault issues it and can revoke it when the work ends.',
       integration:'Check support for your connector, target, and selected Vault secrets engine. Configure credential access in Vault and verify that CRM can close its existing session separately.',
-      test:'Read with a short-lived lease and revoke it. Verify the same lease can no longer open a connection. Close and retest the old CRM session separately.'},
+      test:'Read with a short-lived credential and revoke its lease. Verify the old credential can no longer open a connection. Close and retest the old CRM session separately.'},
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
