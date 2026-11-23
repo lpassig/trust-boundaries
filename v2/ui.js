@@ -44,6 +44,7 @@ function modal(title,body,label='LOOK CLOSER',reference=false){
  if(!dialog.open||!dialog.contains(document.activeElement))focusReturn=document.activeElement;
  if(dialog.open&&dialog.classList.contains('is-reference')!==reference)dialog.close();
  dialog.classList.toggle('is-reference',reference);
+ dialog.classList.toggle('is-architecture',label==='REFERENCE ARCHITECTURE');
  $('#speech-source-row').hidden=reference;
  $('#dialog-actions').innerHTML='';
  const source=StoryInteractions.speechSource(mode,speakingObject);
@@ -168,6 +169,70 @@ function renderProducts(){
  $$('[data-product]').forEach(b=>b.onclick=()=>showProductMap(b.dataset.product));
 }
 function productCard(product,open=false){return `<details class="product-card" ${open?'open':''}><summary><b>${esc(product.name)}</b><span>${esc(product.role)}</span></summary><p class="product-status">${esc(product.status)}</p><p>${esc(product.how)}</p><p><b>Boundary:</b> ${esc(product.limit)}</p><div class="protocol-tags">${product.standards.map(s=>`<span>${esc(s)}</span>`).join('')}</div><p class="sources"><a href="${product.url}" target="_blank" rel="noopener noreferrer">${esc(product.sourceLabel||product.name+' documentation')}</a></p></details>`;}
+const architectureViews = [
+ ['map','Product map'],
+ ['sequences','Request sequences'],
+ ['threats','Threat coverage']
+];
+
+function architectureComponentName(id){
+ const component=ArchitectureReference.components[id];
+ return component.name||productById(component.product).name;
+}
+
+function architectureMap(openId){
+ const {groups,components}=ArchitectureReference;
+ return `<div class="architecture-map">${groups.map(([title,ids])=>`<section class="architecture-group">
+  <h3>${esc(title)}</h3><div class="architecture-nodes">${ids.map(id=>{
+   const entry=components[id],product=entry.product&&productById(entry.product);
+   const reference=product?`<p class="sources"><a href="${product.url}" target="_blank" rel="noopener noreferrer">${esc(product.sourceLabel||product.name+' reference')}</a></p>`:'';
+   return `<details class="architecture-node" data-architecture-node="${id}" ${id===openId?'open':''}><summary>
+    <strong>${esc(architectureComponentName(id))}</strong><small>${esc(entry.kind)}</small>
+   </summary><p>${esc(entry.summary)}</p>${product?`<p>${esc(product.limit)}</p>${reference}`:`<p>${esc(entry.detail)}</p>`}</details>`;
+  }).join('')}</div></section>`).join('')}</div>
+  <p class="small-print">This example combines product capabilities with customer integrations. The CRM and current work order supply the business rules.</p><p class="sources"><a href="https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html" target="_blank" rel="noopener noreferrer">NVIDIA Secure Agent Workspace reference design</a></p>`;
+}
+
+function architectureFlow(flowId){
+ const {flows}=ArchitectureReference,flow=flows[flowId];
+ return `<label for="architecture-flow">Choose a request</label>
+  <select id="architecture-flow">${Object.entries(flows).map(([id,item])=>`<option value="${id}" ${id===flowId?'selected':''}>${esc(item.title)}</option>`).join('')}</select>
+  <p>${esc(flow.premise)}</p><ol class="architecture-steps">${flow.steps.map(([id,text])=>`<li>
+   <button class="secondary" data-architecture-component="${id}">${esc(architectureComponentName(id))}</button><p>${esc(text)}</p>
+  </li>`).join('')}</ol><div class="receipt"><b>Outcome</b><p>${esc(flow.result)}</p></div>`;
+}
+
+function architectureThreats(){
+ const {threats,outsideCoverage}=ArchitectureReference;
+ return `<p>These examples pair a player choice with the control that responds.</p>
+  <div class="architecture-threats">${threats.map(item=>`<details class="product-card"><summary><b>${esc(item.title)}</b></summary>
+   <dl><dt>Alex</dt><dd>${esc(item.alex)}</dd><dt>Nova</dt><dd>${esc(item.nova)}</dd><dt>What enforces it</dt><dd>${esc(item.control)}</dd></dl>
+   <button class="secondary" data-architecture-flow="${item.flow}">Follow the technical sequence</button>
+  </details>`).join('')}</div><p class="small-print">${esc(outsideCoverage)}</p>`;
+}
+
+function showArchitecture(view='map',flowId='read',componentId=null,focusControl=false){
+ const {flows}=ArchitectureReference;
+ if(!flows[flowId])flowId='read';
+ const body=view==='sequences'?architectureFlow(flowId):view==='threats'?architectureThreats():architectureMap(componentId);
+ showReference('Explore the architecture',
+  `<p>See who sets the task, what each product does and where a request is allowed or stopped. Explore in any order.</p>
+  <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
+  ${body}<div class="actions">${button('Back to the story',()=>state().started?close():showIntro(),'secondary')}</div>`,
+  'REFERENCE ARCHITECTURE');
+ $$('[data-architecture-view]').forEach(control=>control.onclick=()=>showArchitecture(control.dataset.architectureView,flowId,null,true));
+ $$('[data-architecture-component]').forEach(control=>control.onclick=()=>showArchitecture('map',flowId,control.dataset.architectureComponent));
+ $$('[data-architecture-flow]').forEach(control=>control.onclick=()=>showArchitecture('sequences',control.dataset.architectureFlow,null,true));
+ const select=$('#architecture-flow');
+ if(select)select.onchange=()=>showArchitecture('sequences',select.value,null,true);
+ if(componentId){
+  const node=$(`[data-architecture-node="${componentId}"] > summary`);
+  node?.focus();
+ }else if(focusControl){
+  (select||$('[data-architecture-view][aria-pressed="true"]'))?.focus({preventScroll:true});
+ }
+}
+
 function showBuyerGuide(fromEnding=false){
  if(teen())return;
  const cards=NOVA_BUYER_NEEDS.map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p><p class="sources">${need.sources.map(([name,url])=>`<a href="${url}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p></details>`).join('');
@@ -190,7 +255,7 @@ function showCredential(){
  showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.opened?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.opened?'A scoped, short-lived credential is modeled for the approved CRM path.':'Open the approved runtime path before a credential is modeled in the story.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Who does what?',()=>showProductMap('vault'),'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
 }
 
-function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'approval':case'dinner':case'finish':case'paused':return showParent();case'open':return showPhone();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
+function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'approval':case'dinner':case'finish':return showParent();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showPhone();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
 function interact(key){speakingObject=key;if(!state().started)return showIntro();if(selected)return useItem(key);return ({parent:showParent,phone:showPhone,laptop:showLaptop,brief:showBrief,notebook:showNotebook,helper:showHelper,changes:showChanges})[StoryInteractions.objectView(state(),mode,key)]?.();}
 function useItem(key){
  const use=heldUse();
@@ -200,11 +265,11 @@ function useItem(key){
  return ({parent:showParent,credential:showCredential,draft:showDraft,send:showSend,draftReview:showDraftReview,helper:showHelper,changes:showChanges})[use.routes?.[key]||use.route]?.();
 }
 
-function showIntro(){const e=episode();showReference(e.title,`<p class="tagline">${esc(e.tag)}</p><p>${esc(e.intro)}</p><div class="intro-facts"><span>${teen()?'Start with an unfinished project':'Start with a fresh request'}</span><span>${teen()?'Choose what to add':'Choose how the job grows'}</span><span>No countdown</span><span>Saved as you play</span></div>${choices([[teen()?'Step into Alex’s room':'Enter Nova’s workspace','Read the new request and agree on a plan.',()=>perform('begin'),'good'],['How to play','A few controls, then into the story.',showGuide],...(!teen()?[['Compare products','Find which control solves your problem.',()=>showBuyerGuide()]]:[])])}<p class="small-print">Fictional story. No real messages, accounts or security services are connected.</p>`,e.eyebrow);}
+function showIntro(){const e=episode();showReference(e.title,`<p class="tagline">${esc(e.tag)}</p><p>${esc(e.intro)}</p><div class="intro-facts"><span>${teen()?'Start with an unfinished project':'Start with a fresh request'}</span><span>${teen()?'Choose what to add':'Choose how the job grows'}</span><span>No countdown</span><span>Saved as you play</span></div>${choices([[teen()?'Step into Alex’s room':'Enter Nova’s workspace','Read the new request and agree on a plan.',()=>perform('begin'),'good'],['How to play','A few controls, then into the story.',showGuide],['Explore architecture','Browse products, request sequences and threats.',()=>showArchitecture()],...(!teen()?[['Compare products','Find which control solves your problem.',()=>showBuyerGuide()]]:[])])}<p class="small-print">Fictional story. No real messages, accounts or security services are connected.</p>`,e.eyebrow);}
 function showBrief(){speakingObject='brief';if(!state().started)return showIntro();if(!state().brief)perform('read-brief');const s=state(),e=episode();show(e.briefTitle,`<div class="paper"><p class="eyebrow">${s.pass?'THE TASK YOU AGREED':'A NEW REQUEST'}</p><h3>${esc(e.briefTitle)}</h3><p>${esc(e.brief)}</p></div>${s.mission?`<p>${teen()?'Your current app agreement':'Customer mission '+esc(s.mission.id)} · ${teen()?'version':'mission version'} ${s.mission.version}. ${s.extensionStatus==='approved'?(teen()?'Your parent also agreed to '+StoryRules.alexExtra(s).extraAgreement+'.':'Customer 789 has been added.'):''}</p>`:`<p>${teen()?'You have not agreed on phone apps for this homework yet.':'No task mission or tool access has been issued yet.'}</p>`}<div class="actions">${button(s.pass?'Back to my next step':teen()?'Ask about the apps I need':'Talk to Priya about the handover',s.pass?nextMove:showParent)}${button('Back to the room',close,'secondary')}</div>`,teen()?'TEACHER’S ASSIGNMENT':'SPONSOR’S REQUEST');}
 function showParent(){speakingObject='parent';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
- if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Read the sponsor’s reply'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW');
+ if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Hear from Priya'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW');
  if(!s.pass)return show(teen()?'“Which apps does the project need?”':'“Let’s agree on the job.”',`<p>${teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':'“Start with Harbor Bikes and Pine Studio,” Priya says. “Morgan needs one page for tomorrow.”'}</p>${choices([[teen()?'School app and museum website until dinner':'Agree on the two accounts',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority);
  if(s.ended){if(s.checks.length<4)return showChecks();return show(teen()?'“What’s finished?”':'Review this task’s outcome.',`<p>${teen()?'“Sent to Ms Patel, signed out of the laptop, and phone put away,” you say. “Can I set the table?”':'The approved report arrived. This task’s authority, credential, session, workload and queue have their own evidence.'}</p>${choices([[teen()?'Finish the evening':'Finish this mission',teen()?'Put the laptop away and head to the table.':'No future task is authorized by closing this one.',()=>perform('finish'),'good']])}`,e.authority);}
  if(s.delivered)return show(teen()?'“Dinner is ready.”':'“Thanks. I have the handover.”',`<p>${teen()?'You can jot down that the project is sent. Then sign out of the school tab and join your parent for dinner.':'You can keep a sourced note or queue a receipt-only follow-up. Then close the mission and the service session opened at the start.'}</p>${s.queueScheduled?'<div class="receipt"><b>One chosen follow-up is waiting</b><p>It has no attachment. Check or cancel it when closing the task.</p></div>':''}${choices([[teen()?'Put my phone away and finish up':'Close this mission',teen()?'Check the family laptop before heading to dinner.':'Check which connections still work after the job stops.',()=>perform('close-pass'),'good'],...(!s.queueScheduled&&!teen()?[[teen()?'Schedule a reminder for my teacher':'Queue one receipt follow-up','Optional, same recipient, no attachment. It will be visible in the closing checks.',()=>perform('schedule-followup')]]:[]),...(!s.notes.length?[[teen()?'Keep a note for tomorrow':'Save sourced task context',teen()?'Keep the submission receipt with a short note.':'Optional. Keep delivery provenance with the task note.',()=>perform('write-note')]]:[])])}${teen()&&!s.queueScheduled?`<details class="debrief"><summary>Optional: what if a message is still waiting?</summary><p>This extra example queues a receipt-only follow-up, so you can see why a waiting send needs its own closing check.</p><div class="actions">${button('Try a waiting-message example',()=>perform('schedule-followup'),'secondary')}</div></details>`:''}`,e.authority);
@@ -306,7 +371,7 @@ function showPrivate(){
  speakingObject=teen()?'phone':'brief';
  const origin=teen()
   ? '<p class="eyebrow">JAMIE · CLASS GROUP CHAT</p><p>“Ms Patel wants the whole group’s planning notes too. Can you attach them?”</p>'
-  : '<p class="eyebrow">CUSTOMER RECORDS · TEMPLATE FOOTER</p><blockquote>'+esc(e.message)+'</blockquote>';
+  : '<p class="eyebrow">CUSTOMER RECORDS · UPLOADED DOCUMENT</p><blockquote>'+esc(e.message)+'</blockquote>';
  const examined=s.discoveries.includes('request-source');
  const options=[];
  if(!s.privateResolved)options.push(
@@ -325,11 +390,11 @@ function showRequestSource(){
  speakingObject=teen()?'phone':'brief';
  const origin=teen()
   ?'<h3>Forwarded in the group chat</h3><p>“Ms Patel: Please attach the group’s notes.” Jamie shared this message. It did not arrive in the teacher’s school-app conversation.</p>'
-  :'<h3>In the CRM source document</h3><p>The template footer asks for the private meeting notes. It is text attached to the customer records.</p>';
+  :'<h3>In the CRM source document</h3><p>An outside contact supplied this document. Its footer asks Nova to attach the private meeting notes.</p>';
  const authority=teen()
   ?'<h3>Ms Patel’s assignment in the school app</h3><p>“Send me your own railway timeline and credit your source.”</p>'
   :'<h3>Priya’s current work order</h3><p>Share the handover with Morgan. Keep the private meeting notes in CRM.</p>';
- const outcome=teen()?'The group chat used her name. Ms Patel confirms in the school app that the forwarded request didn’t come from her.':'The source supplies facts for the handover. Priya’s work order sets what Nova may share.';
+ const outcome=teen()?'The group chat used her name. Ms Patel confirms in the school app that the forwarded request didn’t come from her.':'The document came through the customer records. Priya’s work order sets what Nova may share.';
  const actions=s.privateResolved?[['Back to the requests','',showChanges,'good']]:[
   [teen()?'Keep just my timeline':'Keep just the handover','Leave the notes where they are.',()=>perform('decline-private'),'good'],
   [teen()?'Try attaching the notes':'Try the attachment','See how the app applies its own rules.',()=>perform('try-private')]
@@ -488,6 +553,7 @@ function openTrace(){
 
 $('#request-trace').onclick=openTrace;
 $('#product-map').onclick=showProductMap;
+$('#architecture').onclick=()=>showArchitecture();
 $('#next').onclick=nextMove;$('#guide').onclick=showGuide;$('#cluebook').onclick=showCasebook;$('#restart').onclick=restart;$('#close-dialog').onclick=close;
 $$('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
 $('#sound').onclick=()=>{sound=!sound;render();if(sound)ping();};
@@ -496,4 +562,7 @@ new ResizeObserver(syncSpeech).observe($('.scene-frame'));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog.open&&!dialog.classList.contains('is-reference')){e.preventDefault();close();}});
 dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
 $('.brand').onclick=e=>{e.preventDefault();close();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};
-render();if(!state().started)showIntro();else if(!state().finished)showReply();
+render();
+if(location.hash==='#architecture')showArchitecture();
+else if(!state().started)showIntro();
+else if(!state().finished)showReply();

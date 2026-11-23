@@ -78,3 +78,36 @@ test('a new evening uses the video suggestion while an older pending photo reque
 test('Alex can ask a parent about known school-app feedback directly; Nova still verifies the sponsor first',()=>{
  for(const mode of ['teen','agent']){let s=start(mode);for(const a of ['collect-source','attach-source',...(mode==='agent'?['approve-draft']:[]),'send-draft'])s=run(s,a);assert.deepEqual(s.evidence,[]);const r=act(s,'request-extension');if(mode==='teen'){assert.equal(r.state.extensionStatus,'pending');assert(!r.state.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(r.state.mission.allowedMedia,[]);}else{assert.equal(r.event.kind,'blocked');assert.equal(r.state.extensionStatus,'unanswered');}}
 });
+
+test('Nova’s recovery stays paused when current policy is unavailable or the approved account set no longer fits',()=>{
+ let s=feedback();
+ s=act(s,'try-private').state;
+ s=act(s,'bypass-notes').state;
+ s=run(s,'review');
+ for(const mutate of [x=>x.authority.available=false,x=>x.authority.resource.records=['123']]){
+  const before=structuredClone(s);
+  mutate(before);
+  const denied=act(before,'resolve-review');
+  assert.equal(denied.event.decision.result,'deny');
+  assert.equal(denied.state.paused,true);
+  assert.deepEqual(denied.state.reviewPending,s.reviewPending);
+  assert.equal(denied.state.generation,s.generation);
+  assert.equal(T.build(denied.state,'agent').nodes.find(n=>n.label==='Check the current task').status,'blocked');
+  assert.equal(act(denied.state,'collect-source').event.kind,'blocked');
+ }
+ const resumed=run(s,'resolve-review');
+ assert.equal(resumed.paused,false);
+ assert.equal(resumed.generation,s.generation+1);
+ assert.deepEqual(resumed.mission,s.mission);
+ assert.equal(resumed.last.decision.result,'permit');
+});
+
+test('Sam cannot receive a project outside the current plan',()=>{
+ let s=start('teen');
+ for(const a of ['collect-source','attach-source'])s=run(s,a);
+ s.mission.allowedFile='other-assignment.pdf';
+ const result=act(s,'proof-helper',{scope:'file',shareLogin:false});
+ assert.equal(result.event.decision.result,'deny');
+ assert.equal(result.state.helperReceipts.length,0);
+ assert.equal(result.state.proof,null);
+});

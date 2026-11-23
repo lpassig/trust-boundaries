@@ -38,11 +38,18 @@ const RequestTrace = (() => {
   if(a==='bypass-notes'||a==='shortcut')return model('A known boundary was deliberately bypassed.','The ordinary refusal did not suspend the task. This later bypass attempt did.',[
    ...context(),node('Known refusal','Resource policy','context','The private-note request had already been refused.'),node('Alternate access attempt','Trusted enforcement controller','blocked','The deliberate bypass is stopped before a protected effect. Independent review can recover only the current bounded task.'),node('Disclosure','External effect','not-reached','No private notes were sent.')
   ]);
-  if(['review','resolve-review'].includes(a))return model('Review the deliberate bypass.','This scripted review preserves the current mission, including a legitimate amendment already recorded.',[
-   node('Current task attached','Independent mission record','context',`${m.id}, version ${m.version}, scope ${m.scope}. Prompts and notes cannot rewrite it.`),
-   node(teen?'Explain to your parent':'Ask the sponsor to review',teen?'Parent conversation':'Optional IBM Verify / CIBA channel',a==='review'?'pending':'checked',a==='review'?'Access remains paused pending the correlated reply.':'The matching reply rechecks current authority. CIBA authentication/consent alone is not business authorization.'),
-   node('Same limits; fresh session state','Application enforcement',a==='review'?'not-reached':'checked','Recovery does not add resources or override private-data policy.'),node('Business operation','Resource PEP','not-reached','Review itself sends no file.')
-  ]);
+  if(['review','resolve-review'].includes(a)){
+   const denied=e.decision?.result==='deny';
+   const waiting=a==='review';
+   return model('Review the deliberate bypass.','The review can restore work only within the current task.',[
+    node('Current task attached','Independent mission record','context',`${m.id}, version ${m.version}, scope ${m.scope}.`),
+    node(teen?'Explain to your parent':'Ask Priya to review',teen?'Parent conversation':'Optional IBM Verify / CIBA channel',waiting?'pending':'checked',
+     waiting?'Access remains paused until the matching reply.':'The application matches the reply to this task and session.'),
+    node('Check the current task','Application enforcement',waiting?'not-reached':denied?'blocked':'checked',
+     denied?e.decision.reason:waiting?'The check follows the reply.':'Recovery creates a fresh session within the existing task. Private-data rules still apply.'),
+    node('Business operation','Resource enforcement','not-reached','Review itself sends no file.')
+   ],e.decision?{...r,decision:e.decision}:r);
+  }
   if(a==='proof-helper'){
    const child=r.delegation,d=e.decision;
    if(!d||!child&&d.result!=='deny')return {...model('Earlier helper review','Reference only: this saved helper event has no current file-only delegation receipt. No helper execution evidence is invented.',context(),null),recorded:false};

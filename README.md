@@ -21,6 +21,10 @@ The school sign-in on the family laptop and the CRM session is introduced when t
 
 Alex and Nova can compare an extra instruction with an independent source. Alex checks a forwarded group-chat message against Ms Patel’s school assignment. Nova compares a footer in the customer records with Priya’s work order. Inspection does not change permissions, and a blocked attachment leaves the rest of the work available. Room objects show whose messages arrived, whether the source was credited, and when the school app requires sign-in again.
 
+### Architecture explorer
+
+Choose **Architecture** alongside Alex and Nova or open the [reference directly](https://lpassig.github.io/trust-boundaries/#architecture). Browse the product and responsibility map, six request sequences, and examples of the threats each story teaches. This reference has no progress state. It distinguishes configured products, customer systems and proposed integrations.
+
 ### Technical journey
 
 The buyer guide at Nova’s ending starts with five practical needs and identifies customer policy and CRM enforcement as a separate design responsibility. Nova’s optional technical product map names IBM Verify, IBM Agent Identity, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. It separately identifies the customer mission service, resource PEP and proposed policy decision point. These are source-linked example roles and target integrations, not a claim of deployed end-to-end support. The send panel compares the approved report with the actual send, including the revision, recipient, records and policy version. A refused send keeps that comparison in its recorded request. The optional trace shows the actual call, the point of enforcement and the outcome.
@@ -31,18 +35,19 @@ No protocol request, real credential, live service, cryptographic content digest
 
 ### Build, source and validation
 
-Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compatible `play-v2.html` copy, and the main GitHub Pages entry in `docs/index.html`. The build embeds all eight scripts, CSS and SVG artwork, and generates a redirect at `docs/v2/index.html`. GitHub Pages publishes `main` → `/docs`. Only the current story edition is available.
+Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compatible `play-v2.html` copy, and the main GitHub Pages entry in `docs/index.html`. The build embeds all nine scripts, CSS and SVG artwork, and generates a redirect at `docs/v2/index.html`. GitHub Pages publishes `main` → `/docs`. Only the current story edition is available.
 
 - `assets/art.js`, `assets/protocols.js`: original SVG scenes and optional technical mappings.
 - `v2/story.js`: both stories, later requests, next moves and optional protocol cards.
 - `v2/rules.js`: schema 6 state, lifecycle, versioned amendments, exact approvals, refusal/recovery and task closure.
 - `v2/interactions.js`: state-aware item destinations shared by highlights and click handling.
+- `v2/architecture.js`: standalone reference data for the product map, sequences and threat coverage.
 - `v2/trace.js`: replay of fictional operation evidence and decisions.
 - `v2/products.js`: product roles, limits and primary documentation links.
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 88 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, nine dialogue and 30 technical-flow tests bring the current game’s total to **164**.
+- `tests/v2.test.cjs`: 88 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, nine dialogue and 32 technical-flow and one architecture test bring the current game’s total to **167**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

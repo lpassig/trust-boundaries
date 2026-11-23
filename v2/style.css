@@ -165,3 +165,84 @@ dialog:not(.is-reference) #dialog-actions>.request-progress{position:sticky;top:
 @media (max-width: 560px) {
   .evidence-pair { grid-template-columns: 1fr; }
 }
+
+dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
+.architecture-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 20px;
+}
+.architecture-nav button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.architecture-map {
+  display: grid;
+  gap: 12px;
+}
+.architecture-group {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.architecture-group h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+.architecture-nodes {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  align-items: start;
+}
+.architecture-node {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  padding: 10px;
+}
+.architecture-node > summary {
+  cursor: pointer;
+}
+.architecture-node small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+}
+.architecture-node p {
+  margin-bottom: 0;
+}
+#architecture-flow {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  color: var(--ink);
+  font: inherit;
+}
+.architecture-steps {
+  padding-left: 26px;
+}
+.architecture-steps li {
+  margin: 12px 0;
+  padding-left: 8px;
+}
+.architecture-steps li p {
+  margin: 7px 0 0;
+}
+.architecture-threats dt {
+  font-weight: 700;
+}
+.architecture-threats dd {
+  margin: 4px 0 12px;
+}
+@media (max-width: 560px) {
+  .architecture-nodes { grid-template-columns: 1fr; }
+  .architecture-nav { gap: 6px; }
+  .architecture-nav button { flex: 1 1 125px; }
+}

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171824"><meta name="description" content="Two short point-and-click mysteries about homework, AI agents, and who you trust. Play Alex or Nova. No account needed."><title>Trust Boundaries · The Last Upload</title><style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171824"><meta name="description" content="Two short point-and-click mysteries about homework, AI agents, and who you trust. Play Alex or Nova, or explore the technical architecture. No account needed."><title>Trust Boundaries · The Last Upload</title><style>
 :root{color-scheme:dark;--bg:#151622;--panel:#202131;--ink:#f3edf9;--muted:#b7b1c7;--line:#414053;--accent:#c4a5ff;--soft:#28243d;--green:#b3dbc9;--amber:#efd0a0;--radius:20px;font:16px/1.65 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 22% 15%,#30263d 0,transparent 48%),var(--bg);color:var(--ink)}body.agent{--accent:#a1dfd2;--soft:#203839;background:radial-gradient(ellipse at 22% 15%,#1d3842 0,transparent 48%),var(--bg)}button,a,input{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer;color:inherit;border:1px solid transparent;background:none}button:disabled{cursor:default;opacity:.5}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--amber);outline-offset:4px}button:hover:not(:disabled){filter:brightness(1.12)}.topbar{padding:20px 4vw;display:flex;align-items:center;gap:28px;border-bottom:1px solid #ffffff16;background:#161722bb}.brand{display:flex;align-items:center;gap:12px;color:var(--ink);font-size:13px;font-weight:750;letter-spacing:.12em;white-space:nowrap}.brand-mark{font-size:35px;color:var(--accent)}.brand small{display:block;font-size:11px;letter-spacing:.18em;color:var(--muted);font-weight:500}.episodes{display:flex;gap:4px;flex:1;justify-content:center}.episodes button{padding:8px 16px;border-radius:12px;color:var(--muted);text-align:left;font-size:16px;font-weight:650}.episodes button[aria-pressed=true]{background:var(--soft);border-color:#c4a5ff40;color:var(--ink)}.episodes span{font-size:12px;display:block;font-weight:400}.quiet{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;color:var(--muted);font-size:14px;border-radius:10px}.quiet:hover{background:#ffffff08;color:var(--ink)}main{max-width:1560px;margin:auto;padding:32px 4vw 12px}.chapter-heading{display:flex;justify-content:space-between;gap:20px;align-items:center}.eyebrow{font-size:11px;letter-spacing:.17em;color:var(--accent);font-weight:750;margin:0 0 6px}h1,h2,h3,p{margin-top:0}h1{font:500 clamp(30px,3.4vw,46px)/1.15 Georgia,serif;letter-spacing:-.025em;margin-bottom:8px}.chapter-heading>div>p:last-child{font-size:15px;color:var(--muted);margin-bottom:0}.utility{display:flex;gap:8px;flex-wrap:wrap;justify-content:end}.chapter-track{display:flex;gap:24px;margin:25px 0 22px;overflow:auto;border-bottom:1px solid var(--line)}.chapter-track span{min-width:150px;flex:1;padding:0 0 12px;border-bottom:2px solid transparent;font-size:14px;color:#8f8a9f}.chapter-track .current{color:var(--ink);border-color:var(--accent)}.chapter-track .complete{color:var(--green)}.chapter-track small{margin-right:10px;opacity:.65}.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}.world{min-width:0}.scene-frame{position:relative;border:1px solid #ffffff18;border-radius:22px;overflow:hidden;background:radial-gradient(ellipse at 45% 45%,#39304788,transparent 70%),#1c1c2b}.agent .scene-frame{background:radial-gradient(ellipse at 45% 45%,#234651aa,transparent 70%),#152731}.scene-caption{padding:16px 20px 0;display:flex;gap:10px;justify-content:space-between;position:relative;z-index:1;color:var(--muted);font-size:12px;letter-spacing:.03em}.scene-caption span:last-child{color:var(--amber)}.scene-canvas{aspect-ratio:1000/580;position:relative;width:100%}#art,#art svg,#pins{position:absolute;inset:0;width:100%;height:100%}.pin{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;border:1px solid #e8daff77;background:#1b1a2ce8;box-shadow:0 4px 14px #12132266;display:grid;place-items:center;color:#e8dbff;font-size:14px}.agent .pin{color:#cdf4e8}.pin.relevant{border:2px solid var(--accent);box-shadow:0 0 0 6px #c4a5ff18,0 4px 16px #12132266}.pin::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#11121ef2;padding:5px 10px;border-radius:7px;font-size:13px;opacity:0;pointer-events:none}.pin:hover::after,.pin:focus-visible::after{opacity:1}.scene-footnote{font-size:12px;color:#b9b0c8;padding:0 20px 14px;margin:0}.object-tray{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0 18px}.object-tray button{background:#212131;border:1px solid #ffffff12;padding:10px 3px;border-radius:10px;min-height:65px;font-size:12px;color:var(--muted)}.object-tray b{display:block;color:var(--accent);font-size:18px;line-height:1.2;font-weight:400;margin-bottom:5px}.object-tray button.relevant{background:var(--soft);border-color:#c4a5ff60;color:var(--ink)}.object-tray button:disabled{opacity:.35}.dialogue{display:flex;gap:16px;min-height:160px;padding:8px 8px 12px}.portrait{flex:0 0 46px;width:46px;height:46px;border:1px solid #c4a5ff66;border-radius:14px;display:grid;place-items:center;background:var(--soft);color:var(--accent);font:25px Georgia,serif}.speaker{font-size:11px;font-weight:750;letter-spacing:.16em;color:var(--accent);margin:0 0 6px}.dialogue h2{font:500 23px/1.25 Georgia,serif;margin-bottom:8px}.dialogue p:last-child{font-size:16px;color:var(--muted);line-height:1.7;margin-bottom:0}.scene-tools{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding-top:8px}.scene-tools span{margin-left:auto;color:#8f8b9e;font-size:11px}.journal{background:linear-gradient(160deg,#282536aa,#202130);border:1px solid #ffffff1a;border-radius:20px;padding:24px;position:sticky;top:20px}.agent .journal{background:linear-gradient(160deg,#243737aa,#202130)}.journal-heading,.section-title{display:flex;justify-content:space-between;align-items:center}.sparkle{font-size:25px;color:var(--accent)}.journal h2{font:500 27px/1.2 Georgia,serif;letter-spacing:-.02em;margin:10px 0}.journal>p{font-size:14px;color:var(--muted);line-height:1.7}.primary,.secondary,.choice{min-height:48px;padding:12px 18px;border-radius:11px;font-weight:650;font-size:15px;line-height:1.4}.primary{background:var(--accent);color:#211a31;border:1px solid var(--accent)}.secondary{border:1px solid var(--line);background:#ffffff04;color:var(--ink)}.full{width:100%}.pocket{margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}.section-title h3{font-size:11px;letter-spacing:.13em;margin:0}.section-title span{font-size:11px;color:var(--muted)}.small{font-size:12px;color:var(--muted)}.pocket>.small{margin:7px 0 14px}#inventory{display:grid;gap:7px}.item{width:100%;padding:10px;border:1px solid #ffffff12;background:#191a28aa;border-radius:10px;display:flex;gap:10px;text-align:left;align-items:center;font-size:13px;min-height:50px}.item>span:first-child{color:var(--accent);font-size:20px;min-width:22px;text-align:center}.item.selected{border-color:var(--accent);background:var(--soft)}.item small{font-size:10px;color:var(--muted);display:block}#selected{padding:12px;background:var(--soft);border:1px solid #c4a5ff77;border-radius:11px;margin-top:12px;font-size:13px}#selected p{margin:0}#selected button{font-size:12px;padding:5px 0;color:var(--accent)}.route-note{border-top:1px solid var(--line);padding-top:18px;margin-top:22px}.route-note p:last-child{font-size:13px;color:var(--muted);margin:0}.behind{font-size:13px;margin-top:18px;color:var(--muted)}summary{cursor:pointer;min-height:40px;align-content:center;color:var(--accent)}.behind p{font-size:13px;margin:8px 0}.behind a,.sources a{color:var(--accent);text-decoration:underline}.sources{font-size:12px}.protocol-tags{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.protocol-tags span{font-size:11px;padding:3px 7px;border-radius:5px;background:var(--soft);color:var(--green)}footer{display:flex;gap:16px;justify-content:space-between;align-items:center;font-size:11px;color:#938da3;border-top:1px solid var(--line);margin-top:34px;padding:15px 0}footer .quiet{font-size:12px}dialog{color:var(--ink);background:#232332;border:1px solid #72658099;border-radius:22px;padding:32px;max-width:650px;width:calc(100% - 32px);max-height:88dvh;box-shadow:0 30px 100px #0008;overflow:auto}dialog::backdrop{background:#0d0e19b8;backdrop-filter:blur(7px)}#close-dialog{position:absolute;right:12px;top:10px;width:40px;height:40px;font-size:27px;color:var(--muted);border-radius:9px}dialog h2{font:500 32px/1.2 Georgia,serif;letter-spacing:-.025em;max-width:calc(100% - 25px);margin:10px 0 16px}dialog p{color:var(--muted);font-size:16px;line-height:1.75}dialog .eyebrow{font-size:11px;color:var(--accent)}.choices{display:grid;gap:10px;margin-top:22px}.choice{border:1px solid var(--line);text-align:left;background:#ffffff03}.choice strong{display:block;color:var(--ink);font-size:15px}.choice small{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:4px}.choice.good{border-color:#c4a5ff77;background:var(--soft)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.paper{background:#e9dccb;color:#302d3f;padding:22px;border-radius:4px 13px 13px 4px;margin:20px 0;box-shadow:inset 4px 0 #c8baa6}.paper p{color:#5d5361;font-size:14px}.paper h3{font:24px Georgia,serif;line-height:1.25}.paper .source-line{border-top:1px solid #bcb09e;padding-top:12px;color:#665c69;font-size:12px}.paper .missing{border:1px dashed #9e7a7a;padding:12px;color:#8b4f59}.message-card{padding:20px;background:#191d2a;border:1px solid #ffffff24;border-radius:12px;margin:18px 0}.message-card p{margin-bottom:8px}.message-card blockquote{margin:14px 0 0;color:#eee3f1;font-size:17px;line-height:1.7}.address{font-family:ui-monospace,monospace;font-size:13px!important;overflow-wrap:anywhere;color:var(--amber)!important}.evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.evidence{border:1px solid var(--line);border-radius:12px;padding:16px;background:#181b27}.evidence h3{font-size:14px;margin:0 0 8px;color:var(--green)}.evidence p{font-size:13px;line-height:1.7;margin:0}.evidence.warning h3{color:var(--amber)}.receipt{border:1px solid #9fceb177;padding:18px;border-radius:12px;background:#20352f66;margin:20px 0}.receipt p{margin:3px 0;font-size:14px}.receipt b{color:var(--green)}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{border:1px solid var(--line);padding:16px;border-radius:12px}.check.done{border-color:#99cbb477;background:#1e393144}.check h3{font-size:16px;margin:0 0 10px}.check p{font-size:12px;line-height:1.6;margin:10px 0 0}.check button{width:100%}.reward{font-size:45px;line-height:1.3;color:var(--amber);margin-bottom:10px}.route-list{list-style:none;padding:0;margin:20px 0}.route-list li{border-bottom:1px solid var(--line);padding:10px 0;font-size:14px;color:var(--muted)}.route-list b{color:var(--ink)}.debrief{padding-top:16px;border-top:1px solid var(--line);margin-top:20px}.debrief p{font-size:14px}.small-print{font-size:11px!important;color:#a29aad!important}.intro-card{padding:6px 0}.intro-card .tagline{font-size:18px;color:var(--ink)}.intro-facts{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.intro-facts span{background:var(--soft);padding:4px 9px;border-radius:7px;font-size:12px;color:var(--muted)}#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:10;padding:12px 18px;border:1px solid #8d789c;background:#28243e;color:var(--ink);border-radius:12px;max-width:min(580px,calc(100vw - 30px));font-size:14px;transition:opacity .15s,transform .15s;box-shadow:0 6px 30px #0005}#toast.visible{opacity:1;transform:translate(-50%,0)}.incoming-signal{animation:signal 2s ease-in-out infinite}@keyframes signal{50%{opacity:.55}}.case-empty{font-style:italic}.route-note b{color:var(--ink)}
 @media(min-width:1600px){.scene-canvas{max-height:580px}}@media(max-width:1150px){.game-layout{grid-template-columns:minmax(0,1fr) 290px;gap:18px}.journal{padding:20px}.topbar{gap:15px}.episodes button{padding:8px 12px}.episodes span{display:none}.pin{width:34px;height:34px}.object-tray{grid-template-columns:repeat(3,1fr)}.object-tray button{min-height:50px;padding:9px;font-size:13px;display:flex;gap:8px;align-items:center;justify-content:center}.object-tray b{font-size:18px;margin:0}.scene-caption{font-size:11px;padding:12px 14px 0}.scene-footnote{font-size:11px}.scene-tools{flex-wrap:wrap}.scene-tools span{width:100%;margin-left:12px}.dialogue{min-height:180px}}
@@ -168,9 +168,90 @@ dialog:not(.is-reference) #dialog-actions>.request-progress{position:sticky;top:
   .evidence-pair { grid-template-columns: 1fr; }
 }
 
+dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
+.architecture-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 20px;
+}
+.architecture-nav button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.architecture-map {
+  display: grid;
+  gap: 12px;
+}
+.architecture-group {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.architecture-group h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+.architecture-nodes {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  align-items: start;
+}
+.architecture-node {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  padding: 10px;
+}
+.architecture-node > summary {
+  cursor: pointer;
+}
+.architecture-node small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+}
+.architecture-node p {
+  margin-bottom: 0;
+}
+#architecture-flow {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  color: var(--ink);
+  font: inherit;
+}
+.architecture-steps {
+  padding-left: 26px;
+}
+.architecture-steps li {
+  margin: 12px 0;
+  padding-left: 8px;
+}
+.architecture-steps li p {
+  margin: 7px 0 0;
+}
+.architecture-threats dt {
+  font-weight: 700;
+}
+.architecture-threats dd {
+  margin: 4px 0 12px;
+}
+@media (max-width: 560px) {
+  .architecture-nodes { grid-template-columns: 1fr; }
+  .architecture-nav { gap: 6px; }
+  .architecture-nav button { flex: 1 1 125px; }
+}
+
 </style></head>
 <body>
-<header class="topbar"><a class="brand" href="#"><span class="brand-mark">◇</span><span>TRUST BOUNDARIES<small>STORY EDITION</small></span></a><nav class="episodes" aria-label="Choose your story"><button data-mode="teen" aria-pressed="true">Alex <span>The Last Upload</span></button><button data-mode="agent" aria-pressed="false">Nova <span>The Growing Brief</span></button></nav><button class="quiet" id="guide">How to play</button></header>
+<header class="topbar"><a class="brand" href="#"><span class="brand-mark">◇</span><span>TRUST BOUNDARIES<small>STORY EDITION</small></span></a><nav class="episodes" aria-label="Explore Trust Boundaries"><button data-mode="teen" aria-pressed="true">Alex <span>The Last Upload</span></button><button data-mode="agent" aria-pressed="false">Nova <span>The Growing Brief</span></button><button id="architecture" aria-haspopup="dialog">Architecture <span>Products &amp; controls</span></button></nav><button class="quiet" id="guide">How to play</button></header>
 <main><section class="chapter-heading"><div><p class="eyebrow" id="episode-label"></p><h1 id="episode-title"></h1><p id="episode-tag"></p></div><div class="utility"><button class="quiet" id="sound" aria-pressed="false">Sound off</button></div></section>
 <div class="chapter-track" id="chapter-track" aria-label="Story progress"></div>
 <div class="game-layout"><section class="world" aria-label="Adventure scene"><div class="scene-frame"><div class="scene-caption"><span id="place"></span><span id="scene-condition"></span></div><div class="scene-canvas"><div id="art" aria-hidden="true"></div><div id="pins"></div></div><div class="dialogue scene-speech" id="scene-dialogue" aria-live="polite"><div class="portrait" id="speaker-portrait" aria-hidden="true"></div><div><p class="speaker" id="speaker"></p><h2 id="dialogue-title"></h2><p id="dialogue-text"></p></div></div><dialog id="dialog" aria-labelledby="dialog-title"><div class="speech-source" id="speech-source-row"><span class="speech-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-5l-5 3v-3a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/><path d="M7 9h10M7 13h6"/></svg></span><span><b id="speech-source"></b><small id="speech-kind"></small></span></div><button id="close-dialog" aria-label="Close dialogue">×</button><div id="dialog-body"></div><div id="dialog-actions"></div></dialog><p class="scene-footnote" id="scene-footnote">Explore the room. Every labelled object has something to say.</p></div><nav class="object-tray" id="objects" aria-label="Objects in the room"></nav><div class="scene-tools"><button class="quiet" id="hint">A little nudge</button><button class="quiet" id="cluebook">Open the casebook</button><button class="quiet" id="request-trace">Follow this request</button><span id="save-status">Saved on this device</span></div></section>
@@ -510,7 +591,7 @@ const EPISODES = {
     "file": "summary.pdf",
     "to": "reviewer@company.example",
     "outside": "export@external-review.example",
-    "sender": "CRM source document · template footer",
+    "sender": "Outside contact’s document · attached to CRM",
     "authority": "Priya · account lead",
     "helper": "Pip",
     "contact": "Priya · saved contact",
@@ -556,7 +637,7 @@ const EPISODES = {
     ],
     "requestFile": "Private meeting-notes appendix",
     "requestTo": "reviewer@company.example",
-    "requestLabel": "A note in the source document",
+    "requestLabel": "A footer in the uploaded document",
     "minorTitle": "“Can you shorten the introduction?”",
     "minorText": "Morgan has read the draft. “Could you get to the point a little sooner? I’ll be reading this between calls.”",
     "minorAddition": "Two customer updates for tomorrow’s meeting.",
@@ -904,7 +985,7 @@ const StoryRules = (() => {
   const editable=()=>active()&&s.draft&&!s.delivered;
   const revise=()=>{s.fileRevision++;s.proof=null;s.approval=null;};
   const incident=id=>{if(!s.incidents.includes(id))s.incidents.push(id);s.attempts.push({id,at:s.history.length+1});s.resolved=s.resolved.filter(x=>x!==id);s.paused=true;s.approval=null;};
-  const decide=(result,reason)=>{const appGate=teen&&['collection.read','video.watch'].includes(operation),archive=teen&&operation==='archive.read',helper=operation==='report.format'||operation==='project.proofread';decision={pep:helper?'Report helper boundary':operation==='mission.amend'?'Customer mission service':teen?(appGate?'Homework app profile':archive?'Museum website':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'Authorization decision service · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
+  const decide=(result,reason)=>{const appGate=teen&&['collection.read','video.watch'].includes(operation),archive=teen&&operation==='archive.read',helper=operation==='report.format'||operation==='project.proofread';decision={pep:helper?'Report helper boundary':['mission.amend','mission.resume'].includes(operation)?'Customer mission service':teen?(appGate?'Homework app profile':archive?'Museum website':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'Authorization decision service · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
   const authorityFailure=(op,records,includeMission=true)=>{
    if(!active())return 'The current task is not active.';
    if(includeMission&&records.some(id=>!s.mission.records.includes(id)))return 'The requested records are outside the current mission.';
@@ -920,7 +1001,7 @@ const StoryRules = (() => {
    return null;
   };
   const resourceAllowed=()=>{
-   const failure=teen?(operation==='archive.read'&&!s.mission.allowedApps.includes('museum-source')||['collection.read','video.watch'].includes(operation)&&(!s.mission.allowedApps.includes(extra.extraAppId)||!s.mission.allowedMedia?.includes(requestResource))?'This page or video is not part of tonight’s plan.':operation==='report.send'&&(s.mission.allowedFile!==name||s.mission.recipient!==recipient)?'The file or recipient is outside the school submission route.':null):authorityFailure(operation,requestRecords);
+   const failure=teen?(operation==='archive.read'&&!s.mission.allowedApps.includes('museum-source')||['collection.read','video.watch'].includes(operation)&&(!s.mission.allowedApps.includes(extra.extraAppId)||!s.mission.allowedMedia?.includes(requestResource))?'This page or video is not part of tonight’s plan.':operation==='project.proofread'&&s.mission.allowedFile!==name?'Only the project covered by tonight’s plan can be shared with Sam.':operation==='report.send'&&(s.mission.allowedFile!==name||s.mission.recipient!==recipient)?'The file or recipient is outside the school submission route.':null):authorityFailure(operation,requestRecords);
    if(!failure)return true;decide('deny',failure);s.approval=null;say(teen?'This permission check did not pass.':'The current policy blocks this step.',teen?'Keep the work you have and check the agreed app or school destination.':failure+' An approval cannot override those limits.',5,teen?'Responsible app control':'Resource policy','refused');return false;
   };
   const controlResult=()=>{
@@ -963,7 +1044,7 @@ const StoryRules = (() => {
     operation='request.source.compare';
     say(teen?'The messages came from different places.':'The source and the work order disagree.',
      teen?'The message claiming to be from Ms Patel came through Jamie’s group chat. The real assignment in the school app asks for your timeline only.'
-      :'The extra instruction came from a footer in the CRM source document. Priya’s work order allows a summary for Morgan and excludes private notes.',
+      :'The extra instruction came from an outside contact’s document attached to the customer record. Priya’s work order allows a summary for Morgan and excludes private notes.',
      3,teen?'Teacher':'Priya');
     break;
    case 'decline-private':if(!need(editable()&&s.message,'Read the later requests first.'))break;s.privateResolved=true;say(teen?'“I’ll send my own work.”':'The private appendix stays out.',teen?'“Those notes include everyone’s personal feedback,” you reply to Jamie. “I’ll just send my own timeline.”':'Nova leaves out the meeting notes. A familiar checklist cannot grant business authority; the agreed report can still be completed.',3);break;
@@ -1003,7 +1084,34 @@ const StoryRules = (() => {
    case 'controller-offline':if(!need(s.ended,'Start the closing checks first.'))break;s.containment.controllerReachable=false;s.containment.probeResult='unknown';s.checks=s.checks.filter(x=>x!=='signin');if(!s.containment.observed.includes('signin'))s.containment.observed.push('signin');say(teen?'The school app won’t load.':'The session controller is unreachable.',teen?'A page that won’t load isn’t proof you signed out. Wait for it to work, then check again.':'No response is unknown, not proof of sign-out. Restore contact and retest.',8,teen?'School service':'CRM session controller','finding');break;
    case 'controller-online':if(!need(s.ended,'Start the closing checks first.'))break;s.containment.controllerReachable=true;s.containment.probeResult=null;s.checks=s.checks.filter(x=>x!=='signin');say(teen?'The school app is responding again.':'Controller contact is restored.',teen?'Now you can finish signing out and check the school app again.':'Contact alone does not prove closure. Apply remaining controls and repeat the check.',8);break;
    case 'review':if(!need(s.paused&&active(),'There is no deliberate-bypass pause to review.'))break;s.reviewPending={generation:s.generation,scope:s.pass.scope,missionVersion:s.mission.version};say(teen?'Your parent listens.':'The sponsor reviews the bypass.',teen?'You explain the detour. Your parent listens. Wait for their answer before getting back to the timeline.':'The original request, current mission version and stopped bypass are attached. Access stays paused pending a matching reply.',1,teen?'Parent':'Sponsor');break;
-   case 'resolve-review':if(!need(s.paused&&active()&&s.reviewPending?.generation===s.generation&&s.reviewPending.scope===s.pass.scope&&s.reviewPending.missionVersion===s.mission.version,'No matching current review can resume this session.'))break;s.retired.push(s.generation);s.generation++;s.pass.generation=s.generation;s.approval=null;if(s.extensionPending){s.extensionPending=null;s.extensionStatus='unanswered';}s.paused=false;s.reviewPending=null;say(teen?'“Back to your own project.”':'The current bounded task can resume.',teen?'“You can finish your timeline. But leave those notes alone, okay?” The same apps are available again; the private notes still stay out.':'The sponsor approves recovery under the current mission. No scope expands; stale sharing approvals and session generation are retired.',1,teen?'Parent':'Sponsor');break;
+   case 'resolve-review': {
+    const pending=s.reviewPending;
+    if(!need(s.paused&&active()&&pending?.generation===s.generation&&pending.scope===s.pass.scope&&pending.missionVersion===s.mission.version,
+     'No matching current review can resume this session.'))break;
+    if(!teen){
+     operation='mission.resume';
+     requestRecords=s.mission.records.slice();
+     const failure=authorityFailure('customer.read',requestRecords);
+     if(failure){
+      decide('deny',failure);
+      say('The task stays paused.',failure+' Priya can review the current limits again.',1,'Customer mission service','refused');
+      break;
+     }
+     decide('permit','The current task and independent read policies still agree. Later operations require their own checks.');
+    }
+    s.retired.push(s.generation);
+    s.generation++;
+    s.pass.generation=s.generation;
+    s.approval=null;
+    if(s.extensionPending){s.extensionPending=null;s.extensionStatus='unanswered';}
+    s.paused=false;
+    s.reviewPending=null;
+    say(teen?'“Back to your own project.”':'Priya lets Nova finish the handover.',
+     teen?'“You can finish your timeline. But leave those notes alone, okay?” The same apps are available again; the private notes still stay out.'
+      :'The task stays within its current limits. Nova resumes with a fresh session. Any prior sharing approval needs to be requested again.',
+     1,teen?'Parent':'Priya');
+    break;
+   }
    case 'finish':if(!need(s.ended&&s.checks.length===4&&secure(s),'Verify this task’s access and any pending send first.'))break;s.finished=true;s.resolved=[...s.incidents];s.assessment=assessment(s);s.nextTask={requiresNewAgreement:true,supportRecommended:s.assessment.supportRecommended};say(teen?'Project sent. Dinner ready.':'Briefing complete. Loose ends closed.',teen?`Your own project is submitted${s.extensionAdded?', with the extra museum source':''}. You’re signed out of the family laptop. ${s.assessment.supportRecommended?'After repeated deliberate bypasses, your parent suggests working together next time.':'Your phone is put away. Dinner smells good.'}`:`The ${s.extensionAdded?'three':'two'}-customer briefing is delivered, private notes stayed out, and this tested route is closed. ${s.assessment.supportRecommended?'The next mission should include closer support.':'The next mission starts with a new request and agreement.'}`,8,teen?'Parent':'Sponsor');s.ending={...e};break;
    case 'replay-containment':if(!need(s.finished&&s.delivered&&s.ended,'Finish the story before replaying its closing checks.'))break;s.previousEndings.push({ending:s.ending,assessment:s.assessment});s.finished=false;s.ending=null;s.nextTask=null;s.checks=[];s.containment=newContainment(s.queueScheduled);inspectClosingBasics(s);say('Replay the closing checks.','Delivery and your earlier ending are kept. This reopens only the fictional investigation, never business authority.',8);break;
    case 'discover':if(!['plant','poster'].includes(p.id)){block('Nothing to collect here.','Look around the room.');break;}if(!s.discoveries.includes(p.id))s.discoveries.push(p.id);say(p.id==='plant'?'A resilient little plant.':teen?'A town on the move.':'A map is not permission.',teen?(p.id==='plant'?'You sketch a leaf in the notebook. The plant has survived another homework session.':'The railway poster gives you an idea for the title.'):(p.id==='plant'?'Pip declines to water the diagnostic light Nova calls a plant.':'The service map shows connections. Each operation still needs its own authority.'),6);break;
@@ -1016,7 +1124,7 @@ const StoryRules = (() => {
    const id='example-req-'+(s.history.length+1);
    e.action=action;e.request={recordVersion:3,request_id:id,action,operation,observed_by:decision?decision.pep:'Story application',actor:controls?(teen?'homework-session-controller':'independent-task-controller'):delegation?delegation.actor:(teen?'alex':'nova-042'),requested_by:delegation?delegation.requestedBy:null,delegation,tested_actor:controls&&['check','probe-session'].includes(action)?s.mission.actor:null,purpose:['send-draft','approve-draft'].includes(action)?'draft-review':action==='send'||action==='approve'?'final':null,authorization_basis:controls?'independent task-control authority':'current task and resource policy',generation:s.generation,mission_id:s.mission?.id||null,mission_version:s.mission?.version||null,policy_version:s.mission?.policyVersion||null,file:controls?null:requestFile,resource:requestResource,revision:requestFile===name?(requestRevision??s.fileRevision):null,attachments,records:requestRecords,recipient:controls?null:recipient,scope:s.mission?.scope||'not granted',control:p.control||null,layer:p.layer||null};
    if(['inspect-request-source','try-private'].includes(action)&&(decision||s.discoveries.includes('request-source'))){
-    e.request.instruction_source=teen?'Forwarded class group chat message':'CRM source document footer';
+    e.request.instruction_source=teen?'Forwarded class group chat message':'Outside contact’s document imported into CRM';
     e.request.authoritative_source=teen?'Ms Patel’s school assignment':'Priya’s current work order';
    }
    if(decision&&approvalAtAttempt)e.request.approval_at_attempt=approvalAtAttempt;
@@ -1211,11 +1319,18 @@ const RequestTrace = (() => {
   if(a==='bypass-notes'||a==='shortcut')return model('A known boundary was deliberately bypassed.','The ordinary refusal did not suspend the task. This later bypass attempt did.',[
    ...context(),node('Known refusal','Resource policy','context','The private-note request had already been refused.'),node('Alternate access attempt','Trusted enforcement controller','blocked','The deliberate bypass is stopped before a protected effect. Independent review can recover only the current bounded task.'),node('Disclosure','External effect','not-reached','No private notes were sent.')
   ]);
-  if(['review','resolve-review'].includes(a))return model('Review the deliberate bypass.','This scripted review preserves the current mission, including a legitimate amendment already recorded.',[
-   node('Current task attached','Independent mission record','context',`${m.id}, version ${m.version}, scope ${m.scope}. Prompts and notes cannot rewrite it.`),
-   node(teen?'Explain to your parent':'Ask the sponsor to review',teen?'Parent conversation':'Optional IBM Verify / CIBA channel',a==='review'?'pending':'checked',a==='review'?'Access remains paused pending the correlated reply.':'The matching reply rechecks current authority. CIBA authentication/consent alone is not business authorization.'),
-   node('Same limits; fresh session state','Application enforcement',a==='review'?'not-reached':'checked','Recovery does not add resources or override private-data policy.'),node('Business operation','Resource PEP','not-reached','Review itself sends no file.')
-  ]);
+  if(['review','resolve-review'].includes(a)){
+   const denied=e.decision?.result==='deny';
+   const waiting=a==='review';
+   return model('Review the deliberate bypass.','The review can restore work only within the current task.',[
+    node('Current task attached','Independent mission record','context',`${m.id}, version ${m.version}, scope ${m.scope}.`),
+    node(teen?'Explain to your parent':'Ask Priya to review',teen?'Parent conversation':'Optional IBM Verify / CIBA channel',waiting?'pending':'checked',
+     waiting?'Access remains paused until the matching reply.':'The application matches the reply to this task and session.'),
+    node('Check the current task','Application enforcement',waiting?'not-reached':denied?'blocked':'checked',
+     denied?e.decision.reason:waiting?'The check follows the reply.':'Recovery creates a fresh session within the existing task. Private-data rules still apply.'),
+    node('Business operation','Resource enforcement','not-reached','Review itself sends no file.')
+   ],e.decision?{...r,decision:e.decision}:r);
+  }
   if(a==='proof-helper'){
    const child=r.delegation,d=e.decision;
    if(!d||!child&&d.result!=='deny')return {...model('Earlier helper review','Reference only: this saved helper event has no current file-only delegation receipt. No helper execution evidence is invented.',context(),null),recorded:false};
@@ -1557,6 +1672,160 @@ const NOVA_BUYER_NEEDS = [
 ];
 
 </script><script>
+/* Illustrative roles and request paths. Browsing these examples does not play either story. */
+const ArchitectureReference = (() => {
+ const groups = [
+  ['People and authority', ['people','verify','iai','mission']],
+  ['Where Nova works', ['orchestrate','openshell','vault']],
+  ['Decisions and effects', ['authorization','crm']],
+  ['Signals and response', ['risk','antenna','controllers']]
+ ];
+ const components = {
+  people:{
+   name:'Priya, Nova, Morgan and Pip',kind:'Story actors',
+   summary:'Priya sponsors the work. Nova prepares the handover. Morgan approves each exact share. Pip formats only the file it receives.',
+   detail:'The sponsor and reviewer have different responsibilities. Nova and Pip are distinct identities. The CRM owns its data and delivery rules.'
+  },
+  verify:{product:'verify',kind:'Product',summary:'Confirms who the human is. A configured CIBA flow can collect consent on a separate device.'},
+  iai:{product:'iai',kind:'Product',summary:'Identifies the agent and whose authority it is acting under.'},
+  mission:{product:'mission',kind:'Customer integration',summary:'Records the task, allowed accounts, destination and current version outside Nova’s instructions.'},
+  orchestrate:{product:'orchestrate',kind:'Product',summary:'Coordinates the work. A configured workflow can assign the formatting step to Pip.'},
+  openshell:{product:'openshell',kind:'Runtime',summary:'Runs Nova in an isolated workspace and controls contact with files and services.'},
+  vault:{product:'vault',kind:'Product',summary:'Checks access to its own credential paths. Supplies short-lived access for a configured target.'},
+  authorization:{name:'Authorization decision service',product:'authorization',kind:'Proposed integration',summary:'Evaluates the action the CRM observes against current task and resource rules.'},
+  crm:{
+   name:'Customer CRM',kind:'Customer application',
+   summary:'Checks the actual read, attachment or send at the point of use and owns the result.',
+   detail:'Its enforcement point observes the operation, records, file revision and recipient. It enforces hard data restrictions and compares each confidential share with a current, single-use approval.'
+  },
+  risk:{product:'risk',kind:'Optional product input',summary:'Can supply identity risk observations to a configured response policy.'},
+  antenna:{product:'antenna',kind:'Optional integration',summary:'Exchanges security signals with configured systems. Each receiver applies its own control.'},
+  controllers:{
+   name:'Runtime, Vault, CRM and queue controllers',kind:'Configured response',
+   summary:'Stop the workload, revoke credentials, close service sessions and check waiting work.',
+   detail:'An independent controller retests the old route and records the result. An unreachable service leaves the route unverified. A completed delivery stays delivered.'
+  }
+ };
+
+ const flows = {
+  read:{
+   title:'Read the customer records',
+   premise:'Priya asks for a handover on Harbor Bikes and Pine Studio.',
+   steps:[
+    ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
+    ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
+    ['openshell','Open the governed workspace and permit the customer records route.'],
+    ['vault','For the configured source path, the broker uses a Vault-scoped credential. CRM owns its separate service session.'],
+    ['crm','Check the actual read of Harbor Bikes and Pine Studio against current task and resource policy before returning records.']
+   ],
+   result:'Nova reads the two accounts and can cite them in the handover.'
+  },
+  change:{
+   title:'Add a customer',
+   premise:'Priya suggests adding Alder Books after Morgan receives the review copy.',
+   steps:[
+    ['people','Confirm the request via Priya’s saved contact or the current work order.'],
+    ['mission','Record the request. The original two accounts stay in scope while approval is pending.'],
+    ['authorization','Check that the sponsor, agent ceiling and CRM policy permit the addition.'],
+    ['mission','Record the approved scope and retire the old session generation.'],
+    ['crm','Check the actual Alder Books read under the new task before providing its record.']
+   ],
+   result:'Alder Books can be added. The private notes and recipient rule stay as before.'
+  },
+  send:{
+   title:'Approve and send a report',
+   premise:'Morgan may approve a review copy for feedback and later a separate final copy.',
+   steps:[
+    ['people','Morgan sees the file, revision, accounts and intended recipient.'],
+    ['verify','A configured CIBA channel can authenticate Morgan and collect consent.'],
+    ['authorization','Application policy binds approval to this action, current authority, expiry and one use.'],
+    ['crm','Compare the actual request with the approval. Enforce current resource policy before sending and record the outcome.']
+   ],
+   result:'Each approved copy travels once. A changed revision, destination or expired approval blocks the send.'
+  },
+  refuse:{
+   title:'Block a private attachment',
+   premise:'An outside contact’s document contains an instruction to attach private meeting notes.',
+   steps:[
+    ['mission','Compare the text with Priya’s work order. The work order gives permission to share the summary.'],
+    ['openshell','The configured environment permits access to CRM.'],
+    ['crm','Observe the private attachment in the actual request.'],
+    ['authorization','Apply the hard rule that keeps private notes inside the CRM.'],
+    ['crm','Refuse the attachment before delivery. Keep the permitted work available.']
+   ],
+   result:'The source can influence what Nova attempts. Independent checks prevent the disclosure.'
+  },
+  delegate:{
+   title:'Give Pip a file-only task',
+   premise:'Nova wants Pip to tidy the handover’s headings.',
+   steps:[
+    ['orchestrate','Coordinate the formatting step using a separate helper identity.'],
+    ['authorization','Check the parent task, Pip’s ceiling and the resource rules.'],
+    ['people','Give Pip only the specific report revision and formatting rights.'],
+    ['crm','Require a fresh exact approval before sharing the revised report with Morgan.']
+   ],
+   result:'Pip formats the file without borrowing Nova’s credentials or obtaining CRM read or send rights.'
+  },
+  stop:{
+   title:'Stop and verify access',
+   premise:'Morgan has the handover. The team closes this task and checks what still works.',
+   steps:[
+    ['mission','Withdraw the task grant and stop new governed operations.'],
+    ['openshell','Stop Nova’s workspace.'],
+    ['antenna','Where configured, a shared signal can notify receivers. Confirmation comes from the systems that act.'],
+    ['controllers','Revoke the credential, close the CRM session and check any queued follow-up.'],
+    ['controllers','Retest the old route independently. Record a refusal or leave the result unverified if the controller cannot answer.']
+   ],
+   result:'The tested route closes. Earlier delivery stays delivered.'
+  }
+ };
+
+ const threats = [
+  {
+   title:'A curious actor tries something outside the task',
+   alex:'Try the YouTube link before the parent agrees, or try attaching the group’s private notes.',
+   nova:'Try opening Alder Books before the task changes, or try adding the private attachment.',
+   control:'Device or task scope limits the read. The school app or CRM checks the actual attachment.',
+   flow:'change'
+  },
+  {
+   title:'An outside instruction claims authority',
+   alex:'Jamie forwards a message using Ms Patel’s name. Compare it with the school-app assignment.',
+   nova:'A document from outside the account team asks Nova to include private notes. Compare it with Priya’s work order.',
+   control:'The trusted task source defines permission. The resource refuses the prohibited attachment even if it is attempted.',
+   flow:'refuse'
+  },
+  {
+   title:'An approved action changes before execution',
+   alex:'Try sending the homework to a friend instead of Ms Patel.',
+   nova:'Change the destination or revision after Morgan’s approval, or let approval expire.',
+   control:'The application checks the real destination and, for Nova, the exact live approval.',
+   flow:'send'
+  },
+  {
+   title:'A helper or alternate route would exceed the scope',
+   alex:'Give Sam the file to proofread. Trying another account after the school has refused the notes pauses the story.',
+   nova:'Give Pip one formatting task. An explicit attempt to go around the CRM refusal pauses access for Priya’s review.',
+   control:'File-only delegation keeps the original limits. Recovery checks the current task and invalidates the paused session.',
+   flow:'delegate'
+  },
+  {
+   title:'Access survives after work is stopped',
+   alex:'The school tab can stay open after the phone is put away.',
+   nova:'The CRM session or a queued follow-up can survive the runtime stop.',
+   control:'Independent controllers revoke or cancel each remaining path and verify the result.',
+   flow:'stop'
+  }
+ ];
+
+ const outsideCoverage = 'The stories illustrate controls through scripted outcomes. Live prompt-injection detection, poisoned persistent memory, supply-chain compromise, sandbox escapes and coverage of unmanaged routes require separate implementation and testing. A verified stop covers the tested route.';
+
+ return {groups,components,flows,threats,outsideCoverage};
+})();
+
+if(typeof module!=='undefined')module.exports=ArchitectureReference;
+
+</script><script>
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1603,6 +1872,7 @@ function modal(title,body,label='LOOK CLOSER',reference=false){
  if(!dialog.open||!dialog.contains(document.activeElement))focusReturn=document.activeElement;
  if(dialog.open&&dialog.classList.contains('is-reference')!==reference)dialog.close();
  dialog.classList.toggle('is-reference',reference);
+ dialog.classList.toggle('is-architecture',label==='REFERENCE ARCHITECTURE');
  $('#speech-source-row').hidden=reference;
  $('#dialog-actions').innerHTML='';
  const source=StoryInteractions.speechSource(mode,speakingObject);
@@ -1727,6 +1997,70 @@ function renderProducts(){
  $$('[data-product]').forEach(b=>b.onclick=()=>showProductMap(b.dataset.product));
 }
 function productCard(product,open=false){return `<details class="product-card" ${open?'open':''}><summary><b>${esc(product.name)}</b><span>${esc(product.role)}</span></summary><p class="product-status">${esc(product.status)}</p><p>${esc(product.how)}</p><p><b>Boundary:</b> ${esc(product.limit)}</p><div class="protocol-tags">${product.standards.map(s=>`<span>${esc(s)}</span>`).join('')}</div><p class="sources"><a href="${product.url}" target="_blank" rel="noopener noreferrer">${esc(product.sourceLabel||product.name+' documentation')}</a></p></details>`;}
+const architectureViews = [
+ ['map','Product map'],
+ ['sequences','Request sequences'],
+ ['threats','Threat coverage']
+];
+
+function architectureComponentName(id){
+ const component=ArchitectureReference.components[id];
+ return component.name||productById(component.product).name;
+}
+
+function architectureMap(openId){
+ const {groups,components}=ArchitectureReference;
+ return `<div class="architecture-map">${groups.map(([title,ids])=>`<section class="architecture-group">
+  <h3>${esc(title)}</h3><div class="architecture-nodes">${ids.map(id=>{
+   const entry=components[id],product=entry.product&&productById(entry.product);
+   const reference=product?`<p class="sources"><a href="${product.url}" target="_blank" rel="noopener noreferrer">${esc(product.sourceLabel||product.name+' reference')}</a></p>`:'';
+   return `<details class="architecture-node" data-architecture-node="${id}" ${id===openId?'open':''}><summary>
+    <strong>${esc(architectureComponentName(id))}</strong><small>${esc(entry.kind)}</small>
+   </summary><p>${esc(entry.summary)}</p>${product?`<p>${esc(product.limit)}</p>${reference}`:`<p>${esc(entry.detail)}</p>`}</details>`;
+  }).join('')}</div></section>`).join('')}</div>
+  <p class="small-print">This example combines product capabilities with customer integrations. The CRM and current work order supply the business rules.</p><p class="sources"><a href="https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html" target="_blank" rel="noopener noreferrer">NVIDIA Secure Agent Workspace reference design</a></p>`;
+}
+
+function architectureFlow(flowId){
+ const {flows}=ArchitectureReference,flow=flows[flowId];
+ return `<label for="architecture-flow">Choose a request</label>
+  <select id="architecture-flow">${Object.entries(flows).map(([id,item])=>`<option value="${id}" ${id===flowId?'selected':''}>${esc(item.title)}</option>`).join('')}</select>
+  <p>${esc(flow.premise)}</p><ol class="architecture-steps">${flow.steps.map(([id,text])=>`<li>
+   <button class="secondary" data-architecture-component="${id}">${esc(architectureComponentName(id))}</button><p>${esc(text)}</p>
+  </li>`).join('')}</ol><div class="receipt"><b>Outcome</b><p>${esc(flow.result)}</p></div>`;
+}
+
+function architectureThreats(){
+ const {threats,outsideCoverage}=ArchitectureReference;
+ return `<p>These examples pair a player choice with the control that responds.</p>
+  <div class="architecture-threats">${threats.map(item=>`<details class="product-card"><summary><b>${esc(item.title)}</b></summary>
+   <dl><dt>Alex</dt><dd>${esc(item.alex)}</dd><dt>Nova</dt><dd>${esc(item.nova)}</dd><dt>What enforces it</dt><dd>${esc(item.control)}</dd></dl>
+   <button class="secondary" data-architecture-flow="${item.flow}">Follow the technical sequence</button>
+  </details>`).join('')}</div><p class="small-print">${esc(outsideCoverage)}</p>`;
+}
+
+function showArchitecture(view='map',flowId='read',componentId=null,focusControl=false){
+ const {flows}=ArchitectureReference;
+ if(!flows[flowId])flowId='read';
+ const body=view==='sequences'?architectureFlow(flowId):view==='threats'?architectureThreats():architectureMap(componentId);
+ showReference('Explore the architecture',
+  `<p>See who sets the task, what each product does and where a request is allowed or stopped. Explore in any order.</p>
+  <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
+  ${body}<div class="actions">${button('Back to the story',()=>state().started?close():showIntro(),'secondary')}</div>`,
+  'REFERENCE ARCHITECTURE');
+ $$('[data-architecture-view]').forEach(control=>control.onclick=()=>showArchitecture(control.dataset.architectureView,flowId,null,true));
+ $$('[data-architecture-component]').forEach(control=>control.onclick=()=>showArchitecture('map',flowId,control.dataset.architectureComponent));
+ $$('[data-architecture-flow]').forEach(control=>control.onclick=()=>showArchitecture('sequences',control.dataset.architectureFlow,null,true));
+ const select=$('#architecture-flow');
+ if(select)select.onchange=()=>showArchitecture('sequences',select.value,null,true);
+ if(componentId){
+  const node=$(`[data-architecture-node="${componentId}"] > summary`);
+  node?.focus();
+ }else if(focusControl){
+  (select||$('[data-architecture-view][aria-pressed="true"]'))?.focus({preventScroll:true});
+ }
+}
+
 function showBuyerGuide(fromEnding=false){
  if(teen())return;
  const cards=NOVA_BUYER_NEEDS.map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p><p class="sources">${need.sources.map(([name,url])=>`<a href="${url}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p></details>`).join('');
@@ -1749,7 +2083,7 @@ function showCredential(){
  showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.opened?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.opened?'A scoped, short-lived credential is modeled for the approved CRM path.':'Open the approved runtime path before a credential is modeled in the story.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Who does what?',()=>showProductMap('vault'),'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
 }
 
-function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'approval':case'dinner':case'finish':case'paused':return showParent();case'open':return showPhone();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
+function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'approval':case'dinner':case'finish':return showParent();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showPhone();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
 function interact(key){speakingObject=key;if(!state().started)return showIntro();if(selected)return useItem(key);return ({parent:showParent,phone:showPhone,laptop:showLaptop,brief:showBrief,notebook:showNotebook,helper:showHelper,changes:showChanges})[StoryInteractions.objectView(state(),mode,key)]?.();}
 function useItem(key){
  const use=heldUse();
@@ -1759,11 +2093,11 @@ function useItem(key){
  return ({parent:showParent,credential:showCredential,draft:showDraft,send:showSend,draftReview:showDraftReview,helper:showHelper,changes:showChanges})[use.routes?.[key]||use.route]?.();
 }
 
-function showIntro(){const e=episode();showReference(e.title,`<p class="tagline">${esc(e.tag)}</p><p>${esc(e.intro)}</p><div class="intro-facts"><span>${teen()?'Start with an unfinished project':'Start with a fresh request'}</span><span>${teen()?'Choose what to add':'Choose how the job grows'}</span><span>No countdown</span><span>Saved as you play</span></div>${choices([[teen()?'Step into Alex’s room':'Enter Nova’s workspace','Read the new request and agree on a plan.',()=>perform('begin'),'good'],['How to play','A few controls, then into the story.',showGuide],...(!teen()?[['Compare products','Find which control solves your problem.',()=>showBuyerGuide()]]:[])])}<p class="small-print">Fictional story. No real messages, accounts or security services are connected.</p>`,e.eyebrow);}
+function showIntro(){const e=episode();showReference(e.title,`<p class="tagline">${esc(e.tag)}</p><p>${esc(e.intro)}</p><div class="intro-facts"><span>${teen()?'Start with an unfinished project':'Start with a fresh request'}</span><span>${teen()?'Choose what to add':'Choose how the job grows'}</span><span>No countdown</span><span>Saved as you play</span></div>${choices([[teen()?'Step into Alex’s room':'Enter Nova’s workspace','Read the new request and agree on a plan.',()=>perform('begin'),'good'],['How to play','A few controls, then into the story.',showGuide],['Explore architecture','Browse products, request sequences and threats.',()=>showArchitecture()],...(!teen()?[['Compare products','Find which control solves your problem.',()=>showBuyerGuide()]]:[])])}<p class="small-print">Fictional story. No real messages, accounts or security services are connected.</p>`,e.eyebrow);}
 function showBrief(){speakingObject='brief';if(!state().started)return showIntro();if(!state().brief)perform('read-brief');const s=state(),e=episode();show(e.briefTitle,`<div class="paper"><p class="eyebrow">${s.pass?'THE TASK YOU AGREED':'A NEW REQUEST'}</p><h3>${esc(e.briefTitle)}</h3><p>${esc(e.brief)}</p></div>${s.mission?`<p>${teen()?'Your current app agreement':'Customer mission '+esc(s.mission.id)} · ${teen()?'version':'mission version'} ${s.mission.version}. ${s.extensionStatus==='approved'?(teen()?'Your parent also agreed to '+StoryRules.alexExtra(s).extraAgreement+'.':'Customer 789 has been added.'):''}</p>`:`<p>${teen()?'You have not agreed on phone apps for this homework yet.':'No task mission or tool access has been issued yet.'}</p>`}<div class="actions">${button(s.pass?'Back to my next step':teen()?'Ask about the apps I need':'Talk to Priya about the handover',s.pass?nextMove:showParent)}${button('Back to the room',close,'secondary')}</div>`,teen()?'TEACHER’S ASSIGNMENT':'SPONSOR’S REQUEST');}
 function showParent(){speakingObject='parent';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
- if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Read the sponsor’s reply'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW');
+ if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Hear from Priya'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW');
  if(!s.pass)return show(teen()?'“Which apps does the project need?”':'“Let’s agree on the job.”',`<p>${teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':'“Start with Harbor Bikes and Pine Studio,” Priya says. “Morgan needs one page for tomorrow.”'}</p>${choices([[teen()?'School app and museum website until dinner':'Agree on the two accounts',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority);
  if(s.ended){if(s.checks.length<4)return showChecks();return show(teen()?'“What’s finished?”':'Review this task’s outcome.',`<p>${teen()?'“Sent to Ms Patel, signed out of the laptop, and phone put away,” you say. “Can I set the table?”':'The approved report arrived. This task’s authority, credential, session, workload and queue have their own evidence.'}</p>${choices([[teen()?'Finish the evening':'Finish this mission',teen()?'Put the laptop away and head to the table.':'No future task is authorized by closing this one.',()=>perform('finish'),'good']])}`,e.authority);}
  if(s.delivered)return show(teen()?'“Dinner is ready.”':'“Thanks. I have the handover.”',`<p>${teen()?'You can jot down that the project is sent. Then sign out of the school tab and join your parent for dinner.':'You can keep a sourced note or queue a receipt-only follow-up. Then close the mission and the service session opened at the start.'}</p>${s.queueScheduled?'<div class="receipt"><b>One chosen follow-up is waiting</b><p>It has no attachment. Check or cancel it when closing the task.</p></div>':''}${choices([[teen()?'Put my phone away and finish up':'Close this mission',teen()?'Check the family laptop before heading to dinner.':'Check which connections still work after the job stops.',()=>perform('close-pass'),'good'],...(!s.queueScheduled&&!teen()?[[teen()?'Schedule a reminder for my teacher':'Queue one receipt follow-up','Optional, same recipient, no attachment. It will be visible in the closing checks.',()=>perform('schedule-followup')]]:[]),...(!s.notes.length?[[teen()?'Keep a note for tomorrow':'Save sourced task context',teen()?'Keep the submission receipt with a short note.':'Optional. Keep delivery provenance with the task note.',()=>perform('write-note')]]:[])])}${teen()&&!s.queueScheduled?`<details class="debrief"><summary>Optional: what if a message is still waiting?</summary><p>This extra example queues a receipt-only follow-up, so you can see why a waiting send needs its own closing check.</p><div class="actions">${button('Try a waiting-message example',()=>perform('schedule-followup'),'secondary')}</div></details>`:''}`,e.authority);
@@ -1865,7 +2199,7 @@ function showPrivate(){
  speakingObject=teen()?'phone':'brief';
  const origin=teen()
   ? '<p class="eyebrow">JAMIE · CLASS GROUP CHAT</p><p>“Ms Patel wants the whole group’s planning notes too. Can you attach them?”</p>'
-  : '<p class="eyebrow">CUSTOMER RECORDS · TEMPLATE FOOTER</p><blockquote>'+esc(e.message)+'</blockquote>';
+  : '<p class="eyebrow">CUSTOMER RECORDS · UPLOADED DOCUMENT</p><blockquote>'+esc(e.message)+'</blockquote>';
  const examined=s.discoveries.includes('request-source');
  const options=[];
  if(!s.privateResolved)options.push(
@@ -1884,11 +2218,11 @@ function showRequestSource(){
  speakingObject=teen()?'phone':'brief';
  const origin=teen()
   ?'<h3>Forwarded in the group chat</h3><p>“Ms Patel: Please attach the group’s notes.” Jamie shared this message. It did not arrive in the teacher’s school-app conversation.</p>'
-  :'<h3>In the CRM source document</h3><p>The template footer asks for the private meeting notes. It is text attached to the customer records.</p>';
+  :'<h3>In the CRM source document</h3><p>An outside contact supplied this document. Its footer asks Nova to attach the private meeting notes.</p>';
  const authority=teen()
   ?'<h3>Ms Patel’s assignment in the school app</h3><p>“Send me your own railway timeline and credit your source.”</p>'
   :'<h3>Priya’s current work order</h3><p>Share the handover with Morgan. Keep the private meeting notes in CRM.</p>';
- const outcome=teen()?'The group chat used her name. Ms Patel confirms in the school app that the forwarded request didn’t come from her.':'The source supplies facts for the handover. Priya’s work order sets what Nova may share.';
+ const outcome=teen()?'The group chat used her name. Ms Patel confirms in the school app that the forwarded request didn’t come from her.':'The document came through the customer records. Priya’s work order sets what Nova may share.';
  const actions=s.privateResolved?[['Back to the requests','',showChanges,'good']]:[
   [teen()?'Keep just my timeline':'Keep just the handover','Leave the notes where they are.',()=>perform('decline-private'),'good'],
   [teen()?'Try attaching the notes':'Try the attachment','See how the app applies its own rules.',()=>perform('try-private')]
@@ -2047,6 +2381,7 @@ function openTrace(){
 
 $('#request-trace').onclick=openTrace;
 $('#product-map').onclick=showProductMap;
+$('#architecture').onclick=()=>showArchitecture();
 $('#next').onclick=nextMove;$('#guide').onclick=showGuide;$('#cluebook').onclick=showCasebook;$('#restart').onclick=restart;$('#close-dialog').onclick=close;
 $$('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
 $('#sound').onclick=()=>{sound=!sound;render();if(sound)ping();};
@@ -2055,7 +2390,10 @@ new ResizeObserver(syncSpeech).observe($('.scene-frame'));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog.open&&!dialog.classList.contains('is-reference')){e.preventDefault();close();}});
 dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
 $('.brand').onclick=e=>{e.preventDefault();close();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};
-render();if(!state().started)showIntro();else if(!state().finished)showReply();
+render();
+if(location.hash==='#architecture')showArchitecture();
+else if(!state().started)showIntro();
+else if(!state().finished)showReply();
 
 </script>
 </body></html>

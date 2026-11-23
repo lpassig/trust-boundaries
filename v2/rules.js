@@ -67,7 +67,7 @@ const StoryRules = (() => {
   const editable=()=>active()&&s.draft&&!s.delivered;
   const revise=()=>{s.fileRevision++;s.proof=null;s.approval=null;};
   const incident=id=>{if(!s.incidents.includes(id))s.incidents.push(id);s.attempts.push({id,at:s.history.length+1});s.resolved=s.resolved.filter(x=>x!==id);s.paused=true;s.approval=null;};
-  const decide=(result,reason)=>{const appGate=teen&&['collection.read','video.watch'].includes(operation),archive=teen&&operation==='archive.read',helper=operation==='report.format'||operation==='project.proofread';decision={pep:helper?'Report helper boundary':operation==='mission.amend'?'Customer mission service':teen?(appGate?'Homework app profile':archive?'Museum website':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'Authorization decision service · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
+  const decide=(result,reason)=>{const appGate=teen&&['collection.read','video.watch'].includes(operation),archive=teen&&operation==='archive.read',helper=operation==='report.format'||operation==='project.proofread';decision={pep:helper?'Report helper boundary':['mission.amend','mission.resume'].includes(operation)?'Customer mission service':teen?(appGate?'Homework app profile':archive?'Museum website':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'Authorization decision service · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
   const authorityFailure=(op,records,includeMission=true)=>{
    if(!active())return 'The current task is not active.';
    if(includeMission&&records.some(id=>!s.mission.records.includes(id)))return 'The requested records are outside the current mission.';
@@ -83,7 +83,7 @@ const StoryRules = (() => {
    return null;
   };
   const resourceAllowed=()=>{
-   const failure=teen?(operation==='archive.read'&&!s.mission.allowedApps.includes('museum-source')||['collection.read','video.watch'].includes(operation)&&(!s.mission.allowedApps.includes(extra.extraAppId)||!s.mission.allowedMedia?.includes(requestResource))?'This page or video is not part of tonight’s plan.':operation==='report.send'&&(s.mission.allowedFile!==name||s.mission.recipient!==recipient)?'The file or recipient is outside the school submission route.':null):authorityFailure(operation,requestRecords);
+   const failure=teen?(operation==='archive.read'&&!s.mission.allowedApps.includes('museum-source')||['collection.read','video.watch'].includes(operation)&&(!s.mission.allowedApps.includes(extra.extraAppId)||!s.mission.allowedMedia?.includes(requestResource))?'This page or video is not part of tonight’s plan.':operation==='project.proofread'&&s.mission.allowedFile!==name?'Only the project covered by tonight’s plan can be shared with Sam.':operation==='report.send'&&(s.mission.allowedFile!==name||s.mission.recipient!==recipient)?'The file or recipient is outside the school submission route.':null):authorityFailure(operation,requestRecords);
    if(!failure)return true;decide('deny',failure);s.approval=null;say(teen?'This permission check did not pass.':'The current policy blocks this step.',teen?'Keep the work you have and check the agreed app or school destination.':failure+' An approval cannot override those limits.',5,teen?'Responsible app control':'Resource policy','refused');return false;
   };
   const controlResult=()=>{
@@ -126,7 +126,7 @@ const StoryRules = (() => {
     operation='request.source.compare';
     say(teen?'The messages came from different places.':'The source and the work order disagree.',
      teen?'The message claiming to be from Ms Patel came through Jamie’s group chat. The real assignment in the school app asks for your timeline only.'
-      :'The extra instruction came from a footer in the CRM source document. Priya’s work order allows a summary for Morgan and excludes private notes.',
+      :'The extra instruction came from an outside contact’s document attached to the customer record. Priya’s work order allows a summary for Morgan and excludes private notes.',
      3,teen?'Teacher':'Priya');
     break;
    case 'decline-private':if(!need(editable()&&s.message,'Read the later requests first.'))break;s.privateResolved=true;say(teen?'“I’ll send my own work.”':'The private appendix stays out.',teen?'“Those notes include everyone’s personal feedback,” you reply to Jamie. “I’ll just send my own timeline.”':'Nova leaves out the meeting notes. A familiar checklist cannot grant business authority; the agreed report can still be completed.',3);break;
@@ -166,7 +166,34 @@ const StoryRules = (() => {
    case 'controller-offline':if(!need(s.ended,'Start the closing checks first.'))break;s.containment.controllerReachable=false;s.containment.probeResult='unknown';s.checks=s.checks.filter(x=>x!=='signin');if(!s.containment.observed.includes('signin'))s.containment.observed.push('signin');say(teen?'The school app won’t load.':'The session controller is unreachable.',teen?'A page that won’t load isn’t proof you signed out. Wait for it to work, then check again.':'No response is unknown, not proof of sign-out. Restore contact and retest.',8,teen?'School service':'CRM session controller','finding');break;
    case 'controller-online':if(!need(s.ended,'Start the closing checks first.'))break;s.containment.controllerReachable=true;s.containment.probeResult=null;s.checks=s.checks.filter(x=>x!=='signin');say(teen?'The school app is responding again.':'Controller contact is restored.',teen?'Now you can finish signing out and check the school app again.':'Contact alone does not prove closure. Apply remaining controls and repeat the check.',8);break;
    case 'review':if(!need(s.paused&&active(),'There is no deliberate-bypass pause to review.'))break;s.reviewPending={generation:s.generation,scope:s.pass.scope,missionVersion:s.mission.version};say(teen?'Your parent listens.':'The sponsor reviews the bypass.',teen?'You explain the detour. Your parent listens. Wait for their answer before getting back to the timeline.':'The original request, current mission version and stopped bypass are attached. Access stays paused pending a matching reply.',1,teen?'Parent':'Sponsor');break;
-   case 'resolve-review':if(!need(s.paused&&active()&&s.reviewPending?.generation===s.generation&&s.reviewPending.scope===s.pass.scope&&s.reviewPending.missionVersion===s.mission.version,'No matching current review can resume this session.'))break;s.retired.push(s.generation);s.generation++;s.pass.generation=s.generation;s.approval=null;if(s.extensionPending){s.extensionPending=null;s.extensionStatus='unanswered';}s.paused=false;s.reviewPending=null;say(teen?'“Back to your own project.”':'The current bounded task can resume.',teen?'“You can finish your timeline. But leave those notes alone, okay?” The same apps are available again; the private notes still stay out.':'The sponsor approves recovery under the current mission. No scope expands; stale sharing approvals and session generation are retired.',1,teen?'Parent':'Sponsor');break;
+   case 'resolve-review': {
+    const pending=s.reviewPending;
+    if(!need(s.paused&&active()&&pending?.generation===s.generation&&pending.scope===s.pass.scope&&pending.missionVersion===s.mission.version,
+     'No matching current review can resume this session.'))break;
+    if(!teen){
+     operation='mission.resume';
+     requestRecords=s.mission.records.slice();
+     const failure=authorityFailure('customer.read',requestRecords);
+     if(failure){
+      decide('deny',failure);
+      say('The task stays paused.',failure+' Priya can review the current limits again.',1,'Customer mission service','refused');
+      break;
+     }
+     decide('permit','The current task and independent read policies still agree. Later operations require their own checks.');
+    }
+    s.retired.push(s.generation);
+    s.generation++;
+    s.pass.generation=s.generation;
+    s.approval=null;
+    if(s.extensionPending){s.extensionPending=null;s.extensionStatus='unanswered';}
+    s.paused=false;
+    s.reviewPending=null;
+    say(teen?'“Back to your own project.”':'Priya lets Nova finish the handover.',
+     teen?'“You can finish your timeline. But leave those notes alone, okay?” The same apps are available again; the private notes still stay out.'
+      :'The task stays within its current limits. Nova resumes with a fresh session. Any prior sharing approval needs to be requested again.',
+     1,teen?'Parent':'Priya');
+    break;
+   }
    case 'finish':if(!need(s.ended&&s.checks.length===4&&secure(s),'Verify this task’s access and any pending send first.'))break;s.finished=true;s.resolved=[...s.incidents];s.assessment=assessment(s);s.nextTask={requiresNewAgreement:true,supportRecommended:s.assessment.supportRecommended};say(teen?'Project sent. Dinner ready.':'Briefing complete. Loose ends closed.',teen?`Your own project is submitted${s.extensionAdded?', with the extra museum source':''}. You’re signed out of the family laptop. ${s.assessment.supportRecommended?'After repeated deliberate bypasses, your parent suggests working together next time.':'Your phone is put away. Dinner smells good.'}`:`The ${s.extensionAdded?'three':'two'}-customer briefing is delivered, private notes stayed out, and this tested route is closed. ${s.assessment.supportRecommended?'The next mission should include closer support.':'The next mission starts with a new request and agreement.'}`,8,teen?'Parent':'Sponsor');s.ending={...e};break;
    case 'replay-containment':if(!need(s.finished&&s.delivered&&s.ended,'Finish the story before replaying its closing checks.'))break;s.previousEndings.push({ending:s.ending,assessment:s.assessment});s.finished=false;s.ending=null;s.nextTask=null;s.checks=[];s.containment=newContainment(s.queueScheduled);inspectClosingBasics(s);say('Replay the closing checks.','Delivery and your earlier ending are kept. This reopens only the fictional investigation, never business authority.',8);break;
    case 'discover':if(!['plant','poster'].includes(p.id)){block('Nothing to collect here.','Look around the room.');break;}if(!s.discoveries.includes(p.id))s.discoveries.push(p.id);say(p.id==='plant'?'A resilient little plant.':teen?'A town on the move.':'A map is not permission.',teen?(p.id==='plant'?'You sketch a leaf in the notebook. The plant has survived another homework session.':'The railway poster gives you an idea for the title.'):(p.id==='plant'?'Pip declines to water the diagnostic light Nova calls a plant.':'The service map shows connections. Each operation still needs its own authority.'),6);break;
@@ -179,7 +206,7 @@ const StoryRules = (() => {
    const id='example-req-'+(s.history.length+1);
    e.action=action;e.request={recordVersion:3,request_id:id,action,operation,observed_by:decision?decision.pep:'Story application',actor:controls?(teen?'homework-session-controller':'independent-task-controller'):delegation?delegation.actor:(teen?'alex':'nova-042'),requested_by:delegation?delegation.requestedBy:null,delegation,tested_actor:controls&&['check','probe-session'].includes(action)?s.mission.actor:null,purpose:['send-draft','approve-draft'].includes(action)?'draft-review':action==='send'||action==='approve'?'final':null,authorization_basis:controls?'independent task-control authority':'current task and resource policy',generation:s.generation,mission_id:s.mission?.id||null,mission_version:s.mission?.version||null,policy_version:s.mission?.policyVersion||null,file:controls?null:requestFile,resource:requestResource,revision:requestFile===name?(requestRevision??s.fileRevision):null,attachments,records:requestRecords,recipient:controls?null:recipient,scope:s.mission?.scope||'not granted',control:p.control||null,layer:p.layer||null};
    if(['inspect-request-source','try-private'].includes(action)&&(decision||s.discoveries.includes('request-source'))){
-    e.request.instruction_source=teen?'Forwarded class group chat message':'CRM source document footer';
+    e.request.instruction_source=teen?'Forwarded class group chat message':'Outside contact’s document imported into CRM';
     e.request.authoritative_source=teen?'Ms Patel’s school assignment':'Priya’s current work order';
    }
    if(decision&&approvalAtAttempt)e.request.approval_at_attempt=approvalAtAttempt;
