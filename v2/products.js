@@ -232,12 +232,18 @@ const NOVA_VAULT_EXAMPLE = {
     "credential": "not generated",
     "lease": "fictional receipt"
   },
-  "resource_check": {
+  "source_read_check": {
     "records": [
       "123",
       "456"
     ],
-    "action": "summary.prepare",
-    "policy_owner": "Customer CRM application"
+    "action": "customer.read",
+    "policy_owner": "Customer CRM application",
+    "credential_use": "The configured read role reads the permitted source records only."
+  },
+  "separate_report_share": {
+    "action": "report.send",
+    "authorization": "A separate CRM report-sharing endpoint checks delegated identity, current mission, independent resource policy and exact one-use human approval.",
+    "credential_use": "The source-read credential is not used or upgraded to authorize report delivery. No Vault-audience token is forwarded to the CRM."
   }
 };

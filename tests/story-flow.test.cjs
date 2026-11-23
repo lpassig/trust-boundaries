@@ -47,7 +47,7 @@ for(const mode of ['teen','agent']){
  });
  test(`${mode}: earlier feedback saves preserve choices without inventing a send receipt`,()=>{
   const old=run(feedback(mode),'apply-minor');old.version=4;delete old.draftReview;delete old.feedbackLegacy;
-  const migrated=R.hydrate(old,mode);assert.equal(migrated.version,5);assert.equal(migrated.minorChoice,'added');
+  const migrated=R.hydrate(old,mode);assert.equal(migrated.version,6);assert.equal(migrated.minorChoice,'added');
   assert(migrated.feedbackLegacy);assert.equal(migrated.draftReview,null);assert.equal(R.stage(migrated),'changes');
   assert(R.hydrate(JSON.parse(JSON.stringify(migrated)),mode).feedbackLegacy);
  });

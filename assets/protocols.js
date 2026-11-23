@@ -64,12 +64,12 @@ const AGENT_PROTOCOLS = [
   title:'Preserve the originating limits across a helper call',tags:['RFC 8693 · optional','Audience binding','Child grant','Distinct identity'],status:'Standards-supported option + customer delegation policy',
   how:'A supporting authorization server can exchange a token for the downstream audience under RFC 8693. Distinct helper identity and an explicit child grant preserve the originating mission and restrict the helper to formatting the report.',
   boundary:'Token exchange alone does not define the child’s business permissions or revoke its input tokens. Do not pass an unrelated bearer token through an MCP server. Child scope and delegation depth need independent limits.',
-  evidence:{parent_mission:'G-042',helper:'formatter-01',task:'format',data_scope:'report only',parent_token_shared:false},sources:['exchange','mcp']
+  evidence:{parent_mission:'G-042',helper:'pip-01',task:'format',data_scope:'report only',parent_token_shared:false},sources:['exchange','mcp']
  },
  {
   title:'Distribute the revocation signal, then verify its effect',tags:['SSF','CAEP session-revoked','RFC 7009 · where supported','Runtime stop'],status:'Proposed cross-system integration; four outcomes are checked separately',
   how:'SSF can distribute signed Security Event Tokens; CAEP defines session-revoked semantics. Receivers validate and correlate the signal, then apply their enforcement policy. Token revocation, applicable Vault lease revocation, runtime stop, and in-flight reconciliation are separate operations.',
-  boundary:'Delivery or acknowledgement of an event is not proof of containment. Receivers, self-contained tokens, leases, and queued actions can behave differently. The game requires observed results for the tested route before fresh authorization. An unreachable controller leaves an unknown, unverified state; these checks do not prove coverage of every possible endpoint.',
+  boundary:'Delivery or acknowledgement of an event is not proof of containment. Receivers, self-contained tokens, leases, and queued actions can behave differently. The game requires observed results for the tested route before closure is marked verified. A future task would need fresh authorization. An unreachable controller leaves an unknown, unverified state; these checks do not prove coverage of every possible endpoint.',
   evidence:{illustrative_header:{typ:'secevent+jwt',alg:'ES256',kid:'example-key'},illustrative_decoded_SET:{iss:'https://idp.example',iat:1795424400,aud:'https://resource.example',jti:'example-event-042',sub_id:{format:'opaque',id:'session-G-042'},events:{'https://schemas.openid.net/secevent/caep/event-type/session-revoked':{}}},signature_and_delivery:'not implemented in this game'},sources:['ssf','caep','revoke','leases','openshell']
  }
 ];
