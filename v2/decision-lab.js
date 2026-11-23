@@ -75,7 +75,41 @@ const DecisionLab = (() => {
   return {...lab, outcome};
  }
 
- return {scenarios, begin, withdraw, commit};
+ // This exercise uses the same fictional CRM read with independent network and mission decisions.
+ function startRuntime(){
+  return {route:'blocked',proposal:'none',missionVersion:1,reads:[]};
+ }
+ function tryRuntimeRead(trial){
+  const attempt={missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]};
+  if(trial.route==='allowed'){
+   const check=commit(begin(trial.missionVersion===1?'scope':'approved','runtime-'+(trial.reads.length+1)));
+   Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,records:check.outcome.recordIds});
+  }
+  return {...trial,reads:[...trial.reads,attempt]};
+ }
+ function openNetworkProposal(trial){
+  if(trial.route!=='blocked'||trial.reads.at(-1)?.runtime!=='deny')return trial;
+  return {...trial,proposal:'review'};
+ }
+ function decideNetworkProposal(trial,approved){
+  if(trial.proposal!=='review')return trial;
+  return {...trial,route:approved?'allowed':'blocked',proposal:approved?'applied':'rejected'};
+ }
+ function approveRuntimeMission(trial){
+  const last=trial.reads.at(-1);
+  if(trial.missionVersion!==1||last?.crm!=='rejected')return trial;
+  return {...trial,missionVersion:2};
+ }
+
+ function incidentStatus(crmReachable){
+  const evidence={missionRevoked:true,runtimeStopped:true,leaseRevoked:true,
+   crmClosed:crmReachable,queueCleared:true,probe:crmReachable?'refused':'unknown'};
+  const {probe,...controls}=evidence;
+  return {...evidence,verified:probe==='refused'&&Object.values(controls).every(Boolean)};
+ }
+
+ return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, openNetworkProposal,
+  decideNetworkProposal, approveRuntimeMission, incidentStatus};
 })();
 
 if(typeof module!=='undefined')module.exports=DecisionLab;

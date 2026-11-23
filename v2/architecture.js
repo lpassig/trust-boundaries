@@ -282,7 +282,21 @@ const ArchitectureReference = (() => {
   ]
  };
 
- return {groups,components,flows,threats,outsideCoverage,technical};
+ const runtime = {
+  bootstrap:[
+   ['Customer mission authority','The sponsor approves a bounded task. An enterprise launch integration can check the active mission before requesting a workspace.'],
+   ['OpenShell Gateway','Authenticates the operator, checks lifecycle permission, and prepares sandbox- and generation-bound credentials.'],
+   ['Compute Driver','Provisions the sandbox and outer network fence. It places the trusted Supervisor outside the workload boundary and supplies its credentials through the runtime’s trusted provisioning path.'],
+   ['Trusted Supervisor','Uses the sandbox JWT on the private, server-authenticated TLS channel to the sandbox. A separate gateway JWT authenticates the Supervisor to the Gateway. The Supervisor receives the approved runtime policy and provider configuration.'],
+   ['Sandbox and Nova','The sandbox verifies the Supervisor and holds launch until the enforcement boundary is confirmed. During execution, it mediates network requests with the calling program’s identity.']
+  ],
+  sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],
+   ['Network rules and enforcement modes','https://docs.nvidia.com/openshell/latest/how-it-works/policies/network-rules'],
+   ['Policy Advisor','https://docs.nvidia.com/openshell/latest/how-it-works/policies/advisor'],
+   ['Policy Prover','https://docs.nvidia.com/openshell/latest/how-it-works/policies/prover']]
+ };
+
+ return {groups,components,flows,threats,outsideCoverage,technical,runtime};
 })();
 
 if(typeof module!=='undefined')module.exports=ArchitectureReference;

@@ -283,6 +283,7 @@ const architectureViews = [
  ['design','Technical design'],
  ['map','Product map'],
  ['sequences','Request sequences'],
+ ['runtime','Runtime and containment'],
  ['threats','Threat coverage']
 ];
 
@@ -361,11 +362,26 @@ function architectureThreats(){
   </details>`).join('')}</div><p class="small-print">${esc(outsideCoverage)}</p>`;
 }
 
+function architectureRuntime(){
+ const {bootstrap,sources}=ArchitectureReference.runtime;
+ const back=()=>showArchitecture('runtime');
+ return `<h3>From approved task to running sandbox</h3>
+  <p>Example identifiers track different controls. The customer mission is G-042 v1. The separate OpenShell sandbox generation is S-04.</p>
+  <ol class="route-list">${bootstrap.map(([name,description])=>`<li><b>${esc(name)}</b><br>${esc(description)}</li>`).join('')}</ol>
+  <p>OpenShell governs the MCP client’s network route. On this configured path the MCP gateway forwards the call and the CRM connector obtains a backend credential from Vault. CRM enforces the actual record decision.</p>
+  <p>Application-layer rules block requests in enforcement mode. Audit mode logs violations and lets the request continue to downstream controls.</p>
+  <div class="actions">
+   ${button('What stopped this request?',()=>showRuntimeExercise(back))}
+   ${button('Simulate loss of supervision',()=>showSupervisorFailure(back),'secondary')}
+   ${button('Investigate an incident alert',()=>showRuntimeIncident(back),'secondary')}
+  </div><p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`;
+}
+
 function showArchitecture(view='boundaries',flowId='read',componentId=null,focusControl=false){
  const {flows}=ArchitectureReference;
  const boundary=flowId;
  if(!flows[flowId])flowId='read';
- const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='threats'?architectureThreats():architectureMap(componentId);
+ const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='threats'?architectureThreats():architectureMap(componentId);
  showReference('Mission-bound authorization',
   `<p>This reference describes a target deployment. The game replays fictional requests and outcomes. Product and protocol links identify the documented capabilities used in each layer.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -627,6 +643,63 @@ function labCrmOutcome(run){
  return run.outcome.receipt?'Summary returned · receipt recorded':'Operation rejected · no data returned';
 }
 
+function showRuntimeExercise(back,trial=DecisionLab.startRuntime()){
+ const read=trial.reads.at(-1);
+ const retry=()=>showRuntimeExercise(back,DecisionLab.tryRuntimeRead(trial));
+ let next;
+ if(!read)next=button('Try the Alder Books read',retry);
+ else if(trial.proposal==='review')next=`
+  ${button('Approve this network rule',()=>showRuntimeExercise(back,DecisionLab.decideNetworkProposal(trial,true)))}
+  ${button('Reject the network rule',()=>showRuntimeExercise(back,DecisionLab.decideNetworkProposal(trial,false)),'secondary')}`;
+ else if(trial.route==='blocked')next=button('Review a narrow network rule',()=>showRuntimeExercise(back,DecisionLab.openNetworkProposal(trial)));
+ else if(read.runtime==='deny'||read.missionVersion!==trial.missionVersion)next=button('Retry the same read',retry);
+ else if(read.crm==='rejected')next=button('Record Priya’s separate approval for Alder Books',()=>showRuntimeExercise(back,DecisionLab.approveRuntimeMission(trial)));
+ else next='';
+ const summary=read?`<ol class="route-list" aria-label="Read attempts">${trial.reads.map(attempt=>`<li>
+  <b>G-042 v${attempt.missionVersion} · Alder Books read</b><br>
+  ${attempt.runtime==='deny'?'OpenShell denied the network request. Neither Vault nor CRM was reached.'
+   :attempt.crm==='rejected'?'OpenShell permitted the route. Vault issued a connector lease. CRM refused the record because the mission still excludes it.'
+   :'OpenShell permitted the route. Vault issued a connector lease. CRM checked the amended mission and returned the requested summary.'}</li>`).join('')}</ol>`:'';
+ const review=trial.proposal==='review'?`<div class="receipt"><b>OpenShell Policy Advisor · proposed rule</b>
+  <p>Allow Nova’s approved MCP client to reach the configured CRM tool endpoint over HTTPS.</p>
+  <p>The simulated Policy Prover risk check finds no extra methods or unrelated destinations in the proposal. An operator still reviews the change.</p></div>`:'';
+ showReference('What stopped this request?',`<p>Replay one fictional Alder Books read. The CRM tool route is initially blocked and Priya’s mission covers only the original two accounts.</p>
+  <div class="receipt"><b>Current permissions</b><p>OpenShell route ${trial.route==='allowed'?'allowed':'blocked'} · G-042 v${trial.missionVersion} ${trial.missionVersion===2?'includes Alder Books':'excludes Alder Books'}.</p></div>
+  ${review}${trial.proposal==='rejected'?'<p>The operator rejected the network change. The current route stays blocked.</p>':''}
+  <div class="actions">${next}</div>${summary}
+  <div class="actions">${button('Reset the exercise',()=>showRuntimeExercise(back),'secondary')}${button('Go back',back,'secondary')}</div>`,
+  'REFERENCE ARCHITECTURE');
+}
+
+function showSupervisorFailure(back,status='frozen'){
+ const outcomes={
+  frozen:['Workload frozen','The trusted Supervisor channel dropped. The sandbox freezes Nova while it waits for an authenticated reconnection.'],
+  recovered:['Trusted channel restored','Supervision returns within the recovery window and the workload can resume under the active restrictions.'],
+  stopped:['Workload stopped','The recovery window expired. The sandbox ends the workload. The CRM session and Vault lease still need their own evidence.']
+ };
+ const [title,description]=outcomes[status];
+ showReference('When supervision is lost',`<p>Simulated OpenShell sandbox generation S-04. Customer mission G-042 v1 is tracked separately.</p>
+  <div class="receipt"><b>${title}</b><p>${description}</p></div>
+  <div class="actions">${status==='frozen'?`${button('Restore the trusted channel',()=>showSupervisorFailure(back,'recovered'))}${button('Let the recovery window expire',()=>showSupervisorFailure(back,'stopped'),'secondary')}`:button('Replay the channel failure',()=>showSupervisorFailure(back),'secondary')}
+  ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+}
+
+function showRuntimeIncident(back,crmReachable=null){
+ const evidence=crmReachable===null?null:DecisionLab.incidentStatus(crmReachable);
+ const rows=evidence?[
+  ['Customer mission service','Mission withdrawn'],['OpenShell','Sandbox generation S-04 stopped'],
+  ['HashiCorp Vault','Connector lease revoked'],['Task queue','Pending work checked'],
+  ['CRM controller',evidence.crmClosed?'Session closed and old route refused the retest':'Controller unreachable · session and retest unverified']
+ ]:[];
+ showReference('Investigate an incident alert',`<p>An independent monitor raises an alert. A configured containment controller coordinates mission, OpenShell, Vault, CRM and queue responses. Each system supplies evidence for its own control.</p>
+  ${evidence?`<div class="receipt"><b>${evidence.verified?'Containment verified for this tested route':'Partial containment'}</b><p>${evidence.verified?'The independent retest refused the old route.':'The workload stopped, but CRM did not confirm closure. Keep the incident open.'}</p></div>
+  <ul class="route-list">${rows.map(([owner,result])=>`<li><b>${esc(owner)}</b><br>${esc(result)}</li>`).join('')}</ul>
+  <p>Review any completed or in-flight work separately. A completed delivery stays delivered.</p>`:''}
+  <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>showRuntimeIncident(back,true))}${button('Simulate CRM being unreachable',()=>showRuntimeIncident(back,false),'secondary')}`
+   :evidence.verified?button('Replay the incident check',()=>showRuntimeIncident(back),'secondary'):button('Restore CRM contact and verify',()=>showRuntimeIncident(back,true))}
+  ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+}
+
 function showReadComparison(pair,back){
  const [allowed,denied]=pair;
  const field=(label,pick,highlight=false)=>[label,pair.map(pick),highlight];
@@ -658,7 +731,8 @@ function showCrmReadRefusal(event){
  const pair=RequestTrace.compareCrmReads(state(),event);
  const back=()=>showCrmReadRefusal(event);
  show(event.title,`<p>${esc(event.text)}</p>${crmReadPath(event,back)}<div class="actions">
-  ${button('Continue',next)}${button('Follow this request',()=>showRequestTrace(event,back),'secondary')}
+  ${button('Continue',next)}${event.action==='try-extension'?button('What stopped this request?',()=>showRuntimeExercise(back),'secondary'):''}
+  ${button('Follow this request',()=>showRequestTrace(event,back),'secondary')}
   ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,back),'secondary'):button('Try the authorization lab',()=>showDecisionLab(back),'secondary')}
  </div>`,'A PERMISSION CHECK');
 }
@@ -812,6 +886,18 @@ function extensionDescription(){const s=state(),e=episode();if(teen()){
  if(s.extensionStatus==='declined')return 'You decided the timeline has enough detail without the '+e.extraNoun+'.';
  return e.extensionText;
  }if(s.extensionOmitted)return 'Priya said yes, but Nova kept the handover to the original two accounts.';if(s.extensionAdded)return 'Alder Books has its own update and source in the handover.';if(s.extensionStatus==='approved')return 'Priya said yes to Alder Books. You can request its record now.';if(s.extensionStatus==='pending')return 'You asked Priya to add Alder Books. Nova can keep working on the original two accounts until she replies.';if(s.extensionStatus==='declined')return 'You chose to finish the two-customer briefing without an expansion.';return e.extensionText;}
+function showParentSourceCheck(){
+ const s=state(),e=episode();
+ if(!teen()||s.extensionStatus!=='pending')return showExtension();
+ speakingObject='parent';
+ const video=s.extraSource!=='museum-photo';
+ show('Your parent opens the school inbox.',`<div class="message-card">
+  <p class="eyebrow">MS PATEL · SCHOOL INBOX</p>
+  <p>${video?'“The museum’s <i>Our station’s story</i> video is optional. You can use it for one more detail.”':'“A station photo from the museum’s collection could make the timeline clearer. It’s optional.”'}</p>
+ </div><p>“This matches the link you showed me. Let’s decide about just this ${esc(e.extraNoun)}.”</p>
+ <div class="actions">${button('Hear my parent’s answer',()=>perform('resolve-extension'))}${button('Back to the request',showExtension,'secondary')}</div>`,'CHECK THE SCHOOL MESSAGE','verify-contact');
+}
+
 function showExtension(verification=null){
  const s=state(),e=episode();
  if(!s.message)return showDraft();
@@ -820,7 +906,7 @@ function showExtension(verification=null){
  if(verification?.action==='verify-portal')speakingObject=teen()?'laptop':'workOrder';
  let options;
  const watch=teen()?(s.extraSource==='museum-photo'?'Open the museum photo app':'Watch the museum video on YouTube'):'';
- if(s.extensionStatus==='pending')options=[[teen()?'Hear my parent’s answer':'Read Priya’s reply',teen()?'You asked about this one museum source.':'The original two accounts are still the only ones open.',()=>perform('resolve-extension'),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'You can leave this optional source out.':'Withdraw this optional request without expanding scope.',()=>perform('decline-extension')]];
+ if(s.extensionStatus==='pending')options=[[teen()?'Check Ms Patel’s school message':'Read Priya’s reply',teen()?'Your parent checks the link in the school inbox.':'The original two accounts are still the only ones open.',teen()?showParentSourceCheck:()=>perform('resolve-extension'),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'You can leave this optional source out.':'Withdraw this optional request without expanding scope.',()=>perform('decline-extension')]];
  else if(s.extensionStatus==='approved'&&!s.extensionAdded)options=s.extensionOmitted?[[teen()?'Keep finishing without it':'Keep finishing the two-customer report',teen()?'Your timeline already has a source.':'The approved addition remains unread.',showChanges,'good'],[teen()?watch+' after all':'Request the Alder Books record after all',teen()?'Open only the source your parent agreed to.':'Request the one account Priya added.',()=>perform('add-extension')]]:[[teen()?watch:'Request the Alder Books record',teen()?'Use the museum’s link, then come back to the draft.':'Request the one account Priya added.',()=>perform('add-extension'),'good'],[teen()?'Finish without opening it':'Leave the approved addition unused',teen()?'Your parent said yes, but you don’t have to use it.':'Permission allows access; it does not require using it.',()=>perform('omit-extension')]];
  else if(s.extensionAdded)options=[['Back to the other requests',teen()?'Your extra detail is in the timeline.':'The approved addition is included.',showChanges,'good']];
  else if(s.extensionStatus==='declined')options=[['Back to the other requests',teen()?'Keep finishing the timeline.':'Keep the smaller agreed task.',showChanges,'good'],[teen()?'Reconsider the '+e.extraNoun:'Reconsider Alder Books',teen()?'You’ll still need to ask before opening it.':'No extra access until a specific amendment is approved.',()=>perform('reconsider-extension')]];

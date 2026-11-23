@@ -205,6 +205,9 @@ test('Alex asks about one linked museum video, not unrestricted YouTube',()=>{
  assert.equal(s.extraSource,'youtube');assert(!s.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(s.mission.allowedMedia,[]);
  const pending=act(s,'try-extension');assert.equal(pending.event.request.operation,'video.watch');assert.equal(pending.event.decision.result,'deny');
  s=run(s,'resolve-extension');assert(s.mission.allowedApps.includes('youtube-museum-video'));assert.equal(s.mission.scope,'project-with-museum-video');assert.deepEqual(s.mission.allowedMedia,['riverside-station-video']);
+ assert.equal(s.last.request.authoritative_source,'Ms Patel’s school inbox message');
+ assert.equal(s.last.request.resource,'riverside-station-video');
+ assert(T.build(s,'teen').nodes.some(node=>node.role==='Ms Patel’s school inbox message'&&node.status==='checked'));
  const other=act(s,'add-extension',{media:'unrelated-recommendation'});assert.equal(other.event.decision.result,'deny');assert.equal(other.state.extensionAdded,false);assert.equal(other.event.request.resource,'unrelated-recommendation');
  s=run(s,'add-extension');assert.equal(s.last.request.resource,'riverside-station-video');assert.equal(s.extensionAdded,true);assert.match(s.last.text,/YouTube/);
 });

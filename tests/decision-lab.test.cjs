@@ -55,3 +55,32 @@ test('a Permit for one observation does not authorize a changed record or reques
   assert.equal(outcome.receipt,null);
  }
 });
+
+test('a new network rule opens the route while the same read still needs a separate mission amendment',()=>{
+ const initial=Lab.startRuntime();
+ const blocked=Lab.tryRuntimeRead(initial);
+ assert.deepEqual(blocked.reads[0],{missionVersion:1,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]});
+ assert.equal(Lab.approveRuntimeMission(blocked),blocked);
+ const proposal=Lab.openNetworkProposal(blocked);
+ const rejected=Lab.decideNetworkProposal(proposal,false);
+ assert.equal(Lab.tryRuntimeRead(rejected).reads.at(-1).vault,'not-reached');
+ const allowed=Lab.decideNetworkProposal(proposal,true);
+ assert.equal(allowed.missionVersion,1);
+ const retried=Lab.tryRuntimeRead(allowed);
+ assert.deepEqual(retried.reads.at(-1),{missionVersion:1,runtime:'permit',vault:'permit',crm:'rejected',records:[]});
+ const amended=Lab.approveRuntimeMission(retried);
+ assert.deepEqual(Lab.tryRuntimeRead(amended).reads.at(-1),{missionVersion:2,runtime:'permit',vault:'permit',crm:'committed',records:['789']});
+});
+
+test('a stopped sandbox leaves containment partial when the CRM controller cannot answer',()=>{
+ const partial=Lab.incidentStatus(false);
+ assert.equal(partial.runtimeStopped,true);
+ assert.equal(partial.leaseRevoked,true);
+ assert.equal(partial.crmClosed,false);
+ assert.equal(partial.probe,'unknown');
+ assert.equal(partial.verified,false);
+ const verified=Lab.incidentStatus(true);
+ assert.equal(verified.crmClosed,true);
+ assert.equal(verified.probe,'refused');
+ assert.equal(verified.verified,true);
+});

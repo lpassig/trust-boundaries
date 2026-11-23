@@ -223,6 +223,10 @@ const StoryRules = (() => {
     e.request.instruction_source=teen?'Forwarded class group chat message':'Outside contact’s document imported into CRM';
     e.request.authoritative_source=teen?'Ms Patel’s school assignment':'Priya’s current work order';
    }
+   if(teen&&action==='resolve-extension'&&e.kind==='story'){
+    e.request.authoritative_source='Ms Patel’s school inbox message';
+    e.request.resource=extra.extraResource;
+   }
    if(decision&&approvalAtAttempt)e.request.approval_at_attempt=approvalAtAttempt;
    if(!teen&&operation==='report.send')e.request.follow_up_sentence=reportFollowUp(s);
    if(!teen&&operation==='customer.read'&&decision)e.request.tool_route='crm-mcp-gateway';
