@@ -132,7 +132,8 @@ function roomStateOverlay(mode,act,state) {
   if(state.hasNote)art+=`<g data-event="sourced-note"><circle cx="${teen?484:381}" cy="${teen?425:445}" r="8" fill="#a3d9bd"/><path d="M${teen?'480 425L483 428L489 421':'377 445L380 448L386 441'}" stroke="#345c53" stroke-width="1.5" fill="none"/></g>`;
   if(step>=7&&teen)art+=`<g data-event="sibling-in-room">${humanFigure('sibling',747,463,.89)}</g>`;
   if(state.revoked||state.paused) {
-    art+=`<g data-event="access-locked"><path d="${teen?'M684 224L748 246L748 293L683 272Z':'M663 210L760 242L760 294L663 262Z'}" fill="#20283f" opacity=".88"/><g transform="translate(${teen?'715 260':'714 254'})"><path d="M-7 0L-7-8Q0-18 7-8L7 0" fill="none" stroke="${tone}" stroke-width="3"/><rect x="-11" y="-1" width="22" height="17" rx="3" fill="${tone}"/><path d="M0 4L0 10" stroke="#343149" stroke-width="2"/></g></g>`;
+    if(!state.serviceStillOpen)art+=`<g data-event="access-locked"><path d="${teen?'M684 224L748 246L748 293L683 272Z':'M663 210L760 242L760 294L663 262Z'}" fill="#20283f" opacity=".88"/><g transform="translate(${teen?'715 260':'714 254'})"><path d="M-7 0L-7-8Q0-18 7-8L7 0" fill="none" stroke="${tone}" stroke-width="3"/><rect x="-11" y="-1" width="22" height="17" rx="3" fill="${tone}"/><path d="M0 4L0 10" stroke="#343149" stroke-width="2"/></g></g>`;
+    if(state.serviceStillOpen)art+=`<g data-event="service-still-open"><circle cx="${teen?715:714}" cy="${teen?260:254}" r="19" fill="none" stroke="#efd0a0" stroke-width="3" stroke-dasharray="4 3"/></g>`;
     art+=teen?`<path d="M509 404L531 397L548 404L526 412Z" fill="#2b2c42" stroke="${tone}" stroke-width="2"/>`:`<path d="M476 400L529 384L568 397L515 415Z" fill="#302f43" stroke="${tone}" stroke-width="2"/>`;
   }
   return `<g class="room-events" data-act="${act+1}">${art}</g>`;

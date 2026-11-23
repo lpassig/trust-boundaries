@@ -9,7 +9,19 @@ Two self-contained point-and-click stories, with separate saved progress:
 - **Alex — The Last Upload:** finish a history project before dinner, investigate a suspicious teacher message, and choose how to finish the work.
 - **Nova — The Confident Document:** deliver a two-customer briefing while keeping retrieved instructions below the original mission authority.
 
-Both stories have two independent verification routes (known contact or official record), a source-card puzzle, solo or limited-helper proofreading before delivery, exact sharing approval, recoverable detours, optional notebook discoveries, and a closing epilogue. An ending changes after recorded detours. Sound is optional, there is no real-time countdown, and the keyboard supports the whole game. Nova’s expandable explanations retain source-linked standards and explicitly label optional integrations.
+Both stories have two independent verification routes (known contact or official record), a source-card puzzle, solo or limited-helper proofreading before delivery, exact sharing approval, recoverable detours, optional notebook discoveries, and an investigation of access that survives shutdown. Endings reward demonstrated recovery and respond to repeated overreach. Sound is optional, there is no real-time countdown, and the keyboard supports the whole game. Nova’s expandable explanations retain source-linked standards and explicitly label optional integrations.
+
+### Investigation and recovery update
+
+The closing scene now contains a repair puzzle. The phone or runtime is stopped, but a legacy school/CRM session still answers a harmless status read. Credential revocation alone does not close that established connection. Players request the appropriate account/credential and service-session actions, repeat the same status check, and cancel and verify a queued follow-up. Inspecting four cards alone cannot complete containment. The earlier delivered file remains delivered.
+
+The new request comes from a familiar teacher or internal checklist and uses the usual recipient. Its private-note attachment exceeds the original task, so players compare scope and obtain independent clarification. Product-specific explanations remain in Nova’s optional map; the main reactions are shorter.
+
+An optional request trace has automatic playback, pause, manual steps, and replay. It separates earlier identity/grant/credential context from newly checked execution, shows where a request stopped, and uses a reference path for old saved choices that lack a detailed request record. Reduced-motion preferences disable autoplay. `v2/trace.js` supplies the pure trace model.
+
+A harmless question and safe control investigation do not count as unsafe task operations. A corrected mistake followed by verified shutdown earns a normal 30-minute next pass. Repeated overreach (three attempts of the same class or five unsafe attempts overall) produces a supported next chapter. These thresholds are illustrative story policy, not a security standard.
+
+Saved V2 progress migrates to the new state schema. Completed players can choose **Replay the closing investigation**, keeping their earlier ending in the casebook and their project delivered.
 
 ### Nova’s product roles
 
@@ -17,7 +29,7 @@ Nova’s technical journey names IBM Agent Identity and IBM Verify, HashiCorp Va
 
 This mapping takes the supplied architecture presentations into account and links public vendor documentation. Vault’s OAuth resource-server path is kept distinct from the classic JWT login flow. The brokered-credential and direct OAuth/MCP paths use their own audiences; client-token passthrough is not presented as a valid MCP pattern. Registry reconciliation and SSF/CAEP receiver actions are labeled configured integrations. No supplied decks, speaker notes, rollout dates or licensing material are published with the game.
 
-`v2/products.js` contains these product descriptions and Nova-only event wording. Existing saves and the rules engine remain compatible. Alex’s story uses its existing wording.
+`v2/products.js` contains these product descriptions and Nova-only event wording. Existing saves migrate without losing their route. Alex uses everyday school and family language.
 
 ### Build and play
 
@@ -38,13 +50,13 @@ Visit `/v2/`. GitHub Pages publishes `main` → `/docs`; V2 lives in `docs/v2/in
 - `v2/`: source HTML, styling, story content, pure rules, and UI.
 - `dist/art.js` and `dist/protocols.js`: shared artwork and primary-source technical mappings.
 - `build-v2.py`: embeds the sources into offline and hosted HTML, and adds a V2 invitation to the classic hosted page.
-- `tests/v2.test.cjs`: 17 rules tests covering both worlds, both verification routes, both proofreading choices, pending review, reloads, exact approval, bounded helpers, revoked access, and ending behavior.
+- `tests/v2.test.cjs`: 33 rules tests covering both worlds, both verification routes, both proofreading choices, pending review, reloads, exact approval, bounded helpers, revoked access, and ending behavior.
 
 ```sh
 node --test tests/v2.test.cjs tests/engine.test.cjs
 ```
 
-Browser QA completed Alex’s contact/helper route and Nova’s official-record/solo route, including runtime recovery, reload during pending review, recipient substitution, all four final checks, and the alternate ending. Mobile checks at 390px found no horizontal page or dialogue overflow; desktop and keyboard controls were checked. The rules tests total 30 passes across both editions.
+Browser QA completed Alex’s contact/solo route and Nova’s official-record/helper route, including a recovered scope mistake, a harmless helper question, both shutdown repair orders, reload during partial repair, manual request-trace controls, the normal recovery ending, and replay of the closing investigation. Mobile checks at 390px found no horizontal page or dialogue overflow; desktop and keyboard controls were checked. The rules tests total 46 passes across both editions.
 
 This is a fictional, client-side learning simulation. All decisions and receipts are scripted; no identity protocol, school service, CRM, or real security boundary is connected. Timings and endings are illustrative game policies.
 
