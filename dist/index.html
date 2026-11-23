@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#12131e">
+  <meta name="description" content="A point-and-click adventure through two worlds of trust, permissions, and intelligent actors.">
+  <title>Trust Boundaries · A point & click adventure</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Trust Boundaries home"><span class="brand-icon">◇</span><span>TRUST BOUNDARIES<small>A POINT & CLICK ADVENTURE</small></span></a>
+    <nav class="mode-switch" aria-label="Journey"><button data-mode="teen" class="active">Teenager journey</button><button data-mode="agent">Agent journey</button></nav>
+    <button class="quiet guide-button" id="guide">Field guide <span>?</span></button>
+  </header>
+  <main>
+    <div class="chapter-header"><div><p class="eyebrow" id="world-label">WORLD 01 · THE HUMAN SIDE</p><h1 id="chapter-title">The homework deal.</h1></div><div class="chapter-meta"><span class="saved" id="save-label">Progress saved on this device</span><button class="quiet" id="chapter-map">Act <b id="chapter-count">1 / 3</b> <span>▦</span></button></div></div>
+    <nav class="scene-nav" id="scene-nav" aria-label="Story acts"></nav>
+    <div class="world-state" id="world-state"></div>
+    <div class="game-layout">
+      <section class="play-space" aria-label="Interactive adventure scene">
+        <div class="scene-top"><span class="location"><i></i><span id="location">Alex’s room · 16:30</span></span><span class="scene-tag" id="scene-tag">A LITTLE FREEDOM. A FEW RULES.</span></div>
+        <div class="scene-wrapper"><div class="scene" id="scene"><div id="art" aria-hidden="true"></div><svg id="object-links" viewBox="0 0 1000 580" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg><div class="scene-caption"><span class="mouse-icon">⌖</span><span>Choose a numbered object to interact.</span></div></div><div id="hotspots" aria-label="Objects in the scene"></div></div>
+        <div class="dialogue"><div class="portrait" id="portrait">A</div><div><p class="speaker" id="speaker">ALEX <span>THE TEENAGER</span></p><p id="narration"></p></div><button class="hint-button" id="hint" aria-label="Show a hint">✧<span>Hint</span></button></div>
+        <section class="workflow" aria-labelledby="workflow-heading"><div class="section-heading"><h2 id="workflow-heading">FOLLOW THE REQUEST</h2><label class="technical-toggle"><input type="checkbox" id="technical"><span class="toggle"></span>Technical lens</label></div><div id="flow" class="flow"></div><p class="flow-note" id="flow-note"></p><button class="quiet" id="replay-flow">Replay request</button></section>
+        <section id="protocol-panel" class="protocol-panel" aria-labelledby="protocol-heading" hidden>
+          <div class="section-heading"><h2 id="protocol-heading">PROTOCOLS &amp; ENFORCEMENT</h2><button class="quiet" id="protocol-map">Full journey map</button></div>
+          <p id="protocol-summary"></p><div id="protocol-tags" class="protocol-tags"></div>
+          <details id="protocol-details"><summary>How this outcome is achieved</summary><div id="protocol-body"></div></details>
+        </section>
+      </section>
+      <aside class="journal">
+        <div class="mission-heading"><span class="eyebrow">YOUR MISSION</span><span class="mission-icon">◎</span></div>
+        <h2 id="mission-title"></h2><p id="mission-description"></p>
+        <div class="progress-label"><span>Journey progress</span><span id="progress-number">0 / 9</span></div><div class="progress-track"><div id="progress-bar"></div></div>
+        <div class="objective"><span class="tiny-label">NEXT MOVE</span><p id="objective"></p><button id="interact" class="primary">Talk to the parent</button></div>
+        <div class="selected-item" id="selected-item" hidden></div>
+        <div class="pocket"><div class="section-heading"><h3>IN YOUR POCKET</h3><span id="item-count">0 ITEMS</span></div><p class="inventory-instruction">Select an item, then use it on the scene.</p><div id="inventory"></div></div>
+        <div class="lesson"><span class="tiny-label">THE BIG IDEA</span><p>Being allowed <em>in</em> doesn’t mean you can do <em>anything</em>.</p></div>
+        <button class="compare-button" id="parallel"><span>◈</span><div id="parallel-label">See the agent equivalent<small>This exact puzzle, in the other world</small></div></button>
+        <button class="quiet" id="compare">Compare the full architecture</button>
+      </aside>
+    </div>
+    <footer><span><i class="purple-dot"></i> A learning adventure about delegated authority</span><span id="footer-note">3 acts · 9 tasks · your choices leave a record</span><button class="quiet" id="restart">Restart journey</button></footer>
+  </main>
+  <dialog id="modal" aria-labelledby="dialog-heading"><button class="modal-close" aria-label="Close dialog">×</button><div id="modal-body"></div></dialog>
+  <div role="status" id="toast" class="toast"></div>
+  <script src="content.js"></script><script src="protocols.js"></script><script src="engine.js"></script><script src="art.js"></script><script src="game.js"></script>
+</body>
+</html>
