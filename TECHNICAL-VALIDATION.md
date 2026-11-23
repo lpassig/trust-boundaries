@@ -31,6 +31,18 @@ Scope verification looks up a sponsor-owned proposal linked to the original work
 
 Nova’s technical read resolves the tool call at the MCP server, obtains any configured backend credential, and then reaches the CRM enforcement point. CIBA, OAuth/RAR, AuthZEN and SSF/CAEP show distinct interfaces. Production requirements such as content digests, atomic approval consumption with a durable operation record, replay handling and revocation measurement are illustrated in the technical reference.
 
+## Comparison with the supplied mission-bound pattern
+
+The journey demonstrates the core value when the same agent and reachable CRM route can return allowed summary records and refuse a prohibited attachment. The CRM PEP sees the real operation and record set. The decision path uses authoritative mission and resource facts. Identity answers who is acting, the runtime controls reachability, and the backend credential permits a connection. The CRM still owns the effect of each business action.
+
+| Pattern requirement | Demonstrated in Nova | Next gap to address |
+| --- | --- | --- |
+| Trusted inputs and exact-action policy | Work order, delegated identity, CRM-observed request, then separate PIP, PDP and PEP steps in the request trace | Let players compare a permitted and a refused operation together, with their actual observed inputs and effect. |
+| Bind the PDP decision to execution | A changed revision, recipient or approval window prevents reuse of a human approval. Architecture describes a version fence and durable commit. | Model an active mission becoming invalid after a PDP permit and before CRM commits. Distinguish a human approval from a permit that must still match at execution. |
+| Independent credential policy | The CRM trace shows a configured Vault-backed connector and the closing checks verify credential and session separately. | Give an allowed read an illustrative broker receipt with the granted target, lifetime and what Vault authorized. Show how an unavailable credential prevents a read even when business policy permits it. |
+| Govern persistent state | The task note keeps its receipt source. Imported content cannot change the mission. | Add an optional saved-note replay demonstrating that later retrieved content still has no ability to amend the authoritative mission. |
+| Observable containment | Independent controls withdraw the grant, stop the workload, revoke the credential, close the session, check the queue and retest. | Add a compact evidence record for the tested route. The game illustrates a local result. Production assurance requires path coverage and measured propagation. |
+
 ## Corrections made
 
 1. **Current resource authorization:** original and additional source reads now check current mission limits before producing data. Nova's modeled sponsor permission, delegation ceiling and independent resource policy must all permit the operation. Both shares and internal helper handoff apply those independent limits as well. Missing required policy context blocks the operation.
