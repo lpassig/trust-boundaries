@@ -257,7 +257,7 @@ const RequestTrace = (() => {
  }
  function crmReadDecision(s,event=s.last){
   const r=event?.request,d=event?.decision;
-  if(r?.recordVersion!==3||r.operation!=='customer.read'||r.tool_route!=='crm-mcp-gateway'||
+  if(r?.recordVersion!==3||r.operation!=='customer.read'||r.tool_route!=='crm-mcp-gateway'||!Array.isArray(r.records)||
     d?.pep!=='CRM resource PEP'||d.request_id!==r.request_id||!['permit','deny'].includes(d.result))return null;
   const earlier=r.action==='add-extension'&&d.result==='permit'
    ?s.history.findLast(entry=>entry.action==='try-extension'&&entry.kind==='refused'&&
@@ -265,6 +265,19 @@ const RequestTrace = (() => {
    :null;
   return {call:`${r.operation}(${r.records.join(', ')})`,mission:`${r.mission_id} v${r.mission_version}`,
    permit:d.result==='permit',reason:d.reason,earlierMission:earlier?`${r.mission_id} v${earlier.missionVersion}`:null};
+ }
+ function compareCrmReads(s,event=s.last){
+  if(!crmReadDecision(s,event)||!Array.isArray(event.decision.allowed_records))return null;
+  const observed=event.request, verdict=event.decision;
+  const records=s.history.flatMap(entry=>{
+   const read=entry?.read;
+   return Array.isArray(read?.decision?.allowed_records)&&crmReadDecision(s,read)?[read]:[];
+  });
+  const candidates=records.filter(({request,decision})=>
+   request.mission_id===observed.mission_id&&decision.result!==verdict.result);
+  const other=candidates.findLast(({request})=>JSON.stringify(request.records)===JSON.stringify(observed.records))||candidates.at(-1);
+  if(!other)return null;
+  return verdict.result==='permit'?[event,other]:[other,event];
  }
  function build(s,mode){
   const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
@@ -382,6 +395,6 @@ const RequestTrace = (() => {
   if(['apply-minor','keep-minor','prepare','attach-source','proof-self','revise-file','change-recipient','wait-approval','decline-private'].includes(a))return model('The local decision leaves the task limits in place.','This content or preview step creates no new business authority.',[...context(),node('Current document',teen?'Project version':'Report revision','checked',`Revision ${s.fileRevision}. The current ${teen?'agreement':'mission'} stays at version ${m.version}.`),node('Share approval',teen?'School submission policy':'Exact action binding',s.approval?'context':'pending',teen?'Your own reviewed work can use the permitted school destination.':s.approval?`Recorded revision ${s.approval.revision}; current revision ${s.fileRevision}. A stale or expired approval cannot execute.`:'Any changed content must receive an appropriate current approval before the confidential share.'),node('External delivery','Result','not-reached','This step sends no file.')]);
   return model('A task starts with a request.','A request, agreement, document and delivery are separate story events.',[...context(),node('Current step','Local story application','checked',e.text),node('External delivery','Result','not-reached','This step sends no file.')]);
  }
- return {build,lesson,note,crmReadDecision};
+ return {build,lesson,note,crmReadDecision,compareCrmReads};
 })();
 if(typeof module!=='undefined')module.exports=RequestTrace;

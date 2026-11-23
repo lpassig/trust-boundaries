@@ -281,3 +281,25 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
   .architecture-nav { gap: 6px; }
   .architecture-nav button { flex: 1 1 125px; }
 }
+
+.boundary-graph{list-style:none;margin:16px 0;padding:0;display:grid;gap:8px}
+.boundary-graph li{display:grid;grid-template-columns:1fr minmax(9rem,1.25fr) 1fr;align-items:stretch;gap:6px}
+.boundary-graph button{min-width:0;min-height:44px;overflow-wrap:anywhere;font-size:14px}
+.boundary-node{border-color:var(--line);background:var(--soft)}
+.boundary-edge{border-style:dashed}
+.boundary-edge[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.boundary-evidence{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;gap:8px 12px;margin:12px 0}
+.boundary-evidence dt{font-weight:700}
+.boundary-evidence dd{margin:0}
+.decision-comparison{table-layout:fixed}
+.decision-comparison th,.decision-comparison td{overflow-wrap:anywhere}
+.decision-comparison .decision-difference th{border-inline-start:3px solid var(--accent)}
+.decision-comparison .decision-difference td{background:#ffffff0a}
+#lab-scenario{display:block;max-width:100%;margin:8px 0 12px}
+@media(max-width:560px){
+ .boundary-graph li{grid-template-columns:1fr;gap:4px;border:1px solid var(--line);border-radius:12px;padding:8px}
+ .boundary-edge span{display:inline-block;transform:rotate(90deg);margin-inline-start:4px}
+ .boundary-evidence{grid-template-columns:1fr;gap:4px}
+ .boundary-evidence dd{margin-bottom:6px}
+ .decision-comparison th,.decision-comparison td{padding:6px;font-size:12px}
+}

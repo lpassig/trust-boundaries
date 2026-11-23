@@ -229,6 +229,7 @@ const StoryRules = (() => {
    if(decision)e.decision={...decision,request_id:id,decision_id:'example-decision-'+(s.history.length+1)};
    const entry={action,kind:e.kind,topic:e.topic};
    if(!teen&&action==='try-extension'&&decision?.result==='deny')entry.missionVersion=e.request.mission_version;
+   if(!teen&&e.request.tool_route==='crm-mcp-gateway')entry.read={request:e.request,decision:e.decision};
    s.last=e;s.history.push(entry);
   }
   return {state:s,event:e};

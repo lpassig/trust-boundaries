@@ -37,6 +37,10 @@ If Alex previews an outside address, restoring Ms Patel’s school address is th
 
 ### Architecture explorer
 
+The **Trust boundaries** view opens an inspectable map. Select a system for its role, or a connection for the data it carries and the check it performs. The **authorization lab** compares a completed CRM read with an attempt at the same record. Withdraw the mission after the proposed VAAS PDP issues a Permit, then watch CRM recheck the current mission and reject the stale decision. The other variants illustrate a Vault refusal, an out-of-scope read and an unverified observer. All identities, leases, decisions and receipts in the lab are simulated.
+
+Nova’s story also offers **Compare the authorization decisions** when both a permitted and a refused CRM read are recorded. If you retry the same read after the approved scope change, the table pairs those two attempts. The story records CRM evidence and the configured broker route. The optional lab supplies an example lease and checks it separately.
+
 Choose **Architecture** alongside Alex and Nova or open the [reference directly](https://lpassig.github.io/trust-boundaries/#architecture). Browse the technical deployment design, product and responsibility map, seven request sequences, and examples of the threats each story teaches. The design shows the trust boundaries and authoritative evidence owners, an example application request and decision, token audiences, exact approval binding, and containment checks. This reference has no progress state. It distinguishes configured products, customer systems and proposed integrations. The model and tool connections section includes IBM watsonx Orchestrate AI Gateway, the MCP tool, and the gateway configured for Nova’s example CRM reads. The playable read shows the MCP client, gateway, server and CRM. The request trace shows the CRM decision separately.
 
 ### Technical journey
@@ -49,7 +53,7 @@ No protocol request, real credential, live service, cryptographic content digest
 
 ### Build, source and validation
 
-Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compatible `play-v2.html` copy, and the main GitHub Pages entry in `docs/index.html`. The build embeds all nine scripts, CSS and SVG artwork, and generates a redirect at `docs/v2/index.html`. GitHub Pages publishes `main` → `/docs`. Only the current story edition is available.
+Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compatible `play-v2.html` copy, and the main GitHub Pages entry in `docs/index.html`. The build embeds the scripts, CSS and SVG artwork, and generates a redirect at `docs/v2/index.html`. GitHub Pages publishes `main` → `/docs`. Only the current story edition is available.
 
 Run `python3 build-v2.py --check` to detect missing or stale generated files before release. This mode compares the offline copies, Pages entry and redirect with the build output without writing files.
 
@@ -58,12 +62,13 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/rules.js`: schema 6 state, lifecycle, versioned amendments, exact approvals, refusal/recovery and task closure.
 - `v2/interactions.js`: state-aware item destinations shared by highlights and click handling.
 - `v2/architecture.js`: standalone reference data for the product map, sequences and threat coverage.
+- `v2/decision-lab.js`: isolated simulation of request evidence, independent credential and business decisions, and CRM commit checks.
 - `v2/trace.js`: replay of fictional operation evidence and decisions.
 - `v2/products.js`: product roles, limits and primary documentation links.
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, 12 dialogue and 40 technical-flow and two architecture tests bring the current game’s total to **181**.
+- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **185**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

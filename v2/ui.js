@@ -268,6 +268,7 @@ function renderProducts(){
 }
 function productCard(product,open=false){return `<details class="product-card" ${open?'open':''}><summary><b>${esc(product.name)}</b><span>${esc(product.role)}</span></summary><p class="product-status">${esc(product.status)}</p><p>${esc(product.how)}</p><p><b>Boundary:</b> ${esc(product.limit)}</p><div class="protocol-tags">${product.standards.map(s=>`<span>${esc(s)}</span>`).join('')}</div><p class="sources"><a href="${product.url}" target="_blank" rel="noopener noreferrer">${esc(product.sourceLabel||product.name+' documentation')}</a></p></details>`;}
 const architectureViews = [
+ ['boundaries','Trust boundaries'],
  ['design','Technical design'],
  ['map','Product map'],
  ['sequences','Request sequences'],
@@ -279,6 +280,32 @@ function architectureComponentName(id){
  return component.name||productById(component.product).name;
 }
 
+function boundaryEvidence(edge){
+ return `<dl class="boundary-evidence">
+  <dt>What crosses</dt><dd>${esc(edge.payload)}</dd>
+  <dt>Who checks it</dt><dd>${esc(edge.validator)}</dd>
+  <dt>What it establishes</dt><dd>${esc(edge.check)}</dd>
+ </dl>`;
+}
+
+function architectureBoundaries(selected){
+ const {boundaries}=ArchitectureReference.technical;
+ const open=boundaries.find(edge=>edge.id===selected)||boundaries[0];
+ return `<p>Select a system to see its role, or select a connection to see what it carries and who checks it.</p>
+  <ol class="boundary-graph" aria-label="Trust boundary connections">${boundaries.map(edge=>`<li>
+   <button class="secondary boundary-node" data-architecture-component="${edge.from}">${esc(architectureComponentName(edge.from))}</button>
+   <button class="secondary boundary-edge" data-boundary="${edge.id}" aria-pressed="${edge===open}" aria-controls="boundary-detail">${esc(edge.label)} <span aria-hidden="true">→</span></button>
+   <button class="secondary boundary-node" data-architecture-component="${edge.to}">${esc(edge.toLabel||architectureComponentName(edge.to))}</button>
+  </li>`).join('')}</ol>
+  <section class="receipt" id="boundary-detail" aria-live="polite">
+   <h3>${esc(open.label)}</h3>${boundaryEvidence(open)}
+  </section>
+  <div class="actions">${button('Try the authorization lab',()=>{
+   const selectedId=$('[data-boundary][aria-pressed="true"]').dataset.boundary;
+   showDecisionLab(()=>showArchitecture('boundaries',selectedId));
+  })}</div>`;
+}
+
 function architectureDesign(){
  const {topology,evidence,decisionExample,decisionResponse,sections}=ArchitectureReference.technical;
  return `<section aria-labelledby="topology-title"><h3 id="topology-title">Deployment topology and trust boundaries</h3>
@@ -286,7 +313,7 @@ function architectureDesign(){
  <details class="product-card"><summary><b>Authoritative inputs and evidence ownership</b></summary>
  <dl class="architecture-evidence">${evidence.map(([attribute,owner,detail])=>`<dt>${esc(attribute)}</dt><dd><b>${esc(owner)}</b><p>${esc(detail)}</p></dd>`).join('')}</dl></details>
  <details class="product-card"><summary><b>Inspect an exact-action authorization request</b><span>Example application contract for Nova’s final share</span></summary>
- <p>The CRM PEP builds this request from observed inputs and authoritative stores. In the playable game a revision number stands in for a content digest.</p><h4>Request to the PDP</h4><pre class="product-example">${esc(JSON.stringify(decisionExample,null,2))}</pre>
+ <p>This archived example uses a fixed validity timestamp. The CRM PEP builds the request from observed inputs and authoritative stores. In the playable game a revision number stands in for a content digest.</p><h4>Request to the PDP</h4><pre class="product-example">${esc(JSON.stringify(decisionExample,null,2))}</pre>
  <h4>Bound decision for the CRM PEP</h4><pre class="product-example">${esc(JSON.stringify(decisionResponse,null,2))}</pre><p>A missing approval, stale generation or changed digest denies the current action. A timeout leaves the commit outcome unknown. Reconcile the operation ID and downstream receipt before retrying.</p></details>
  ${sections.map(({title,paragraphs,sources})=>`<details class="product-card"><summary><b>${esc(title)}</b></summary>${paragraphs.map(p=>`<p>${esc(p)}</p>`).join('')}<p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p></details>`).join('')}`;
 }
@@ -323,10 +350,11 @@ function architectureThreats(){
   </details>`).join('')}</div><p class="small-print">${esc(outsideCoverage)}</p>`;
 }
 
-function showArchitecture(view='design',flowId='read',componentId=null,focusControl=false){
+function showArchitecture(view='boundaries',flowId='read',componentId=null,focusControl=false){
  const {flows}=ArchitectureReference;
+ const boundary=flowId;
  if(!flows[flowId])flowId='read';
- const body=view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='threats'?architectureThreats():architectureMap(componentId);
+ const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='threats'?architectureThreats():architectureMap(componentId);
  showReference('Mission-bound authorization',
   `<p>This reference describes a target deployment. The game replays fictional requests and outcomes. Product and protocol links identify the documented capabilities used in each layer.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -335,6 +363,11 @@ function showArchitecture(view='design',flowId='read',componentId=null,focusCont
  $$('[data-architecture-view]').forEach(control=>control.onclick=()=>showArchitecture(control.dataset.architectureView,flowId,null,true));
  $$('[data-architecture-component]').forEach(control=>control.onclick=()=>showArchitecture('map',flowId,control.dataset.architectureComponent));
  $$('[data-architecture-flow]').forEach(control=>control.onclick=()=>showArchitecture('sequences',control.dataset.architectureFlow,null,true));
+ $$('[data-boundary]').forEach(control=>control.onclick=()=>{
+  const edge=ArchitectureReference.technical.boundaries.find(item=>item.id===control.dataset.boundary);
+  $$('[data-boundary]').forEach(item=>item.setAttribute('aria-pressed',String(item===control)));
+  $('#boundary-detail').innerHTML=`<h3>${esc(edge.label)}</h3>${boundaryEvidence(edge)}`;
+ });
  const select=$('#architecture-flow');
  if(select)select.onchange=()=>showArchitecture('sequences',select.value,null,true);
  if(componentId){
@@ -510,10 +543,92 @@ function crmDecisionSummary(event){
   ${earlierMission?`<p>Same read · ${esc(earlierMission)} denied → ${esc(mission)} allowed.</p>`:event.action==='try-extension'?'':`<p>${esc(reason)}</p>`}
  </section>`;
 }
+
+function decisionComparison(columns, rows){
+ return `<table class="share-comparison decision-comparison">
+  <thead><tr><th scope="col">Evidence</th>${columns.map(label=>`<th scope="col">${esc(label)}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(([label,values,highlight])=>`<tr${highlight&&new Set(values).size>1?' class="decision-difference"':''}>
+   <th scope="row">${esc(label)}</th>${values.map(value=>`<td>${esc(value)}</td>`).join('')}
+  </tr>`).join('')}</tbody>
+ </table>`;
+}
+
+function showDecisionLab(back=()=>showArchitecture('boundaries'), trial=DecisionLab.begin()){
+ const baseline=DecisionLab.commit(DecisionLab.begin('approved','reference'));
+ const runs=[baseline,trial];
+ const row=(label,pick,highlight=false)=>[label,runs.map(pick),highlight];
+ const rows=[
+  row('Observed operation',run=>`${run.request.operation}(${run.request.recordIds.join(', ')})`),
+  row('Actor and workload',run=>`${run.request.actor} · ${run.request.workload}`),
+  row('Observation source',run=>`${run.observation.issuer} · ${run.decision.observedByCrm?'verified in model':'unverified'}`,true),
+  row('Mission at decision',run=>`${run.mission.id} v${run.decision.version}`,true),
+  row('Current mission',run=>`${run.mission.id} v${run.mission.version} · ${run.mission.status}`,true),
+  row('Vault credential',run=>run.credential.result==='permit'?`Permit · read-only lease · ${run.credential.lifetimeSeconds}s`:'Deny · no lease',true),
+  row('VAAS / proposed PDP',run=>`${run.decision.result==='permit'?'Permit':'Deny'} · ${run.decision.reason}`,true),
+  row('CRM outcome',run=>!run.outcome?'Awaiting commit check':run.outcome.receipt?'Summary returned · receipt recorded':'No data returned',true)
+ ];
+ const phase=trial.outcome?(trial.outcome.receipt?'CRM returned the summary':'No data was returned'):
+  trial.mission.status==='revoked'?'The old Permit is still on record':'The proposed PDP evaluated the read';
+ const canWithdraw=trial.scenario==='approved'&&!trial.outcome&&trial.mission.status==='active';
+ const choicesHtml=!trial.outcome?`<div class="actions">
+  ${canWithdraw?button('Withdraw the mission',()=>showDecisionLab(back,DecisionLab.withdraw(trial))):''}
+  ${button(trial.mission.status==='revoked'?'Try committing with the old Permit':'Check the operation at commit',()=>showDecisionLab(back,DecisionLab.commit(trial)),canWithdraw?'secondary':'primary')}
+ </div>`:'';
+ const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['credential','evidence','execution'].includes(edge.id));
+ showReference('Authorization before execution',`
+  <p>Compare a completed CRM read with a second attempt at the same record. The lab models what each system can establish, using fictional transport, decisions and receipts.</p>
+  <label for="lab-scenario">Change one condition</label>
+  <select id="lab-scenario">${Object.entries(DecisionLab.scenarios).map(([id,label])=>`<option value="${id}"${id===trial.scenario?' selected':''}>${esc(label)}</option>`).join('')}</select>
+  <section class="receipt"><b>${esc(phase)}</b><p>${esc(trial.outcome?.reason||'The policy decision is recorded. CRM still has to check whether this read can take effect.')}</p></section>
+  ${choicesHtml}
+  ${decisionComparison(['Completed reference read','Your attempt'],rows)}
+  <p class="small-print">The lab evaluates the controls separately. On the story’s brokered route, a missing lease can stop the request before it reaches CRM.</p>
+  ${evidence.map(edge=>`<details class="product-card"><summary><b>${esc(edge.label)}</b></summary>${boundaryEvidence(edge)}</details>`).join('')}
+  <details class="product-card"><summary><b>Inspect the evidence and receipts</b><span>Illustrative values supplied by the simulation</span></summary>
+   <pre class="product-example">${esc(JSON.stringify({baseline,attempt:trial},null,2))}</pre>
+  </details>
+  <div class="actions">${button('Reset this attempt',()=>showDecisionLab(back,DecisionLab.begin(trial.scenario)),'secondary')}${button('Go back',back,'secondary')}</div>`,
+  'REFERENCE ARCHITECTURE');
+ $('#lab-scenario').onchange=event=>{
+  showDecisionLab(back,DecisionLab.begin(event.target.value));
+  $('#lab-scenario').focus();
+ };
+}
+
+function showReadComparison(pair,back){
+ const [allowed,denied]=pair;
+ const field=(label,pick,highlight=false)=>[label,pair.map(pick),highlight];
+ const {mission_id,mission_version}=allowed.request;
+ const sameRead=JSON.stringify(allowed.request.records)===JSON.stringify(denied.request.records);
+ const rows=[
+  field('Observed operation',({request:r})=>`${r.operation}(${r.records.join(', ')})`,true),
+  field('Actor and observer',({request:r})=>`${r.actor} · ${r.observed_by}`),
+  field('Mission and policy',({request:r})=>`${r.mission_id} v${r.mission_version} · policy v${r.policy_version}`,true),
+  field('Records in scope',({decision:d})=>d.allowed_records.join(', '),true),
+  field('Vault credential',()=> 'Brokered path · no per-request lease receipt recorded'),
+  field('Business decision',({decision:d})=>`${d.result==='permit'?'Permit':'Deny'} · ${d.reason}`,true),
+  field('CRM result',({decision:d})=>d.result==='permit'?'Requested summary returned':'No records returned',true),
+  field('Request and decision IDs',({request:r,decision:d})=>`${r.request_id} · ${d.decision_id}`)
+ ];
+ const note=sameRead&&denied.request.mission_version<mission_version
+  ?`CRM saw the same read twice. The authorized scope at ${mission_id} v${mission_version} included the requested record.`
+  :'Compare what CRM observed with the records each mission allowed.';
+ showReference('Compare the authorization decisions',`<p>${esc(note)}</p>
+  ${decisionComparison(['Permitted read','Refused read'],rows)}
+  <p class="small-print">These are recorded game outcomes. The authorization lab adds illustrative credential and commit evidence.</p>
+  <div class="actions">${button('Try the authorization lab',()=>showDecisionLab(()=>showReadComparison(pair,back)))}${button('Back to the result',back,'secondary')}</div>`,
+  'REFERENCE ARCHITECTURE');
+}
+
 function showCrmReadRefusal(event){
  speakingObject='laptop';
  const next=event.action==='collect-source'?showSourceTool:()=>showExtension();
- show(event.title,`${crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">${button('Continue',next)}${button('Follow this request',openTrace,'secondary')}</div>`,'A PERMISSION CHECK');
+ const pair=RequestTrace.compareCrmReads(state(),event);
+ const back=()=>showCrmReadRefusal(event);
+ show(event.title,`${crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">
+  ${button('Continue',next)}${button('Follow this request',openTrace,'secondary')}
+  ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,back),'secondary'):button('Try the authorization lab',()=>showDecisionLab(back),'secondary')}
+ </div>`,'A PERMISSION CHECK');
 }
 
 function showSource(){
@@ -582,10 +697,12 @@ function showExtensionRead(event){
  speakingObject='extra';
  const title=teen()?state().extraSource==='museum-photo'?'The museum photo is in your timeline.':'YouTube · Our station’s story':'CRM returned the Alder Books record';
  const ready=StoryRules.changesResolved(state());
+ const pair=!teen()&&RequestTrace.compareCrmReads(state(),event);
  show(title,`${teen()?'':crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">
   ${ready?button(teen()?'Open my project':'Open the report',showDraft):''}
   ${button(ready?'Review the decisions':'Back to the other requests',showChanges,ready?'secondary':'primary')}
   ${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}
+  ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,()=>showExtensionRead(event)),'secondary'):''}
  </div>`,undefined,'add-extension');
 }
 function showDraftReview(){speakingObject='laptop';

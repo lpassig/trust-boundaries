@@ -19,6 +19,10 @@ test('architecture steps resolve to a component and threat links resolve to a re
  for(const [plane,components] of architecture.technical.topology){
   for(const id of components)assert(mapIds.includes(id),plane+': '+id);
  }
+ for(const edge of architecture.technical.boundaries){
+  assert(mapIds.includes(edge.from),edge.id);
+  assert(mapIds.includes(edge.to),edge.id);
+ }
 });
 
 test('example decision binds the PEP observation to the approval and live versions',()=>{

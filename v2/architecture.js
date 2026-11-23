@@ -43,7 +43,7 @@ const ArchitectureReference = (() => {
    detail:'The policy evaluator obtains identity, mission and resource attributes from authoritative sources. This role can be implemented with several sources and adapters.',
    sources:[['OASIS policy roles and terminology','https://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html']]
   },
-  authorization:{name:'Policy decision point (PDP)',product:'authorization',kind:'Proposed integration',summary:'Evaluates the action the CRM observes against current task and resource rules.'},
+  authorization:{name:'VAAS / proposed PDP',product:'authorization',kind:'Proposed integration',summary:'Evaluates the exact action the CRM observes against current task and resource rules. VAAS names the proposed role in this example.'},
   crm:{
    name:'Customer CRM · resource PEP',kind:'Policy enforcement point',
    summary:'Checks the actual read, attachment or send at the point of use and owns the result.',
@@ -188,6 +188,23 @@ const ArchitectureReference = (() => {
  const outsideCoverage = 'The stories illustrate controls through scripted outcomes. Live prompt-injection detection, poisoned persistent memory, supply-chain compromise, sandbox escapes and coverage of unmanaged routes require separate implementation and testing. A verified stop covers the tested route.';
 
  const technical = {
+  boundaries:[
+   {id:'tool',from:'openshell',to:'mcpTool',label:'Tool call via MCP gateway',
+    payload:'Requested operation and tool arguments.',validator:'OpenShell, the configured gateway and the MCP server',
+    check:'The route is reachable and the request fits the configured tool interface. CRM still decides whether it can return the record.'},
+   {id:'credential',from:'mcpTool',to:'vault',label:'Credential request and lease',
+    payload:'Connector identity, credential path and target role. A permit can return a lease for that configured role.',validator:'Vault',
+    check:'The connector may obtain the stated credential. Business access to customer records remains a separate decision.'},
+   {id:'authority',from:'mission',to:'authorization',label:'Current task facts via PIP',
+    payload:'Active status, permitted operations and records, mission and policy versions, and session generation.',validator:'Proposed PDP using authoritative sources',
+    check:'The decision uses independently owned scope. A message, document or tool argument cannot expand that scope.'},
+   {id:'evidence',from:'crm',to:'authorization',label:'Observed action and bound decision',
+    payload:'The CRM enforcement point sends canonical operation parameters over an authenticated service channel. The decision returns a request ID and action and authority bindings.',validator:'Proposed PDP verifies the service identity and audience. CRM verifies that the decision applies to the observed action.',
+    check:'The decision describes a specific observed request at a known authority version. CRM must still check that it is current at execution.'},
+   {id:'execution',from:'crm',to:'crm',toLabel:'Protected CRM records',label:'Commit check and recorded effect',
+    payload:'The actual operation, its decision, current mission and session versions, and the required credential.',validator:'CRM resource PEP',
+    check:'CRM returns only the permitted data after checking these conditions. A stale decision leaves no successful execution receipt.'}
+  ],
   topology:[
    ['Authority plane',['verify','iai','mission','policyContext','authorization'],'Identity and current mission state come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
    ['Data plane',['openshell','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
