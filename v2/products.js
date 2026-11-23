@@ -254,7 +254,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
     example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
-    pilot:{label:'My agents use shared identities',integration:'Keep your human identity provider. Check that the workflow and resource logs preserve both the delegated human identity and the agent identity.',test:'Run one file-only handoff. From the activity record, identify who delegated, which agent requested work, and which agent completed it.'},
+    pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Pip’s activity record',integration:'Keep your human identity provider. Check that the workflow and resource logs preserve both the delegated human identity and the agent identity.',test:'Run one file-only handoff. The activity record should identify who delegated, which agent requested the work, and which agent completed it.'},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
   {
@@ -262,7 +262,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Verify',
     fit:'A configured CIBA flow can authenticate the person on a separate device. The application binds the response to the exact business action.',
     example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
-    pilot:{label:'A person must approve sensitive actions',integration:'Connect a CIBA client to IBM Verify. The application must bind the response to the exact transaction and the resource must check it at execution.',test:'Approve one report on the separate device. Change one sentence and confirm the old approval cannot deliver it. Approve the current revision and verify the delivered file and recipient.'},
+    pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Compare Morgan’s approved and edited copies',integration:'Connect a CIBA client to IBM Verify. The application binds the response to the exact send, and the resource checks it when sending.',test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.'},
     sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
@@ -270,7 +270,7 @@ const NOVA_BUYER_NEEDS = [
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
-    pilot:{label:'My connector uses a long-lived credential',integration:'Verify that your connector and target support the selected Vault secrets engine and configured identity and credential policy.',test:'Open a read with a short-lived lease, revoke it, and verify a new connection fails. Separately close and retest any existing service session.'},
+    pilot:{label:'Our connector password stays active after jobs end',evidence:'vault',evidenceLabel:'See the lease and CRM retest',integration:'Verify that your connector and target support the selected Vault secrets engine and configured identity and credential policy.',test:'Read with a short-lived lease, revoke it, and confirm that a new connection fails. Separately close and retest any existing service session.'},
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
@@ -278,6 +278,7 @@ const NOVA_BUYER_NEEDS = [
     product:'NVIDIA OpenShell',
     fit:'Evaluate OpenShell for isolation and control of files, processes and network access. Secure Agent Workspace describes a broader design that combines runtime, identity and policy integrations.',
     example:'Nova can reach the approved CRM route from its runtime. The CRM still withholds a private file when its own policy forbids the attachment.',
+    pilot:{label:'Our agents can reach services they don’t need',evidence:'openshell',evidenceLabel:'Replay the network and CRM checks',integration:'Set up OpenShell for your agent workload and tool endpoint. Keep the record and action policy at the application boundary.',test:'An unapproved route should stop at OpenShell. After approving the route, an out-of-scope record should still stop at CRM.'},
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   },
   {

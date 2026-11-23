@@ -74,6 +74,27 @@ test('The separate-device approval can only approve the copy Morgan saw',()=>{
  assert.equal(approved.approval.followUpSentence,current.followUpSentence);
  assert.equal(run(approved,'send').delivered,true);
 });
+test('buyer approval evidence keeps the original and edited copies after a fresh approval and delivery',()=>{
+ const original=ready();
+ const edited=run(original,'revise-file');
+ const evidence=edited.history.at(-1).approvalComparison;
+ assert.equal(evidence.approved.revision,original.approval.revision);
+ assert.equal(evidence.current.revision,edited.fileRevision);
+ assert.notEqual(evidence.approved.followUpSentence,evidence.current.followUpSentence);
+ const delivered=R.hydrate(run(run(edited,'approve'),'send'),'agent');
+ assert.deepEqual(delivered.history.findLast(entry=>entry.approvalComparison).approvalComparison,evidence);
+ assert.equal(delivered.approval.revision,evidence.current.revision);
+ assert.equal(delivered.approval.used,true);
+});
+test('the worked buyer example builds a separate handoff, edited copy and closure evidence',()=>{
+ const example=R.buyerExample();
+ assert(example.helperReceipts.some(receipt=>receipt.actor==='pip-01'&&receipt.requestedBy==='nova-042'));
+ assert(example.history.some(entry=>entry.approvalComparison));
+ assert.match(example.sourceLease.id,/example-source-lease/);
+ assert.equal(example.containment.credentialRevoked,true);
+ assert.equal(example.containment.sessionClosed,true);
+ assert.equal(example.containment.probeResult,'denied');
+});
 test('under-the-hood notes describe the observed outcome without claiming execution after a denial',()=>{
  const s=start();s.authority.resource.records=['123'];
  const denied=act(s,'collect-source');

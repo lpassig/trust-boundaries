@@ -1301,6 +1301,9 @@ const StoryRules = (() => {
    const entry={action,kind:e.kind,topic:e.topic};
    if(!teen&&action==='try-extension'&&decision?.result==='deny')entry.missionVersion=e.request.mission_version;
    if(!teen&&e.request.tool_route==='crm-mcp-gateway')entry.read={request:e.request,decision:e.decision};
+   if(!teen&&action==='revise-file'&&e.kind==='story'&&s.approval){
+    entry.approvalComparison={approved:{...s.approval},current:{...reportShare(s),followUpSentence:reportFollowUp(s)}};
+   }
    s.last=e;s.history.push(entry);
   }
   return {state:s,event:e};
@@ -1345,7 +1348,16 @@ const StoryRules = (() => {
   if(s.reviewPending&&(!s.paused||s.reviewPending.generation!==s.generation||s.reviewPending.scope!==s.pass?.scope||s.reviewPending.missionVersion!==s.mission.version))return d;
   return s;
  }
- return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportFollowUp,reportShare,approvalPreview,approvalMatches,alexExtra};
+ function buyerExample(){
+  const actions=[
+   ['begin'],['read-brief'],['ask-pass',{scope:'task'}],['open'],['prepare'],['collect-source'],['attach-source'],
+   ['approve-draft'],['send-draft'],['keep-minor'],['decline-extension'],['decline-private'],
+   ['proof-helper',{scope:'file',shareLogin:false}],['approve'],['revise-file'],['approve'],['send'],['close-pass'],
+   ['remediate',{control:'session'}],['remediate',{control:'credential'}],['probe-session']
+  ];
+  return actions.reduce((s,[action,payload])=>act(s,'agent',action,payload).state,fresh());
+ }
+ return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportFollowUp,reportShare,approvalPreview,approvalMatches,alexExtra,buyerExample};
 })();
 if(typeof module!=='undefined')module.exports=StoryRules;
 
@@ -2202,7 +2214,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
     example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
-    pilot:{label:'My agents use shared identities',integration:'Keep your human identity provider. Check that the workflow and resource logs preserve both the delegated human identity and the agent identity.',test:'Run one file-only handoff. From the activity record, identify who delegated, which agent requested work, and which agent completed it.'},
+    pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Pip’s activity record',integration:'Keep your human identity provider. Check that the workflow and resource logs preserve both the delegated human identity and the agent identity.',test:'Run one file-only handoff. The activity record should identify who delegated, which agent requested the work, and which agent completed it.'},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
   {
@@ -2210,7 +2222,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Verify',
     fit:'A configured CIBA flow can authenticate the person on a separate device. The application binds the response to the exact business action.',
     example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
-    pilot:{label:'A person must approve sensitive actions',integration:'Connect a CIBA client to IBM Verify. The application must bind the response to the exact transaction and the resource must check it at execution.',test:'Approve one report on the separate device. Change one sentence and confirm the old approval cannot deliver it. Approve the current revision and verify the delivered file and recipient.'},
+    pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Compare Morgan’s approved and edited copies',integration:'Connect a CIBA client to IBM Verify. The application binds the response to the exact send, and the resource checks it when sending.',test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.'},
     sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
@@ -2218,7 +2230,7 @@ const NOVA_BUYER_NEEDS = [
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
-    pilot:{label:'My connector uses a long-lived credential',integration:'Verify that your connector and target support the selected Vault secrets engine and configured identity and credential policy.',test:'Open a read with a short-lived lease, revoke it, and verify a new connection fails. Separately close and retest any existing service session.'},
+    pilot:{label:'Our connector password stays active after jobs end',evidence:'vault',evidenceLabel:'See the lease and CRM retest',integration:'Verify that your connector and target support the selected Vault secrets engine and configured identity and credential policy.',test:'Read with a short-lived lease, revoke it, and confirm that a new connection fails. Separately close and retest any existing service session.'},
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
@@ -2226,6 +2238,7 @@ const NOVA_BUYER_NEEDS = [
     product:'NVIDIA OpenShell',
     fit:'Evaluate OpenShell for isolation and control of files, processes and network access. Secure Agent Workspace describes a broader design that combines runtime, identity and policy integrations.',
     example:'Nova can reach the approved CRM route from its runtime. The CRM still withholds a private file when its own policy forbids the attachment.',
+    pilot:{label:'Our agents can reach services they don’t need',evidence:'openshell',evidenceLabel:'Replay the network and CRM checks',integration:'Set up OpenShell for your agent workload and tool endpoint. Keep the record and action policy at the application boundary.',test:'An unapproved route should stop at OpenShell. After approving the route, an out-of-scope record should still stop at CRM.'},
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   },
   {
@@ -3122,34 +3135,61 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
  }
 }
 
-function showBuyerGuide(fromEnding=false,selected=null){
- if(teen())return;
- const exit=fromEnding?showEnding:()=>state().started?close():showIntro();
+function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='Back to the story',selected=null){
+ const reopen=()=>showBuyerGuide(exit,exitLabel,selected);
+ const productMap=()=>showProductMap(selected?.pilot.evidence,reopen);
  const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot);
  const sources=need=>`<p class="sources">${need.sources.map(([name,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p>`;
  if(selected){
   const {pilot,product,fit}=selected;
   return showReference(product,`<p>${esc(fit)}</p>
-   <ul class="route-list"><li><b>Integration to check</b><br>${esc(pilot.integration)}</li>
-   <li><b>Pilot test</b><br>${esc(pilot.test)}</li></ul>
-   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(fromEnding))}${button('Open the technical product map',showProductMap,'secondary')}</div>`,
+   <ul class="route-list"><li><b>What your team connects</b><br>${esc(pilot.integration)}</li>
+   <li><b>What counts as a pass</b><br>${esc(pilot.test)}</li></ul>
+   <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}</div>
+   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}${button('Open the technical product map',productMap,'secondary')}</div>`,
    'BUYER GUIDE');
  }
  const other=NOVA_BUYER_NEEDS.filter(need=>!need.pilot).map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p>${sources(need)}</details>`).join('');
- showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>showBuyerGuide(fromEnding,need)]))}
+ showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>showBuyerGuide(exit,exitLabel,need)]))}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary><div class="product-cards">${other}</div></details>
-  <div class="actions">${button('Open the technical product map',showProductMap,'secondary')}${button(fromEnding?'Back to Nova’s ending':'Back to the story',exit,'secondary')}</div>`,
+  <div class="actions">${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
-function showProductMap(selectedProduct=''){
- if(teen())return;
- const s=state();
- showReference('Who does what around Nova?',`<p>The sponsor signs in, Nova receives delegated authority, and a broker handles source credentials. The CRM checks the operation at the point of use.</p><ol class="product-flow"><li><b>Human sign-in</b> · IBM Verify or a configured identity provider such as Entra ID or Okta authenticates the sponsor. <a href="https://blog.iamidentity.ai/blog/bring-your-own-idp/" target="_blank" rel="noopener noreferrer">Federation example</a></li><li><b>Agent identity</b> · IBM Agent Identity records Nova’s owner and governs delegated identity. watsonx Orchestrate coordinates the work.</li><li><b>Customer mission</b> · The customer-owned mission service records the sponsor-approved task outside Nova’s prompt, notes and identity registry.</li><li><b>Credential</b> · HashiCorp Vault validates its own audience-bound request and brokers a scoped credential.</li><li><b>Action decision</b> · The trusted CRM PEP observes the real request. The proposed policy decision point evaluates it against current customer mission and resource rules. The CRM binds and enforces the result at execution. OpenShell separately constrains the runtime.</li><li><b>Stop and verify</b> · IBM Verify Antenna can carry SSF/CAEP signals. Configured receivers apply changes and report their own results.</li></ol><div class="receipt"><b>${s.mission?`Nova · ${esc(s.mission.id)} · version ${s.mission.version}`:'No task mission issued yet'}</b><p>${s.ended?'Task mission withdrawn':s.paused?'Mission paused':s.pass?'Scoped delegation active':'Task approval still required'}. This is a fictional case record, not a response from a live identity system.</p></div><div class="product-cards">${NOVA_PRODUCTS.map(p=>productCard(p,p.id===selectedProduct)).join('')}</div><details class="product-card"><summary><b>Two paths to a resource</b><span>Brokered credential or a token intended for that resource</span></summary><p><b>This episode uses the Vault broker path.</b> Vault checks the credential-path request and returns a managed credential. The CRM still checks its own business operations.</p><p><b>A direct OAuth/MCP path is another deployment option.</b> The resource validates a token issued for its own audience and enforces its supported authorization details. A Vault-audience token cannot simply be reused at the CRM. An MCP server must not pass through the client’s token to a downstream service.</p><p><b>Separate Vault flows:</b> Vault Enterprise’s OAuth resource-server path accepts the configured external access token for Vault requests. The classic JWT/OIDC auth method at /auth/jwt/login instead exchanges a login credential for a Vault token. They are not interchangeable.</p><p class="sources"><a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">Vault OAuth resource server</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">IBM Verify configuration for Vault</a> · <a href="${PROTOCOL_SOURCES.mcp.url}" target="_blank" rel="noopener noreferrer">MCP authorization</a></p></details><details class="product-card"><summary><b>What this example assumes</b><span>Configuration and receiver actions still need implementation</span></summary><p>Nova and its human sponsor are registered and mapped. The customer mission service, resource-side PEP and external policy decision point are proposed integrations. Their contracts, deployment and trusted evidence require implementation and validation. AuthZEN is a candidate PEP/PDP interface; approval-required workflow and execution binding are explicitly application extensions. The task uses customer-defined policy. Vault has the appropriate Enterprise feature, OAuth validation profile, Agent Registry record and secrets-engine role. Agent Identity and Vault keep separate registries; reconciliation requires configured integration.</p><p>OpenShell is an illustrative runtime choice alongside the orchestration layer. Antenna receivers need the correct APIs, event mapping and processors for each target. No universal instantaneous kill switch or automatic registry mirroring is implied.</p><p>The simulation binds approvals to document revision, recipient, actor, records, mission and policy version, story approval window, session generation and single use. Production integrity, authenticated PEP evidence, cryptographic content binding and transaction guarantees still require implementation. Runtime stops, lease revocation, service sign-out and queued-operation reconciliation need separate checks. These fictional receipts do not validate a production deployment.</p></details><div class="actions">${button('Which control do we need?',()=>showBuyerGuide(),'secondary')}${button('Inspect the Vault credential path',showCredential,'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div><p class="small-print">Example deployment with source-linked product roles. Connections and receiver actions require configuration. All game decisions and receipts are scripted locally.</p>`,'NOVA · PRODUCTS, PROTOCOLS AND ENFORCEMENT');
+function showBuyerEvidence(product,back){
+ if(product==='openshell')return showRuntimeExercise(back);
+ const read=s=>product==='iai'?s.helperReceipts.at(-1):product==='verify'
+  ?s.history.findLast(entry=>entry?.approvalComparison)?.approvalComparison
+  :s.sourceLease&&{lease:s.sourceLease,containment:s.containment};
+ const recorded=read(states.agent);
+ const evidence=recorded||read(StoryRules.buyerExample());
+ const origin=recorded?'Recorded in your Nova playthrough.':'Worked example from Nova’s story.';
+ if(product==='iai')return showHelperAudit(evidence,null,back,origin);
+ if(product==='vault')return showBuyerVault(evidence,origin,back);
+ const {approved,current}=evidence;
+ showReference('What changed after Morgan approved?',`<p>${origin}</p>
+  ${shareWording(approved,current,'Edited')}${shareComparison(approved,current,'Edited copy')}
+  <p>IBM Verify can authenticate Morgan on a separate device. The application ties the approval to the original copy. CRM needs a matching approval before sending the revised copy.</p>
+  <div class="actions">${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
 }
-function showCredential(){
- if(teen())return;
- const s=state();
- showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.opened?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.opened?'A scoped, short-lived credential is modeled for the approved CRM path.':'Open the approved runtime path before a credential is modeled in the story.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Who does what?',()=>showProductMap('vault'),'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
+function showBuyerVault({lease,containment},origin,back){
+ const vault=containment?.credentialRevoked?'Lease revoked':'Revocation pending';
+ const crm=containment?crmSessionResult(containment):'Closure check pending';
+ const replay=()=>showBuyerVault({lease,containment},origin,back);
+ showReference('The Vault lease and CRM retest',`<p>${origin}</p>
+  <div class="receipt"><b>Lease issued · <code>${esc(lease.id)}</code></b><p>Read-only connector role · ${esc(lease.lifetimeSeconds)} seconds in the simulation. The connector holds the credential outside Nova’s context.</p></div>
+  <div class="access-evidence"><div><span>HashiCorp Vault</span><b>${vault}</b></div><div><span>CRM session</span><b>${crm}</b></div></div>
+  <div class="actions">${button('Replay the credential comparison',()=>showCredentialComparison(lease,'',replay))}${button('Back to the buyer card',back,'secondary')}</div>`,
+  'CREDENTIAL EVIDENCE');
+}
+function showProductMap(selectedProduct='',back=null){
+ const s=states.agent;
+ const reopen=()=>showProductMap(selectedProduct,back);
+ showReference('Who does what around Nova?',`<p>The sponsor signs in, Nova receives delegated authority, and a broker handles source credentials. The CRM checks the operation at the point of use.</p><ol class="product-flow"><li><b>Human sign-in</b> · IBM Verify or a configured identity provider such as Entra ID or Okta authenticates the sponsor. <a href="https://blog.iamidentity.ai/blog/bring-your-own-idp/" target="_blank" rel="noopener noreferrer">Federation example</a></li><li><b>Agent identity</b> · IBM Agent Identity records Nova’s owner and governs delegated identity. watsonx Orchestrate coordinates the work.</li><li><b>Customer mission</b> · The customer-owned mission service records the sponsor-approved task outside Nova’s prompt, notes and identity registry.</li><li><b>Credential</b> · HashiCorp Vault validates its own audience-bound request and brokers a scoped credential.</li><li><b>Action decision</b> · The trusted CRM PEP observes the real request. The proposed policy decision point evaluates it against current customer mission and resource rules. The CRM binds and enforces the result at execution. OpenShell separately constrains the runtime.</li><li><b>Stop and verify</b> · IBM Verify Antenna can carry SSF/CAEP signals. Configured receivers apply changes and report their own results.</li></ol><div class="receipt"><b>${s.mission?`Nova · ${esc(s.mission.id)} · version ${s.mission.version}`:'No task mission issued yet'}</b><p>${s.ended?'Task mission withdrawn':s.paused?'Mission paused':s.pass?'Scoped delegation active':'Task approval still required'}. This is a fictional case record, not a response from a live identity system.</p></div><div class="product-cards">${NOVA_PRODUCTS.map(p=>productCard(p,p.id===selectedProduct)).join('')}</div><details class="product-card"><summary><b>Two paths to a resource</b><span>Brokered credential or a token intended for that resource</span></summary><p><b>This episode uses the Vault broker path.</b> Vault checks the credential-path request and returns a managed credential. The CRM still checks its own business operations.</p><p><b>A direct OAuth/MCP path is another deployment option.</b> The resource validates a token issued for its own audience and enforces its supported authorization details. A Vault-audience token cannot simply be reused at the CRM. An MCP server must not pass through the client’s token to a downstream service.</p><p><b>Separate Vault flows:</b> Vault Enterprise’s OAuth resource-server path accepts the configured external access token for Vault requests. The classic JWT/OIDC auth method at /auth/jwt/login instead exchanges a login credential for a Vault token. They are not interchangeable.</p><p class="sources"><a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">Vault OAuth resource server</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">IBM Verify configuration for Vault</a> · <a href="${PROTOCOL_SOURCES.mcp.url}" target="_blank" rel="noopener noreferrer">MCP authorization</a></p></details><details class="product-card"><summary><b>What this example assumes</b><span>Configuration and receiver actions still need implementation</span></summary><p>Nova and its human sponsor are registered and mapped. The customer mission service, resource-side PEP and external policy decision point are proposed integrations. Their contracts, deployment and trusted evidence require implementation and validation. AuthZEN is a candidate PEP/PDP interface; approval-required workflow and execution binding are explicitly application extensions. The task uses customer-defined policy. Vault has the appropriate Enterprise feature, OAuth validation profile, Agent Registry record and secrets-engine role. Agent Identity and Vault keep separate registries; reconciliation requires configured integration.</p><p>OpenShell is an illustrative runtime choice alongside the orchestration layer. Antenna receivers need the correct APIs, event mapping and processors for each target. No universal instantaneous kill switch or automatic registry mirroring is implied.</p><p>The simulation binds approvals to document revision, recipient, actor, records, mission and policy version, story approval window, session generation and single use. Production integrity, authenticated PEP evidence, cryptographic content binding and transaction guarantees still require implementation. Runtime stops, lease revocation, service sign-out and queued-operation reconciliation need separate checks. These fictional receipts do not validate a production deployment.</p></details><div class="actions">${button('Which control do we need?',()=>showBuyerGuide(reopen,'Back to the product map'),'secondary')}${button('Inspect the Vault credential path',()=>showCredential(reopen),'secondary')}${back?button('Back to the buyer guide',back):button('Back to the story',()=>state().started?close():showIntro())}</div><p class="small-print">Example deployment with source-linked product roles. Connections and receiver actions require configuration. All game decisions and receipts are scripted locally.</p>`,'NOVA · PRODUCTS, PROTOCOLS AND ENFORCEMENT');
+}
+function showCredential(back=null){
+ const s=states.agent;
+ const returnToMap=typeof back==='function'?back:()=>showProductMap('vault');
+ showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.opened?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.opened?'A scoped, short-lived credential is modeled for the approved CRM path.':'Open the approved runtime path before a credential is modeled in the story.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Back to the product map',returnToMap,'secondary')}${typeof back==='function'?'':button('Back to the story',()=>state().started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
 }
 
 function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
@@ -3238,14 +3278,7 @@ function showParent(){speakingObject=teen()?'parent':'missionControl';
  if(stage()==='approval')return showFinalApproval();
  show(teen()?'“How is the timeline going?”':'Current mission scope',`<p>${teen()?'“How’s the timeline going? You’ve got the school app and museum website. If Ms Patel suggests another source, come and ask.”':'The active customer mission covers '+esc(s.mission.records.join(', '))+'. New work can fit that scope, need an amendment, or remain prohibited by resource policy.'}</p><div class="actions">${button(teen()?'Back to my timeline':'Continue the task',nextMove)}${button(teen()?'Read tonight’s plan':'Inspect the agreement',showBrief,'secondary')}</div>`,e.authority);
 }
-function showFinalApproval(){
- const s=state(),e=episode();
- speakingObject='reviewer';
- show('Ask Morgan to approve the final copy.',`${approvalProduct()}<div class="receipt"><b>${esc(e.file)} · revision ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${esc(customerNames(StoryRules.reportRecords(s)))} · summary only</p><p><b>Follow-up sentence</b><br>${esc(StoryRules.reportFollowUp(s))}</p></div>${choices([
-  ['Ask Morgan to approve this copy','Open the request as it appears to Morgan.',()=>showMorganApproval('final',showFinalApproval),'good'],
-  ['Inspect the report again','Check its current content and sources.',showDraft]
- ])}`,undefined,'approval-preview');
-}
+function showFinalApproval(){return showMorganApproval('final',showDraft);}
 function showMorganApproval(purpose,back){
  const preview=StoryRules.approvalPreview(state(),purpose);
  const draft=purpose==='draft-review';
@@ -3470,7 +3503,8 @@ function showSource(){
    ...(event?[['Follow the CRM request','Follow discovery, token audience and the CRM decision.',()=>showRequestTrace(event,showSource)]]:[])
   ])}`,teen()?'MUSEUM WEBSITE':'CRM','collect-source');
 }
-function showCredentialComparison(lease,checked=''){
+function showCredentialComparison(lease,checked='',back=showSource){
+ const check=kind=>showCredentialComparison(lease,kind,back);
  const result=checked==='shared'?'The shared credential still works in this example. Ending the task did not rotate it.':
   checked==='vault'?'Vault revoked this lease. The connector cannot use it to open a new connection. A CRM session that was already open needs its own closing check.':'';
  showReference('What access survives the task?',`<p>Compare a standing connector password with the Vault lease from Nova’s first read. This simulation checks a new connection after the task ends and Vault revokes the lease.</p>
@@ -3480,7 +3514,7 @@ function showCredentialComparison(lease,checked=''){
    ['Credential reference',['Example only',lease.id]]
   ])}
   ${result?`<div class="receipt" role="status"><b>${checked==='vault'?'Vault lease check':'Shared password check'}</b><p>${esc(result)}</p></div>`:''}
-  <div class="actions">${button('Check the shared password',()=>showCredentialComparison(lease,'shared'))}${button('Check the Vault lease',()=>showCredentialComparison(lease,'vault'))}${button('Back to the CRM result',showSource,'secondary')}</div>
+  <div class="actions">${button('Check the shared password',()=>check('shared'))}${button('Check the Vault lease',()=>check('vault'))}${button(back===showSource?'Back to the CRM result':'Back to the Vault evidence',back,'secondary')}</div>
   <p class="small-print">Both checks are simulated. The story’s closing checklist records when this lease is revoked and when the CRM session is verified.</p>`,'CRM CREDENTIALS');
 }
 
@@ -3574,21 +3608,22 @@ function showHelperResult(){
   `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${!teen()?button('Explore deployment options for Pip',showPipDeployment,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
   teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');
 }
-function showHelperAudit(receipt,answer=null){
+function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recorded in your Nova playthrough.'){
+ const review=choice=>showHelperAudit(receipt,choice,back,origin);
  const activities=[
   ['Delegated human',['Unclear','Priya · '+receipt.originalSubject],true],
   ['Requested the work',['shared-report-account','Nova · '+receipt.requestedBy],true],
   ['Formatted the file',['shared-report-account','Pip · '+receipt.actor],true],
   ['Operation and file',['Formatting logged',receipt.actions[0]+' · '+receipt.file+' · rev. '+receipt.inputRevision+' → '+receipt.outputRevision]]
  ];
- showReference('Who did what in Pip’s handoff?',`<p>The shared-account column is a comparison. The second column uses the completed task record from this playthrough.</p>
+ showReference('Who did what in Pip’s handoff?',`<p>${esc(origin)} Compare the shared account with the record of who acted.</p>
   ${decisionComparison(['Shared-account example','This handoff'],activities)}
   ${answer===null?choices([
-   ['Priya delegated, Nova requested, Pip formatted','',()=>showHelperAudit(receipt,true)],
-   ['Priya delegated, Pip requested, Nova formatted','',()=>showHelperAudit(receipt,false)],
-   ['Morgan delegated, Nova requested, Pip formatted','',()=>showHelperAudit(receipt,false)]
+   ['Priya delegated, Nova requested, Pip formatted','',()=>review(true)],
+   ['Priya delegated, Pip requested, Nova formatted','',()=>review(false)],
+   ['Morgan delegated, Nova requested, Pip formatted','',()=>review(false)]
   ]):`<div class="receipt" role="status"><b>${answer?'That matches the record.':'Check who delegated and who executed.'}</b><p>IBM Agent Identity supplies the delegated identity context. The workflow record ties that context to Pip’s file-only action. Pip used its own identity and received no parent credential or CRM access.</p></div>`}
-  <div class="actions">${answer===false?button('Try again',()=>showHelperAudit(receipt),'secondary'):''}${button('Back to Pip’s result',showHelperResult,'secondary')}</div>`,
+  <div class="actions">${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(back===showHelperResult?'Back to Pip’s result':'Back to the buyer card',back,'secondary')}</div>`,
   'DELEGATED IDENTITY');
 }
 
@@ -3748,7 +3783,8 @@ function showSend(){
  ];
  if(!matches)challenges.unshift(['Try this send','See which check blocks this request.',()=>perform('send')]);
  const edit=[s.followUpEdited?'Restore the earlier follow-up wording':'Make one last edit','Change the follow-up sentence before sending.',()=>perform('revise-file')];
- show(matches?'Ready to send the approved copy?':'The send needs another look.',`${shareWording(approval,actual)}<p>${esc(explanation)}</p>${shareComparison(approval,actual)}<details class="debrief"><summary>Try a change after approval</summary>${choices(challenges)}</details>${choices([primary,...(matches?[edit]:[]),['Back to the draft','Read the report again.',showDraft]])}`,'CRM','send-preview');
+ const copy=matches?`<div class="receipt"><b>${esc(actual.file)} · revision ${esc(actual.revision)}</b><p>To ${esc(actual.to)}</p></div>`:shareComparison(approval,actual);
+ show(matches?'Ready to send the approved copy?':'The send needs another look.',`${shareWording(approval,actual)}<p>${esc(explanation)}</p>${copy}<details class="debrief"><summary>Try a change after approval</summary>${choices(challenges)}</details>${choices([primary,...(matches?[edit]:[]),['Back to the draft','Read the report again.',showDraft]])}`,'CRM','send-preview');
 }
 function showDelivery(){
  speakingObject='laptop';
@@ -3810,6 +3846,12 @@ function showSessionPrediction(){
   ['It will refuse the read','',()=>perform('probe-session',{prediction:'denied'})]
  ])}<div class="actions">${button('Back to closure checks',showChecks,'secondary')}</div>`,'CHECK THE OLD SESSION');
 }
+function crmSessionResult(c){
+ if(!c.controllerReachable)return 'Unverified · controller unreachable';
+ if(c.sessionClosed)return c.probeResult==='denied'?'Closed · old route refused the retest':'Closed · retest pending';
+ return c.probeResult==='allowed'?'Old session still answered':'Status unchecked';
+}
+
 function showChecks(){
  const s=state();
  if(!s.ended)return showParent();
@@ -3822,12 +3864,9 @@ function showChecks(){
  speakingObject=StoryInteractions.closureSource(s,mode);
  const confirmed=alex?'Your parent calls for dinner. Your phone is put away and Ms Patel has your project.':'Morgan has the handover. OpenShell stopped Nova’s workspace.';
  const signIn=alex&&routeChecked?'<div class="receipt"><b>School app</b><p>Sign in to open your project.</p></div>':'';
- const crmOutcome=!c.controllerReachable?'Unverified · controller unreachable':c.sessionClosed
-  ?c.probeResult==='denied'?'Closed · old route refused the retest':'Closed · retest pending'
-  :c.probeResult==='allowed'?'Old session still answered':'Status unchecked';
  const leaseEvidence=!alex&&s.sourceLease?`<div class="access-evidence" aria-label="Separate closure results">
   <div><span>Vault lease · ${esc(s.sourceLease.id)}</span><b>${c.credentialRevoked?'Revoked':'Revocation pending'}</b></div>
-  <div><span>CRM session</span><b>${crmOutcome}</b></div>
+  <div><span>CRM session</span><b>${crmSessionResult(c)}</b></div>
  </div>`:'';
  const prediction=s.last?.action==='probe-session'?s.last.request?.prediction:null;
  const predictionText=prediction==='allowed'?'You predicted the old session would answer.':prediction==='denied'?'You predicted the old session would refuse the read.':'';
@@ -3867,7 +3906,7 @@ function showPractice(step=0,selected=null){
  const decision=decisions[step];
  if(!decision){
   showReference('Staffing brief complete',`<p>The task record sets the scope. The service applies its own rules. Confirm what will be sent, then verify which access actually closed.</p>
-   <div class="actions">${button('Back to the ending',showEnding)}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
+   <div class="actions">${button('Apply this at work',()=>showBuyerGuide(()=>showPractice(step),'Back to the staffing recap'))}${button('Back to the ending',showEnding,'secondary')}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
    'PRACTICE CASE');
   return;
  }
@@ -3917,7 +3956,7 @@ function showEnding(){
    ${comparison}
    <details class="debrief"><summary>Technical notes on sign-out</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
    <div class="actions">
-    ${practice}${otherStory}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}
+    ${button('Apply this at work',()=>showBuyerGuide(showEnding,'Back to Alex’s ending'))}${practice}${otherStory}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}
     ${button('Start Alex’s evening again',restart,'secondary')}${button('Look around the room',close,'secondary')}
    </div>
    <p class="small-print">A fictional story with simulated messages, videos and school accounts.</p>`,'ALEX’S EVENING');
@@ -3949,7 +3988,7 @@ function showEnding(){
   <div class="actions">
    ${practice}${otherStory}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}
    ${button('Start Nova’s story again',restart,'secondary')}${button('Explore the room',close,'secondary')}
-   ${button('Which control do we need?',()=>showBuyerGuide(true),'secondary')}${button('Technical product map',showProductMap,'secondary')}
+   ${button('Which control do we need?',()=>showBuyerGuide(showEnding,'Back to Nova’s ending'),'secondary')}${button('Technical product map',showProductMap,'secondary')}
   </div>
   <p class="small-print">A fictional story with simulated messages and security services.</p>`,'YOUR ENDING · NOVA');
 }
