@@ -45,7 +45,7 @@ Choose **Architecture** alongside Alex and Nova or open the [reference directly]
 
 ### Technical journey
 
-Each buyer card opens its product’s technical setup directly. **Access still works after the job ends** helps buyers check the credential, service session, or workspace separately. The IBM Verify worked example lets players test an edited send, approve the current copy, and retry using the story’s CRM decision.
+Each buyer card opens its product’s technical setup and pilot checklist. **Access still works after the job ends** guides buyers to separate credential, app session and workspace simulations. **The agent can open the app but can see or do too much** compares an allowed read with a denied one on the same route. The IBM Verify worked example lets players test an edited send, approve the current copy, and retry using the story’s CRM decision.
 
 **Start with a work problem** opens the buyer guide from the first screen. Each pilot card explains the outcome, what the buyer’s team owns, and the first test. The secondary cards include a worked watsonx Orchestrate file handoff and a Verify Antenna exercise that tracks signal delivery, receiver action, and the independent CRM retest.
 
@@ -78,7 +78,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **198**.
+- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **200**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

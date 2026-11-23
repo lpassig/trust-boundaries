@@ -14,14 +14,14 @@ const DecisionLab = (() => {
   ]);
  }
 
- function begin(scenario='approved', attempt='trial') {
+ function begin(scenario='approved', attempt='trial', recordId='789') {
   const mission = {
    id:'G-042', version:scenario==='scope'?1:2, policyVersion:1, generation:10,
    status:'active', records:scenario==='scope'?['123','456']:['123','456','789']
   };
   const request = {
    id:'lab-'+attempt+'-read', subject:'sponsor-001', actor:'nova-042', workload:'nova-demo-workspace',
-   operation:'customer.read', recordIds:['789'], fields:'account summary', observer:'CRM resource PEP'
+   operation:'customer.read', recordIds:[recordId], fields:'account summary', observer:'CRM resource PEP'
   };
   const observation = {
    issuer:scenario==='observer'?'unverified-client.demo':'crm-pep.demo', audience:'customer-policy.demo',
@@ -38,7 +38,7 @@ const DecisionLab = (() => {
   const inScope = request.recordIds.every(id=>mission.records.includes(id));
   const observedByCrm = observation.issuer==='crm-pep.demo'&&observation.audience==='customer-policy.demo';
   const reason = !observedByCrm?'The proposed PDP could not verify the CRM enforcement point.':
-   inScope?'The active mission and CRM summary policy allow record 789.':'Record 789 is outside the current mission.';
+   inScope?`The active mission and CRM summary policy allow record ${recordId}.`:`Record ${recordId} is outside the current mission.`;
   const decision = {
    id:'lab-'+attempt+'-decision', owner:'Customer policy decision service', requestId:request.id,
    result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm, preview:!brokered,
@@ -76,13 +76,13 @@ const DecisionLab = (() => {
  }
 
  // This exercise uses the same fictional CRM read with independent network and mission decisions.
- function startRuntime(){
-  return {route:'blocked',proposal:'none',missionVersion:1,reads:[]};
+ function startRuntime(route='blocked'){
+  return {route,proposal:'none',missionVersion:1,reads:[]};
  }
- function tryRuntimeRead(trial){
-  const attempt={missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]};
+ function tryRuntimeRead(trial,recordId='789'){
+  const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]};
   if(trial.route==='allowed'){
-   const check=commit(begin(trial.missionVersion===1?'scope':'approved','runtime-'+(trial.reads.length+1)));
+   const check=commit(begin(trial.missionVersion===1?'scope':'approved','runtime-'+(trial.reads.length+1),recordId));
    Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,records:check.outcome.recordIds});
   }
   return {...trial,reads:[...trial.reads,attempt]};
@@ -97,7 +97,7 @@ const DecisionLab = (() => {
  }
  function approveRuntimeMission(trial){
   const last=trial.reads.at(-1);
-  if(trial.missionVersion!==1||last?.crm!=='rejected')return trial;
+  if(trial.missionVersion!==1||last?.recordId!=='789'||last.crm!=='rejected')return trial;
   return {...trial,missionVersion:2};
  }
 
@@ -106,6 +106,19 @@ const DecisionLab = (() => {
    crmClosed:crmReachable,queueCleared:true,probe:crmReachable?'refused':'unknown'};
   const {probe,...controls}=evidence;
   return {...evidence,verified:probe==='refused'&&Object.values(controls).every(Boolean)};
+ }
+
+ function startCloseoutCheck(){
+  return {closure:'open',probe:null};
+ }
+ function attemptCloseout(check,reachable){
+  if(check.closure==='confirmed')return check;
+  return {closure:reachable?'confirmed':'unverified',probe:null};
+ }
+ function probeCloseout(check){
+  if(check.probe)return check;
+  const results={open:'active',confirmed:'closed',unverified:'unknown'};
+  return {...check,probe:results[check.closure]};
  }
 
  function startSignalTest(){
@@ -124,7 +137,8 @@ const DecisionLab = (() => {
  }
 
  return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, openNetworkProposal,
-  decideNetworkProposal, approveRuntimeMission, incidentStatus, startSignalTest, deliverSignal, applySignal, retestSignal};
+  decideNetworkProposal, approveRuntimeMission, incidentStatus, startCloseoutCheck, attemptCloseout, probeCloseout,
+  startSignalTest, deliverSignal, applySignal, retestSignal};
 })();
 
 if(typeof module!=='undefined')module.exports=DecisionLab;

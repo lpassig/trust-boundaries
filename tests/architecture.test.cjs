@@ -44,10 +44,13 @@ test('deployment options refer to published protocol sources',()=>{
  }
 });
 
-test('the buyer guide has four main choices and two secondary pilot tests',()=>{
+test('the buyer guide has four main and two secondary product pilots with complete setup checklists',()=>{
  const needs=vm.runInNewContext(fs.readFileSync(require.resolve('../v2/products.js'),'utf8')+'\nNOVA_BUYER_NEEDS');
  const pilots=Array.from(needs,need=>need.pilot).filter(Boolean);
  assert.deepEqual(pilots.filter(pilot=>!pilot.secondary).map(pilot=>pilot.evidence),['iai','verify','vault','openshell']);
  assert.deepEqual(pilots.filter(pilot=>pilot.secondary).map(pilot=>pilot.evidence),['orchestrate','antenna']);
- for(const pilot of pilots)assert(pilot.outcome&&pilot.integration&&pilot.test&&pilot.evidenceLabel);
+ for(const pilot of pilots){
+  assert(pilot.outcome&&pilot.integration&&pilot.test&&pilot.evidenceLabel);
+  for(const field of ['prerequisite','owner','success','failure','evidence'])assert(pilot.checklist[field]);
+ }
 });

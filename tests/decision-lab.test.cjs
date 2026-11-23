@@ -59,7 +59,7 @@ test('a Permit for one observation does not authorize a changed record or reques
 test('a new network rule opens the route while the same read still needs a separate mission amendment',()=>{
  const initial=Lab.startRuntime();
  const blocked=Lab.tryRuntimeRead(initial);
- assert.deepEqual(blocked.reads[0],{missionVersion:1,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]});
+ assert.deepEqual(blocked.reads[0],{recordId:'789',missionVersion:1,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]});
  assert.equal(Lab.approveRuntimeMission(blocked),blocked);
  const proposal=Lab.openNetworkProposal(blocked);
  const rejected=Lab.decideNetworkProposal(proposal,false);
@@ -67,9 +67,27 @@ test('a new network rule opens the route while the same read still needs a separ
  const allowed=Lab.decideNetworkProposal(proposal,true);
  assert.equal(allowed.missionVersion,1);
  const retried=Lab.tryRuntimeRead(allowed);
- assert.deepEqual(retried.reads.at(-1),{missionVersion:1,runtime:'permit',vault:'permit',crm:'rejected',records:[]});
+ assert.deepEqual(retried.reads.at(-1),{recordId:'789',missionVersion:1,runtime:'permit',vault:'permit',crm:'rejected',records:[]});
  const amended=Lab.approveRuntimeMission(retried);
- assert.deepEqual(Lab.tryRuntimeRead(amended).reads.at(-1),{missionVersion:2,runtime:'permit',vault:'permit',crm:'committed',records:['789']});
+ assert.deepEqual(Lab.tryRuntimeRead(amended).reads.at(-1),{recordId:'789',missionVersion:2,runtime:'permit',vault:'permit',crm:'committed',records:['789']});
+});
+
+test('one open CRM route permits the approved account and denies the other until the mission changes',()=>{
+ const baseline=Lab.tryRuntimeRead(Lab.startRuntime('allowed'),'123');
+ const approved=baseline.reads.at(-1);
+ assert.equal(approved.crm,'committed');
+ assert.deepEqual(approved.records,['123']);
+ assert.equal(Lab.approveRuntimeMission(baseline),baseline);
+ const outside=Lab.tryRuntimeRead(baseline);
+ const denied=outside.reads.at(-1);
+ assert.equal(denied.runtime,approved.runtime);
+ assert.equal(denied.vault,approved.vault);
+ assert.equal(denied.missionVersion,approved.missionVersion);
+ assert.equal(denied.crm,'rejected');
+ assert.deepEqual(denied.records,[]);
+ const inScope=Lab.tryRuntimeRead(Lab.approveRuntimeMission(outside));
+ assert.equal(inScope.reads.at(-1).crm,'committed');
+ assert.deepEqual(inScope.reads.at(-1).records,['789']);
 });
 
 test('a stopped sandbox leaves containment partial when the CRM controller cannot answer',()=>{
@@ -83,6 +101,22 @@ test('a stopped sandbox leaves containment partial when the CRM controller canno
  assert.equal(verified.crmClosed,true);
  assert.equal(verified.probe,'refused');
  assert.equal(verified.verified,true);
+});
+
+test('an individual closeout check needs a confirmed change and a retest, independently of another control',()=>{
+ const session=Lab.startCloseoutCheck();
+ const runtime=Lab.startCloseoutCheck();
+ const active=Lab.probeCloseout(session);
+ assert.equal(active.probe,'active');
+ const unavailable=Lab.attemptCloseout(active,false);
+ assert.equal(unavailable.closure,'unverified');
+ assert.equal(Lab.probeCloseout(unavailable).probe,'unknown');
+ const confirmed=Lab.attemptCloseout(unavailable,true);
+ assert.equal(confirmed.closure,'confirmed');
+ assert.equal(confirmed.probe,null);
+ assert.equal(Lab.probeCloseout(confirmed).probe,'closed');
+ assert.equal(runtime.closure,'open');
+ assert.equal(Lab.probeCloseout(runtime).probe,'active');
 });
 
 test('a revocation signal needs a receiver action and independent retest',()=>{

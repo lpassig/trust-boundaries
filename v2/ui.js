@@ -443,39 +443,87 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
  const other=NOVA_BUYER_NEEDS.filter(need=>!need.pilot).map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p>${sources(need)}</details>`).join('');
  showReference('What problem do you have today?',`${choices([
    ...candidates.map(need=>[need.pilot.label,'',()=>choose(need)]),
-   ['Access still works after the job ends','Find which control to check first.',()=>showBuyerAccess(reopen)]
+   ['Access still works after the job ends','Find which control to check first.',()=>showBuyerAccess(reopen)],
+   ['The agent can open the app but can see or do too much','Check what the app allows after the agent connects.',()=>showBuyerActionScope(reopen)]
   ])}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
   <div class="actions">${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
-function showBuyerSetup(need,back){
+function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
  const product=productById(need.pilot.evidence);
+ const {prerequisite,owner,success,failure,evidence}=need.pilot.checklist;
  showReference(`${product.name} technical setup`,`<div class="receipt"><b>What your team connects</b><p>${esc(need.pilot.integration)}</p></div>
-  <p>${esc(need.fit)}</p>${productCard(product,true)}
-  <div class="actions">${button('Back to the buyer card',back)}${button('Open the full technical product map',()=>showProductMap(product.id,()=>showBuyerSetup(need,back)),'secondary')}</div>`,
+  <h3>Pilot checklist</h3><ul class="route-list">
+  <li><b>Prerequisite</b><br>${esc(prerequisite)}</li>
+  <li><b>Integration owner</b><br>${esc(owner)}</li>
+  <li><b>Success case</b><br>${esc(success)}</li>
+  <li><b>Failure case</b><br>${esc(failure)}</li>
+  <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
+  ${productCard(product,true)}
+  <div class="actions">${button(backLabel,back)}${button('Open the full technical product map',()=>showProductMap(product.id,()=>showBuyerSetup(need,back,backLabel),'Back to technical setup'),'secondary')}</div>`,
   'TECHNICAL SETUP');
 }
 
 const accessChecks={
- credential:{symptom:'The old credential opens a new connection',owner:'Credential issuer · HashiCorp Vault in this example',
-  check:'Revoke the credential’s lease and try to open one new connection with the old credential. Verify that the attempt is refused.',pilot:'vault'},
- session:{symptom:'An already-open service session still responds',owner:'Service session owner · CRM in this example',
-  check:'Have CRM close that exact session, then try a harmless status read on the old route. A refusal verifies that route. An unavailable controller leaves it unverified.'},
- workspace:{symptom:'The agent’s workspace is still running',owner:'Runtime operator · NVIDIA OpenShell in this example',
-  check:'Stop the named sandbox generation and verify the runtime reports that the workload stopped. Check queued work and service sessions separately.',pilot:'openshell'}
+ credential:{symptom:'The old password or key still lets me sign in',question:'Can the connector sign in again?',
+  hint:'Try a fresh connection with the old password or key after the job ends.',owner:'Credential issuer · HashiCorp Vault in this example',
+  check:'Revoke the credential’s lease and try a fresh sign-in with the same credential. Look for a refusal.',pilot:'vault'},
+ session:{symptom:'An app that was already open still responds',question:'Does the app that was already open still respond?',
+  hint:'Try a status check in the existing session without signing in again.',owner:'App session owner · CRM in this example',
+  check:'Ask the app to close that exact session, then try the same status check again.',
+  replay:{probe:'Check the existing session',close:'Close the CRM session',retry:'Restore CRM contact and close the session',retest:'Retest the old session',
+   confirmed:'CRM acknowledged closure. Retest the same session to verify it.',unverified:'The CRM controller did not respond.',
+   active:'CRM still responds in the existing session.',closed:'CRM refused the status read from the old session.'}},
+ workspace:{symptom:'The agent is still running',question:'Is the agent’s workspace still running?',
+  hint:'Ask the runtime operator to check the exact workspace used for the job.',owner:'Runtime operator · NVIDIA OpenShell in this example',
+  check:'Stop the named workspace and check its status again. Check pending work and open app sessions separately.',pilot:'openshell',
+  replay:{probe:'Check workspace S-04',close:'Stop workspace S-04',retry:'Restore runtime contact and stop S-04',retest:'Verify workspace S-04 stopped',
+   confirmed:'OpenShell acknowledged the stop. Check the named workspace again to verify it.',unverified:'The runtime controller did not respond.',
+   active:'OpenShell reports that sandbox generation S-04 is still running.',closed:'The runtime status check confirmed that sandbox generation S-04 stopped.'}}
 };
-function showBuyerAccess(back,key=null){
- if(!key)return showReference('What still works?',`${choices(Object.entries(accessChecks).map(([id,check])=>[check.symptom,'',()=>showBuyerAccess(back,id)]))}
-  <div class="actions">${button('Back to the buyer guide',back,'secondary')}</div>`,'ACCESS AFTER THE JOB');
- const {symptom,owner,check,pilot}=accessChecks[key];
- const reopen=()=>showBuyerAccess(back,key);
+function showBuyerAccess(back,help=false){
+ const options=Object.entries(accessChecks).map(([key,check])=>[
+  help?check.question:check.symptom,help?check.hint:'',()=>showBuyerAccessCheck(back,key)
+ ]);
+ if(!help)options.push(['Help me tell which','See how to check each possibility.',()=>showBuyerAccess(back,true)]);
+ showReference(help?'How to tell what stayed open':'What still works?',`${help?'<p>Try these checks separately. More than one can find a problem.</p>':''}
+  ${choices(options)}<div class="actions">${help?button('Back to symptoms',()=>showBuyerAccess(back),'secondary'):button('Back to the buyer guide',back,'secondary')}</div>`,
+  'ACCESS AFTER THE JOB');
+}
+function showBuyerAccessCheck(back,key,{credential='',closeout=DecisionLab.startCloseoutCheck()}={}){
+ const {symptom,owner,check,pilot,replay}=accessChecks[key];
+ const reopen=()=>showBuyerAccessCheck(back,key,{credential,closeout});
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
- const openPilot=need?button(`Open the ${need.product} pilot`,()=>showBuyerGuide(reopen,'Back to the access check',need),key==='credential'?'primary':'secondary'):'';
- const evidence=key==='credential'?'':button('See the stop and retest evidence',()=>showRuntimeIncident(reopen,null,'Back to the access check'));
+ const exercise=replay?buyerCloseoutReplay(replay,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next})):
+  credentialComparison(StoryRules.buyerExample().sourceLease,credential,next=>showBuyerAccessCheck(back,key,{credential:next}));
  showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li></ul>
-  <div class="actions">${evidence}${openPilot}
-  ${button('Check another symptom',()=>showBuyerAccess(back),'secondary')}</div>`,'ACCESS AFTER THE JOB');
+  <h3>Try it in the simulation</h3>${exercise}
+  <div class="actions">${button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
+  ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
+}
+function buyerCloseoutReplay(replay,trial,advance){
+ const probe=()=>advance(DecisionLab.probeCloseout(trial));
+ const close=reachable=>advance(DecisionLab.attemptCloseout(trial,reachable));
+ const closure={confirmed:replay.confirmed,unverified:replay.unverified}[trial.closure];
+ const result={active:['Access still active',replay.active],closed:['Closure verified',replay.closed],
+  unknown:['Closure unverified','The status check could not confirm closure.']}[trial.probe];
+ let next;
+ if(!trial.probe)next=button(trial.closure==='open'?replay.probe:replay.retest,probe);
+ else if(trial.probe==='closed')next=button('Replay this check',()=>advance(DecisionLab.startCloseoutCheck()),'secondary');
+ else if(trial.probe==='unknown')next=button(replay.retry,()=>close(true));
+ else next=button(replay.close,()=>close(true))+button('Simulate the controller being unreachable',()=>close(false),'secondary');
+ return `${closure&&!result?`<p role="status">${esc(closure)}</p>`:''}
+  ${result?`<div class="receipt" role="status"><b>${esc(result[0])}</b><p>${esc(result[1])}</p></div>`:''}
+  <div class="actions">${next}</div>`;
+}
+function showBuyerActionScope(back){
+ const reopen=()=>showBuyerActionScope(back);
+ showReference('The agent can open the app but can see or do too much',`<p>Check the customer app’s action permissions. Nova can reach the customer records app (CRM). The assignment covers two accounts.</p>
+  <ul class="route-list"><li><b>Who owns it</b><br>The app owner enforces the operation. The business owner sets the permitted task scope.</li>
+  <li><b>What to test first</b><br>On the same allowed route, check that an in-scope record comes back and an unapproved record is refused.</li></ul>
+  <details class="debrief"><summary>Technical details</summary><p>The CRM policy enforcement point (PEP) observes the actual operation and record. The customer policy decision point (PDP) checks them against the active mission. CRM enforces that decision at execution.</p></details>
+  <div class="actions">${button('Test the record permission',()=>showRuntimeExercise(reopen,{scopeOnly:true}))}${button('Back to the buyer guide',back,'secondary')}</div>`,'BUYER GUIDE');
 }
 function showBuyerEvidence(product,back){
  if(product==='openshell')return showRuntimeExercise(back);
@@ -566,10 +614,10 @@ function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
   </ol>
   <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'SECURITY SIGNAL EVIDENCE');
 }
-function showProductMap(selectedProduct='',back=null){
+function showProductMap(selectedProduct='',back=null,backLabel='Back to the buyer guide'){
  const s=states.agent;
- const reopen=()=>showProductMap(selectedProduct,back);
- showReference('Who does what around Nova?',`<p>The sponsor signs in, Nova receives delegated authority, and a broker handles source credentials. The CRM checks the operation at the point of use.</p><ol class="product-flow"><li><b>Human sign-in</b> · IBM Verify or a configured identity provider such as Entra ID or Okta authenticates the sponsor. <a href="https://blog.iamidentity.ai/blog/bring-your-own-idp/" target="_blank" rel="noopener noreferrer">Federation example</a></li><li><b>Agent identity</b> · IBM Agent Identity records Nova’s owner and governs delegated identity. watsonx Orchestrate coordinates the work.</li><li><b>Customer mission</b> · The customer-owned mission service records the sponsor-approved task outside Nova’s prompt, notes and identity registry.</li><li><b>Credential</b> · HashiCorp Vault validates its own audience-bound request and brokers a scoped credential.</li><li><b>Action decision</b> · The trusted CRM PEP observes the real request. The proposed policy decision point evaluates it against current customer mission and resource rules. The CRM binds and enforces the result at execution. OpenShell separately constrains the runtime.</li><li><b>Stop and verify</b> · IBM Verify Antenna can carry SSF/CAEP signals. Configured receivers apply changes and report their own results.</li></ol><div class="receipt"><b>${s.mission?`Nova · ${esc(s.mission.id)} · version ${s.mission.version}`:'No task mission issued yet'}</b><p>${s.ended?'Task mission withdrawn':s.paused?'Mission paused':s.pass?'Scoped delegation active':'Task approval still required'}. This is a fictional case record, not a response from a live identity system.</p></div><div class="product-cards">${NOVA_PRODUCTS.map(p=>productCard(p,p.id===selectedProduct)).join('')}</div><details class="product-card"><summary><b>Two paths to a resource</b><span>Brokered credential or a token intended for that resource</span></summary><p><b>This episode uses the Vault broker path.</b> Vault checks the credential-path request and returns a managed credential. The CRM still checks its own business operations.</p><p><b>A direct OAuth/MCP path is another deployment option.</b> The resource validates a token issued for its own audience and enforces its supported authorization details. A Vault-audience token cannot simply be reused at the CRM. An MCP server must not pass through the client’s token to a downstream service.</p><p><b>Separate Vault flows:</b> Vault Enterprise’s OAuth resource-server path accepts the configured external access token for Vault requests. The classic JWT/OIDC auth method at /auth/jwt/login instead exchanges a login credential for a Vault token. They are not interchangeable.</p><p class="sources"><a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">Vault OAuth resource server</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">IBM Verify configuration for Vault</a> · <a href="${PROTOCOL_SOURCES.mcp.url}" target="_blank" rel="noopener noreferrer">MCP authorization</a></p></details><details class="product-card"><summary><b>What this example assumes</b><span>Configuration and receiver actions still need implementation</span></summary><p>Nova and its human sponsor are registered and mapped. The customer mission service, resource-side PEP and external policy decision point are proposed integrations. Their contracts, deployment and trusted evidence require implementation and validation. AuthZEN is a candidate PEP/PDP interface; approval-required workflow and execution binding are explicitly application extensions. The task uses customer-defined policy. Vault has the appropriate Enterprise feature, OAuth validation profile, Agent Registry record and secrets-engine role. Agent Identity and Vault keep separate registries; reconciliation requires configured integration.</p><p>OpenShell is an illustrative runtime choice alongside the orchestration layer. Antenna receivers need the correct APIs, event mapping and processors for each target. No universal instantaneous kill switch or automatic registry mirroring is implied.</p><p>The simulation binds approvals to document revision, recipient, actor, records, mission and policy version, story approval window, session generation and single use. Production integrity, authenticated PEP evidence, cryptographic content binding and transaction guarantees still require implementation. Runtime stops, lease revocation, service sign-out and queued-operation reconciliation need separate checks. These fictional receipts do not validate a production deployment.</p></details><div class="actions">${button('Which control do we need?',()=>showBuyerGuide(reopen,'Back to the product map'),'secondary')}${button('Inspect the Vault credential path',()=>showCredential(reopen),'secondary')}${back?button('Back to the buyer guide',back):button('Back to the story',()=>state().started?close():showIntro())}</div><p class="small-print">Example deployment with source-linked product roles. Connections and receiver actions require configuration. All game decisions and receipts are scripted locally.</p>`,'NOVA · PRODUCTS, PROTOCOLS AND ENFORCEMENT');
+ const reopen=()=>showProductMap(selectedProduct,back,backLabel);
+ showReference('Who does what around Nova?',`<p>The sponsor signs in, Nova receives delegated authority, and a broker handles source credentials. The CRM checks the operation at the point of use.</p><ol class="product-flow"><li><b>Human sign-in</b> · IBM Verify or a configured identity provider such as Entra ID or Okta authenticates the sponsor. <a href="https://blog.iamidentity.ai/blog/bring-your-own-idp/" target="_blank" rel="noopener noreferrer">Federation example</a></li><li><b>Agent identity</b> · IBM Agent Identity records Nova’s owner and governs delegated identity. watsonx Orchestrate coordinates the work.</li><li><b>Customer mission</b> · The customer-owned mission service records the sponsor-approved task outside Nova’s prompt, notes and identity registry.</li><li><b>Credential</b> · HashiCorp Vault validates its own audience-bound request and brokers a scoped credential.</li><li><b>Action decision</b> · The trusted CRM PEP observes the real request. The proposed policy decision point evaluates it against current customer mission and resource rules. The CRM binds and enforces the result at execution. OpenShell separately constrains the runtime.</li><li><b>Stop and verify</b> · IBM Verify Antenna can carry SSF/CAEP signals. Configured receivers apply changes and report their own results.</li></ol><div class="receipt"><b>${s.mission?`Nova · ${esc(s.mission.id)} · version ${s.mission.version}`:'No task mission issued yet'}</b><p>${s.ended?'Task mission withdrawn':s.paused?'Mission paused':s.pass?'Scoped delegation active':'Task approval still required'}. This is a fictional case record, not a response from a live identity system.</p></div><div class="product-cards">${NOVA_PRODUCTS.map(p=>productCard(p,p.id===selectedProduct)).join('')}</div><details class="product-card"><summary><b>Two paths to a resource</b><span>Brokered credential or a token intended for that resource</span></summary><p><b>This episode uses the Vault broker path.</b> Vault checks the credential-path request and returns a managed credential. The CRM still checks its own business operations.</p><p><b>A direct OAuth/MCP path is another deployment option.</b> The resource validates a token issued for its own audience and enforces its supported authorization details. A Vault-audience token cannot simply be reused at the CRM. An MCP server must not pass through the client’s token to a downstream service.</p><p><b>Separate Vault flows:</b> Vault Enterprise’s OAuth resource-server path accepts the configured external access token for Vault requests. The classic JWT/OIDC auth method at /auth/jwt/login instead exchanges a login credential for a Vault token. They are not interchangeable.</p><p class="sources"><a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">Vault OAuth resource server</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">IBM Verify configuration for Vault</a> · <a href="${PROTOCOL_SOURCES.mcp.url}" target="_blank" rel="noopener noreferrer">MCP authorization</a></p></details><details class="product-card"><summary><b>What this example assumes</b><span>Configuration and receiver actions still need implementation</span></summary><p>Nova and its human sponsor are registered and mapped. The customer mission service, resource-side PEP and external policy decision point are proposed integrations. Their contracts, deployment and trusted evidence require implementation and validation. AuthZEN is a candidate PEP/PDP interface; approval-required workflow and execution binding are explicitly application extensions. The task uses customer-defined policy. Vault has the appropriate Enterprise feature, OAuth validation profile, Agent Registry record and secrets-engine role. Agent Identity and Vault keep separate registries; reconciliation requires configured integration.</p><p>OpenShell is an illustrative runtime choice alongside the orchestration layer. Antenna receivers need the correct APIs, event mapping and processors for each target. No universal instantaneous kill switch or automatic registry mirroring is implied.</p><p>The simulation binds approvals to document revision, recipient, actor, records, mission and policy version, story approval window, session generation and single use. Production integrity, authenticated PEP evidence, cryptographic content binding and transaction guarantees still require implementation. Runtime stops, lease revocation, service sign-out and queued-operation reconciliation need separate checks. These fictional receipts do not validate a production deployment.</p></details><div class="actions">${button('Which control do we need?',()=>showBuyerGuide(reopen,'Back to the product map'),'secondary')}${button('Inspect the Vault credential path',()=>showCredential(reopen),'secondary')}${back?button(backLabel,back):button('Back to the story',()=>state().started?close():showIntro())}</div><p class="small-print">Example deployment with source-linked product roles. Connections and receiver actions require configuration. All game decisions and receipts are scripted locally.</p>`,'NOVA · PRODUCTS, PROTOCOLS AND ENFORCEMENT');
 }
 function showCredential(back=null){
  const s=states.agent;
@@ -783,32 +831,35 @@ function labCrmOutcome(run){
  return run.outcome.receipt?'Summary returned · receipt recorded':'Operation rejected · no data returned';
 }
 
-function showRuntimeExercise(back,trial=DecisionLab.startRuntime()){
+function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntime(scopeOnly?'allowed':'blocked')}={}){
  const read=trial.reads.at(-1);
- const retry=()=>showRuntimeExercise(back,DecisionLab.tryRuntimeRead(trial));
+ const show=next=>showRuntimeExercise(back,{scopeOnly,trial:next});
+ const readHarbor=()=>show(DecisionLab.tryRuntimeRead(trial,'123'));
+ const retry=()=>show(DecisionLab.tryRuntimeRead(trial));
  let next;
- if(!read)next=button('Try the Alder Books read',retry);
+ if(scopeOnly&&!read)next=button('Read approved account Harbor Bikes',readHarbor);
+ else if(!read||read.recordId==='123')next=button('Try the Alder Books read',retry);
  else if(trial.proposal==='review')next=`
-  ${button('Approve this network rule',()=>showRuntimeExercise(back,DecisionLab.decideNetworkProposal(trial,true)))}
-  ${button('Reject the network rule',()=>showRuntimeExercise(back,DecisionLab.decideNetworkProposal(trial,false)),'secondary')}`;
- else if(trial.route==='blocked')next=button('Review a narrow network rule',()=>showRuntimeExercise(back,DecisionLab.openNetworkProposal(trial)));
+  ${button('Approve this network rule',()=>show(DecisionLab.decideNetworkProposal(trial,true)))}
+  ${button('Reject the network rule',()=>show(DecisionLab.decideNetworkProposal(trial,false)),'secondary')}`;
+ else if(trial.route==='blocked')next=button('Review a narrow network rule',()=>show(DecisionLab.openNetworkProposal(trial)));
  else if(read.runtime==='deny'||read.missionVersion!==trial.missionVersion)next=button('Retry the same read',retry);
- else if(read.crm==='rejected')next=button('Record Priya’s separate approval for Alder Books',()=>showRuntimeExercise(back,DecisionLab.approveRuntimeMission(trial)));
+ else if(read.crm==='rejected')next=button('Record Priya’s separate approval for Alder Books',()=>show(DecisionLab.approveRuntimeMission(trial)));
  else next='';
  const summary=read?`<ol class="route-list" aria-label="Read attempts">${trial.reads.map(attempt=>`<li>
-  <b>G-042 v${attempt.missionVersion} · Alder Books read</b><br>
+  <b>G-042 v${attempt.missionVersion} · ${attempt.recordId==='123'?'Harbor Bikes':'Alder Books'} read</b><br>
   ${attempt.runtime==='deny'?'OpenShell denied the network request. Neither Vault nor CRM was reached.'
    :attempt.crm==='rejected'?'OpenShell permitted the route. Vault issued a connector lease. CRM refused the record because the mission still excludes it.'
-   :'OpenShell permitted the route. Vault issued a connector lease. CRM checked the amended mission and returned the requested summary.'}</li>`).join('')}</ol>`:'';
+   :`OpenShell permitted the route. Vault issued a connector lease. CRM checked the ${attempt.missionVersion===1?'current':'amended'} mission and returned the requested summary.`}</li>`).join('')}</ol>`:'';
  const review=trial.proposal==='review'?`<div class="receipt"><b>OpenShell Policy Advisor · proposed rule</b>
   <p>Allow Nova’s approved MCP client to reach the configured CRM tool endpoint over HTTPS.</p>
   <p>The simulated Policy Prover risk check finds no extra methods or unrelated destinations in the proposal. An operator still reviews the change.</p></div>`:'';
- showReference('What stopped this request?',`<p>Replay one fictional Alder Books read. The CRM tool route is initially blocked and Priya’s mission covers only the original two accounts.</p>
+ showReference(scopeOnly?'Which accounts can Nova read?':'What stopped this request?',`<p>${scopeOnly?'Nova already has a route to the CRM app. Read an account in the assignment, then try Alder Books on that same route.':'Replay one fictional Alder Books read. The CRM tool route is initially blocked and Priya’s mission covers only the original two accounts.'}</p>
   <div class="receipt"><b>Current permissions</b><p>OpenShell route ${trial.route==='allowed'?'allowed':'blocked'} · G-042 v${trial.missionVersion} ${trial.missionVersion===2?'includes Alder Books':'excludes Alder Books'}.</p></div>
   ${review}${trial.proposal==='rejected'?'<p>The operator rejected the network change. The current route stays blocked.</p>':''}
   <div class="actions">${next}</div>${summary}
-  <div class="actions">${button('Reset the exercise',()=>showRuntimeExercise(back),'secondary')}${button('Go back',back,'secondary')}</div>`,
-  'REFERENCE ARCHITECTURE');
+  <div class="actions">${button('Reset the exercise',()=>showRuntimeExercise(back,{scopeOnly}),'secondary')}${button(scopeOnly?'Back to the buyer card':'Go back',back,'secondary')}</div>`,
+  scopeOnly?'APP PERMISSION EVIDENCE':'REFERENCE ARCHITECTURE');
 }
 
 function showSupervisorFailure(back,status='frozen'){
@@ -824,8 +875,8 @@ function showSupervisorFailure(back,status='frozen'){
   ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
-function showRuntimeIncident(back,crmReachable=null,backLabel='Back to runtime and containment'){
- const check=reachable=>showRuntimeIncident(back,reachable,backLabel);
+function showRuntimeIncident(back,crmReachable=null){
+ const check=reachable=>showRuntimeIncident(back,reachable);
  const evidence=crmReachable===null?null:DecisionLab.incidentStatus(crmReachable);
  const rows=evidence?[
   ['Customer mission service','Mission withdrawn'],['OpenShell','Sandbox generation S-04 stopped'],
@@ -838,7 +889,7 @@ function showRuntimeIncident(back,crmReachable=null,backLabel='Back to runtime a
   <p>Review any completed or in-flight work separately. A completed delivery stays delivered.</p>`:''}
   <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>check(true))}${button('Simulate CRM being unreachable',()=>check(false),'secondary')}`
    :evidence.verified?button('Replay the incident check',()=>check(null),'secondary'):button('Restore CRM contact and verify',()=>check(true))}
-  ${button(backLabel,back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+  ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
 function showReadComparison(pair,back){
@@ -893,18 +944,22 @@ function showSource(){
    ...(event?[['Follow the CRM request','Follow discovery, token audience and the CRM decision.',()=>showRequestTrace(event,showSource)]]:[])
   ])}`,teen()?'MUSEUM WEBSITE':'CRM','collect-source');
 }
-function showCredentialComparison(lease,checked='',back=showSource){
- const check=kind=>showCredentialComparison(lease,kind,back);
+function credentialComparison(lease,checked,check){
  const result=checked==='shared'?'The shared credential still works in this example. Ending the task did not rotate it.':
   checked==='vault'?'Vault revoked this lease. The connector cannot use it to open a new connection. A CRM session that was already open needs its own closing check.':'';
- showReference('What access survives the task?',`<p>Compare a standing connector password with the Vault lease from Nova’s first read. This simulation checks a new connection after the task ends and Vault revokes the lease.</p>
+ return `<p>Compare a shared connector password with a short-lived Vault credential. Each test tries a fresh connection after the job ends.</p>
   ${decisionComparison(['Shared password · example','HashiCorp Vault · this read'],[
    ['Custody',['Shared connector login','CRM connector · outside Nova’s context'],true],
    ['Scope and lifetime',['Shared access · valid until rotated','Read-only connector role · '+lease.lifetimeSeconds+' seconds'],true],
    ['Credential reference',['Example only',lease.id]]
   ])}
   ${result?`<div class="receipt" role="status"><b>${checked==='vault'?'Vault lease check':'Shared password check'}</b><p>${esc(result)}</p></div>`:''}
-  <div class="actions">${button('Check the shared password',()=>check('shared'))}${button('Check the Vault lease',()=>check('vault'))}${button(back===showSource?'Back to the CRM result':'Back to the Vault evidence',back,'secondary')}</div>
+  <div class="actions">${button('Check the shared password',()=>check('shared'))}${button('Check the Vault lease',()=>check('vault'))}</div>`;
+}
+function showCredentialComparison(lease,checked='',back=showSource){
+ const check=kind=>showCredentialComparison(lease,kind,back);
+ showReference('What access survives the task?',`${credentialComparison(lease,checked,check)}
+  <div class="actions">${button(back===showSource?'Back to the CRM result':'Back to the Vault evidence',back,'secondary')}</div>
   <p class="small-print">Both checks are simulated. The story’s closing checklist records when this lease is revoked and when the CRM session is verified.</p>`,'CRM CREDENTIALS');
 }
 

@@ -257,7 +257,12 @@ const NOVA_BUYER_NEEDS = [
     pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Pip’s activity record',
       outcome:'See who authorized the work and which agent did it. IBM Agent Identity gives each agent its own identity and preserves who it acts for.',
       integration:'Keep your human sign-in provider. Configure the workflow and resource logs to record the human, requesting agent, and acting agent.',
-      test:'Run one file-only handoff. The activity record should identify who delegated, which agent requested the work, and which agent completed it.'},
+      test:'Run one file-only handoff. The activity record should identify who delegated, which agent requested the work, and which agent completed it.',
+      checklist:{prerequisite:'Two registered test agents with separate identities, and a sponsor who can delegate one test task.',
+        owner:'The identity team sets up the agent identities and delegation. The workflow and app owners correlate those identities with the action.',
+        success:'A permitted file handoff records the sponsor, requesting agent and acting agent as three distinct identities.',
+        failure:'Have the app refuse the same handoff when the helper has no valid delegation for it.',
+        evidence:'Save the delegation reference and the app’s allowed and denied audit records with the actor and request IDs.'}},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
   {
@@ -268,7 +273,12 @@ const NOVA_BUYER_NEEDS = [
     pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Test the old approval',
       outcome:'Morgan can review this send on a separate device. IBM Verify can confirm Morgan’s identity and collect the response.',
       integration:'Connect your application to IBM Verify with CIBA. Your application links the response to the exact document and recipient. CRM checks that link when sending.',
-      test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.'},
+      test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.',
+      checklist:{prerequisite:'A CIBA-enabled Verify client, an enrolled test reviewer, and a staging send endpoint that checks the exact approval.',
+        owner:'The identity team configures Verify. The application team binds the response to the revision and recipient. The CRM team enforces the binding.',
+        success:'Approve the edited copy on the test reviewer’s device and verify that CRM delivers that revision to the named test recipient.',
+        failure:'Try the edited send using the original approval. CRM should record the refusal with zero deliveries.',
+        evidence:'Save the approval correlation ID, approved and attempted revisions and recipients, and the CRM refusal and delivery receipts.'}},
     sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
@@ -279,7 +289,12 @@ const NOVA_BUYER_NEEDS = [
     pilot:{label:'Our connector uses a long-lived password',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
       outcome:'Give the data connector a short-lived credential for the job. Vault issues it and can revoke it when the work ends.',
       integration:'Check support for your connector, target, and selected Vault secrets engine. Configure credential access in Vault and verify that CRM can close its existing session separately.',
-      test:'Read with a short-lived credential and revoke its lease. Verify the old credential can no longer open a connection. Close and retest the old CRM session separately.'},
+      test:'Read with a short-lived credential and revoke its lease. Verify the old credential can no longer open a connection. Close and retest the old CRM session separately.',
+      checklist:{prerequisite:'A supported staging target and secrets engine, a read-only role, and an eligible deployment if using Agentic IAM.',
+        owner:'The Vault team configures the role and lease. The connector owner holds the credential outside the agent context. The app owner handles its sessions.',
+        success:'The connector opens a fresh connection with the short-lived credential and reads one allowed test record.',
+        failure:'Revoke the lease, then verify a new connection using that same credential is refused. Check an already-open session separately.',
+        evidence:'Save the lease ID, revocation outcome and target-side connection results. Omit credential values from the records.'}},
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
@@ -290,7 +305,12 @@ const NOVA_BUYER_NEEDS = [
     pilot:{label:'Our agents can reach services they don’t need',evidence:'openshell',evidenceLabel:'Replay the network and CRM checks',
       outcome:'OpenShell stops the running agent from connecting to services its runtime policy excludes.',
       integration:'Set up OpenShell for the agent workload and approved tool endpoint. Your application still enforces which records and actions are allowed.',
-      test:'An unapproved route should stop at OpenShell. After approving the route, an out-of-scope record should still stop at CRM.'},
+      test:'An unapproved route should stop at OpenShell. After approving the route, an out-of-scope record should still stop at CRM.',
+      checklist:{prerequisite:'One OpenShell sandbox, a test tool client and a runtime policy with a known allowed destination and a test destination outside it.',
+        owner:'The runtime operator configures and verifies the sandbox policy. The app owner enforces record and action permissions.',
+        success:'The approved client can reach the allowed endpoint and complete an in-scope read.',
+        failure:'The runtime blocks the excluded destination. On the allowed route, the app separately refuses an out-of-scope record.',
+        evidence:'Save the sandbox and policy identifiers, the runtime decision, and the app receipt or refusal for each request that reached the app.'}},
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   },
   {
@@ -301,7 +321,12 @@ const NOVA_BUYER_NEEDS = [
     pilot:{secondary:true,label:'We need to coordinate agent handoffs',evidence:'orchestrate',evidenceLabel:'Inspect what Pip received',
       outcome:'watsonx Orchestrate can route the formatting step to Pip and pass it the selected report.',
       integration:'Configure the workflow to pass only the approved file and revision. Give Pip its own formatting permission and enforce it at the receiving service.',
-      test:'Run one file-only handoff. Verify Pip gets the selected revision and returns the formatted report without receiving Nova’s credential or CRM read permission.'},
+      test:'Run one file-only handoff. Verify Pip gets the selected revision and returns the formatted report without receiving Nova’s credential or CRM read permission.',
+      checklist:{prerequisite:'A test workflow, an approved file revision and a helper with its own identity and file-only permission.',
+        owner:'The workflow team configures the handoff. The receiving service enforces the helper’s file and operation permissions.',
+        success:'The helper receives the selected revision, formats it and returns the result for review.',
+        failure:'The receiving service rejects a handoff for a file the helper is forbidden to access.',
+        evidence:'Save the workflow and helper action IDs, input and output revisions, and the receiving service’s refusal.'}},
     sources:[['IBM watsonx Orchestrate','https://www.ibm.com/products/watsonx-orchestrate']]
   },
   {
@@ -319,7 +344,12 @@ const NOVA_BUYER_NEEDS = [
     pilot:{secondary:true,label:'Our security systems need to share revocation alerts',evidence:'antenna',evidenceLabel:'Replay a session-revocation signal',
       outcome:'Verify Antenna can relay a session-revoked signal so a connected system knows which session to act on.',
       integration:'Connect the event sender and configure the receiver action for the affected session. CRM closes its own session, and an independent check tests the old route.',
-      test:'Send one test signal. Check its arrival, the receiver’s action, and the refusal when the old route is retested.'},
+      test:'Send one test signal. Check its arrival, the receiver’s action, and the refusal when the old route is retested.',
+      checklist:{prerequisite:'A configured test signal sender and receiver, a mapped test session and a receiver action that can request app sign-out.',
+        owner:'The security integration team configures signal delivery. The app owner configures and verifies session closure.',
+        success:'The receiver acts on the expected session and a separate test confirms that the old session is refused.',
+        failure:'Make the test session controller unavailable. Signal delivery can still be acknowledged while closure remains unverified.',
+        evidence:'Save the event ID, receiver action result, session reference and independent retest result.'}},
     sources:[['IBM Verify Antenna','https://www.ibm.com/docs/en/security-verify?topic=integrations-verify-antenna']]
   }
 ];
