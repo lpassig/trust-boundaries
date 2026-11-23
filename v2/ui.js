@@ -426,32 +426,37 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
 function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='Back to the story',selected=null){
  const reopen=()=>showBuyerGuide(exit,exitLabel,selected);
  const productMap=()=>showProductMap(selected?.pilot.evidence,reopen);
- const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot);
+ const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot&&!need.pilot.secondary);
+ const choose=need=>showBuyerGuide(exit,exitLabel,need);
  const sources=need=>`<p class="sources">${need.sources.map(([name,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p>`;
  if(selected){
   const {pilot,product,fit}=selected;
-  return showReference(product,`<p>${esc(fit)}</p>
-   <ul class="route-list"><li><b>What your team connects</b><br>${esc(pilot.integration)}</li>
-   <li><b>What counts as a pass</b><br>${esc(pilot.test)}</li></ul>
+  return showReference(product,`<p>${esc(pilot.outcome)}</p>
+   <ul class="route-list"><li><b>When to evaluate it</b><br>${esc(fit)}</li>
+   <li><b>What your team owns</b><br>${esc(pilot.integration)}</li>
+   <li><b>First pilot test</b><br>${esc(pilot.test)}</li></ul>
    <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}</div>
    ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}${button('Open the technical product map',productMap,'secondary')}</div>`,
    'BUYER GUIDE');
  }
+ const secondary=choices(NOVA_BUYER_NEEDS.filter(need=>need.pilot?.secondary).map(need=>[need.product,need.pilot.label,()=>choose(need)]));
  const other=NOVA_BUYER_NEEDS.filter(need=>!need.pilot).map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p>${sources(need)}</details>`).join('');
- showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>showBuyerGuide(exit,exitLabel,need)]))}
-  <details class="debrief"><summary>Other controls in Nova’s mission</summary><div class="product-cards">${other}</div></details>
+ showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>choose(need)]))}
+  <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
   <div class="actions">${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
 function showBuyerEvidence(product,back){
  if(product==='openshell')return showRuntimeExercise(back);
- const read=s=>product==='iai'?s.helperReceipts.at(-1):product==='verify'
+ if(product==='antenna')return showBuyerSignal(back);
+ const read=s=>['iai','orchestrate'].includes(product)?s.helperReceipts.at(-1):product==='verify'
   ?s.history.findLast(entry=>entry?.approvalComparison)?.approvalComparison
   :s.sourceLease&&{lease:s.sourceLease,containment:s.containment};
  const recorded=read(states.agent);
  const evidence=recorded||read(StoryRules.buyerExample());
  const origin=recorded?'Recorded in your Nova playthrough.':'Worked example from Nova’s story.';
  if(product==='iai')return showHelperAudit(evidence,null,back,origin);
+ if(product==='orchestrate')return showBuyerHandoff(evidence,origin,back);
  if(product==='vault')return showBuyerVault(evidence,origin,back);
  const {approved,current}=evidence;
  showReference('What changed after Morgan approved?',`<p>${origin}</p>
@@ -468,6 +473,37 @@ function showBuyerVault({lease,containment},origin,back){
   <div class="access-evidence"><div><span>HashiCorp Vault</span><b>${vault}</b></div><div><span>CRM session</span><b>${crm}</b></div></div>
   <div class="actions">${button('Replay the credential comparison',()=>showCredentialComparison(lease,'',replay))}${button('Back to the buyer card',back,'secondary')}</div>`,
   'CREDENTIAL EVIDENCE');
+}
+function showBuyerHandoff(receipt,origin,back){
+ showReference('What did Pip receive?',`<p>${esc(origin)} The workflow routed one report to Pip for formatting.</p>
+  <ul class="route-list">
+   <li><b>Recipient</b><br>Pip · ${esc(receipt.actor)}</li>
+   <li><b>Input</b><br>${esc(receipt.file)} · revision ${esc(receipt.inputRevision)}</li>
+   <li><b>Allowed action</b><br>${esc(receipt.actions.join(', '))} · no CRM read or onward share</li>
+   <li><b>Credential passed to Pip</b><br>${receipt.credentialShared?'Shared':'None'}</li>
+   <li><b>Output</b><br>${esc(receipt.file)} · revision ${esc(receipt.outputRevision)} returned for review</li>
+  </ul>
+  <p>Orchestrate coordinates the handoff. The workflow supplies the selected file, and the receiving service enforces Pip’s file-only permission.</p>
+  <div class="actions">${button('Back to the buyer card',back,'secondary')}</div>`,'HANDOFF EVIDENCE');
+}
+function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
+ const showStep=next=>showBuyerSignal(back,next);
+ const apply=reachable=>showStep(DecisionLab.applySignal(trial,reachable));
+ let next;
+ if(!trial.delivered)next=button('Deliver the test signal',()=>showStep(DecisionLab.deliverSignal(trial)));
+ else if(trial.receiver==='pending')next=button('Run the configured receiver action',()=>apply(true))+button('Simulate CRM being unreachable',()=>apply(false),'secondary');
+ else if(!trial.probe)next=button('Retest the old CRM route',()=>showStep(DecisionLab.retestSignal(trial)));
+ else if(trial.probe==='unknown')next=button('Restore CRM contact and retry the receiver action',()=>apply(true));
+ else next=button('Replay from the start',()=>showBuyerSignal(back),'secondary');
+ const receiver={pending:'Action pending',unverified:'CRM unreachable · closure unverified',closed:'CRM confirmed session closure'};
+ const probe=trial.probe==='refused'?'Refused · closure verified for this route':trial.probe==='unknown'?'Unknown · closure unverified':'Retest pending';
+ showReference('Did the revocation take effect?',`<p>In this simulation a source system revokes its session and sends a CAEP session-revoked signal through Verify Antenna. A configured receiver asks CRM to close the corresponding session.</p>
+  <ol class="lab-summary" aria-label="Signal and closure evidence">
+   <li><b>Signal delivery</b><span>${trial.delivered?'Receiver acknowledged the signal':'Delivery pending'}</span></li>
+   <li><b>Receiver action</b><span>${receiver[trial.receiver]}</span></li>
+   <li><b>Independent retest</b><span>${probe}</span></li>
+  </ol>
+  <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'SECURITY SIGNAL EVIDENCE');
 }
 function showProductMap(selectedProduct='',back=null){
  const s=states.agent;
@@ -501,8 +537,9 @@ function useItem(key){
 function showIntro(){
  const labels=key=>states[key].finished?'View '+EPISODES[key].name+'’s ending':states[key].started?'Continue '+EPISODES[key].name:'Play '+EPISODES[key].name;
  showReference('Trust Boundaries',
-  `<p>Two interactive stories about who can approve a change, what you can share, and how you know access has ended. Set aside about 15 minutes per story.</p>
+  `<p>Pick a work problem for a quick example, or play a story about who can approve a change, what you can share, and how you know access has ended. Each story takes about 15 minutes.</p>
   <div class="launch-choices">${choices([
+   ['Start with a work problem','See what a product can do and what to test first.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()]

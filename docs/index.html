@@ -2214,15 +2214,21 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
     example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
-    pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Pip’s activity record',integration:'Keep your human identity provider. Check that the workflow and resource logs preserve both the delegated human identity and the agent identity.',test:'Run one file-only handoff. The activity record should identify who delegated, which agent requested the work, and which agent completed it.'},
+    pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Pip’s activity record',
+      outcome:'See who authorized the work and which agent did it. IBM Agent Identity gives each agent its own identity and preserves who it acts for.',
+      integration:'Keep your human sign-in provider. Configure the workflow and resource logs to record the human, requesting agent, and acting agent.',
+      test:'Run one file-only handoff. The activity record should identify who delegated, which agent requested the work, and which agent completed it.'},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
   {
     question:'Ask a human for an approval away from the agent',
     product:'IBM Verify',
-    fit:'A configured CIBA flow can authenticate the person on a separate device. The application binds the response to the exact business action.',
+    fit:'Evaluate it when an agent needs someone to review a sensitive request on a separate device.',
     example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
-    pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Compare Morgan’s approved and edited copies',integration:'Connect a CIBA client to IBM Verify. The application binds the response to the exact send, and the resource checks it when sending.',test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.'},
+    pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Compare Morgan’s approved and edited copies',
+      outcome:'Morgan can review this send on a separate device. IBM Verify can confirm Morgan’s identity and collect the response.',
+      integration:'Connect your application to IBM Verify with CIBA. Your application links the response to the exact document and recipient. CRM checks that link when sending.',
+      test:'Approve a report, then edit one sentence. The old approval should fail to deliver the edit. Approve the current revision and verify the delivered file and recipient.'},
     sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
@@ -2230,7 +2236,10 @@ const NOVA_BUYER_NEEDS = [
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
-    pilot:{label:'Our connector password stays active after jobs end',evidence:'vault',evidenceLabel:'See the lease and CRM retest',integration:'Verify that your connector and target support the selected Vault secrets engine and configured identity and credential policy.',test:'Read with a short-lived lease, revoke it, and confirm that a new connection fails. Separately close and retest any existing service session.'},
+    pilot:{label:'Our connector password stays active after jobs end',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
+      outcome:'Give the data connector a short-lived credential for the job. Vault issues it and can revoke it when the work ends.',
+      integration:'Check support for your connector, target, and selected Vault secrets engine. Configure credential access in Vault and verify that CRM can close its existing session separately.',
+      test:'Read with a short-lived lease and revoke it. Verify the same lease can no longer open a connection. Close and retest the old CRM session separately.'},
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
@@ -2238,7 +2247,10 @@ const NOVA_BUYER_NEEDS = [
     product:'NVIDIA OpenShell',
     fit:'Evaluate OpenShell for isolation and control of files, processes and network access. Secure Agent Workspace describes a broader design that combines runtime, identity and policy integrations.',
     example:'Nova can reach the approved CRM route from its runtime. The CRM still withholds a private file when its own policy forbids the attachment.',
-    pilot:{label:'Our agents can reach services they don’t need',evidence:'openshell',evidenceLabel:'Replay the network and CRM checks',integration:'Set up OpenShell for your agent workload and tool endpoint. Keep the record and action policy at the application boundary.',test:'An unapproved route should stop at OpenShell. After approving the route, an out-of-scope record should still stop at CRM.'},
+    pilot:{label:'Our agents can reach services they don’t need',evidence:'openshell',evidenceLabel:'Replay the network and CRM checks',
+      outcome:'OpenShell stops the running agent from connecting to services its runtime policy excludes.',
+      integration:'Set up OpenShell for the agent workload and approved tool endpoint. Your application still enforces which records and actions are allowed.',
+      test:'An unapproved route should stop at OpenShell. After approving the route, an out-of-scope record should still stop at CRM.'},
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   },
   {
@@ -2246,6 +2258,10 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM watsonx Orchestrate',
     fit:'Evaluate it when you need a platform to build or coordinate agents and workflows. Scope the helper’s permissions separately.',
     example:'An orchestrator can hand the formatting step to Pip. Pip receives only the report.',
+    pilot:{secondary:true,label:'We need to coordinate agent handoffs',evidence:'orchestrate',evidenceLabel:'Inspect what Pip received',
+      outcome:'watsonx Orchestrate can route the formatting step to Pip and pass it the selected report.',
+      integration:'Configure the workflow to pass only the approved file and revision. Give Pip its own formatting permission and enforce it at the receiving service.',
+      test:'Run one file-only handoff. Verify Pip gets the selected revision and returns the formatted report without receiving Nova’s credential or CRM read permission.'},
     sources:[['IBM watsonx Orchestrate','https://www.ibm.com/products/watsonx-orchestrate']]
   },
   {
@@ -2260,6 +2276,10 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Verify Antenna',
     fit:'Evaluate it when connected systems need to exchange security events. Check that each receiver can take the action your workflow requires.',
     example:'A configured alert can tell receivers about a revoked session. Nova’s ending separately checks whether CRM access actually closed.',
+    pilot:{secondary:true,label:'Our security systems need to share revocation alerts',evidence:'antenna',evidenceLabel:'Replay a session-revocation signal',
+      outcome:'Verify Antenna can relay a session-revoked signal so a connected system knows which session to act on.',
+      integration:'Connect the event sender and configure the receiver action for the affected session. CRM closes its own session, and an independent check tests the old route.',
+      test:'Send one test signal. Check its arrival, the receiver’s action, and the refusal when the old route is retested.'},
     sources:[['IBM Verify Antenna','https://www.ibm.com/docs/en/security-verify?topic=integrations-verify-antenna']]
   }
 ];
@@ -2703,8 +2723,23 @@ const DecisionLab = (() => {
   return {...evidence,verified:probe==='refused'&&Object.values(controls).every(Boolean)};
  }
 
+ function startSignalTest(){
+  return {delivered:false,receiver:'pending',probe:null};
+ }
+ function deliverSignal(test){
+  return test.delivered?test:{...test,delivered:true};
+ }
+ function applySignal(test,crmReachable){
+  if(!test.delivered||test.receiver==='closed')return test;
+  return {...test,receiver:crmReachable?'closed':'unverified',probe:null};
+ }
+ function retestSignal(test){
+  if(test.receiver==='pending'||test.probe)return test;
+  return {...test,probe:test.receiver==='closed'?'refused':'unknown'};
+ }
+
  return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, openNetworkProposal,
-  decideNetworkProposal, approveRuntimeMission, incidentStatus};
+  decideNetworkProposal, approveRuntimeMission, incidentStatus, startSignalTest, deliverSignal, applySignal, retestSignal};
 })();
 
 if(typeof module!=='undefined')module.exports=DecisionLab;
@@ -3138,32 +3173,37 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
 function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='Back to the story',selected=null){
  const reopen=()=>showBuyerGuide(exit,exitLabel,selected);
  const productMap=()=>showProductMap(selected?.pilot.evidence,reopen);
- const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot);
+ const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot&&!need.pilot.secondary);
+ const choose=need=>showBuyerGuide(exit,exitLabel,need);
  const sources=need=>`<p class="sources">${need.sources.map(([name,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p>`;
  if(selected){
   const {pilot,product,fit}=selected;
-  return showReference(product,`<p>${esc(fit)}</p>
-   <ul class="route-list"><li><b>What your team connects</b><br>${esc(pilot.integration)}</li>
-   <li><b>What counts as a pass</b><br>${esc(pilot.test)}</li></ul>
+  return showReference(product,`<p>${esc(pilot.outcome)}</p>
+   <ul class="route-list"><li><b>When to evaluate it</b><br>${esc(fit)}</li>
+   <li><b>What your team owns</b><br>${esc(pilot.integration)}</li>
+   <li><b>First pilot test</b><br>${esc(pilot.test)}</li></ul>
    <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}</div>
    ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}${button('Open the technical product map',productMap,'secondary')}</div>`,
    'BUYER GUIDE');
  }
+ const secondary=choices(NOVA_BUYER_NEEDS.filter(need=>need.pilot?.secondary).map(need=>[need.product,need.pilot.label,()=>choose(need)]));
  const other=NOVA_BUYER_NEEDS.filter(need=>!need.pilot).map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p>${sources(need)}</details>`).join('');
- showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>showBuyerGuide(exit,exitLabel,need)]))}
-  <details class="debrief"><summary>Other controls in Nova’s mission</summary><div class="product-cards">${other}</div></details>
+ showReference('What problem do you have today?',`${choices(candidates.map(need=>[need.pilot.label,'',()=>choose(need)]))}
+  <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
   <div class="actions">${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
 function showBuyerEvidence(product,back){
  if(product==='openshell')return showRuntimeExercise(back);
- const read=s=>product==='iai'?s.helperReceipts.at(-1):product==='verify'
+ if(product==='antenna')return showBuyerSignal(back);
+ const read=s=>['iai','orchestrate'].includes(product)?s.helperReceipts.at(-1):product==='verify'
   ?s.history.findLast(entry=>entry?.approvalComparison)?.approvalComparison
   :s.sourceLease&&{lease:s.sourceLease,containment:s.containment};
  const recorded=read(states.agent);
  const evidence=recorded||read(StoryRules.buyerExample());
  const origin=recorded?'Recorded in your Nova playthrough.':'Worked example from Nova’s story.';
  if(product==='iai')return showHelperAudit(evidence,null,back,origin);
+ if(product==='orchestrate')return showBuyerHandoff(evidence,origin,back);
  if(product==='vault')return showBuyerVault(evidence,origin,back);
  const {approved,current}=evidence;
  showReference('What changed after Morgan approved?',`<p>${origin}</p>
@@ -3180,6 +3220,37 @@ function showBuyerVault({lease,containment},origin,back){
   <div class="access-evidence"><div><span>HashiCorp Vault</span><b>${vault}</b></div><div><span>CRM session</span><b>${crm}</b></div></div>
   <div class="actions">${button('Replay the credential comparison',()=>showCredentialComparison(lease,'',replay))}${button('Back to the buyer card',back,'secondary')}</div>`,
   'CREDENTIAL EVIDENCE');
+}
+function showBuyerHandoff(receipt,origin,back){
+ showReference('What did Pip receive?',`<p>${esc(origin)} The workflow routed one report to Pip for formatting.</p>
+  <ul class="route-list">
+   <li><b>Recipient</b><br>Pip · ${esc(receipt.actor)}</li>
+   <li><b>Input</b><br>${esc(receipt.file)} · revision ${esc(receipt.inputRevision)}</li>
+   <li><b>Allowed action</b><br>${esc(receipt.actions.join(', '))} · no CRM read or onward share</li>
+   <li><b>Credential passed to Pip</b><br>${receipt.credentialShared?'Shared':'None'}</li>
+   <li><b>Output</b><br>${esc(receipt.file)} · revision ${esc(receipt.outputRevision)} returned for review</li>
+  </ul>
+  <p>Orchestrate coordinates the handoff. The workflow supplies the selected file, and the receiving service enforces Pip’s file-only permission.</p>
+  <div class="actions">${button('Back to the buyer card',back,'secondary')}</div>`,'HANDOFF EVIDENCE');
+}
+function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
+ const showStep=next=>showBuyerSignal(back,next);
+ const apply=reachable=>showStep(DecisionLab.applySignal(trial,reachable));
+ let next;
+ if(!trial.delivered)next=button('Deliver the test signal',()=>showStep(DecisionLab.deliverSignal(trial)));
+ else if(trial.receiver==='pending')next=button('Run the configured receiver action',()=>apply(true))+button('Simulate CRM being unreachable',()=>apply(false),'secondary');
+ else if(!trial.probe)next=button('Retest the old CRM route',()=>showStep(DecisionLab.retestSignal(trial)));
+ else if(trial.probe==='unknown')next=button('Restore CRM contact and retry the receiver action',()=>apply(true));
+ else next=button('Replay from the start',()=>showBuyerSignal(back),'secondary');
+ const receiver={pending:'Action pending',unverified:'CRM unreachable · closure unverified',closed:'CRM confirmed session closure'};
+ const probe=trial.probe==='refused'?'Refused · closure verified for this route':trial.probe==='unknown'?'Unknown · closure unverified':'Retest pending';
+ showReference('Did the revocation take effect?',`<p>In this simulation a source system revokes its session and sends a CAEP session-revoked signal through Verify Antenna. A configured receiver asks CRM to close the corresponding session.</p>
+  <ol class="lab-summary" aria-label="Signal and closure evidence">
+   <li><b>Signal delivery</b><span>${trial.delivered?'Receiver acknowledged the signal':'Delivery pending'}</span></li>
+   <li><b>Receiver action</b><span>${receiver[trial.receiver]}</span></li>
+   <li><b>Independent retest</b><span>${probe}</span></li>
+  </ol>
+  <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'SECURITY SIGNAL EVIDENCE');
 }
 function showProductMap(selectedProduct='',back=null){
  const s=states.agent;
@@ -3213,8 +3284,9 @@ function useItem(key){
 function showIntro(){
  const labels=key=>states[key].finished?'View '+EPISODES[key].name+'’s ending':states[key].started?'Continue '+EPISODES[key].name:'Play '+EPISODES[key].name;
  showReference('Trust Boundaries',
-  `<p>Two interactive stories about who can approve a change, what you can share, and how you know access has ended. Set aside about 15 minutes per story.</p>
+  `<p>Pick a work problem for a quick example, or play a story about who can approve a change, what you can share, and how you know access has ended. Each story takes about 15 minutes.</p>
   <div class="launch-choices">${choices([
+   ['Start with a work problem','See what a product can do and what to test first.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()]

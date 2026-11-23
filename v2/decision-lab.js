@@ -108,8 +108,23 @@ const DecisionLab = (() => {
   return {...evidence,verified:probe==='refused'&&Object.values(controls).every(Boolean)};
  }
 
+ function startSignalTest(){
+  return {delivered:false,receiver:'pending',probe:null};
+ }
+ function deliverSignal(test){
+  return test.delivered?test:{...test,delivered:true};
+ }
+ function applySignal(test,crmReachable){
+  if(!test.delivered||test.receiver==='closed')return test;
+  return {...test,receiver:crmReachable?'closed':'unverified',probe:null};
+ }
+ function retestSignal(test){
+  if(test.receiver==='pending'||test.probe)return test;
+  return {...test,probe:test.receiver==='closed'?'refused':'unknown'};
+ }
+
  return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, openNetworkProposal,
-  decideNetworkProposal, approveRuntimeMission, incidentStatus};
+  decideNetworkProposal, approveRuntimeMission, incidentStatus, startSignalTest, deliverSignal, applySignal, retestSignal};
 })();
 
 if(typeof module!=='undefined')module.exports=DecisionLab;

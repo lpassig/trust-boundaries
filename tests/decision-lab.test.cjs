@@ -84,3 +84,19 @@ test('a stopped sandbox leaves containment partial when the CRM controller canno
  assert.equal(verified.probe,'refused');
  assert.equal(verified.verified,true);
 });
+
+test('a revocation signal needs a receiver action and independent retest',()=>{
+ const start=Lab.startSignalTest();
+ assert.equal(Lab.applySignal(start,true),start);
+ const delivered=Lab.deliverSignal(start);
+ assert.equal(delivered.delivered,true);
+ assert.equal(delivered.receiver,'pending');
+ assert.equal(Lab.retestSignal(delivered),delivered);
+ const unreachable=Lab.retestSignal(Lab.applySignal(delivered,false));
+ assert.equal(unreachable.receiver,'unverified');
+ assert.equal(unreachable.probe,'unknown');
+ const closed=Lab.applySignal(unreachable,true);
+ assert.equal(closed.receiver,'closed');
+ assert.equal(closed.probe,null);
+ assert.equal(Lab.retestSignal(closed).probe,'refused');
+});
