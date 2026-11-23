@@ -43,7 +43,7 @@ const ArchitectureReference = (() => {
    detail:'The policy evaluator obtains identity, mission and resource attributes from authoritative sources. This role can be implemented with several sources and adapters.',
    sources:[['OASIS policy roles and terminology','https://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html']]
   },
-  authorization:{name:'VAAS / proposed PDP',product:'authorization',kind:'Proposed integration',summary:'Evaluates the exact action the CRM observes against current task and resource rules. VAAS names the proposed role in this example.'},
+  authorization:{name:'Customer policy decision service',product:'authorization',kind:'Proposed integration',summary:'Evaluates the exact action the CRM observes against current task and resource rules.'},
   crm:{
    name:'Customer CRM · resource PEP',kind:'Policy enforcement point',
    summary:'Checks the actual read, attachment or send at the point of use and owns the result.',

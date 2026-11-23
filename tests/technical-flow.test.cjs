@@ -20,6 +20,37 @@ test('Nova’s CRM read follows the MCP client, gateway and server before CRM au
  assert(nodes.findIndex(n=>n.label==='Enforce at the resource')>startIndex+2);
  assert.equal(act(start('teen'),'collect-source').event.request.tool_route,undefined);
 });
+test('The first read and Vault revocation refer to the same lease, independently of the CRM session',()=>{
+ let s=ready();
+ const lease=s.sourceLease;
+ assert.match(lease.id,/^example-source-lease-/);
+ assert.deepEqual(s.history.find(entry=>entry.action==='collect-source').read.request.source_lease,lease);
+ assert.deepEqual(R.hydrate(s,'agent').sourceLease,lease);
+ const legacy={...s};delete legacy.sourceLease;
+ assert.equal(R.hydrate(legacy,'agent').sourceLease,null);
+ s=run(run(s,'send'),'close-pass');
+ assert.equal(s.containment.credentialRevoked,false);
+ s=run(s,'remediate',{control:'credential'});
+ assert.deepEqual(s.last.request.source_lease,lease);
+ assert.equal(s.containment.credentialRevoked,true);
+ assert.equal(s.containment.sessionClosed,false);
+ assert.equal(run(s,'probe-session').containment.probeResult,'allowed');
+});
+test('The separate-device approval can only approve the copy Morgan saw',()=>{
+ const first=sourced();
+ const draft=R.approvalPreview(first,'draft-review');
+ assert.equal(act(first,'approve-draft',{preview:draft}).state.approval.revision,draft.revision);
+ assert.equal(act(first,'approve-draft',{preview:{...draft,to:'outside@example.test'}}).state.approval,null);
+ const final=ready(),preview=R.approvalPreview(final,'final');
+ const edited=run(final,'revise-file');
+ const stale=act(edited,'approve',{preview});
+ assert.equal(stale.event.kind,'blocked');
+ assert.equal(stale.state.approval.revision,preview.revision);
+ const current=R.approvalPreview(edited,'final');
+ const approved=act(edited,'approve',{preview:current}).state;
+ assert.equal(approved.approval.followUpSentence,current.followUpSentence);
+ assert.equal(run(approved,'send').delivered,true);
+});
 test('under-the-hood notes describe the observed outcome without claiming execution after a denial',()=>{
  const s=start();s.authority.resource.records=['123'];
  const denied=act(s,'collect-source');

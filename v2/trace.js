@@ -369,7 +369,9 @@ const RequestTrace = (() => {
       node('Send the record request','Nova’s MCP client · NVIDIA OpenShell','checked','Nova’s client sends the call for the requested records from its governed workspace.'),
       node('Forward the tool call','MCP gateway','checked','The configured gateway accepts this tool call and forwards it to the CRM MCP server.'),
       node('Resolve the tool call','CRM MCP server','checked','The server validates its HTTP authorization and maps the tool call to a CRM read. The configured connector uses a separate backend credential.'),
-      node('Obtain scoped source access if configured','Configured broker + HashiCorp Vault','reference','A broker obtains the short-lived backend credential before the CRM read. Vault authorizes its own credential path. The CRM owns its service session and still decides record access.')
+      r.source_lease?node('Broker the first-read credential','Configured broker + HashiCorp Vault','checked',
+       `${r.source_lease.id}: read-only connector role, ${r.source_lease.lifetimeSeconds} seconds in the simulation. The connector holds the credential outside Nova’s context. CRM checks record access separately.`)
+       :node('Obtain scoped source access if configured','Configured broker + HashiCorp Vault','reference','A broker obtains the short-lived backend credential before the CRM read. Vault authorizes its own credential path. The CRM owns its service session and still decides record access.')
      );
     }else if(['customer.read','attachment.share'].includes(r.operation)){
      nodes.push(node('CRM tool','MCP · reference path','reference','An MCP server can expose CRM operations. This record contains no evidence that the operation used an MCP gateway.'));

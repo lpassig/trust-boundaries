@@ -24,7 +24,7 @@ const DecisionLab = (() => {
    operation:'customer.read', recordIds:['789'], fields:'account summary', observer:'CRM resource PEP'
   };
   const observation = {
-   issuer:scenario==='observer'?'unverified-client.demo':'crm-pep.demo', audience:'vaas-pdp.demo',
+   issuer:scenario==='observer'?'unverified-client.demo':'crm-pep.demo', audience:'customer-policy.demo',
    transport:'Illustrative service identity and audience',
    requestId:request.id, actionBinding:actionKey(request)
   };
@@ -36,11 +36,11 @@ const DecisionLab = (() => {
    reason:brokered?'Read-only role is allowed for this connector.':'Connector is outside the role’s allowed identities.'
   };
   const inScope = request.recordIds.every(id=>mission.records.includes(id));
-  const observedByCrm = observation.issuer==='crm-pep.demo'&&observation.audience==='vaas-pdp.demo';
+  const observedByCrm = observation.issuer==='crm-pep.demo'&&observation.audience==='customer-policy.demo';
   const reason = !observedByCrm?'The proposed PDP could not verify the CRM enforcement point.':
    inScope?'The active mission and CRM summary policy allow record 789.':'Record 789 is outside the current mission.';
   const decision = {
-   id:'lab-'+attempt+'-decision', owner:'VAAS / proposed PDP', requestId:request.id,
+   id:'lab-'+attempt+'-decision', owner:'Customer policy decision service', requestId:request.id,
    result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm, preview:!brokered,
    missionId:mission.id, version:mission.version, policyVersion:mission.policyVersion,
    generation:mission.generation, actionBinding:observation.actionBinding

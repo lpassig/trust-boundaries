@@ -37,7 +37,7 @@ If Alex previews an outside address, restoring Ms Patel’s school address is th
 
 ### Architecture explorer
 
-The **Trust boundaries** view opens an inspectable map. Select a system for its role, or a connection for the data it carries and the check it performs. The **authorization lab** compares a completed CRM read with an attempt at the same record. Withdraw the mission after the proposed VAAS PDP issues a Permit, then watch CRM recheck the current mission and reject the stale decision. The other variants illustrate a Vault refusal, an out-of-scope read and an unverified observer. All identities, leases, decisions and receipts in the lab are simulated.
+The **Trust boundaries** view opens an inspectable map. Select a system for its role, or a connection for the data it carries and the check it performs. The **authorization lab** compares a completed CRM read with an attempt at the same record. Withdraw the mission after the customer policy decision service issues a Permit, then watch CRM recheck the current mission and reject the stale decision. The other variants illustrate a Vault refusal, an out-of-scope read and an unverified observer. All identities, leases, decisions and receipts in the lab are simulated.
 
 Nova’s read buttons go straight to the result. Expand **How the request travels** there to see the route, or follow the request trace and return to the same result. When both a permitted and a refused read exist, **Compare the authorization decisions** pairs them, preferring the same read across a scope change. During closure, you can predict how the old CRM session will respond and then run a harmless status check before closing it.
 
@@ -68,7 +68,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **187**.
+- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **189**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

@@ -72,7 +72,7 @@ const NOVA_PRODUCTS = [
   },
   {
     "id": "authorization",
-    "name": "VAAS / proposed PDP",
+    "name": "Customer policy decision service",
     "role": "Evaluate the actual action supplied by the trusted CRM PEP",
     "how": "The proposed PDP evaluates PEP-observed action evidence against the current customer mission, identity constraints and resource rules. The resource PEP binds the decision to execution. AuthZEN is a candidate decision-exchange interface.",
     "limit": "This is a target architecture, not a verified deployed product API. AuthZEN 1.0 uses a Boolean decision; approval-required workflow, execution binding and richer status semantics need an explicitly documented application contract. Vault’s own policies remain independent.",
@@ -83,7 +83,7 @@ const NOVA_PRODUCTS = [
     ],
     "url": "https://openid.net/specs/authorization-api-1_0-final.html",
     "sourceLabel": "OpenID AuthZEN Authorization API 1.0",
-    "status": "VAAS names the proposed decision service in this example. The game simulates all decisions."
+    "status": "Proposed customer integration. Decisions are simulated in the game."
   },
   {
     "id": "openshell",
@@ -254,6 +254,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
     example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
+    pilot:{label:'My agents use shared identities',integration:'Keep your human identity provider. Check that the workflow and resource logs preserve both the delegated human identity and the agent identity.',test:'Run one file-only handoff. From the activity record, identify who delegated, which agent requested work, and which agent completed it.'},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
   {
@@ -261,6 +262,7 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Verify',
     fit:'A configured CIBA flow can authenticate the person on a separate device. The application binds the response to the exact business action.',
     example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
+    pilot:{label:'A person must approve sensitive actions',integration:'Connect a CIBA client to IBM Verify. The application must bind the response to the exact transaction and the resource must check it at execution.',test:'Approve one report on the separate device. Change one sentence and confirm the old approval cannot deliver it. Approve the current revision and verify the delivered file and recipient.'},
     sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
@@ -268,6 +270,7 @@ const NOVA_BUYER_NEEDS = [
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
+    pilot:{label:'My connector uses a long-lived credential',integration:'Verify that your connector and target support the selected Vault secrets engine and configured identity and credential policy.',test:'Open a read with a short-lived lease, revoke it, and verify a new connection fails. Separately close and retest any existing service session.'},
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
