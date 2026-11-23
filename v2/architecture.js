@@ -3,6 +3,7 @@ const ArchitectureReference = (() => {
  const groups = [
   ['People and authority', ['people','verify','iai','mission']],
   ['Where Nova works', ['orchestrate','openshell','vault']],
+  ['Model and tool connections', ['aiGateway','mcpGateway','mcpTool']],
   ['Decisions and effects', ['authorization','crm']],
   ['Signals and response', ['risk','antenna','controllers']]
  ];
@@ -18,6 +19,24 @@ const ArchitectureReference = (() => {
   orchestrate:{product:'orchestrate',kind:'Product',summary:'Coordinates the work. A configured workflow can assign the formatting step to Pip.'},
   openshell:{product:'openshell',kind:'Runtime',summary:'Runs Nova in an isolated workspace and controls contact with files and services.'},
   vault:{product:'vault',kind:'Product',summary:'Checks access to its own credential paths. Supplies short-lived access for a configured target.'},
+  aiGateway:{
+   name:'IBM watsonx Orchestrate AI Gateway',kind:'Orchestrate capability',
+   summary:'Integrates models from multiple providers and lets operators configure model routing.',
+   detail:'It can also discover and import external agents from supported platforms. This is a separate role from checking the records in Nova’s CRM request.',
+   sources:[['Model integration and routing','https://www.ibm.com/products/watsonx-orchestrate/developers'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
+  },
+  mcpGateway:{
+   name:'MCP gateway',kind:'Optional integration pattern',
+   summary:'Can examine an agent’s tool call and apply configured policy before forwarding it to the MCP server.',
+   detail:'On the optional CRM route, it sits in front of the tool server. The CRM still decides whether to return this record or attach the requested file.',
+   sources:[['Independent MCP gateway example','https://blog.iamidentity.ai/blog/mcp-agent-gateway/']]
+  },
+  mcpTool:{
+   name:'CRM tool via Model Context Protocol (MCP)',kind:'Protocol and configured tool',
+   summary:'The MCP server exposes an operation Nova can call to fetch approved account records.',
+   detail:'The tool carries the request to CRM. The current work order and customer data policy determine which records CRM can return.',
+   sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools']]
+  },
   authorization:{name:'Authorization decision service',product:'authorization',kind:'Proposed integration',summary:'Evaluates the action the CRM observes against current task and resource rules.'},
   crm:{
    name:'Customer CRM',kind:'Customer application',
@@ -41,6 +60,8 @@ const ArchitectureReference = (() => {
     ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
     ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
     ['openshell','Open the governed workspace and permit the customer records route.'],
+    ['mcpGateway','Optional route: a configured tool gateway checks and forwards the request.'],
+    ['mcpTool','In the MCP example, the server exposes the CRM read to Nova. CRM still needs to authorize the actual operation.'],
     ['vault','For the configured source path, the broker uses a Vault-scoped credential. CRM owns its separate service session.'],
     ['crm','Check the actual read of Harbor Bikes and Pine Studio against current task and resource policy before returning records.']
    ],

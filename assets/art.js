@@ -111,9 +111,11 @@ function agentRoom(){return `
 <path d="M299 427L349 410L399 429L347 446Z" fill="#759f9f"/><path d="M299 427L347 443L399 426L399 468L347 486L299 468Z" fill="#254657"/><path d="M347 443L399 426L399 468L347 486Z" fill="#1f3c4c"/>
 <path d="M306 438L338 449M306 451L338 462M356 451L388 440M356 464L388 453M356 476L388 465" stroke="#609b9f" stroke-width="3"/>
 <!-- Nova bot -->
+<g data-character="nova">
 <ellipse cx="516" cy="356" rx="43" ry="13" fill="#182d3e"/><path d="M488 301L487 338L501 347L510 320L521 347L538 339L538 301Z" fill="#426d7c"/><path d="M480 242Q514 226 546 245L541 309Q514 326 483 307Z" fill="#78aaa9" stroke="#a2cdc4" stroke-width="1.5"/><path d="M479 250L459 278L468 292L490 267M545 250L567 268L558 283L536 268" fill="#527f8a" stroke="#92b6b7" stroke-width="2"/>
 <path d="M492 193Q517 183 541 199L543 230Q518 248 490 231Z" fill="#9bc6bf"/><path d="M495 203Q516 195 536 208L536 224Q516 235 495 223Z" fill="#1a3c4e"/><g class="nova-expression" data-expression="friendly"><ellipse cx="505" cy="214" rx="2.8" ry="3.5" fill="#b5f0dd"/><ellipse cx="524" cy="218" rx="2.8" ry="3.5" fill="#b5f0dd"/><path d="M504 222Q514 231 527 226" stroke="#b5f0dd" stroke-width="2.2" stroke-linecap="round" fill="none"/></g><path d="M513 196L513 181" stroke="#7fb9b4" stroke-width="3"/><circle cx="513" cy="179" r="4" fill="#b4eddb"/><path d="M502 271L524 278L524 292L502 286Z" fill="#284d5d"/><path d="M507 279L519 282" stroke="#a1d9ca" stroke-width="3"/>
 <!-- Pip remains visible throughout the mission; controls sit beside this figure. -->
+</g>
 <g class="helper-bot" data-character="pip" data-face-x="839" data-face-y="385">
 <ellipse cx="839" cy="439" rx="28" ry="10" fill="#122b38"/><path d="M816 395L819 427L837 438L858 428L863 397Z" fill="#557b8f" stroke="#94b8c4"/><path d="M816 371Q840 358 863 376L862 397Q839 412 817 396Z" fill="#9ab0c6"/><path d="M822 380L856 386L856 395L822 390Z" fill="#293f59"/><circle cx="832" cy="385" r="2" fill="#d5c7f5"/><circle cx="847" cy="388" r="2" fill="#d5c7f5"/>
 </g>
@@ -156,7 +158,10 @@ function sceneObjectGlyph(key,mode) {
     brief:'<path d="M5 3h10l4 4v14H5ZM14 3v5h5M8 12h8m-8 4h6"/>',
     notebook:'<rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 3v18M3 7h4m-4 5h4m-4 5h4m5-9h5m-5 4h5"/>',
     memory:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',
-    helper:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m3-16v6m-3-3h6"/>'
+    helper:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m3-16v6m-3-3h6"/>',
+    source:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 13h10M7 16h6"/>',
+    reviewer:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    outside:mode==='teen'?'<path d="M4 5h16v11H9l-5 4Z M8 9h8m-8 3h4"/>':'<path d="m10 8 5-5a3.5 3.5 0 0 1 5 5L10 19a5 5 0 0 1-7-7l9-9m-5 12 8-8"/>'
   };
   const kind=key==='parent'?(mode==='agent'?'shield':'person'):key==='phone'?(mode==='agent'?'console':'phone'):['note','brief'].includes(key)?'brief':['memory','notebook'].includes(key)?(mode==='agent'?'memory':'notebook'):['sibling','helper'].includes(key)?'helper':key;
   return shapes[kind]||shapes.brief;

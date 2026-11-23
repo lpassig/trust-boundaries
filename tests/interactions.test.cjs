@@ -42,9 +42,10 @@ for(const mode of ['teen','agent']){
   assert.deepEqual(I.itemUse(s,mode,'pass').targets,['parent']);
  });
 }
-test('Nova sends changing work to the request panel and exact approval to the authority',()=>{
+test('Nova sends changing work to the request panel and exact approval to Morgan',()=>{
  assert.equal(I.nextObject('agent','changes','phone'),'brief');
- assert.equal(I.nextObject('agent','approval','laptop'),'parent');
+ assert.equal(I.nextObject('agent','approval','laptop'),'reviewer');
+ assert.equal(I.nextObject('agent','draft-approval','laptop'),'reviewer');
  assert.equal(I.nextObject('agent','open','phone'),'phone');
  assert.equal(I.nextObject('teen','changes','phone'),'phone');
 });

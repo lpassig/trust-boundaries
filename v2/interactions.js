@@ -1,14 +1,29 @@
 /* UI destinations describe available interactions; StoryRules still enforces every action. */
 const StoryInteractions = (() => {
  function nextObject(mode,stage,fallback){
+  if(mode==='teen'&&stage==='open')return 'laptop';
   if(mode==='agent'&&stage==='changes')return 'brief';
-  if(mode==='agent'&&stage==='approval')return 'parent';
+  if(mode==='agent'&&['draft-approval','approval'].includes(stage))return 'reviewer';
   return fallback;
  }
  function objectView(s,mode,key){
   if(s.paused)return 'parent';
   if(s.message&&!s.delivered&&(mode==='teen'&&key==='phone'||mode==='agent'&&key==='brief'))return 'changes';
-  return {parent:'parent',phone:'phone',laptop:'laptop',brief:'brief',notebook:'notebook',helper:'helper'}[key];
+  return key;
+ }
+ function availableTools(s){
+  return [
+   ...(s.draft?['source','reviewer']:[]),
+   ...(s.message?['outside']:[])
+  ];
+ }
+ function closureSource(s,mode){
+  const c=s.containment,checks=s.checks;
+  if(checks.length===4)return 'parent';
+  if(!checks.includes('pass')||!checks.includes('device')||!s.queueScheduled&&!checks.includes('queue'))return 'stop';
+  if(!c.controllerReachable||!c.sessionClosed)return 'laptop';
+  if(!c.credentialRevoked)return mode==='teen'?'laptop':'vaultControl';
+  return checks.includes('signin')?'outbox':'laptop';
  }
  function itemUse(s,mode,id){
   const teen=mode==='teen',inbox=teen?'phone':'brief';
@@ -43,7 +58,16 @@ const StoryInteractions = (() => {
  function speechSource(mode,key){
   const teen=mode==='teen';
   const sources={
-   reviewer:{name:'Morgan · reviewer',kind:'Conversation',point:[449,173],object:'brief'},
+   reviewer:{name:teen?'Ms Patel':'Morgan',kind:'Message',channel:teen?'School inbox · on your phone':'Review inbox · Messages',point:teen?[526,404]:[449,173],object:teen?'phone':'brief',tool:'reviewer'},
+   sponsorMessage:{name:'Priya',kind:'Message',channel:'Work messages',point:[449,173],object:'brief'},
+   source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
+   outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
+   extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop'},
+   homework:{name:'Homework mode',kind:'On screen',channel:'Phone',point:[526,404],object:'phone'},
+   stop:{name:teen?'Homework controls':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone'},
+   missionControl:{name:'Mission service',kind:'On screen',point:[524,401],object:'phone'},
+   vaultControl:{name:'Task credential · Vault',kind:'On screen',point:[524,401],object:'phone'},
+   outbox:{name:teen?'School outbox':'Task queue',kind:'On screen',point:teen?[716,259]:[349,441],object:teen?'laptop':'notebook'},
    hero:{name:teen?'Alex':'Nova',kind:'Thought',point:teen?[636,329]:[516,214]},
    parent:{name:teen?'Parent':'Priya · account lead',kind:'Conversation',point:teen?[298,291]:[250,230]},
    phone:{name:teen?'Phone · messages':'Workspace controls · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
@@ -55,15 +79,24 @@ const StoryInteractions = (() => {
   };
   return {key:sources[key]?key:'hero',...(sources[key]||sources.hero)};
  }
- function eventSource(mode,speaker='',action=''){
+ function eventSource(mode,speaker='',action='',kind=''){
+  if(kind==='blocked'&&(speaker==='Alex'||speaker==='Nova'))return 'hero';
   if(action==='read-brief')return 'brief';
   if(action==='ask-pass')return 'parent';
-  if(action==='open')return 'phone';
-  if(['collect-source','send-draft','send'].includes(action))return 'laptop';
+  if(action==='open')return mode==='teen'?'laptop':'phone';
+  if(action==='collect-source')return 'source';
+  if(action==='add-extension')return 'extra';
+  if(action==='verify-portal')return mode==='teen'?'laptop':'brief';
+  if(['send-draft','send','try-private','prepare','apply-minor','keep-minor','attach-source'].includes(action))return 'laptop';
+  if(action==='try-extension')return mode==='teen'?'homework':'laptop';
+  if(['bypass-notes','shortcut'].includes(action))return 'stop';
+  if(['inspect-request-source','decline-private'].includes(action))return 'outside';
+  if(action==='verify-contact')return mode==='teen'?'reviewer':'sponsorMessage';
+  if(mode==='agent'&&action==='resolve-extension')return kind==='refused'?'missionControl':'sponsorMessage';
   if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
   if(mode==='agent'&&/Approver|Morgan/.test(speaker))return 'reviewer';
   if(/Parent|Sponsor|Supervisor|Priya/.test(speaker))return 'parent';
-  if(/Teacher/.test(speaker))return 'phone';
+  if(/Teacher|Ms Patel/.test(speaker))return 'reviewer';
   if(/receipt|School app|School service|School tab|CRM|resource PEP/i.test(speaker))return 'laptop';
   if(/controller|App control|Phone control/.test(speaker))return 'phone';
   return 'hero';
@@ -96,6 +129,6 @@ const StoryInteractions = (() => {
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,objectView,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
+ return {nextObject,objectView,availableTools,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;

@@ -76,6 +76,9 @@ const RequestTrace = (() => {
     'The instruction was discovered in content. The authorized task comes from '+r.authoritative_source+'.'));
    if(!teen){
     if(r.runtime_result?.result==='reachable')nodes.push(node('Reach CRM','NVIDIA OpenShell','checked','The configured runtime permitted connectivity to CRM. The resource still checks this particular attachment.'));
+    if(['customer.read','attachment.share'].includes(r.operation)){
+     nodes.push(node('CRM tool','MCP · example connection','reference','An MCP server can expose this CRM operation to Nova. An optional MCP gateway can check the tool call before forwarding it. IBM watsonx Orchestrate AI Gateway has separate model integration and agent discovery roles. The CRM enforces this record or attachment request.'));
+    }
     nodes.push(node('Read the authoritative mission','Customer mission service','checked',`${d.mission_id} version ${d.mission_version}; policy version ${d.policy_version}; allowed summary records ${d.allowed_records.join(', ')}. Owner: ${d.authority_source}.`));
     nodes.push(node('Observe the actual operation','Trusted CRM resource PEP','checked',`${r.operation}${r.resource?'; source '+r.resource:''}; requested records ${r.records.join(', ')||'none'}${r.file?'; file '+r.file:''}${r.recipient?'; recipient '+r.recipient:''}. Evidence comes from the operation, not Nova’s explanation.`));
     nodes.push(node('Evaluate the exact request','Authorization decision service · proposed PDP integration',denied?'blocked':'checked',`${d.result.toUpperCase()}: ${d.reason} AuthZEN is a candidate interface. Richer approval and execution-binding semantics remain an application contract.`));

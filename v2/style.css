@@ -87,8 +87,16 @@ dialog:not(.is-reference) #dialog-actions>.actions+.actions{margin-top:8px}
 dialog:not(.is-reference) .choice{min-height:46px;padding:10px 13px}
 dialog:not(.is-reference) #dialog-actions>.choices{grid-template-columns:repeat(2,minmax(0,1fr))}
 dialog.is-reference .speech-source{display:none}
-.pin.is-speaking{outline:2px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 7px #ffffff14}
-.object-tray button.is-speaking{border-color:var(--ink)}
+.has-conversation .pin.relevant{background:#1b1a2ce8;color:var(--ink);border:1px solid #e8daff77;box-shadow:0 4px 14px #12132266}
+.has-conversation .pin.is-speaking,.has-conversation .pin.is-speaking.relevant{background:var(--accent);color:#20172d;border:2px solid #fff;box-shadow:0 0 0 5px #ffffff25}
+.has-conversation .object-tray button.relevant,.object-tray.has-conversation button.relevant{box-shadow:none}
+.object-tray.has-conversation button.relevant b{background:none;color:inherit}
+.object-tray button.is-speaking{border-color:var(--accent)}
+.object-tray.has-conversation button.is-speaking b{background:var(--accent);color:#20172d;border-radius:50%;width:32px;height:32px;align-items:center;margin:-5px auto 5px}
+.object-tray .scene-tool{grid-column:span 2;background:#ffffff07}
+@media(max-width:1100px){.object-tray .scene-tool{grid-column:span 1}}
+.hero-thinking [data-character="alex"],.hero-thinking [data-character="nova"]{filter:drop-shadow(0 0 6px var(--accent))}
+dialog #dialog-scroll{font-size:12px;color:var(--muted);margin:0 0 4px}
 @media(max-width:560px){
  .scene-speech{margin:12px 10px 8px;padding:15px;gap:10px}.scene-speech h2{font-size:21px}
  dialog:not(.is-reference){width:calc(100% - 20px);margin:14px 10px 12px;padding:14px}
@@ -104,15 +112,15 @@ dialog.is-reference .speech-source{display:none}
 #dialog-body::-webkit-scrollbar-thumb,#dialog-actions::-webkit-scrollbar-thumb{background:#b9a8cd88;border-radius:9px}
 
 .has-conversation .scene-canvas{width:min(100%,51.72dvh)}
-dialog[open]:not(.is-reference){display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:calc(70dvh - 84px)}
-dialog:not(.is-reference) #dialog-body{min-height:0}
+dialog[open]:not(.is-reference){display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;max-height:70dvh}
+dialog:not(.is-reference) #dialog-body{grid-row:3;min-height:0}
+dialog:not(.is-reference) #dialog-actions{grid-row:4}
 
 #dialog-title:focus{outline:none}
 .has-conversation .scene-canvas{width:min(100%,max(330px,51.72dvh))}
 
 .request-progress.compact{flex-direction:row;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:10px 12px;margin:12px 0;font-size:14px}.request-progress.compact span{font-size:12px}
 
-dialog:not(.is-reference) #dialog-actions>.request-progress{position:sticky;top:0;z-index:2;background:var(--soft);margin:0 0 8px}
 @media(max-width:560px){dialog:not(.is-reference) #dialog-actions{max-height:34dvh}}
 
 .speech-mark{border:0;border-radius:0}.speech-mark svg{width:26px;height:26px}

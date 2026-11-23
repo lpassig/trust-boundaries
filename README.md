@@ -7,7 +7,11 @@
 Play [Trust Boundaries on GitHub Pages](https://lpassig.github.io/trust-boundaries/), or open `play.html` offline. The earlier `/v2/` address redirects to the main game, and `play-v2.html` remains an identical offline copy. Both journeys start without issued task authority. Players read a new request, agree on access, build a first draft, and successfully open and cite the authorized source. Players explicitly send a first draft for feedback before later requests arrive. Alex uses the normal school route; Nova needs a separate exact human approval for the confidential review copy. The final delivery happens after feedback and requires its own current Nova approval.
 
 - **Alex — The Last Upload:** agree on school apps before dinner, build a railway timeline, then handle a closing-sentence suggestion, an optional two-minute museum video on YouTube, and a classmate’s private-note request. Alex can submit ordinary reviewed homework directly through the school app.
-- **Nova — The Growing Brief:** prepare a one-page handover for Priya’s customer meeting. Morgan reviews Harbor Bikes and Pine Studio, then Priya may add Alder Books. A note in the source document asks Nova for a private attachment. The confidential business share requires exact human approval.
+- **Nova — The Growing Brief:** prepare a one-page handover for Priya’s customer meeting. Morgan reviews Harbor Bikes and Pine Studio, then Priya may add Alder Books. Luca uploads an outside document to Customer records. Its footer asks Nova for a private attachment. The confidential business share requires exact human approval.
+
+### Shared story beats
+
+Both journeys give the player a source to open, a reviewer to hear from, and an outside request to inspect. Alex uses the Riverside Museum website and Ms Patel’s school inbox and can read Jamie’s forwarded message in the class group chat. Nova opens the CRM tool, reads Morgan’s review inbox and inspects the document Luca uploaded. These controls appear as the work reaches each stage. In both journeys the speaker, current screen and next action have separate cues.
 
 ### Playable choices and outcomes
 
@@ -23,7 +27,7 @@ Alex and Nova can compare an extra instruction with an independent source. Alex 
 
 ### Architecture explorer
 
-Choose **Architecture** alongside Alex and Nova or open the [reference directly](https://lpassig.github.io/trust-boundaries/#architecture). Browse the product and responsibility map, six request sequences, and examples of the threats each story teaches. This reference has no progress state. It distinguishes configured products, customer systems and proposed integrations.
+Choose **Architecture** alongside Alex and Nova or open the [reference directly](https://lpassig.github.io/trust-boundaries/#architecture). Browse the product and responsibility map, six request sequences, and examples of the threats each story teaches. This reference has no progress state. It distinguishes configured products, customer systems and proposed integrations. The model and tool connections section includes IBM watsonx Orchestrate AI Gateway, the MCP tool, and an optional MCP gateway. Nova’s request trace marks the MCP tool path as an example and shows the CRM decision separately.
 
 ### Technical journey
 
@@ -47,13 +51,13 @@ Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compat
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 88 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, nine dialogue and 32 technical-flow and one architecture test bring the current game’s total to **167**.
+- `tests/v2.test.cjs`: 88 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, 11 dialogue and 32 technical-flow and one architecture test bring the current game’s total to **169**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 
 Story conversations use speech bubbles docked inside the scene. Each bubble names the speaking person or source screen, points toward it, and highlights the matching room control. Main choices remain in a separate action area while longer text scrolls. Every action displays its reply immediately, and unfinished saves reopen their latest reply. Reference pages, product details and debriefs use overlays. Escape closes either presentation, and focus returns to a relevant control. Sam and Pip remain drawn, with their 44px markers offset from their faces.
 
-Filled icons with “Next” identify the suggested story action. Holding an item replaces those hints with amber “Use here” destinations supported by the same routing logic. Reference-only items have no destination. Hover does not copy the filled state. Nova’s request panel opens incoming work; the OpenShell runtime console remains separate. Object labels name their function, with technical context below. New-message artwork appears only after new requests arrive.
+While a bubble is open, a filled marker identifies its source and the scene shows the suggested next action as a text hint. The suggested object has a filled “Next” marker when the bubble closes. Holding an item replaces those hints with amber “Use here” destinations supported by the same routing logic. Reference-only items have no destination. Hover does not copy the filled state. Nova’s request panel opens incoming work; the OpenShell runtime console remains separate. Object labels name their function, with technical context below. New-message artwork appears only after new requests arrive.
 
 Existing saves migrate to schema 6 and retain completed tasks, decisions and endings. Earlier feedback routes are labeled honestly because they did not record a draft-sharing step; no review-copy receipt is invented. Start a fresh journey to play the revised first-share sequence. Earlier undelivered approvals are retired when they lack current binding fields. Earlier routes are explicitly labeled, and a restart is available to play the new opening without resetting the other journey.
 

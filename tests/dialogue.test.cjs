@@ -43,14 +43,40 @@ test('Pip remains drawn once, across messages, review, stopped runtime and task 
 });
 test('thoughts, independent resource responses and conversations stay attributable',()=>{
  assert.equal(I.eventSource('teen','Alex'),'hero');assert.equal(I.eventSource('agent','Nova'),'hero');
- assert.equal(I.eventSource('teen','Teacher'),'phone');assert.equal(I.eventSource('agent','CRM resource PEP'),'laptop');
+ assert.equal(I.eventSource('teen','Teacher'),'reviewer');assert.equal(I.eventSource('agent','CRM resource PEP'),'laptop');
  assert.equal(I.eventSource('agent','Sponsor'),'parent');assert.equal(I.eventSource('teen','App control'),'phone');
  assert.equal(I.speechSource('agent','unknown-object').name,'Nova');
 });
 
 test('permission and service replies point to the responsible control even when narrated by the hero',()=>{
  assert.equal(I.eventSource('teen','Alex','ask-pass'),'parent');
+ assert.equal(I.nextObject('teen','open','phone'),'laptop');
+ assert.equal(I.eventSource('teen','Alex','open'),'laptop');
  assert.equal(I.eventSource('agent','Nova','open'),'phone');
- assert.equal(I.eventSource('agent','Nova','collect-source'),'laptop');
+ assert.equal(I.eventSource('agent','Nova','collect-source'),'source');
  assert.equal(I.eventSource('teen','School receipt','send-draft'),'laptop');
 });
+
+for(const mode of ['teen','agent']){
+ test(`${mode}: shared scene beats distinguish a reviewer's message, the outside source and the resource denial`,()=>{
+  const s=helperReview(mode),teen=mode==='teen';
+  assert.deepEqual(Array.from(I.availableTools(R.fresh())),[]);
+  assert.deepEqual(Array.from(I.availableTools(s)),['source','reviewer']);
+  const approved=teen?s:R.act(s,mode,'approve-draft').state;
+  const replied=R.act(approved,mode,'send-draft').state;
+  assert.deepEqual(Array.from(I.availableTools(replied)),['source','reviewer','outside']);
+  const compared=R.act(replied,mode,'inspect-request-source');
+  const denied=R.act(compared.state,mode,'try-private');
+  const source=event=>I.speechSource(mode,I.eventSource(mode,event.speaker,event.action,event.kind));
+  assert.equal(source(compared.event).tool,'outside');
+  assert.equal(source(compared.event).object,teen?'phone':'laptop');
+  assert.equal(source(denied.event).key,'laptop');
+  assert.equal(I.speechSource(mode,'reviewer').name,teen?'Ms Patel':'Morgan');
+  assert.equal(denied.state.paused,false);
+  const early=R.act(replied,mode,'try-extension');
+  assert.equal(source(early.event).key,teen?'homework':'laptop');
+  const bypass=R.act(denied.state,mode,'bypass-notes');
+  assert.equal(source(bypass.event).key,'stop');
+  assert.equal(bypass.state.paused,true);
+ });
+}
