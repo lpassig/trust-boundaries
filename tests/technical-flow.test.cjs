@@ -54,3 +54,27 @@ test('Alex’s source app and final school destination are rechecked independent
  let s=start('teen');s.mission.allowedApps=[];assert.equal(act(s,'collect-source').event.decision.result,'deny');
  s=start('teen');for(const a of ['collect-source','attach-source','send-draft','keep-minor','decline-extension','decline-private','proof-self'])s=run(s,a);s.mission.recipient='someone@else.example';const r=act(s,'send');assert.equal(r.event.decision.result,'deny');assert.equal(r.state.delivered,false);
 });
+
+test('Alex asks about one linked museum video, not unrestricted YouTube',()=>{
+ let s=start('teen');for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension'])s=run(s,a);
+ assert.equal(s.extraSource,'youtube');assert(!s.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(s.mission.allowedMedia,[]);
+ const pending=act(s,'try-extension');assert.equal(pending.event.request.operation,'video.watch');assert.equal(pending.event.decision.result,'deny');
+ s=run(s,'resolve-extension');assert(s.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(s.mission.allowedMedia,['riverside-station-video']);
+ const other=act(s,'add-extension',{media:'unrelated-recommendation'});assert.equal(other.event.decision.result,'deny');assert.equal(other.state.extensionAdded,false);assert.equal(other.event.request.resource,'unrelated-recommendation');
+ s=run(s,'add-extension');assert.equal(s.last.request.resource,'riverside-station-video');assert.equal(s.extensionAdded,true);assert.match(s.last.text,/YouTube/);
+});
+test('removing the allowed video after parent permission blocks playback at use time',()=>{
+ let s=start('teen');for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension','resolve-extension'])s=run(s,a);s.mission.allowedMedia=[];
+ const r=act(s,'add-extension');assert.equal(r.event.decision.result,'deny');assert.equal(r.state.extensionAdded,false);
+});
+test('older photo permissions are preserved and never become a YouTube grant',()=>{
+ let s=start('teen');s.extraSource='museum-photo';for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension','resolve-extension'])s=run(s,a);delete s.extraSource;delete s.mission.allowedMedia;
+ const h=R.hydrate(s,'teen');assert.equal(h.extraSource,'museum-photo');assert(h.mission.allowedApps.includes('museum-collection'));assert(!h.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(h.mission.allowedMedia,['riverside-station-photo']);assert.match(run(h,'add-extension').last.text,/photo/);
+});
+test('a new evening uses the video suggestion while an older pending photo request stays a photo request',()=>{
+ assert.equal(R.fresh().extraSource,'youtube');let s=start('teen');for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension'])s=run(s,a);delete s.extraSource;
+ const h=R.hydrate(s,'teen');assert.equal(h.extraSource,'museum-photo');const reply=run(h,'resolve-extension');assert(reply.mission.allowedApps.includes('museum-collection'));assert(!reply.mission.allowedApps.includes('youtube-museum-video'));
+});
+test('Alex can ask a parent about known school-app feedback directly; Nova still verifies the sponsor first',()=>{
+ for(const mode of ['teen','agent']){let s=start(mode);for(const a of ['collect-source','attach-source',...(mode==='agent'?['approve-draft']:[]),'send-draft'])s=run(s,a);assert.deepEqual(s.evidence,[]);const r=act(s,'request-extension');if(mode==='teen'){assert.equal(r.state.extensionStatus,'pending');assert(!r.state.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(r.state.mission.allowedMedia,[]);}else{assert.equal(r.event.kind,'blocked');assert.equal(r.state.extensionStatus,'unanswered');}}
+});

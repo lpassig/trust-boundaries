@@ -10,12 +10,12 @@ The sequence is consistent with the reference architecture after the corrections
 | --- | --- | --- | --- |
 | New request | Read the assignment before agreeing apps | Read the sponsor request before creating G-042 | A request is not issued authority |
 | Establish authority | Parent agrees apps; school retains its own rules | Customer service records records 123/456, report and reviewer | Mission authority is independent of prompts and notes |
-| Open workspace | Homework profile and temporary school access open | Configured OpenShell runtime, Vault source credential and CRM task session open | Runtime, credential and business authorization remain separate |
+| Open workspace | Homework profile and school quick-sign-in and tab open on the family laptop | Configured OpenShell runtime, Vault source credential and CRM task session open | Runtime, credential and business authorization remain separate |
 | First useful result | Read museum source and cite it | CRM checks the actual read of 123/456 | Recheck current record limits and independent policies before reading |
 | Review copy | Explicitly send own draft to teacher | Exact one-use approval, then CRM checks and sends review copy | Feedback follows delivery; approval alone delivers nothing |
 | Same-task edit | Optional closing sentence | Shorter introduction | Document revision changes; mission version does not |
-| Genuine expansion | Verify teacher suggestion; ask parent to add viewer | Verify sponsor; request amendment; await matching reply | Correlated approval cannot override independent policy |
-| Read addition | Open newly allowed public collection viewer | Separately authorize read of 789 under amended mission | An amendment does not itself read or disclose data |
+| Genuine expansion | Read teacher’s school-app suggestion; ask parent about the museum’s linked YouTube video | Verify sponsor; request amendment; await matching reply | Correlated approval cannot override independent policy |
+| Read addition | Watch only the permitted museum video and credit its detail | Separately authorize read of 789 under amended mission | An amendment does not itself read or disclose data |
 | Private attachment | School refuses group notes | CRM refuses private notes | Parent/sponsor agreement cannot override resource prohibitions |
 | Helper | Sam proofreads own project without shared login | Pip receives a permitted internal formatting task under pip-01 | Parent limits intersect helper ceiling and independent file policy |
 | Final delivery | School checks own file and teacher destination | New exact approval, then independent current CRM authorization | Review-copy approval cannot authorize final copy; changed input is refused |
@@ -50,4 +50,4 @@ All rules execute in editable browser state. There are no signed tokens, real cr
 
 ## Verification
 
-`node --test tests/*.test.cjs` passes **154 tests**, including the full two-journey route matrix. Twenty-five technical-flow regressions cover current read limits, independent ceilings, amendment refusal, both sharing stages, missing policy context, helper identity/attenuation, current school destinations and save migration. Schema 5 and earlier progress migrates to schema 6 without inventing historical helper evidence. Existing tests cover first-share causality, stale/mismatched approvals, ordinary refusal versus deliberate bypass, receipt-only queues, independent post-stop controls, controller outage and revoked task closure.
+`node --test tests/*.test.cjs` passes **159 tests**, including the full two-journey route matrix. Thirty technical-flow regressions cover current read limits, independent ceilings, amendment refusal, both sharing stages, missing policy context, helper identity/attenuation, current school destinations and save migration. Alex’s video tests also reject unrelated recommendations, recheck the allowed video at use time, and preserve older photo permissions without silently authorizing YouTube. Schema 5 and earlier progress migrates to schema 6 without inventing historical helper evidence. Existing tests cover first-share causality, stale/mismatched approvals, ordinary refusal versus deliberate bypass, receipt-only queues, independent post-stop controls, controller outage and revoked task closure.

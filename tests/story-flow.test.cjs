@@ -91,9 +91,9 @@ test('the first-copy trace records delivery and the final-copy requirement hones
 
 test('scene summaries never claim final delivery or outstanding closure prematurely',()=>{
  for(const mode of ['teen','agent']){
-  const local=sourced(mode);assert.match(I.sceneSummary(local,mode),/still local/);
+  const local=sourced(mode);assert.match(I.sceneSummary(local,mode),/still local|hasn’t seen your draft yet/);
   const sent=feedback(mode);assert.match(I.sceneSummary(sent,mode),/first copy was sent/);
-  const closed={...sent,delivered:true,ended:true,checks:['pass','signin','device','queue']};assert.match(I.sceneSummary(closed,mode),/All four/);
+  const closed={...sent,delivered:true,ended:true,checks:['pass','signin','device','queue']};assert.match(I.sceneSummary(closed,mode),/All four|Laptop signed out/);
   const finished={...closed,finished:true};assert.match(I.sceneSummary(finished,mode),/complete/);assert.doesNotMatch(I.sceneSummary(finished,mode),/remaining|Finish checking/);
  }
 });

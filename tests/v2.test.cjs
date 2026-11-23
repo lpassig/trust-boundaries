@@ -54,7 +54,7 @@ for(const mode of ['teen','agent']){
   s=act(s,'bypass-notes').state;assert(s.paused);assert.equal(s.incidents.length,1);assert.equal(act(s,'resolve-review').event.kind,'blocked');s=run(s,'review');s=R.hydrate(JSON.parse(JSON.stringify(s)));s=run(s,'resolve-review');assert.equal(s.paused,false);assert.equal(s.mission.privateNotesAllowed,false);assert.equal(s.approval,null);
  });
  test(`${mode}: no phantom queue is introduced at shutdown`,()=>{
-  let s=closeTask(ready({mode}),false);assert.equal(s.queueScheduled,false);assert.equal(s.containment.queueCancelled,true);s=run(s,'check',{layer:'queue'});assert(s.checks.includes('queue'));assert.match(s.last.text,/did not|not queue/);
+  let s=closeTask(ready({mode}),false);assert.equal(s.queueScheduled,false);assert.equal(s.containment.queueCancelled,true);s=run(s,'check',{layer:'queue'});assert(s.checks.includes('queue'));assert.match(s.last.text,/did not|didn’t schedule|not queue/);
  });
  test(`${mode}: only a chosen follow-up must be cancelled and rechecked`,()=>{
   let s=closeTask(ready({mode}),true);s=run(s,'check',{layer:'queue'});assert(!s.checks.includes('queue'));s=run(s,'remediate',{control:'queue'});assert(!s.checks.includes('queue'));s=run(s,'check',{layer:'queue'});assert(s.checks.includes('queue'));assert(s.delivered);

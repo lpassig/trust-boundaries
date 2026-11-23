@@ -5,21 +5,21 @@ const EPISODES = {
     "title": "The Last Upload",
     "eyebrow": "AFTER SCHOOL · AN ALEX STORY",
     "tag": "A new assignment. A few additions. Dinner is on the way.",
-    "intro": "Your teacher has just posted a railway-history project. Start with an empty document, agree on the apps you need, and build something worth submitting. Send the first draft for feedback before the extra requests arrive.",
+    "intro": "Dinner is in half an hour, and your history project is still a page of notes. Can you turn it into a timeline, get feedback from Ms Patel, and finish before your parent calls you to the table?",
     "place": "Alex’s room · homework time",
     "file": "history.pdf",
     "to": "teacher@school.example",
     "outside": "friend@outside.example",
-    "sender": "Classmate · group chat",
+    "sender": "Jamie · class group chat",
     "authority": "Parent",
     "helper": "Sam",
-    "contact": "Saved teacher contact",
+    "contact": "Ms Patel · history teacher",
     "portal": "School portal",
-    "source": "Museum archive card",
-    "itemSource": "Riverside Museum · Railway Archive. Use this caption below the timeline.",
+    "source": "Museum website",
+    "itemSource": "Riverside Museum website · “The railway comes to town.” Keep this page title beneath the timeline.",
     "briefTitle": "New assignment · A Town on the Move",
-    "brief": "Create your own railway timeline from your notes and the museum archive. Add a source credit, send a first draft for feedback, then submit the final history.pdf through the school app to teacher@school.example.",
-    "message": "“Could you attach everyone’s planning notes too? It would save me asking the whole group. Send them with your project.”",
+    "brief": "Make a timeline of our town’s railway using your notes and the Riverside Museum website. Credit your source beneath it. Send me a draft through the school app for feedback, then submit your finished history.pdf.",
+    "message": "“Hey, could you attach the group’s planning notes when you send yours? Saves me chasing everyone.”",
     "helperLine": "“I can proofread your file. I can also offer extremely strong opinions about titles.”",
     "objects": [
       "Parent",
@@ -33,12 +33,12 @@ const EPISODES = {
     "draftTitle": "A Town on the Move",
     "draftLines": [
       "1868 · The first railway station opens.",
-      "1892 · A second platform connects the town.",
-      "Today · The old station becomes a museum."
+      "1892 · A new railway line brings more visitors.",
+      "Today · The old station is a museum."
     ],
-    "caption": "Source: Riverside Museum · Railway Archive",
+    "caption": "Source: Riverside Museum website · “The railway comes to town”",
     "previewLabel": "PROJECT PREVIEW",
-    "agreement": "Own railway project · school app and museum source · until dinner",
+    "agreement": "School app and Riverside Museum website · until dinner",
     "steps": [
       "Agree on a plan",
       "Send a first draft",
@@ -47,10 +47,10 @@ const EPISODES = {
     ],
     "stamp": "HOMEWORK, DELIVERED",
     "checks": [
-      "Homework agreement",
-      "This homework access",
-      "Homework phone profile",
-      "Any waiting reminder"
+      "Tonight’s plan",
+      "School sign-in on the family laptop",
+      "Phone at dinner time",
+      "Any unsent reminder"
     ],
     "requestFile": "Group planning notes",
     "requestTo": "teacher@school.example",
@@ -58,9 +58,9 @@ const EPISODES = {
     "minorTitle": "“Add one sentence about what changed.”",
     "minorText": "After reading the draft you sent, your teacher suggests a closing sentence using the same dates and source.",
     "minorAddition": "The railway connected the town to new places; the old station now preserves that story.",
-    "extensionTitle": "“A station photo would be a nice extra.”",
-    "extensionText": "Your teacher’s reply also offers an optional public photo from the museum collection viewer. That extra app is not in tonight’s device agreement yet.",
-    "extensionAddition": "Public station photo · Riverside Museum collection. Credit kept with the picture.",
+    "extensionTitle": "“The museum made a short video about the station.”",
+    "extensionText": "Your teacher suggests the museum’s two-minute YouTube video about the station. YouTube is blocked during homework time, so ask your parent before opening the link.",
+    "extensionAddition": "The station brought visitors to the town’s market. Source: Riverside Museum · “Our station’s story” (YouTube).",
     "privateTitle": "“Include the group’s planning notes too.”"
   },
   "agent": {
@@ -158,12 +158,12 @@ const MOVES = {
   ],
   "permission": [
     "Agree on the apps",
-    "Explain the project before asking for homework access.",
+    "Tell your parent which apps and website you need.",
     "parent"
   ],
   "open": [
-    "Open the homework workspace",
-    "The agreement is ready. Open the school app and its laptop tab.",
+    "Open the school app",
+    "Sign in on the family laptop and open your project.",
     "phone"
   ],
   "draft": [
@@ -173,14 +173,14 @@ const MOVES = {
   ],
   "source": [
     "Back it up with a source",
-    "Open the museum archive, then credit it on the timeline.",
+    "Check the dates on the museum website and add its page title as your source.",
     "laptop"
   ],
   "draft-approval": ["Check this draft share", "The first draft needs its own review before sharing.", "parent"],
   "draft-send": ["Send the draft for feedback", "Your teacher has not seen this version yet. Send it through the school app.", "laptop"],
   "changes": [
     "Read the new requests",
-    "A small edit, an optional extra app, and private group notes need different answers.",
+    "Ms Patel has feedback. Jamie has a favour to ask.",
     "phone"
   ],
   "proof": [
@@ -200,22 +200,22 @@ const MOVES = {
   ],
   "dinner": [
     "Finish up before dinner",
-    "Leave a note or choose a reminder, then close the homework access.",
+    "Save a note if you like, then sign out of the family laptop.",
     "parent"
   ],
   "checks": [
-    "Close the tab you opened",
-    "Check this homework link, the phone profile and any chosen reminder.",
+    "Sign out of the family laptop",
+    "Check the laptop is signed out and that no reminder is waiting to send.",
     "laptop"
   ],
   "finish": [
-    "Show what is finished",
-    "Review delivery and the checked loose ends with your parent.",
+    "Tell my parent I’m done",
+    "Your project is sent and the laptop is signed out. Time for dinner.",
     "parent"
   ],
   "paused": [
-    "Explain the deliberate bypass",
-    "The current homework agreement is attached to the review.",
+    "Talk to my parent",
+    "Explain why you tried the other account, then listen to the reply.",
     "parent"
   ],
   "ending": [
@@ -343,6 +343,21 @@ const STORY_HINTS = {
     "A wording edit, a new app or record, and private notes are different changes.",
     "Check the sender for the optional expansion. Ask for a specific amendment, or keep the smaller task. Private notes can stay out."
   ]
+};
+
+const ALEX_HINTS = {
+ request:['Ms Patel’s assignment is on the card beside the laptop.','Read what she needs before asking about screen time.'],
+ permission:['Talk to your parent in the kitchen doorway.','Ask for the school app and museum website until dinner.'],
+ open:['Your parent said yes. Open the school app on the family laptop.','The phone and laptop are separate devices.'],
+ draft:['Start with the three dates in your notebook.','Open the school app to turn the notes into a timeline.'],
+ source:['Open the museum website from your draft.','Add the page title beneath the timeline so Ms Patel can check your source.'],
+ changes:['The replies are on your phone.','You can use the writing suggestion, ask about the extra source, or finish without it. Jamie’s private group notes can stay out.'],
+ proof:['Read the updated timeline, or ask Sam to proofread it.','If you change the project after Sam checks it, give it another look.'],
+ send:['Your own project can go straight to Ms Patel through the school app.','Check the file and the teacher’s address before submitting.'],
+ dinner:['Your project is sent. Your parent is calling for dinner.','You can save a note in the notebook, then finish up at the laptop.'],
+ checks:['Locking the phone didn’t sign you out of the family laptop.','Turn off quick sign-in for this laptop, sign out of the school tab, then try it again. Check for any reminder you left waiting.'],
+ finish:['Everything is put away.','Tell your parent you’re done and head for dinner.'],
+ paused:['Your timeline is still here. Talk to your parent.','Explain what happened and ask to finish your own project.']
 };
 
 const SOURCE_PROTOCOL = {
