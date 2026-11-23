@@ -61,3 +61,58 @@
 .request-result{font-size:14px}.request-result p{max-height:4.8em;overflow:auto}
 
 .request-result summary{font-size:13px;min-height:30px}.request-reference{border-top:1px solid var(--line);padding-top:10px}.request-reference .quiet{font-size:13px;min-height:40px}
+
+/* Story responses live in the room, with the speaking source visibly attached. */
+.scene-speech[hidden],.speech-source[hidden]{display:none!important}
+.scene-speech{position:relative;background:var(--soft);border:1px solid var(--accent);border-radius:18px;margin:14px 16px 8px;padding:18px;min-height:0;box-shadow:0 8px 24px #0002}
+.scene-speech::before,dialog:not(.is-reference)::before{content:'';position:absolute;left:clamp(22px,var(--speaker-x,50%),calc(100% - 34px));top:-9px;width:16px;height:16px;background:var(--soft);border-left:1px solid var(--accent);border-top:1px solid var(--accent);transform:rotate(45deg)}
+.scene-speech .portrait{background:#ffffff0a;border-color:var(--accent)}
+.scene-speech h2{font-size:22px}.scene-speech p:last-child{font-size:16px;line-height:1.6;color:var(--ink)}
+.scene-frame{scroll-margin-top:12px}.scene-frame.has-conversation{overflow:visible}
+.has-conversation .scene-canvas{width:min(100%,55.17dvh);max-height:none;margin:0 auto}
+.has-conversation #scene-footnote{display:none}
+.scene-canvas{max-height:none}
+dialog:not(.is-reference){position:relative;inset:auto;width:calc(100% - 32px);max-width:none;max-height:none;margin:14px 16px 16px;padding:16px;border:1px solid var(--accent);border-radius:18px;background:var(--soft);box-shadow:0 8px 30px #0003;overflow:visible}
+dialog:not(.is-reference) .speech-source{display:flex;align-items:center;gap:10px;padding:0 45px 12px 0;border-bottom:1px solid #ffffff1a;margin-bottom:10px;color:var(--ink)}
+.speech-mark{width:30px;height:30px;border:1px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:22px}
+.speech-source b{display:block;font-size:16px}.speech-source small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+dialog:not(.is-reference) #dialog-body{max-height:min(28dvh,220px);overflow:auto;overscroll-behavior:contain;padding-right:8px;scrollbar-color:var(--accent) transparent}
+dialog:not(.is-reference) h2{font-size:25px;margin:5px 0 12px;max-width:none}
+dialog:not(.is-reference) p{font-size:16px;line-height:1.6}
+dialog:not(.is-reference) .eyebrow{font-size:11px}
+#dialog-actions:empty{display:none}
+dialog:not(.is-reference) #dialog-actions{border-top:1px solid #ffffff20;margin-top:12px;padding-top:12px;max-height:min(25dvh,200px);overflow:auto;overscroll-behavior:contain}
+dialog:not(.is-reference) #dialog-actions>.choices,dialog:not(.is-reference) #dialog-actions>.actions{margin:0;gap:8px}
+dialog:not(.is-reference) #dialog-actions>.actions+.actions{margin-top:8px}
+dialog:not(.is-reference) .choice{min-height:46px;padding:10px 13px}
+dialog:not(.is-reference) #dialog-actions>.choices{grid-template-columns:repeat(2,minmax(0,1fr))}
+dialog.is-reference .speech-source{display:none}
+.pin.is-speaking{outline:2px solid var(--ink);outline-offset:3px;box-shadow:0 0 0 7px #ffffff14}
+.object-tray button.is-speaking{border-color:var(--ink)}
+@media(max-width:560px){
+ .scene-speech{margin:12px 10px 8px;padding:15px;gap:10px}.scene-speech h2{font-size:21px}
+ dialog:not(.is-reference){width:calc(100% - 20px);margin:14px 10px 12px;padding:14px}
+ dialog:not(.is-reference) h2{font-size:23px}
+ dialog:not(.is-reference) #dialog-body{max-height:28dvh}
+ dialog:not(.is-reference) #dialog-actions{max-height:28dvh}
+ dialog:not(.is-reference) #dialog-actions>.choices{grid-template-columns:1fr}
+ .speech-source b{font-size:15px}
+}
+
+#dialog-body::-webkit-scrollbar,#dialog-actions::-webkit-scrollbar{width:7px}
+#dialog-body::-webkit-scrollbar-track,#dialog-actions::-webkit-scrollbar-track{background:#ffffff0c;border-radius:9px}
+#dialog-body::-webkit-scrollbar-thumb,#dialog-actions::-webkit-scrollbar-thumb{background:#b9a8cd88;border-radius:9px}
+
+.has-conversation .scene-canvas{width:min(100%,51.72dvh)}
+dialog[open]:not(.is-reference){display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:calc(70dvh - 84px)}
+dialog:not(.is-reference) #dialog-body{min-height:0}
+
+#dialog-title:focus{outline:none}
+.has-conversation .scene-canvas{width:min(100%,max(330px,51.72dvh))}
+
+.request-progress.compact{flex-direction:row;justify-content:space-between;flex-wrap:wrap;gap:6px;padding:10px 12px;margin:12px 0;font-size:14px}.request-progress.compact span{font-size:12px}
+
+dialog:not(.is-reference) #dialog-actions>.request-progress{position:sticky;top:0;z-index:2;background:var(--soft);margin:0 0 8px}
+@media(max-width:560px){dialog:not(.is-reference) #dialog-actions{max-height:34dvh}}
+
+.speech-mark{border:0;border-radius:0}.speech-mark svg{width:26px;height:26px}

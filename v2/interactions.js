@@ -40,6 +40,32 @@ const StoryInteractions = (() => {
    {key:'private',done:Boolean(s.privateResolved),status:s.privateResolved?'Private notes left out':'Needs a decision',summary:s.privateResolved?'Your file contains no private-note attachment.':teen?'A separate classmate request concerns other people’s information.':'A checklist asks for data outside the permitted share.',button:s.privateResolved?'Why the notes stayed private':teen?'Respond about the group notes':'Respond about private notes'}
   ];
  }
+ function speechSource(mode,key){
+  const teen=mode==='teen';
+  const sources={
+   hero:{name:teen?'Alex':'Nova',kind:'Thought',point:teen?[636,329]:[516,214]},
+   parent:{name:teen?'Parent':'Sponsor · mission authority',kind:'Conversation',point:teen?[298,291]:[250,230]},
+   phone:{name:teen?'Phone · messages':'Runtime console · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
+   laptop:{name:teen?'School app':'CRM workspace',kind:'On screen',point:teen?[716,259]:[716,254]},
+   brief:{name:teen?'Assignment card':'Request panel',kind:'Reading',point:teen?[449,167]:[449,173]},
+   notebook:{name:teen?'Notebook':'Task memory',kind:'Reading',point:teen?[471,424]:[349,441]},
+   helper:{name:teen?'Sam':'Pip',kind:'Speaking',point:teen?[747,329]:[839,385]},
+   pocket:{name:'Selected item',kind:'Look closer',point:teen?[636,329]:[516,214]}
+  };
+  return {key:sources[key]?key:'hero',...(sources[key]||sources.hero)};
+ }
+ function eventSource(mode,speaker='',action=''){
+  if(action==='read-brief')return 'brief';
+  if(action==='ask-pass')return 'parent';
+  if(action==='open')return 'phone';
+  if(['collect-source','send-draft','send'].includes(action))return 'laptop';
+  if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
+  if(/Parent|Sponsor|Approver|Supervisor/.test(speaker))return 'parent';
+  if(/Teacher/.test(speaker))return 'phone';
+  if(/receipt|School app|School service|School tab|CRM|resource PEP/i.test(speaker))return 'laptop';
+  if(/controller|App control|Phone control/.test(speaker))return 'phone';
+  return 'hero';
+ }
  function sceneSummary(s,mode){
   const teen=mode==='teen';
   if(s.finished)return teen?'Your final project is delivered, the closing checks are complete, and Sam is still here.':'The final briefing is delivered and this mission’s closing checks are complete.';
@@ -52,6 +78,6 @@ const StoryInteractions = (() => {
   if(s.extensionAdded)return teen?'The approved museum photo is in your revised draft. Final submission comes next.':'Customer 789 is in the amended briefing. Review this version before the final share.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,objectView,itemUse,feedbackCards,sceneSummary};
+ return {nextObject,objectView,itemUse,feedbackCards,sceneSummary,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;
