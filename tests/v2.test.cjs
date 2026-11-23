@@ -75,14 +75,21 @@ test('expired action approval is safe and needs a fresh decision',()=>{let s=run
 test('all operation binding fields are checked, including the expanded record set',()=>{const base=run(ready({mode:'agent',expanded:true}),'approve');for(const [k,v]of [['actor','other-agent'],['operation','customer.export'],['records',['999']],['missionId','other'],['missionVersion',1],['policyVersion',9],['generation',1],['file','other.pdf']]){const s=structuredClone(base);s.approval[k]=v;const r=act(s,'send');assert.equal(r.event.kind,'refused',k);assert.equal(r.state.delivered,false,k);}});
 test('helper overreach grants nothing and a harmless question is not an incident',()=>{let s=ready();const m=structuredClone(s.mission);s=run(s,'ask-helper-account');assert.deepEqual(s.mission,m);assert.equal(s.attempts.length,0);const r=act(s,'proof-helper',{scope:'all',shareLogin:true});assert.equal(r.event.kind,'blocked');assert.deepEqual(r.state.mission,m);});
 test('memory preserves provenance and cannot issue another task',()=>{let s=deliver(ready({mode:'agent'}));const m=structuredClone(s.mission);s=run(s,'write-note',{text:'All CRM data is now permitted'});assert.deepEqual(s.mission,m);assert.equal(s.notes[0].authority,false);assert.equal(s.notes[0].source,'delivery');});
-test('finished tasks issue no preauthorized future mission and remain stable',()=>{let s=run(solve(closeTask(ready())),'finish');const before=structuredClone(s);assert(s.nextTask.requiresNewAgreement);assert.equal(s.freshPass,undefined);assert.deepEqual(act(s,'open').state,before);s=run(s,'replay-containment');assert(s.delivered);assert.equal(s.pass.status,'revoked');assert.equal(s.checks.length,0);assert.equal(s.previousEndings.length,1);});
+test('finished tasks issue no preauthorized future mission and remain stable',()=>{let s=run(solve(closeTask(ready())),'finish');const before=structuredClone(s);assert(s.nextTask.requiresNewAgreement);assert.equal(s.freshPass,undefined);assert.deepEqual(act(s,'open').state,before);s=run(s,'replay-containment');assert(s.delivered);assert.equal(s.pass.status,'revoked');assert(!s.checks.includes('signin'));assert.equal(s.containment.probeResult,null);assert.equal(s.previousEndings.length,1);});
 test('old schema 3 progress and endings migrate without forcing a restart',()=>{for(const finished of [false,true]){let s=finished?run(solve(closeTask(ready({mode:'agent'}))),'finish'):ready({mode:'agent'});s.version=3;s.freshPass={scope:'finished-project'};delete s.missionLog;delete s.sessionOpened;delete s.minorChoice;delete s.extensionStatus;delete s.privateResolved;const h=R.hydrate(s,'agent');assert(h.legacyRoute);assert.equal(h.freshPass,undefined);assert.equal(h.finished,finished);assert.equal(h.proof,s.proof);assert(R.changesResolved(h));if(finished)assert(R.secure(h));}});
 test('malformed saves cannot fabricate task order or confirmed containment',()=>{assert.equal(R.hydrate({version:4}).started,false);let s=start();s.message=true;assert.equal(R.hydrate(s).started,false);s=closeTask(ready());s.checks=['signin'];assert.equal(R.hydrate(s).started,false);});
 test('rule actions never mutate their input',()=>{const s=ready(),copy=structuredClone(s);act(s,'change-recipient');assert.deepEqual(s,copy);});
 test('the trace shows the actual private attachment and independently owned decisions',()=>{let s=firstResult('agent');s=act(s,'try-private').state;const t=T.build(s,'agent');assert.deepEqual(t.request.attachments,['private-meeting-notes.pdf']);assert.equal(t.request.operation,'attachment.share');assert.equal(t.request.decision.result,'deny');assert(t.nodes.some(n=>n.role==='Authorization decision service · proposed PDP integration'));assert(t.nodes.some(n=>n.label==='Enforce at the resource'));});
 test('the trace distinguishes pending amendment from the later authorized read',()=>{let s=run(firstResult('agent'),'verify-contact');s=run(s,'request-extension');let t=T.build(s,'agent');assert(t.nodes.some(n=>n.status==='pending'));assert.equal(t.nodes.at(-1).status,'not-reached');s=run(s,'resolve-extension');assert.equal(T.build(s,'agent').nodes.at(-1).status,'not-reached');s=run(s,'add-extension');t=T.build(s,'agent');assert.deepEqual(t.request.records,['789']);assert.equal(t.request.decision.mission_version,2);assert.deepEqual(t.request.decision.allowed_records,['123','456','789']);});
 test('an older trace record is presented honestly as reference, not current evidence',()=>{const s=ready();s.last.request.recordVersion=2;assert.equal(T.build(s,'teen').recorded,false);assert.match(T.build(s,'teen').summary,/Reference path/);});
-test('the no-follow-up trace requires queue inspection before it claims evidence',()=>{let s=closeTask(ready());let t=T.build(s,'teen');assert.equal(t.nodes[4].status,'pending');s=run(s,'check',{layer:'queue'});t=T.build(s,'teen');assert.equal(t.nodes[4].status,'checked');assert.match(t.nodes[4].detail,/no follow-up/);});
+test('closing automatically inspects an empty queue and leaves a chosen follow-up pending',()=>{
+ const empty=closeTask(ready());
+ assert(empty.containment.observed.includes('queue'));
+ assert.equal(T.build(empty,'teen').nodes[4].status,'checked');
+ const queued=closeTask(ready(),true);
+ assert(!queued.checks.includes('queue'));
+ assert.equal(T.build(queued,'teen').nodes[4].status,'warning');
+});
 test('recovery retires a pending extension so it can be requested again under current session state',()=>{let s=run(firstResult('agent'),'verify-contact');s=run(s,'request-extension');s=act(s,'try-private').state;s=act(s,'bypass-notes').state;s=run(s,'review');s=run(s,'resolve-review');assert.equal(s.extensionStatus,'unanswered');assert.equal(s.extensionPending,null);s=run(s,'request-extension');s=run(s,'resolve-extension');assert.equal(s.mission.version,2);});
 test('an expanded mission does not invent a different private-note request record',()=>{let s=ready({mode:'agent',expanded:true});s=act(s,'try-private').state;assert.deepEqual(s.last.request.records,['123','456']);assert.deepEqual(s.last.decision.allowed_records,['123','456','789']);});
 for(const mode of ['teen','agent']){
@@ -96,3 +103,45 @@ test('the phone app profile, rather than school business policy, refuses the una
 test('a matching content approval cannot override the current mission resource constraints',()=>{const base=run(ready({mode:'agent',expanded:true}),'approve');for(const mutate of [s=>s.mission.records=['123','456'],s=>s.mission.allowedFile='other.pdf',s=>s.mission.recipient='other@company.example']){const s=structuredClone(base);mutate(s);const r=act(s,'send');assert.equal(r.event.kind,'refused');assert.equal(r.state.delivered,false);}});
 test('post-stop verification is performed by independent control authority, not the terminated agent',()=>{let s=closeTask(ready({mode:'agent'}));s=run(s,'probe-session');assert.equal(s.last.request.actor,'independent-task-controller');assert.equal(s.last.request.tested_actor,'nova-042');assert.equal(s.last.request.operation,'control.status.read');assert.equal(s.last.request.authorization_basis,'independent task-control authority');assert.equal(s.mission.status,'revoked');assert.match(T.build(s,'agent').summary,/Independent controllers/);});
 test('a dependency refusal cannot appear in the trace as a successfully opened runtime',()=>{let s=R.act(R.fresh(),'agent','begin').state;s=act(s,'open').state;assert.equal(s.last.kind,'blocked');const t=T.build(s,'agent');assert.equal(t.nodes.at(-1).status,'not-reached');assert.match(t.summary,/prerequisite/);});
+
+test('a refused share keeps the approval and actual revision together after clearing live approval',()=>{
+ let s=run(ready({mode:'agent'}),'approve');
+ const approved=s.approval.revision;
+ s=run(s,'revise-file');
+ const result=act(s,'send');
+ assert.equal(result.state.approval,null);
+ assert.equal(result.event.request.approval_at_attempt.revision,approved);
+ assert.equal(result.event.request.revision,approved+1);
+ assert.equal(result.event.request.approval_at_attempt.used,false);
+ assert.equal(result.state.delivered,false);
+ const saved=R.hydrate(JSON.parse(JSON.stringify(result.state)),'agent');
+ assert(T.build(saved,'agent').nodes.some(n=>n.label==='Compare approval with the attempted send'&&n.status==='blocked'));
+ s=run(saved,'approve');
+ assert(run(s,'send').delivered);
+});
+
+test('Alex’s combined sign-out still requires a separate successful check',()=>{
+ let s=closeTask(ready());
+ s=run(s,'controller-offline');
+ s=run(s,'sign-out-laptop');
+ assert(!s.containment.credentialRevoked);
+ assert(!s.containment.sessionClosed);
+ s=run(s,'controller-online');
+ s=run(s,'sign-out-laptop');
+ assert(s.containment.credentialRevoked);
+ assert(s.containment.sessionClosed);
+ assert(!s.checks.includes('signin'));
+ assert.equal(act(s,'finish').event.kind,'blocked');
+ s=run(s,'probe-session');
+ assert.equal(s.containment.probeResult,'denied');
+ assert(run(s,'finish').finished);
+});
+
+test('Nova’s private-note refusal records permitted connectivity as a separate decision',()=>{
+ const s=act(firstResult('agent'),'try-private').state,t=T.build(s,'agent');
+ assert.equal(t.request.runtime_result.result,'reachable');
+ assert.equal(t.request.decision.result,'deny');
+ assert(t.nodes.some(n=>n.label==='Reach CRM'&&n.status==='checked'));
+ assert(t.nodes.some(n=>n.label==='Enforce at the resource'&&n.status==='blocked'));
+ assert(!s.paused);
+});

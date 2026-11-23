@@ -4,7 +4,7 @@ const NOVA_PRODUCTS = [
     "id": "verify",
     "name": "IBM Verify",
     "role": "Human sign-in and the separate-device approval channel",
-    "how": "Uses OIDC to authenticate the sponsor and OAuth for resource access. A configured CIBA flow can ask the human to authenticate and consent on a separate device. Existing enterprise IdPs can remain in the architecture.",
+    "how": "Uses OIDC to authenticate the sponsor and OAuth for resource access. A configured CIBA flow can ask the human to authenticate and consent on a separate device. An existing provider such as Microsoft Entra ID or Okta can authenticate the sponsor in a configured federation. Delegated authorization and CRM enforcement are separate steps.",
     "limit": "A human sign-in or CIBA response still needs application policy and exact-action binding before a CRM operation can run.",
     "standards": [
       "OIDC",

@@ -116,3 +116,31 @@ dialog:not(.is-reference) #dialog-actions>.request-progress{position:sticky;top:
 @media(max-width:560px){dialog:not(.is-reference) #dialog-actions{max-height:34dvh}}
 
 .speech-mark{border:0;border-radius:0}.speech-mark svg{width:26px;height:26px}
+
+.share-comparison {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: .875rem;
+}
+.share-comparison th,
+.share-comparison td {
+  padding: 8px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.share-comparison thead th {
+  color: var(--accent);
+  background: var(--soft);
+}
+.share-comparison th:first-child {
+  width: 24%;
+}
+.share-comparison .share-difference {
+  color: var(--amber);
+  background: #493b2a55;
+  font-weight: 700;
+}
