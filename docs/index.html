@@ -98,6 +98,19 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--purple)}text
 .protocol-caveat{font-size:13px!important;line-height:1.8;color:#a99aba!important}.protocol-sources{font-size:13px!important;line-height:2!important}.protocol-sources a{color:var(--purple);text-decoration:underline;text-underline-offset:3px}.protocol-example pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.8 ui-monospace,monospace;max-height:300px;overflow:auto;padding:16px;border-radius:6px;background:#12151e;color:#c3d9d5}.outcome-protocols{margin:24px 0;border-top:1px solid #554260;padding-top:10px}.outcome-protocols h3{font-size:17px;line-height:1.6;font-weight:500}.protocol-map-list>details{border:1px solid #52405f;border-radius:7px;padding:12px 16px;margin:12px 0}.protocol-map-list>details>summary{font-size:15px}.protocol-map-list .protocol-tags{margin-top:16px}
 @media(max-width:780px){.protocol-panel{padding:20px 16px}.protocol-panel .section-heading{align-items:start}.protocol-panel .section-heading button{max-width:110px;text-align:right}.protocol-panel .section-heading h2{font-size:11px}.protocol-map-list>details{padding:10px 13px}.protocol-panel .protocol-tags>span{font-size:12px}}
 
+/* Filled targets make the next action and actual selections easy to recognise. */
+.object-icon{width:22px;height:22px;display:block;flex-shrink:0}
+#hotspots .spot{width:30px;height:30px;flex-shrink:0}
+#hotspots .spot .object-icon{width:19px;height:19px}
+.hotspot.current .spot{background:var(--purple);color:#20172d;animation:none}
+.object-marker{color:#eee5fa}.object-marker.is-current{color:#20172d}
+.object-marker.is-current circle{fill:var(--purple);stroke:#fff;stroke-width:2}
+#hotspots .hotspot.current{border-color:var(--purple);box-shadow:inset 4px 0 var(--purple)}
+.inventory-item.selected,.agent-world .inventory-item.selected{background:var(--purple);color:#20172d;border-color:var(--purple);box-shadow:0 0 0 2px #ffffff38}
+.inventory-item.selected small,.inventory-item.selected .item-icon{color:#20172d}
+.mode-switch button.active,.agent-world .mode-switch button.active{background:var(--purple);color:#20172d;font-weight:700}
+@media(max-width:1100px){#hotspots .hotspot .spot{width:30px;height:30px}}
+
 </style>
 </head>
 <body>
@@ -113,7 +126,7 @@ select:focus-visible,textarea:focus-visible{outline:2px solid var(--purple)}text
     <div class="game-layout">
       <section class="play-space" aria-label="Interactive adventure scene">
         <div class="scene-top"><span class="location"><i></i><span id="location">Alex’s room · 16:30</span></span><span class="scene-tag" id="scene-tag">A LITTLE FREEDOM. A FEW RULES.</span></div>
-        <div class="scene-wrapper"><div class="scene" id="scene"><div id="art" aria-hidden="true"></div><svg id="object-links" viewBox="0 0 1000 580" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg><div class="scene-caption"><span class="mouse-icon">⌖</span><span>Choose a numbered object to interact.</span></div></div><div id="hotspots" aria-label="Objects in the scene"></div></div>
+        <div class="scene-wrapper"><div class="scene" id="scene"><div id="art" aria-hidden="true"></div><svg id="object-links" viewBox="0 0 1000 580" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg><div class="scene-caption"><span class="mouse-icon">⌖</span><span>Choose an object. The filled icon marks your next task.</span></div></div><div id="hotspots" aria-label="Objects in the scene"></div></div>
         <div class="dialogue"><div class="portrait" id="portrait">A</div><div><p class="speaker" id="speaker">ALEX <span>THE TEENAGER</span></p><p id="narration"></p></div><button class="hint-button" id="hint" aria-label="Show a hint">✧<span>Hint</span></button></div>
         <section class="workflow" aria-labelledby="workflow-heading"><div class="section-heading"><h2 id="workflow-heading">FOLLOW THE REQUEST</h2><label class="technical-toggle"><input type="checkbox" id="technical"><span class="toggle"></span>Technical lens</label></div><div id="flow" class="flow"></div><p class="flow-note" id="flow-note"></p><button class="quiet" id="replay-flow">Replay request</button></section>
         <section id="protocol-panel" class="protocol-panel" aria-labelledby="protocol-heading" hidden>
@@ -784,6 +797,7 @@ const TEEN_ITEM_USES = {
 </script><script>
 /* Primary-source review: 2026-11-23. Optional integrations are not native-product claims. */
 const PROTOCOL_SOURCES = {
+ authzen:{name:'OpenID AuthZEN Authorization API 1.0',url:'https://openid.net/specs/authorization-api-1_0-final.html'},
  oidc:{name:'OpenID Connect Core 1.0',url:'https://openid.net/specs/openid-connect-core-1_0.html'},
  ciba:{name:'CIBA Core 1.0 — Final',url:'https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html'},
  rar:{name:'RFC 9396 — Rich Authorization Requests',url:'https://www.rfc-editor.org/rfc/rfc9396.html'},
@@ -816,7 +830,7 @@ const AGENT_PROTOCOLS = [
  {
   title:'Authorize the actual CRM read',tags:['OAuth access token','RFC 8707','MCP · if used','Vault · optional'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
   how:'For an HTTP MCP path, the server validates its access-token audience and validity. Resource indicators identify the intended service. The trusted tool PEP must also check the actual operation and records. Vault can constrain access to Vault and broker credentials where configured.',
-  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The VAAS-to-PEP decision contract is proposed.',
+  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The VAAS-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
   evidence:{audience:'https://crm.example',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','resource','vault']
  },
  {
@@ -827,15 +841,15 @@ const AGENT_PROTOCOLS = [
  },
  {
   title:'An allowed endpoint still needs an action decision',tags:['OAuth / RAR','Resource PEP','VAAS PDP · proposed'],status:'Application authorization; exact CRM policy is an integration',
-  how:'The resource checks the final action and record scope. OAuth access and any supported RAR constraints supply authorization context; the customer mission and resource policy determine whether this report operation is permitted.',
-  boundary:'The runtime allows connectivity. The action-aware resource boundary separately denies an out-of-mission export. An unavailable or unverifiable decision must not silently permit execution.',
-  evidence:{network:'allowed',attempted_action:'customer.export',mission:'summary only',resource_decision:'deny'},sources:['rar','openshell','owasp']
+  how:'The trusted resource PEP observes actual parameters and obtains a proposed VAAS PDP decision against the customer-owned mission and resource policy. AuthZEN can carry the evaluation exchange; the resource still binds and enforces the result at execution.',
+  boundary:'The runtime allows connectivity. The action-aware resource boundary separately denies an out-of-mission export. An unavailable or unverifiable sensitive-action decision must not silently permit execution. AuthZEN uses a Boolean decision; approval workflow, richer statuses and execution-binding fields are application extensions.',
+  evidence:{network:'allowed',attempted_action:'customer.export',mission:'summary only',resource_decision:'deny'},sources:['authzen','rar','openshell','owasp']
  },
  {
   title:'Human consent and exact-action execution are separate checks',tags:['CIBA · optional','RAR · optional','One-use action approval','Execution PEP'],status:'Proposed approval integration; binding is application-enforced',
-  how:'CIBA can authenticate a human and obtain consent through a separate device. The application must separately bind its approval to the actor, exact file, recipient, current grant, expiry, and one execution. The executing PEP verifies and consumes that approval.',
-  boundary:'CIBA’s binding_message helps the person correlate devices; it is not a cryptographic signature over the CRM action. CIBA plus RAR is not assumed to be a universally supported profile. Changed parameters require a new decision.',
-  evidence:{file:'summary.pdf',recipient:'reviewer@company.example',approval_id:'example APR',execution:'compare then consume once'},sources:['ciba','rar','owasp']
+  how:'CIBA can authenticate a human and obtain consent through a separate device. The application must separately bind its approval to the actor, document revision or content digest, records, recipient, current mission/policy version, expiry, and one execution. The executing PEP verifies and consumes that approval.',
+  boundary:'CIBA’s binding_message helps the person correlate devices; it is not a cryptographic signature over the CRM action. CIBA plus RAR is not assumed to be a universally supported profile. Changed content or parameters require a new decision. The simulation binds a document revision and demonstrates expiry through an explicit story event. It implements no cryptographic digest or real-time token expiry.',
+  evidence:{file:'summary.pdf',recipient:'reviewer@company.example',approval_id:'example APR',revision:'bound to the approved report revision',expiry:'explicit story-window event',execution:'compare then consume once'},sources:['ciba','rar','owasp']
  },
  {
   title:'Authorize a persistent write without creating new authority',tags:['Memory PEP','Namespace policy','Provenance'],status:'Application control; not a CIBA or SSF feature',
@@ -852,7 +866,7 @@ const AGENT_PROTOCOLS = [
  {
   title:'Distribute the revocation signal, then verify its effect',tags:['SSF','CAEP session-revoked','RFC 7009 · where supported','Runtime stop'],status:'Proposed cross-system integration; four outcomes are checked separately',
   how:'SSF can distribute signed Security Event Tokens; CAEP defines session-revoked semantics. Receivers validate and correlate the signal, then apply their enforcement policy. Token revocation, applicable Vault lease revocation, runtime stop, and in-flight reconciliation are separate operations.',
-  boundary:'Delivery or acknowledgement of an event is not proof of containment. Receivers, self-contained tokens, leases, and queued actions can behave differently. The game requires their observed status before fresh authorization.',
+  boundary:'Delivery or acknowledgement of an event is not proof of containment. Receivers, self-contained tokens, leases, and queued actions can behave differently. The game requires observed results for the tested route before fresh authorization. An unreachable controller leaves an unknown, unverified state; these checks do not prove coverage of every possible endpoint.',
   evidence:{illustrative_header:{typ:'secevent+jwt',alg:'ES256',kid:'example-key'},illustrative_decoded_SET:{iss:'https://idp.example',iat:1795424400,aud:'https://resource.example',jti:'example-event-042',sub_id:{format:'opaque',id:'session-G-042'},events:{'https://schemas.openid.net/secevent/caep/event-type/session-revoked':{}}},signature_and_delivery:'not implemented in this game'},sources:['ssf','caep','revoke','leases','openshell']
  }
 ];
@@ -1253,10 +1267,31 @@ function roomStateOverlay(mode,act,state) {
   if(state.hasNote)art+=`<g data-event="sourced-note"><circle cx="${teen?484:381}" cy="${teen?425:445}" r="8" fill="#a3d9bd"/><path d="M${teen?'480 425L483 428L489 421':'377 445L380 448L386 441'}" stroke="#345c53" stroke-width="1.5" fill="none"/></g>`;
   if(step>=7&&teen)art+=`<g data-event="sibling-in-room">${humanFigure('sibling',747,463,.89)}</g>`;
   if(state.revoked||state.paused) {
-    art+=`<g data-event="access-locked"><path d="${teen?'M684 224L748 246L748 293L683 272Z':'M663 210L760 242L760 294L663 262Z'}" fill="#20283f" opacity=".88"/><g transform="translate(${teen?'715 260':'714 254'})"><path d="M-7 0L-7-8Q0-18 7-8L7 0" fill="none" stroke="${tone}" stroke-width="3"/><rect x="-11" y="-1" width="22" height="17" rx="3" fill="${tone}"/><path d="M0 4L0 10" stroke="#343149" stroke-width="2"/></g></g>`;
+    if(!state.serviceStillOpen)art+=`<g data-event="access-locked"><path d="${teen?'M684 224L748 246L748 293L683 272Z':'M663 210L760 242L760 294L663 262Z'}" fill="#20283f" opacity=".88"/><g transform="translate(${teen?'715 260':'714 254'})"><path d="M-7 0L-7-8Q0-18 7-8L7 0" fill="none" stroke="${tone}" stroke-width="3"/><rect x="-11" y="-1" width="22" height="17" rx="3" fill="${tone}"/><path d="M0 4L0 10" stroke="#343149" stroke-width="2"/></g></g>`;
+    if(state.serviceStillOpen)art+=`<g data-event="service-still-open"><circle cx="${teen?715:714}" cy="${teen?260:254}" r="19" fill="none" stroke="#efd0a0" stroke-width="3" stroke-dasharray="4 3"/></g>`;
     art+=teen?`<path d="M509 404L531 397L548 404L526 412Z" fill="#2b2c42" stroke="${tone}" stroke-width="2"/>`:`<path d="M476 400L529 384L568 397L515 415Z" fill="#302f43" stroke="${tone}" stroke-width="2"/>`;
   }
   return `<g class="room-events" data-act="${act+1}">${art}</g>`;
+}
+
+// Matching symbols connect scene targets to their named controls in both editions.
+function sceneObjectGlyph(key,mode) {
+  const shapes={
+    person:'<circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/>',
+    shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/>',
+    phone:'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/>',
+    console:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m6 0h4"/>',
+    laptop:'<path d="M5 17V5h14v12M2 17h20l-2 3H4Z"/><path d="M9 9h6m-6 4h4"/>',
+    brief:'<path d="M5 3h10l4 4v14H5ZM14 3v5h5M8 12h8m-8 4h6"/>',
+    notebook:'<rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 3v18M3 7h4m-4 5h4m-4 5h4m5-9h5m-5 4h5"/>',
+    memory:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',
+    helper:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m3-16v6m-3-3h6"/>'
+  };
+  const kind=key==='parent'?(mode==='agent'?'shield':'person'):key==='phone'?(mode==='agent'?'console':'phone'):['note','brief'].includes(key)?'brief':['memory','notebook'].includes(key)?(mode==='agent'?'memory':'notebook'):['sibling','helper'].includes(key)?'helper':key;
+  return shapes[kind]||shapes.brief;
+}
+function sceneObjectIcon(key,mode) {
+  return `<svg class="object-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${sceneObjectGlyph(key,mode)}</svg>`;
 }
 
 </script><script>
@@ -1337,7 +1372,7 @@ function render() {
   $('#scene').dataset.condition=preview?'PARALLEL PREVIEW':g.review?(mode==='teen'?'PHONE PAUSED':'SESSION PAUSED'):g.revoked&&g.step<9?(mode==='teen'?'HOMEWORK PASS ENDED':'GRANT REVOKED'):'';
   const targets = g.review ? ['parent'] : step===8 ? ['parent','phone','laptop','memory'] : [t[3]];
   const compactLabels=mode==='teen'?{parent:'Parent',phone:'Phone',laptop:'School app',note:'Assignment',memory:'Notebook',sibling:'Sibling'}:{parent:'Authority',phone:'Runtime',laptop:'CRM',note:'Document',memory:'Memory',sibling:'Helper'};
-  $('#hotspots').innerHTML=config.objects.filter(([key])=>key!=='sibling'||(preview?step:g.step)>=7).map(([key,label,x,y],index) => `<button class="hotspot ${targets.includes(key)&&g.step<9&&!preview&&!exploring?'current':''}" data-object="${key}" data-label-x="${x*10}" data-label-y="${y*5.8}" data-number="${index+1}" aria-label="${targets.includes(key)&&g.step<9?'Objective: ':''}${label}"><span class="spot">${index+1}</span><span class="object-label full">${label}</span><span class="object-label compact" aria-hidden="true">${compactLabels[key]}</span></button>`).join('');
+  $('#hotspots').innerHTML=config.objects.filter(([key])=>key!=='sibling'||(preview?step:g.step)>=7).map(([key,label,x,y]) => `<button class="hotspot ${targets.includes(key)&&g.step<9&&!preview&&!exploring?'current':''}" data-object="${key}" data-label-x="${x*10}" data-label-y="${y*5.8}"  aria-label="${targets.includes(key)&&g.step<9?'Objective: ':''}${label}"><span class="spot" aria-hidden="true">${sceneObjectIcon(key,mode)}</span><span class="object-label full">${label}</span><span class="object-label compact" aria-hidden="true">${compactLabels[key]}</span></button>`).join('');
   $$('[data-object]').forEach(b=>b.onclick=()=>interactObject(b.dataset.object));
   $('#scene-nav').innerHTML=SCENES[mode].map((s,i)=>`<button data-scene="${i}" class="${scene===i?'active':''}" aria-current="${scene===i?'step':'false'}" ${i>Math.floor(activeStep()/3)&&!preview?'disabled':''}><span>${i<Math.floor(activeStep()/3)?'✓':String(i+1).padStart(2,'0')}</span>${s.name}<small>${Math.max(0,Math.min(3,g.step-i*3))} / 3</small></button>`).join('');
   $$('[data-scene]').forEach(b=>b.onclick=()=>{if(preview){toast('Use “Continue this journey” to leave the parallel preview.');return;}viewScene=Number(b.dataset.scene);selectedItem=null;render();});
@@ -1549,7 +1584,7 @@ function downloadReport() {
 }
 function showGuide() {
   if(mode==='teen'){
-    openModal(`<p class="modal-eyebrow">FIELD GUIDE · ALEX’S STORY</p><h2 class="modal-title">Homework, a phone, and a little trust.</h2><div class="guide-section"><h3>Play as Alex</h3><p>Your goal is to finish a history assignment. Ask your parent for homework time, use the school app, and decide what to do when a strange message arrives. Your choices shape how the story ends.</p><h3>Find your next move</h3><p>Stay in Alex’s room through all three acts. Click a numbered object to look closer, or use the Next move button for the current puzzle. Hint tells you what to try next.</p><h3>Use your pocket</h3><p>Select an item, then click the place where you want to use it. Use the saved teacher contact on the phone, the sharing approval at the school app, and the delivery receipt on the notebook.</p><h3>If the phone pauses</h3><p>Talk to your parent. They already have your homework plan and can see what happened; you don’t need to find a pass. Ask to continue, then read their reply. You can carry on only if they say yes. Taking back your request leaves the phone paused.</p><h3>When the pass ends</h3><p>Check the homework pass, school sign-in, phone lock, and anything waiting to send. Bring the completed checklist to your parent to ask for a new pass. Homework already delivered to your teacher stays delivered.</p><h3>See how it happened</h3><p>After a choice, four steps show who checked what. Click a step for more of the story. Technical lens adds the security explanation if you want it. The agent journey explores the same ideas through Nova’s work.</p><h3>Your choices stay with the story</h3><p>Attempts stay in your activity history after reloading. Some pause the phone; others let you try again. Repeated attempts can lead to a shorter new pass with your parent nearby. Time limits are part of the story; there’s no live countdown.</p><h3>A made-up adventure</h3><p>The parent’s replies and app checks happen inside the game. No real messages are sent and no real accounts are connected. Progress is saved in this browser. You can use Tab and Enter to play, and Escape to close a window.</p></div><button class="primary" id="guide-close">Back to Alex’s room</button>`);
+    openModal(`<p class="modal-eyebrow">FIELD GUIDE · ALEX’S STORY</p><h2 class="modal-title">Homework, a phone, and a little trust.</h2><div class="guide-section"><h3>Play as Alex</h3><p>Your goal is to finish a history assignment. Ask your parent for homework time, use the school app, and decide what to do when a strange message arrives. Your choices shape how the story ends.</p><h3>Find your next move</h3><p>Stay in Alex’s room through all three acts. Click an object to look closer. Matching icons connect the room to the object buttons; the filled icon marks your next task. You can also use the Next move button for the current puzzle. Hint tells you what to try next.</p><h3>Use your pocket</h3><p>Select an item, then click the place where you want to use it. Use the saved teacher contact on the phone, the sharing approval at the school app, and the delivery receipt on the notebook.</p><h3>If the phone pauses</h3><p>Talk to your parent. They already have your homework plan and can see what happened; you don’t need to find a pass. Ask to continue, then read their reply. You can carry on only if they say yes. Taking back your request leaves the phone paused.</p><h3>When the pass ends</h3><p>Check the homework pass, school sign-in, phone lock, and anything waiting to send. Bring the completed checklist to your parent to ask for a new pass. Homework already delivered to your teacher stays delivered.</p><h3>See how it happened</h3><p>After a choice, four steps show who checked what. Click a step for more of the story. Technical lens adds the security explanation if you want it. The agent journey explores the same ideas through Nova’s work.</p><h3>Your choices stay with the story</h3><p>Attempts stay in your activity history after reloading. Some pause the phone; others let you try again. Repeated attempts can lead to a shorter new pass with your parent nearby. Time limits are part of the story; there’s no live countdown.</p><h3>A made-up adventure</h3><p>The parent’s replies and app checks happen inside the game. No real messages are sent and no real accounts are connected. Progress is saved in this browser. You can use Tab and Enter to play, and Escape to close a window.</p></div><button class="primary" id="guide-close">Back to Alex’s room</button>`);
     $('#guide-close').onclick=closeModal;
     return;
   }
@@ -1629,11 +1664,13 @@ function positionSceneObjects() {
       links+=`<path d="${route}" class="object-leader ${button.classList.contains('current')?'is-current':''}"/>`;
     } else {button.style.removeProperty('left');button.style.removeProperty('top');}
     const human=mode==='teen'&&['parent','sibling'].includes(button.dataset.object);
-    // Compact view uses numbered bubbles above people, never on their faces.
-    const mobilePeople={parent:[298,215],sibling:[790,270]};
-    const [markerX,markerY]=compact&&human?mobilePeople[button.dataset.object]:[anchorX,anchorY];
-    const radius=(compact?10:human?3.5:5)/scale;
-    links+=`<g class="object-marker ${human?'person-marker':''} ${button.classList.contains('current')?'is-current':''}"><circle cx="${markerX}" cy="${markerY}" r="${radius}"/>${compact?`<text x="${markerX}" y="${markerY}" font-size="${11/scale}" text-anchor="middle" dominant-baseline="central">${button.dataset.number}</text>`:''}</g>`;
+    // Offset close targets so icons remain distinct on narrow screens and faces stay visible.
+    const compactPins={parent:mode==='teen'?[245,350]:[250,230],phone:[565,382],memory:mode==='teen'?[435,448]:[349,441],sibling:mode==='teen'?[795,354]:[839,371]};
+    const [markerX,markerY]=compact?(compactPins[button.dataset.object]||[anchorX,anchorY]):[anchorX,anchorY];
+    const radius=(compact?14:human?3.5:5)/scale;
+    if(compact)links+=`<path class="object-leader" d="M${markerX} ${markerY}L${anchorX} ${anchorY}"/>`;
+    const iconSize=17/scale;
+    links+=`<g class="object-marker ${human?'person-marker':''} ${button.classList.contains('current')?'is-current':''}"><circle cx="${markerX}" cy="${markerY}" r="${radius}"/>${compact?`<svg x="${markerX-iconSize/2}" y="${markerY-iconSize/2}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${sceneObjectGlyph(button.dataset.object,mode)}</svg>`:''}</g>`;
   }
   $('#object-links').innerHTML=links;
 }

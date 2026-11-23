@@ -138,3 +138,23 @@ function roomStateOverlay(mode,act,state) {
   }
   return `<g class="room-events" data-act="${act+1}">${art}</g>`;
 }
+
+// Matching symbols connect scene targets to their named controls in both editions.
+function sceneObjectGlyph(key,mode) {
+  const shapes={
+    person:'<circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/>',
+    shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/>',
+    phone:'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/>',
+    console:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m6 0h4"/>',
+    laptop:'<path d="M5 17V5h14v12M2 17h20l-2 3H4Z"/><path d="M9 9h6m-6 4h4"/>',
+    brief:'<path d="M5 3h10l4 4v14H5ZM14 3v5h5M8 12h8m-8 4h6"/>',
+    notebook:'<rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 3v18M3 7h4m-4 5h4m-4 5h4m5-9h5m-5 4h5"/>',
+    memory:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',
+    helper:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m3-16v6m-3-3h6"/>'
+  };
+  const kind=key==='parent'?(mode==='agent'?'shield':'person'):key==='phone'?(mode==='agent'?'console':'phone'):['note','brief'].includes(key)?'brief':['memory','notebook'].includes(key)?(mode==='agent'?'memory':'notebook'):['sibling','helper'].includes(key)?'helper':key;
+  return shapes[kind]||shapes.brief;
+}
+function sceneObjectIcon(key,mode) {
+  return `<svg class="object-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${sceneObjectGlyph(key,mode)}</svg>`;
+}

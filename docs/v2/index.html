@@ -20,6 +20,20 @@
 .change-list{display:grid;gap:14px;margin:20px 0}.change-card{border:1px solid var(--line);border-radius:14px;padding:18px;background:#161d2944}.change-card h3{font:500 22px/1.35 Georgia,serif;margin:8px 0 10px}.change-card p:not(.eyebrow){font-size:16px;margin-bottom:14px}.change-card button{min-height:44px}.draft-addition{border-left:3px solid #6d8b70;padding-left:12px}.chapter-track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.chapter-track span{min-width:0}.check .check-status{font-size:13px;letter-spacing:.03em}.scene-footnote{font-size:14px;line-height:1.6}.choice small{font-size:14px}.product-names button{font-size:14px;min-height:42px}.protocol-tags span{font-size:12px}.product-card summary span{font-size:14px}@media(max-width:500px){.chapter-track{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}.chapter-track span{font-size:14px}.chapter-track small{display:inline;margin-right:7px}.change-card{padding:16px}.change-card h3{font-size:21px}.scene-footnote{font-size:14px}}
 .archive-photo{margin:18px 0;padding:8px;background:#cec4ae;border:1px solid #b4a990;border-radius:5px}.archive-photo svg{width:100%;height:auto;display:block}.archive-photo figcaption{font-size:12px;line-height:1.6;margin-top:6px;color:#5e5860}
 
+/* The same object symbols appear in the room and its labelled controls. */
+.object-icon{width:22px;height:22px;display:block;flex-shrink:0}
+.pin-links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;fill:none;stroke:#dfd4ed;stroke-opacity:.65;stroke-width:1.5}
+.pin.relevant,.agent .pin.relevant,.pin:hover,.pin:focus-visible{background:var(--accent);color:#20172d;border:2px solid #fff;box-shadow:0 0 0 4px #151622aa,0 4px 16px #12132266}
+.pin::after{color:var(--ink)}
+.object-tray b{display:flex;justify-content:center}.object-tray button{position:relative;font-size:14px;padding:12px 5px}
+.object-tray button.relevant{border-color:var(--accent);box-shadow:inset 0 -4px var(--accent)}
+.object-tray button.relevant b{color:#20172d;background:var(--accent);border-radius:50%;width:32px;height:32px;align-items:center;margin:-5px auto 5px}
+.next-label{display:block;font-size:12px;color:var(--accent);margin-top:4px;font-weight:750}
+.item.selected{background:var(--accent);border-color:var(--accent);color:#20172d;box-shadow:0 0 0 2px #ffffff38}
+.item.selected small,.item.selected>span:first-child{color:#20172d}
+.episodes button[aria-pressed=true]{background:var(--accent);color:#20172d;border-color:var(--accent)}
+.episodes button[aria-pressed=true] span{color:#302442}
+
 </style></head>
 <body>
 <header class="topbar"><a class="brand" href="#"><span class="brand-mark">◇</span><span>TRUST BOUNDARIES<small>V2 · STORY EDITION</small></span></a><nav class="episodes" aria-label="Choose your story"><button data-mode="teen" aria-pressed="true">Alex <span>The Last Upload</span></button><button data-mode="agent" aria-pressed="false">Nova <span>The Growing Brief</span></button></nav><button class="quiet" id="guide">How to play</button></header>
@@ -169,6 +183,26 @@ function roomStateOverlay(mode,act,state) {
     art+=teen?`<path d="M509 404L531 397L548 404L526 412Z" fill="#2b2c42" stroke="${tone}" stroke-width="2"/>`:`<path d="M476 400L529 384L568 397L515 415Z" fill="#302f43" stroke="${tone}" stroke-width="2"/>`;
   }
   return `<g class="room-events" data-act="${act+1}">${art}</g>`;
+}
+
+// Matching symbols connect scene targets to their named controls in both editions.
+function sceneObjectGlyph(key,mode) {
+  const shapes={
+    person:'<circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/>',
+    shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/>',
+    phone:'<rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/>',
+    console:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m6 0h4"/>',
+    laptop:'<path d="M5 17V5h14v12M2 17h20l-2 3H4Z"/><path d="M9 9h6m-6 4h4"/>',
+    brief:'<path d="M5 3h10l4 4v14H5ZM14 3v5h5M8 12h8m-8 4h6"/>',
+    notebook:'<rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 3v18M3 7h4m-4 5h4m-4 5h4m5-9h5m-5 4h5"/>',
+    memory:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>',
+    helper:'<circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m3-16v6m-3-3h6"/>'
+  };
+  const kind=key==='parent'?(mode==='agent'?'shield':'person'):key==='phone'?(mode==='agent'?'console':'phone'):['note','brief'].includes(key)?'brief':['memory','notebook'].includes(key)?(mode==='agent'?'memory':'notebook'):['sibling','helper'].includes(key)?'helper':key;
+  return shapes[kind]||shapes.brief;
+}
+function sceneObjectIcon(key,mode) {
+  return `<svg class="object-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${sceneObjectGlyph(key,mode)}</svg>`;
 }
 
 </script><script>
@@ -392,15 +426,6 @@ const EPISODES = {
   }
 };
 
-const OBJECT_ICONS = [
-  "◇",
-  "▣",
-  "▤",
-  "✎",
-  "▥",
-  "✦"
-];
-
 const OBJECT_KEYS = [
   "parent",
   "phone",
@@ -410,59 +435,10 @@ const OBJECT_KEYS = [
   "helper"
 ];
 
+// [marker x, marker y, object x, object y] in the fixed illustration canvas.
 const STORY_PINS = {
-  "teen": [
-    [
-      298,
-      225
-    ],
-    [
-      526,
-      404
-    ],
-    [
-      716,
-      259
-    ],
-    [
-      449,
-      167
-    ],
-    [
-      471,
-      424
-    ],
-    [
-      774,
-      292
-    ]
-  ],
-  "agent": [
-    [
-      250,
-      230
-    ],
-    [
-      524,
-      401
-    ],
-    [
-      716,
-      254
-    ],
-    [
-      449,
-      173
-    ],
-    [
-      349,
-      441
-    ],
-    [
-      839,
-      371
-    ]
-  ]
+ teen:[[245,350,298,350],[565,382,526,404],[716,259,716,259],[449,167,449,167],[435,448,471,424],[795,354,747,383]],
+ agent:[[250,230,250,230],[565,382,524,401],[716,254,716,254],[449,173,449,173],[349,441,349,441],[839,371,839,411]]
 };
 
 const MOVES = {
@@ -1210,14 +1186,16 @@ function render(){
  $('#place').textContent=e.place;$('#scene-condition').textContent=s.finished?'CHAPTER COMPLETE':s.paused?(teen()?'PHONE PAUSED':'MISSION PAUSED'):s.ended?(teen()?'PASS ENDED':'MISSION REVOKED'):s.delivered?'DELIVERED':s.message&&!s.verified?'NEW MESSAGE':'';
  const artStep=s.message&&!s.verified?3:s.draft?7:0;
  $('#art').innerHTML=roomArt(mode,Math.min(c,2),{step:artStep,verified:s.verified,delivered:s.delivered,revoked:s.ended,paused:s.paused,hasNote:s.notes.length>0,serviceStillOpen:s.ended&&s.containment&&!s.containment.sessionClosed});
- $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>i===5&&!s.draft?'':`<button class="pin ${OBJECT_KEYS[i]===m[2]?'relevant':''}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc(e.objects[i])}" aria-label="${esc(e.objects[i])}">${i+1}</button>`).join('');
- $('#objects').innerHTML=e.objects.map((text,i)=>`<button data-object="${OBJECT_KEYS[i]}" class="${OBJECT_KEYS[i]===m[2]?'relevant':''}" ${i===5&&!s.draft?'disabled':''}><b aria-hidden="true">${OBJECT_ICONS[i]}</b>${esc(text)}</button>`).join('');
+ $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>i===5&&!s.draft?'':`<button class="pin ${OBJECT_KEYS[i]===m[2]?'relevant':''}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc(e.objects[i])}" aria-label="${esc(e.objects[i])}${OBJECT_KEYS[i]===m[2]?' · Next task':''}">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</button>`).join('');
+ const links=STORY_PINS[mode].map(([x,y,tx,ty],i)=>i===5&&!s.draft?'':`<path d="M${x} ${y}L${tx} ${ty}"/>`).join('');
+ $('#pins').insertAdjacentHTML('afterbegin',`<svg class="pin-links" viewBox="0 0 1000 580" aria-hidden="true">${links}</svg>`);
+ $('#objects').innerHTML=e.objects.map((text,i)=>`<button data-object="${OBJECT_KEYS[i]}" class="${OBJECT_KEYS[i]===m[2]?'relevant':''}" ${i===5&&!s.draft?'disabled':''}><b aria-hidden="true">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</b>${esc(text)}${OBJECT_KEYS[i]===m[2]?'<small class="next-label">Next</small>':''}</button>`).join('');
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A perfectly ordinary mission.',text:e.actorLine};
  $('#speaker').textContent=event.speaker;$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Pip'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
  $('#next-title').textContent=m[0];$('#next-text').textContent=m[1];$('#next').textContent=s.finished?'See my ending':m[0];
  const items=inventory();$('#pocket-count').textContent=String(items.length)+(items.length===1?' ITEM':' ITEMS');
- $('#inventory').innerHTML=items.map(([id,icon,name,detail])=>`<button class="item ${selected===id?'selected':''}" data-item="${id}" aria-pressed="${selected===id}"><span aria-hidden="true">${icon}</span><span>${esc(name)}<small>${esc(detail)}</small></span></button>`).join('');
+ $('#inventory').innerHTML=items.map(([id,icon,name,detail])=>`<button class="item ${selected===id?'selected':''}" data-item="${id}" aria-pressed="${selected===id}"><span aria-hidden="true">${icon}</span><span>${esc(name)}<small>${selected===id?'✓ Selected · choose an object':esc(detail)}</small></span></button>`).join('');
  $$('[data-item]').forEach(b=>b.onclick=()=>{selected=selected===b.dataset.item?null:b.dataset.item;render();if(selected)toast('Choose a place to use '+items.find(x=>x[0]===selected)[2]+'.');});
  $('#selected').hidden=!selected;
  if(selected){const item=items.find(i=>i[0]===selected);if(item){$('#selected').innerHTML=`<p>Using <b>${esc(item[2])}</b></p><button id="inspect-item">Look closer</button> · <button id="put-away">Put away</button>`;$('#put-away').onclick=()=>{selected=null;render();};$('#inspect-item').onclick=()=>show(item[2],`<p>${esc(item[4])}</p><div class="actions">${button('Keep it selected',close)}</div>`,'IN YOUR POCKET');}}
@@ -1314,7 +1292,7 @@ function showAccessPuzzle(){
 }
 function showCasebook(){const s=state(),e=episode();show(teen()?'Your evening notebook.':'The mission notebook.',`<ul class="route-list"><li><b>${s.pass?'The task you agreed':'The new request'}</b><br>${s.brief?esc(e.brief):'Read the new assignment or sponsor request first. No task authority exists yet.'}</li>${s.mission?`<li><b>${teen()?'Agreement history':'Customer mission history'}</b><br>${s.missionLog.map(m=>`${teen()?'Version':'Mission version'} ${m.version}: ${esc(teen()?m.allowedApps.join(', '):m.records.join(', '))}`).join('<br>')}</li>`:''}<li><b>Later requests</b><br>${s.message?'Small edit: '+esc(changeStatus('minor'))+'<br>Optional expansion: '+esc(changeStatus('extension'))+'<br>Private notes: '+esc(changeStatus('private')):'None yet. Make a sourced first draft.'}</li><li><b>${teen()?'The tab you opened':'The task service session'}</b><br>${s.sessionOpened?'Opened when you started the workspace. It needs its own closing check.':'Not opened yet.'}</li><li><b>Follow-up</b><br>${s.queueScheduled?'You chose one receipt-only follow-up after delivery.':'You have not scheduled a follow-up.'}</li><li><b>Permission checks</b><br>${s.refusals} private-note refusal${s.refusals===1?'':'s'}. Ordinary refusals are not misconduct.</li><li><b>Deliberate bypasses</b><br>${s.incidents.length?'A stopped bypass was recorded; recovery preserves the current scope.':'None recorded.'}</li>${s.previousEndings.length?`<li><b>Earlier endings</b><br>${s.previousEndings.map(x=>esc(x.ending?.title||'Completed route')).join('<br>')}</li>`:''}</ul><div class="actions">${!teen()?button('Inspect the product chain',showProductMap,'secondary'):''}${button('Back to the room',close)}</div>`,'THE STORY REMEMBERS');}
 function showEnding(){if(!state().finished)return nextMove();const s=state(),e=episode();show(s.ending?.title||'Task complete.',`<div class="reward" aria-hidden="true">✦</div><p>${esc(s.ending?.text||'The task is complete and its tested access is closed.')}</p>${s.legacyRoute?'<div class="receipt"><b>Earlier route preserved</b><p>This ending is from the earlier story. Start the revised story to play the fresh opening and new change choices.</p></div>':''}<ul class="route-list">${s.legacyRoute?'':`<li><b>${s.minorChoice==='added'?'A small edit within the agreement':'The smaller wording kept'}</b><br>${s.minorChoice==='added'?teen()?'Your new sentence used the same railway notes and source.':'The document changed without expanding the mission.':'The optional edit was left out.'}</li><li><b>${s.extensionAdded?'A genuine expansion approved and used':s.extensionOmitted?'An approved addition left unused':'The smaller task completed'}</b><br>${s.extensionAdded?(teen()?'The museum viewer was added before the photo was opened.':'The mission was amended before customer 789 was read.'):s.extensionOmitted?'The additional access was approved, but no extra material was read or included.':'No extra app or customer permission was needed.'}</li><li><b>Private notes stayed out</b><br>The legitimate change did not override independent privacy rules.</li>`}<li><b>${esc(e.file)} delivered</b><br>${esc(e.to)} · ${s.proof==='helper'?esc(e.helper)+' helped with only the file.':'You reviewed the file yourself.'}</li><li><b>The actual loose ends were checked</b><br>${s.queueScheduled?'Your chosen follow-up was cancelled and verified.':'You chose no follow-up; the queue was confirmed empty.'} The task session opened at the start is closed.</li></ul><details class="debrief"><summary>${teen()?'What the evening taught you':'Inspect the technical lessons'}</summary><p>A small edit, a legitimate expansion and a prohibited disclosure need different responses. Ordinary permission refusals do not suspend the task. A deliberate bypass needs review.</p><p>The checks cover the tested route. The next task requires a new request and agreement; this ending issues no future authority.</p>${teen()?`<details><summary>Show the security mapping</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>`:protocolHTML(CLOSING_PROTOCOL)}</details><div class="actions">${button(teen()?'Play Nova’s mission':'Play Alex’s story',()=>switchMode(teen()?'agent':'teen'))}${button('Play the revised story from the beginning',restart,'secondary')}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}${button('Explore the room',close,'secondary')}${!teen()?button('Inspect the product chain',showProductMap,'secondary'):''}</div><p class="small-print">Fictional local simulation. No real messages or security services are connected.</p>`,'YOUR ENDING · '+e.name.toUpperCase());}
-function showGuide(){show('Start a task. Handle a change. Finish it.',`<p>Read the new assignment or sponsor request, agree on the needed access, and make a useful first draft. Later requests arrive only after you have opened and cited the agreed source.</p><p><b>Three different changes.</b> A small edit can fit the current agreement. A new app or customer can need an authorized amendment. Private notes can remain prohibited even after that amendment.</p><p><b>Your route matters.</b> Accept or keep the smaller wording. Ask for the optional addition or finish without it. Work alone or ask for file-only help. A reminder is optional and appears in the closing queue only if you schedule it.</p><p><b>Refusal is useful.</b> An ordinary denied request does not suspend the job. Deliberately trying another path around a known refusal triggers review. You can recover under the current task limits.</p><p><b>Finish the actual task.</b> Alex submits ordinary homework directly through the school app. Nova’s business share needs exact human approval. Then close the service session you opened earlier, disable only task-scoped access, and check any pending follow-up.</p><p>Choose labelled objects or use the next-move button. Pocket items can be inspected and used on relevant objects. Tab and Enter work; Escape closes dialogue. Reading and exploring have no countdown. Technical details remain optional.</p><div class="actions">${button(state().started?'Back to the room':'Start the story',()=>state().started?close():perform('begin'))}</div>`,'HOW TO PLAY');}
+function showGuide(){show('Start a task. Handle a change. Finish it.',`<p>Read the new assignment or sponsor request, agree on the needed access, and make a useful first draft. Later requests arrive only after you have opened and cited the agreed source.</p><p><b>Three different changes.</b> A small edit can fit the current agreement. A new app or customer can need an authorized amendment. Private notes can remain prohibited even after that amendment.</p><p><b>Your route matters.</b> Accept or keep the smaller wording. Ask for the optional addition or finish without it. Work alone or ask for file-only help. A reminder is optional and appears in the closing queue only if you schedule it.</p><p><b>Refusal is useful.</b> An ordinary denied request does not suspend the job. Deliberately trying another path around a known refusal triggers review. You can recover under the current task limits.</p><p><b>Finish the actual task.</b> Alex submits ordinary homework directly through the school app. Nova’s business share needs exact human approval. Then close the service session you opened earlier, disable only task-scoped access, and check any pending follow-up.</p><p>Choose labelled objects or use the next-move button. Matching icons identify objects; a filled icon and the Next label mark your next task. Pocket items can be inspected and used on relevant objects. Tab and Enter work; Escape closes dialogue. Reading and exploring have no countdown. Technical details remain optional.</p><div class="actions">${button(state().started?'Back to the room':'Start the story',()=>state().started?close():perform('begin'))}</div>`,'HOW TO PLAY');}
 function switchMode(next){close();clearTimeout(toast.timer);$('#toast').classList.remove('visible');$('#toast').textContent='';mode=next;selected=null;render();if(!state().started)showIntro();}
 function restart(){show('Try a different route?',`<p>Start this story again with a fresh notebook. The other journey keeps its progress.</p><div class="actions">${button('Start this story again',()=>{states[mode]=StoryRules.fresh();selected=null;close();render();showIntro();})}${button('Keep my story',close,'secondary')}</div>`,'A FRESH CHAPTER');}
 let traceTimer=null,tracePlayback=null;
