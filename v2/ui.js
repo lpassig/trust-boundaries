@@ -19,8 +19,12 @@ const move=()=>{
   ?['Restore Ms Patel’s address','The school submission uses her address from the assignment.','laptop']
   :['Restore the reviewer','The CRM send must use the designated reviewer.','laptop'];
  if(key==='send'&&!teen()&&!StoryRules.approvalMatches(s.approval,StoryRules.reportShare(s)))return ['Review the current copy','Ask Morgan for an approval that matches the current send.','laptop'];
- const next=key==='checks'?StoryInteractions.speechSource(mode,StoryInteractions.closureSource(s,mode)).object:StoryInteractions.nextObject(mode,key,base[2]);
- return [...(teen()?base.slice(0,2):NOVA_MOVES[key]),next];
+ if(key==='checks'){
+  const {next}=closingStep(s,teen());
+  const source=StoryInteractions.speechSource(mode,StoryInteractions.closureSource(s,mode));
+  return [next[0],next[1]||source.name,source.object];
+ }
+ return [...(teen()?base.slice(0,2):NOVA_MOVES[key]),StoryInteractions.nextObject(mode,key,base[2])];
 };
 const customerNames=ids=>ids.map(id=>NOVA_CUSTOMERS[id]||id).join(', ');
 const chapter=()=>!state().pass?0:!state().message?1:!StoryRules.changesResolved(state())?2:3;
@@ -31,6 +35,7 @@ function ping(kind='story'){if(!sound)return;try{audio||=new(window.AudioContext
 function syncSpeech(){
  const reference=dialog.open&&dialog.classList.contains('is-reference');
  const inline=dialog.open&&!reference;
+ $('#scene-guide').hidden=reference||inline&&dialog.dataset.inspect!=='true';
  $('.scene-frame').classList.toggle('has-conversation',inline);
  $('#scene-dialogue').hidden=inline;
  const active=StoryInteractions.speechSource(mode,speakingObject);
@@ -55,6 +60,7 @@ function modal(title,body,label='LOOK CLOSER',reference=false){
  if(!dialog.open||!dialog.contains(document.activeElement))focusReturn=document.activeElement;
  if(dialog.open&&dialog.classList.contains('is-reference')!==reference)dialog.close();
  dialog.classList.toggle('is-reference',reference);
+ delete dialog.dataset.inspect;
  dialog.classList.toggle('is-architecture',label==='REFERENCE ARCHITECTURE');
  $('#speech-source-row').hidden=reference;
  $('#dialog-actions').innerHTML='';
@@ -182,10 +188,14 @@ function objectDetail(key){
 function heldUse(){return selected?StoryInteractions.itemUse(state(),mode,selected):null;}
 function targetState(key,pin=false){
  const use=heldUse(),next=move()[2];
- return use?(use.targets.includes(key)?'use-target':''):(key===next||pin&&key===StoryInteractions.speechSource(mode,next).object)?'relevant':'';
+ return use?(use.targets.includes(key)?'use-target':''):StoryInteractions.isStoryObject(mode,key,next,pin)?'relevant':'';
 }
 function targetTag(key,pin=false){return targetState(key,pin)==='use-target'?'Use here':targetState(key,pin)==='relevant'?'Next':'';}
-function objectLabel(key,pin=false){return [objectName(key),objectDetail(key),targetTag(key,pin)].filter(Boolean).join(' · ');}
+function objectLabel(key,pin=false){
+ const guide=targetTag(key,pin),next=move()[2];
+ if(pin&&guide==='Next'&&key!==next)return [objectName(next),guide].join(' · ');
+ return [objectName(key),objectDetail(key),guide].filter(Boolean).join(' · ');
+}
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
 function render(){
  const s=state(),e=episode(),m=move(),c=chapter(),use=heldUse();document.body.classList.toggle('agent',!teen());
@@ -197,7 +207,7 @@ function render(){
  $('#place').textContent=e.place;$('#scene-condition').textContent=s.finished?(teen()?'READY FOR DINNER':'CHAPTER COMPLETE'):s.paused?(teen()?'LET’S TALK':'MISSION PAUSED'):s.ended?(teen()?'DINNER TIME':'MISSION REVOKED'):s.delivered?(teen()?'SENT TO MS PATEL':'DELIVERED'):s.message&&!s.verified?'NEW MESSAGE':'';
  const artStep=s.draft?7:0;
  $('#art').innerHTML=roomArt(mode,Math.min(c,2),{step:artStep,hasIncoming:s.message,helperVisible:s.draft,verified:s.verified,delivered:s.delivered,revoked:s.ended,paused:s.paused,hasNote:s.notes.length>0,hasSourceCredit:s.caption,signInRequired:teen()&&s.checks.includes('signin')&&s.containment?.controllerReachable,serviceStillOpen:s.ended&&s.containment&&!s.containment.sessionClosed});
- $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>i===5&&!s.draft?'':`<button class="pin ${targetState(OBJECT_KEYS[i],true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc([objectName(OBJECT_KEYS[i]),targetTag(OBJECT_KEYS[i],true)].filter(Boolean).join(' · '))}" aria-label="${esc(objectLabel(OBJECT_KEYS[i],true))}">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</button>`).join('');
+ $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>i===5&&!s.draft?'':`<button class="pin ${targetState(OBJECT_KEYS[i],true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc(objectLabel(OBJECT_KEYS[i],true))}" aria-label="${esc(objectLabel(OBJECT_KEYS[i],true))}">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</button>`).join('');
  const links=STORY_PINS[mode].map(([x,y,tx,ty],i)=>i===5&&!s.draft?'':`<path d="M${x} ${y}L${tx} ${ty}"/>`).join('');
  $('#pins').insertAdjacentHTML('afterbegin',`<svg class="pin-links" viewBox="0 0 1000 580" aria-hidden="true">${links}</svg>`);
  const tools=StoryInteractions.availableTools(s,mode);
@@ -205,11 +215,12 @@ function render(){
   const detail=objectDetail(key),tag=targetTag(key);
   return `<button data-object="${key}" class="${targetState(key)}${tools.includes(key)?' scene-tool':''}" aria-label="${esc(objectLabel(key))}" ${key==='helper'&&!s.draft?'disabled':''}><b aria-hidden="true">${sceneObjectIcon(key==='policyConsole'?'console':key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
  }).join('');
- $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object));
+ $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A perfectly ordinary mission.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
  $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Pip'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
- $('#next-title').textContent=m[0];$('#next-text').textContent=m[1];$('#next').textContent=selected?'Put away and continue':s.finished?'See my ending':m[0];
+ $('#next-title').textContent=selected?'Put away and continue':s.finished?'See my ending':m[0];
+ $('#next-text').textContent=selected?use.instruction:m[1];
  const items=inventory();$('#pocket-count').textContent=String(items.length)+(items.length===1?' ITEM':' ITEMS');
  $('#inventory').innerHTML=items.map(([id,icon,name,detail])=>`<button class="item ${selected===id?'selected':''}" data-item="${id}" aria-pressed="${selected===id}"><span aria-hidden="true">${icon}</span><span>${esc(name)}<small>${selected===id?(use.targets.length?'✓ Selected · choose Use here':'✓ Selected · reference item'):esc(detail)}</small></span></button>`).join('');
  $$('[data-item]').forEach(b=>b.onclick=()=>selectPocket(b.dataset.item));
@@ -333,7 +344,15 @@ function showCredential(){
 }
 
 function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):teen()?perform('collect-source'):showSourceTool();case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
-function interact(key){speakingObject=key;if(!state().started)return showIntro();if(selected)return useItem(key);if(stage()==='checks'&&key===move()[2])return showChecks();if(!teen()&&key==='brief'&&['draft-approval','approval'].includes(stage()))return showReviewer();return ({parent:showParent,phone:showPhone,laptop:showLaptop,brief:teen()?showBrief:showInbox,workOrder:showBrief,policyConsole:showPolicyConsole,notebook:showNotebook,helper:showHelper,source:showSourceTool,reviewer:showReviewer,outside:showPrivate,changes:showChanges})[StoryInteractions.objectView(state(),mode,key)]?.();}
+function interact(key,pin){
+ if(!state().started)return showIntro();
+ if(selected&&heldUse().targets.includes(key))return useItem(key);
+ if(!selected&&StoryInteractions.isStoryObject(mode,key,move()[2],pin))return nextMove();
+ speakingObject=!teen()&&key==='parent'?'missionControl':key;
+ show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>`,'About this object');
+ dialog.dataset.inspect='true';
+ syncSpeech();
+}
 function useItem(key){
  const use=heldUse();
  if(!use?.targets.includes(key)){toast(use?.instruction||'Choose an item first.');return;}
@@ -428,22 +447,6 @@ function showWorkspace(){
    [teen()?'Sign in and open my project':'Open the workspace',teen()?'Open the school app on the laptop.':'The workspace and CRM session are checked separately when the task closes.',()=>perform('open'),'good']
   ])}`,teen()?'FAMILY LAPTOP':'TASK WORKSPACE','open');
 }
-function showPhone(){
- if(!teen()&&!state().opened)return showWorkspace();
- speakingObject='phone';
- const s=state();
- if(s.ended)return showChecks();
- if(teen()&&s.message&&!s.delivered)return showChanges();
- show(teen()?'Homework mode is on.':'The task workspace is open.',
-  `<p>${teen()?'You can read school messages on this phone. Your project is on the family laptop.':'OpenShell gives Nova a place to work. The places Nova can reach and the actions each service permits are checked separately.'}</p><div class="actions">${button(teen()?'Go to the family laptop':'Open the current draft',s.opened?showDraft:showWorkspace)}</div>`,undefined,'open');
-}
-function showLaptop(){
- const s=state();
- if(s.ended)return showChecks();
- if(!s.opened)return showWorkspace();
- if(stage()==='source')return showSourceTool();
- return stage()==='send'?showSend():showDraft();
-}
 function showSourceTool(){
  const s=state();
  if(s.source&&!s.ended)return showSource();
@@ -465,15 +468,6 @@ function showCrmRead(action='collect-source'){
  ];
  show('Request '+records,
   `<p>Nova’s workspace sends this request through four steps.</p><ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol><div class="actions">${button(first?'Request the two records':'Request Alder Books',()=>perform(action))}${button('Inspect policy roles',()=>showPolicyConsole(()=>showCrmRead(action)),'secondary')}${button(first?'Back to the draft':'Back to the optional request',first?showDraft:()=>showExtension(),'secondary')}</div>`,undefined,'read-preview');
-}
-
-function showReviewer(){
- const s=state();
- if(stage()==='approval')return showFinalApproval();
- if(!s.message)return showDraftReview();
- speakingObject='reviewer';
- show(teen()?'Ms Patel’s school inbox':'Morgan’s review inbox',
-  `<p>${s.feedbackLegacy?'Here is the feedback saved with the draft.':teen()?'“I read your draft. You could end with a sentence about what changed.”':'“I read your draft. Could you make the opening a little shorter?”'}</p><div class="actions">${!s.delivered?button(teen()?'Read the feedback on my draft':'Read Morgan’s feedback',showMinor):''}${button('Back to the room',close,'secondary')}</div>`,undefined,'feedback');
 }
 
 function showSource(){
@@ -697,18 +691,12 @@ function showSend(){
  show(matches?'Ready to send the approved copy?':'The send needs another look.',`${shareWording(approval,actual)}<p>${esc(explanation)}</p>${shareComparison(approval,actual)}<details class="debrief"><summary>Try a change after approval</summary>${choices(challenges)}</details>${choices([primary,...(matches?[edit]:[]),['Back to the draft','Read the report again.',showDraft]])}`,'CRM','send-preview');
 }
 function showDelivery(){speakingObject='laptop';const s=state(),e=episode();show(teen()?'Ms Patel has your project.':'Morgan has the handover.',`<div class="reward" aria-hidden="true">✦</div><div class="receipt"><b>${esc(e.file)} delivered</b><p class="address">${esc(e.to)}</p><p>${s.extensionAdded?(teen()?'The extra museum source and its credit are included.':'The handover includes Alder Books.'):teen()?'Your timeline is complete without the optional extra.':'Morgan has the two-account handover.'}</p></div><p>${teen()?'The school tab you opened at the start is still on the laptop. Your parent calls for dinner.':'The CRM service session from the start is still listed in the task ledger. The sponsor is ready to close the job.'}</p><div class="actions">${button(teen()?'Finish up before dinner':'Close out this job',showParent)}</div>`,'DELIVERY CONFIRMED','send');}
-function showNotebook(){speakingObject='notebook';const s=state();show(teen()?'A note for tomorrow-you.':'Task memory, with a source.',`<p>${teen()?'A place for tomorrow’s to-do list, a saved submission receipt, or a doodle while you think.':'Task memory preserves useful context. It cannot issue a mission or edit independent audit evidence.'}</p>${s.notes.length?`<div class="paper"><p>${esc(s.notes[0].text)}</p><p class="source-line">Source: submission/delivery receipt · ordinary note</p></div>`:''}${choices([...(s.delivered&&!s.ended&&!s.notes.length?[[teen()?'Keep the submission receipt with a note':'Save the delivery receipt with context','Only after actual delivery.',()=>perform('write-note'),'good']]:[]),[teen()?'Sketch the little plant':'Inspect the diagnostic light','An optional discovery.',()=>perform('discover',{id:'plant'})],[teen()?'Look at the railway poster':'Inspect the service map','Something useful for a title or a question.',()=>perform('discover',{id:'poster'})],[teen()?'Read my evening notes':'Open the casebook',teen()?'Tonight’s plan and what you chose.':'Your agreement and choices so far.',showCasebook]])}`,teen()?'A PAGE IN YOUR NOTEBOOK':'MEMORY IS NOT PERMISSION','notebook');}
 function checkText(layer){
  const s=state(),c=s.containment;
  return ({pass:teen()?'Homework screen time is over. Your school account is still yours for tomorrow.':'New governed requests are denied under the revoked delegation.',device:teen()?'The phone is locked. The separate school session needs its own check.':'The OpenShell controller confirms a stopped runtime. It cannot vouch for an existing CRM connection.',signin:!c.controllerReachable?(teen()?'The school app won’t load. Try again when it is responding; you haven’t confirmed sign-out yet.':'Controller unreachable. Containment is unverified; no reliable status result is available.'):s.checks.includes('signin')?(teen()?'Quick sign-in is off for the family laptop. The school app now asks you to sign in again.':'The credential is revoked, this service session is closed, and this repeat status read is denied. Coverage is limited to the tested route.'):c.sessionClosed?(teen()?c.credentialRevoked?'The tab is signed out and quick sign-in is off. Check the school app once more.':'The tab is signed out. Turn off quick sign-in for this laptop too, then try the school app again.':'The session is closed. Confirm credential revocation and repeat the test.'):(teen()?'Your phone is locked, but the school project still opens on the laptop.':'The task service session still answers, despite the stopped runtime.'),queue:!s.queueScheduled?(s.checks.includes('queue')?(teen()?'No reminder was scheduled, and the school app confirms there is no waiting send.':'No follow-up was queued; inspection confirms no pending operation for this mission.'):(teen()?'You did not schedule a reminder. Check that no send is waiting.':'You did not queue a follow-up. Inspect to confirm the mission queue is empty.')):s.checks.includes('queue')?(teen()?'No message is waiting. You cancelled the reminder; your project is still with Ms Patel.':'The queue is clear. The cancelled follow-up stays stopped; earlier delivery remains complete.'):c.queueCancelled?(teen()?'The reminder is cancelled. Check the outbox to make sure it has gone.':'The queued follow-up is cancelled. Inspect again to verify the result.'):(teen()?'Your reminder to Ms Patel is still waiting. The project itself has already arrived.':'A follow-up is waiting to send. The approved report was already delivered.')})[layer];
 }
-function showChecks(){
- const s=state();
- if(!s.ended)return showParent();
- if(s.finished)return showEnding();
- speakingObject='laptop';
- const c=s.containment,alex=teen();
- const routeChecked=s.checks.includes('signin');
+function closingStep(s,alex){
+ const c=s.containment,routeChecked=s.checks.includes('signin');
  const basicsChecked=s.checks.includes('pass')&&s.checks.includes('device')&&(s.queueScheduled||s.checks.includes('queue'));
  let title=alex?'Before you leave the laptop…':'Check access after the workspace stops.';
  let next;
@@ -736,6 +724,16 @@ function showChecks(){
   title=alex?'Project sent. Ready for dinner.':'The tested route is closed.';
   next=[alex?'Tell my parent I’m done':'Finish the mission','',()=>perform('finish'),'good'];
  }
+ return {title,next};
+}
+function showChecks(){
+ const s=state();
+ if(!s.ended)return showParent();
+ if(s.finished)return showEnding();
+ speakingObject='laptop';
+ const c=s.containment,alex=teen();
+ const routeChecked=s.checks.includes('signin');
+ const {title,next}=closingStep(s,alex);
  speakingObject=StoryInteractions.closureSource(s,mode);
  const confirmed=alex?'Your parent calls for dinner. Your phone is put away and Ms Patel has your project.':'Morgan has the handover. OpenShell stopped Nova’s workspace.';
  const signIn=alex&&routeChecked?'<div class="receipt"><b>School app</b><p>Sign in to open your project.</p></div>':'';
@@ -759,7 +757,7 @@ function novaDebrief(s){
   +'</ul><p class="sources"><a href="https://blog.iamidentity.ai/blog/ai-agent-not-a-secret-manager/" target="_blank" rel="noopener noreferrer">Credential custody</a> · <a href="https://blog.iamidentity.ai/blog/litellm-breach-standing-credentials/" target="_blank" rel="noopener noreferrer">Credential lifetime case study</a> · <a href="https://blog.iamidentity.ai/blog/agent-policy-lifecycle/" target="_blank" rel="noopener noreferrer">Policy review and drift</a></p>';
 }
 function showEnding(){if(!state().finished)return nextMove();const s=state(),e=episode();if(teen())return showReference(s.ending?.title||'Ready for dinner.',`<div class="reward" aria-hidden="true">✦</div><p>${esc(s.ending?.text||'Ms Patel has your project. The laptop is signed out and your phone is put away.')}</p><ul class="route-list"><li><b>${s.minorChoice==='added'?'A stronger final sentence':'You kept your original wording'}</b><br>Your timeline uses your own notes and the museum website.</li><li><b>${s.extensionAdded?'You asked before opening another source':s.extensionOmitted?'You decided you had enough':'You finished without the optional extra'}</b><br>${s.extensionAdded?esc(s.extraSource==='museum-photo'?'The station photo is included, with its credit.':'One detail from the museum’s YouTube video is included, with its credit.'):s.extensionOmitted?'Your parent said yes, but you left the extra source unopened.':'The timeline already met the assignment.'}</li><li><b>Jamie’s notes stayed private</b><br>Ms Patel received your own project.</li><li><b>${s.proof==='helper'?'Sam gave it a final read':'You checked it yourself'}</b><br>${esc(e.file)} sent to your teacher.</li><li><b>Everything put away</b><br>The school app asks you to sign in again. Your phone is on the counter.${s.queueScheduled?' You cancelled the reminder before it sent.':''}</li></ul><details class="debrief"><summary>What did tonight’s choices change?</summary><p>You could improve the writing with the sources you had, ask before opening something new, and say no to sharing other people’s notes. Locking your phone didn’t sign you out of the family laptop.</p><details><summary>Show the security connection</summary>${protocolHTML(CLOSING_PROTOCOL)}</details></details><div class="actions">${button('Play Nova’s mission',()=>switchMode('agent'))}${button('Start Alex’s evening again',restart,'secondary')}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}${button('Look around the room',close,'secondary')}</div><p class="small-print">A fictional story. No real messages, videos or school accounts are connected.</p>`,'ALEX’S EVENING');showReference(s.ending?.title||'Task complete.',`<div class="reward" aria-hidden="true">✦</div><p>${esc(s.ending?.text||'The task is complete and its tested access is closed.')}</p>${s.legacyRoute?'<div class="receipt"><b>Earlier route preserved</b><p>This ending is from the earlier story. Start the revised story to play the fresh opening and new change choices.</p></div>':''}<ul class="route-list">${s.legacyRoute?'':`<li><b>${s.minorChoice==='added'?'A small edit within the agreement':'The smaller wording kept'}</b><br>${s.minorChoice==='added'?teen()?'Your new sentence used the same railway notes and source.':'The document changed without expanding the mission.':'The optional edit was left out.'}</li><li><b>${s.extensionAdded?'A genuine expansion approved and used':s.extensionOmitted?'An approved addition left unused':'The smaller task completed'}</b><br>${s.extensionAdded?(teen()?'You asked your parent before opening the extra museum source.':'Priya approved Alder Books before Nova opened its record.'):s.extensionOmitted?'The additional access was approved, but no extra material was read or included.':'No extra app or customer permission was needed.'}</li><li><b>Private notes stayed out</b><br>Morgan received the summary. The meeting notes stayed in the customer records app.</li>`}<li><b>${esc(e.file)} delivered</b><br>${esc(e.to)} · ${s.proof==='helper'?esc(e.helper)+' helped with only the file.':'You reviewed the file yourself.'}</li><li><b>The actual loose ends were checked</b><br>${s.queueScheduled?'Your chosen follow-up was cancelled and verified.':'You chose no follow-up; the queue was confirmed empty.'} The task session opened at the start is closed.</li></ul><details class="debrief"><summary>Build, authorize and resist</summary>${novaDebrief(s)}<details><summary>Revocation protocols</summary>${protocolHTML(CLOSING_PROTOCOL)}</details></details><div class="actions">${button(teen()?'Play Nova’s mission':'Play Alex’s story',()=>switchMode(teen()?'agent':'teen'))}${button('Start Nova’s story again',restart,'secondary')}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}${button('Explore the room',close,'secondary')}${button('Which control do we need?',()=>showBuyerGuide(true),'secondary')}${button('Technical product map',showProductMap,'secondary')}</div><p class="small-print">Fictional local simulation. No real messages or security services are connected.</p>`,'YOUR ENDING · '+e.name.toUpperCase());}
-function showGuide(){showReference('Start a task. Handle a change. Finish it.',`<p>Read the new assignment or sponsor request, agree on the needed access, and make a useful first draft. Send the sourced first draft for feedback. Nova needs a separate exact approval for that review copy. Replies arrive after its confirmed delivery; the final version is submitted later.</p><p><b>Three different changes.</b> A small edit can fit the current agreement. A new app or customer can need an authorized amendment. Private notes can remain prohibited even after that amendment.</p><p><b>Your route matters.</b> Accept or keep the smaller wording. Ask for the optional addition or finish without it. Work alone or ask for file-only help. A reminder is optional and appears in the closing queue only if you schedule it.</p><p><b>Refusal is useful.</b> An ordinary denied request does not suspend the job. Deliberately trying another path around a known refusal triggers review. You can recover under the current task limits.</p><p><b>Finish the actual task.</b> Alex submits ordinary homework directly through the school app. Nova’s business share needs exact human approval. Then close the service session you opened earlier, disable only task-scoped access, and check any pending follow-up.</p><p>Choose labelled objects or use the next-move button. Conversations appear as speech bubbles inside the room; the highlighted person or object is speaking. Choices stay below the bubble text. Technical reference screens open separately. Matching icons identify objects. A filled icon and Next label mark the next task. When you select a pocket item, amber Use here targets show where that item works; reference items have no highlighted destination. Pocket items can be inspected and used on relevant objects. Tab and Enter work; Escape closes dialogue. Reading and exploring have no countdown. Expand the short note beneath the choices for an explanation and a source. After a decision you can also step through its request trace.</p><div class="actions">${button(state().started?'Back to the room':'Back to the first screen',state().started?close:showIntro)}</div>`,'HOW TO PLAY');}
+function showGuide(){showReference('Start a task. Handle a change. Finish it.',`<p>Read the new assignment or sponsor request, agree on the needed access, and make a useful first draft. Send the sourced first draft for feedback. Nova needs a separate exact approval for that review copy. Replies arrive after its confirmed delivery; the final version is submitted later.</p><p><b>Three different changes.</b> A small edit can fit the current agreement. A new app or customer can need an authorized amendment. Private notes can remain prohibited even after that amendment.</p><p><b>Your route matters.</b> Accept or keep the smaller wording. Ask for the optional addition or finish without it. Work alone or ask for file-only help. A reminder is optional and appears in the closing queue only if you schedule it.</p><p><b>Refusal is useful.</b> An ordinary denied request does not suspend the job. Deliberately trying another path around a known refusal triggers review. You can recover under the current task limits.</p><p><b>Finish the actual task.</b> Alex submits ordinary homework directly through the school app. Nova’s business share needs exact human approval. Then close the service session you opened earlier, disable only task-scoped access, and check any pending follow-up.</p><p>Use the Next button or the highlighted object for the current step. Other objects open a short description. Conversations appear as speech bubbles inside the room. Choices stay below the bubble text. Technical reference screens open separately. Matching icons identify objects. The highlighted Next object opens the choices for the current task. When you select a pocket item, amber Use here targets show where that item works; reference items have no highlighted destination. Pocket items can be inspected and used on relevant objects. Tab and Enter work; Escape closes dialogue. Reading and exploring have no countdown. Expand the short note beneath the choices for an explanation and a source. After a decision you can also step through its request trace.</p><div class="actions">${button(state().started?'Back to the room':'Back to the first screen',state().started?close:showIntro)}</div>`,'HOW TO PLAY');}
 function switchMode(next,launch=false){
  close();clearTimeout(toast.timer);$('#toast').classList.remove('visible');$('#toast').textContent='';
  mode=next;selected=null;render();
@@ -802,7 +800,7 @@ $('#architecture').onclick=()=>showArchitecture();
 $('#next').onclick=nextMove;$('#guide').onclick=showGuide;$('#cluebook').onclick=showCasebook;$('#restart').onclick=restart;$('#close-dialog').onclick=close;
 $$('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));
 $('#sound').onclick=()=>{sound=!sound;render();if(sound)ping();};
-$('#hint').onclick=()=>{if(selected)return toast(heldUse().instruction);const key=stage();if(hintStage!==key){hintStage=key;hintCount=0;}const hints=teen()?(ALEX_HINTS[key]||['Try the next step below the room.']):key==='changes'?['New work appears on the request panel, separate from the runtime console.','Choose Request panel to handle the edit, optional third customer and private-note request.']:STORY_HINTS[key]||['Use the next-move button to continue this story.'];toast(hints[Math.min(hintCount++,hints.length-1)]);};
+$('#hint').onclick=()=>{if(selected)return toast(heldUse().instruction);const key=stage();if(hintStage!==key){hintStage=key;hintCount=0;}const hints=teen()?(ALEX_HINTS[key]||['Use the Next action above the room.']):key==='changes'?['The Work inbox has the new requests.','Open the highlighted Work inbox or choose Next to handle the requests.']:STORY_HINTS[key]||['Use the Next action above the room.'];toast(hints[Math.min(hintCount++,hints.length-1)]);};
 new ResizeObserver(syncSpeech).observe($('.scene-frame'));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog.open&&!dialog.classList.contains('is-reference')){e.preventDefault();close();}});
 dialog.addEventListener('cancel',e=>{e.preventDefault();close();});

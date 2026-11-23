@@ -69,6 +69,13 @@
 .scene-speech .portrait{background:#ffffff0a;border-color:var(--accent)}
 .scene-speech h2{font-size:22px}.scene-speech p:last-child{font-size:16px;line-height:1.6;color:var(--ink)}
 .scene-frame{scroll-margin-top:12px}.scene-frame.has-conversation{overflow:visible}
+#scene-guide{padding:5px 12px 7px}
+.scene-next{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;min-height:54px;text-align:left;padding:9px 12px;background:var(--soft);color:var(--ink);border:1px solid var(--accent);border-radius:10px}
+.scene-next .eyebrow{color:var(--accent);margin:0}
+.scene-next strong,.scene-next small{display:block;line-height:1.35}
+.scene-next small{font-size:12px;color:var(--muted);margin-top:2px}
+.scene-next>span:last-child{font-size:24px;color:var(--accent);line-height:1}
+.journal .pocket:first-of-type{margin-top:0}
 .has-conversation .scene-canvas{width:min(100%,55.17dvh);max-height:none;margin:0 auto}
 .has-conversation #scene-footnote{display:none}
 .scene-canvas{max-height:none}

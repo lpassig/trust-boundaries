@@ -104,14 +104,18 @@ test('Sam’s mobile marker is offset far enough to leave his face visible',()=>
  assert(Math.hypot(x-747,y-329)*scale>28);
 });
 
-test('the phone and request panel keep opening feedback after every decision is settled',()=>{
+test('only the current story target and its artwork pin open story choices',()=>{
  for(const mode of ['teen','agent']){
   const inbox=mode==='teen'?'phone':'brief';
-  assert.equal(I.objectView(sourced(mode),mode,inbox),inbox);
-  assert.equal(I.objectView(feedback(mode),mode,inbox),'changes');
-  assert.equal(I.objectView(settled(mode),mode,inbox),'changes');
-  assert.equal(I.objectView({...settled(mode),delivered:true},mode,inbox),inbox);
+  const next=I.nextObject(mode,'changes','phone');
+  assert.equal(I.isStoryObject(mode,inbox,next),true);
+  assert.equal(I.isStoryObject(mode,'helper',next),false);
+  assert.match(I.objectDescription(mode,'helper'),/proofread|formats/);
  }
+ assert.equal(I.isStoryObject('agent','brief','workOrder',true),true);
+ assert.equal(I.isStoryObject('agent','brief','workOrder'),false);
+ assert.equal(I.isStoryObject('agent','policyConsole','source'),false);
+ assert.match(I.objectDescription('agent','policyConsole'),/policy decision point/);
 });
 
 test('opening the untrusted instruction never supplies amendment authority or changes the report',()=>{

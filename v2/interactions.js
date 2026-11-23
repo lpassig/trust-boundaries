@@ -7,12 +7,36 @@ const StoryInteractions = (() => {
   if(mode==='agent'&&['draft-approval','approval'].includes(stage))return 'reviewer';
   return fallback;
  }
- function objectView(s,mode,key){
-  if(mode==='agent'&&key==='policyConsole')return key;
-  if(s.paused)return 'parent';
-  if(s.message&&!s.delivered&&(mode==='teen'&&key==='phone'||mode==='agent'&&key==='brief'))return 'changes';
-  return key;
+ function isStoryObject(mode,key,next,pin=false){
+  return key===next||pin&&key===speechSource(mode,next).object;
  }
+ const objects={
+  teen:{
+   parent:'Your parent agrees on which apps you can use and when homework time ends.',
+   phone:'Your phone carries school and class-chat messages. Homework mode controls which extra apps and links open.',
+   laptop:'The family laptop holds your timeline in the school app. The school app checks which files you can share and where they go.',
+   brief:'Ms Patel’s assignment card says what to make and which source to credit.',
+   notebook:'Your notebook holds dates, reminders and notes about the work you did.',
+   helper:'Sam can proofread the timeline you share with him.',
+   source:'The Riverside Museum website has the dates for your railway timeline.',
+   reviewer:'Ms Patel sets the history assignment and responds in the school inbox after receiving your draft.',
+   outside:'Jamie’s forwarded message is in the class group chat. The school assignment is the place to check what Ms Patel asked for.'
+  },
+  agent:{
+   parent:'The customer mission service records the sponsor’s approved scope, current version and recipient.',
+   phone:'NVIDIA OpenShell runs Nova’s workspace and governs which files and network destinations it can reach.',
+   laptop:'The CRM is the resource policy enforcement point (PEP). It checks the requested operation and controls whether data leaves.',
+   brief:'The work inbox carries proposals and replies. The mission service records approved scope separately.',
+   notebook:'The task notebook keeps ordinary context and the source of delivery receipts.',
+   helper:'Pip formats the current report under a file-only grant and a separate identity.',
+   workOrder:'The work order names the task, sponsor and recipient. Its scope becomes active when the mission service records approval.',
+   policyConsole:'The policy information point supplies trusted facts. The policy decision point evaluates the request. The policy enforcement point applies the decision.',
+   source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
+   reviewer:'Morgan uses the review inbox for feedback and approval of a specific copy for a specific recipient.',
+   outside:'Luca uploaded this attachment. The document supplies content. The customer mission and CRM policy set the scope.'
+  }
+ };
+ function objectDescription(mode,key){return objects[mode][key];}
  function availableTools(s,mode){
   return [
    ...(mode==='agent'&&s.started?['workOrder','policyConsole']:[]),
@@ -134,6 +158,6 @@ const StoryInteractions = (() => {
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,objectView,availableTools,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
+ return {nextObject,isStoryObject,objectDescription,availableTools,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;
