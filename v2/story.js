@@ -251,11 +251,11 @@ const NOVA_MOVES = {
   ],
   "draft": [
     "Build the first outline",
-    "Set up the headings before opening the customer records."
+    "Set up the headings before requesting account updates."
   ],
   "source": [
-    "Open the customer records",
-    "Read the records for Harbor Bikes and Pine Studio."
+    "Request customer records",
+    "Send a read request for Harbor Bikes and Pine Studio."
   ],
   "draft-approval": ["Approve the review copy", "Let Morgan see which draft will be sent and who will receive it."],
   "draft-send": ["Send the approved review copy", "The CRM rechecks this exact draft share; final delivery comes after feedback."],

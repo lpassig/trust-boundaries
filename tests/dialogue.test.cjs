@@ -41,6 +41,14 @@ test('Pip remains drawn once, across messages, review, stopped runtime and task 
   assert.match(svg,/data-face-x="839" data-face-y="385"/);
  }
 });
+test('an earlier Nova discovery resumes with Pip’s offer to format the draft',()=>{
+ const original=R.act(R.fresh(),'agent','begin').state;
+ const saved={...original,last:{title:'A resilient little plant.',speaker:'Nova',action:'discover',kind:'story'}};
+ const restored=R.hydrate(saved,'agent');
+ assert.equal(restored.last.speaker,'Pip');
+ assert.match(restored.last.text,/tidy the headings/);
+ assert.equal(restored.started,true);
+});
 test('thoughts, independent resource responses and conversations stay attributable',()=>{
  assert.equal(I.eventSource('teen','Alex'),'hero');assert.equal(I.eventSource('agent','Nova'),'hero');
  assert.equal(I.eventSource('teen','Teacher'),'reviewer');assert.equal(I.eventSource('agent','CRM resource PEP'),'laptop');

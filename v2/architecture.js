@@ -26,13 +26,13 @@ const ArchitectureReference = (() => {
    sources:[['Model integration and routing','https://www.ibm.com/products/watsonx-orchestrate/developers'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
   },
   mcpGateway:{
-   name:'MCP gateway',kind:'Optional integration pattern',
+   name:'MCP gateway',kind:'Configured for Nova’s CRM reads',
    summary:'Can examine an agent’s tool call and apply configured policy before forwarding it to the MCP server.',
-   detail:'On the optional CRM route, it sits in front of the tool server. The CRM still decides whether to return this record or attach the requested file.',
+   detail:'Nova’s demo uses a gateway in front of the CRM MCP server. Deployments can also connect MCP clients directly to servers. The CRM owns the decision to return a record.',
    sources:[['Independent MCP gateway example','https://blog.iamidentity.ai/blog/mcp-agent-gateway/']]
   },
   mcpTool:{
-   name:'CRM tool via Model Context Protocol (MCP)',kind:'Protocol and configured tool',
+   name:'CRM MCP server',kind:'Configured tool server',
    summary:'The MCP server exposes an operation Nova can call to fetch approved account records.',
    detail:'The tool carries the request to CRM. The current work order and customer data policy determine which records CRM can return.',
    sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools']]
@@ -59,9 +59,9 @@ const ArchitectureReference = (() => {
    steps:[
     ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
     ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
-    ['openshell','Open the governed workspace and permit the customer records route.'],
-    ['mcpGateway','Optional route: a configured tool gateway checks and forwards the request.'],
-    ['mcpTool','In the MCP example, the server exposes the CRM read to Nova. CRM still needs to authorize the actual operation.'],
+    ['openshell','Nova’s MCP client sends the read request from inside the governed workspace.'],
+    ['mcpGateway','The configured MCP gateway checks that the tool call can proceed and forwards it to the CRM MCP server.'],
+    ['mcpTool','The server exposes the CRM read tool and calls the customer records service.'],
     ['vault','For the configured source path, the broker uses a Vault-scoped credential. CRM owns its separate service session.'],
     ['crm','Check the actual read of Harbor Bikes and Pine Studio against current task and resource policy before returning records.']
    ],

@@ -27,7 +27,7 @@ Alex and Nova can compare an extra instruction with an independent source. Alex 
 
 ### Architecture explorer
 
-Choose **Architecture** alongside Alex and Nova or open the [reference directly](https://lpassig.github.io/trust-boundaries/#architecture). Browse the product and responsibility map, six request sequences, and examples of the threats each story teaches. This reference has no progress state. It distinguishes configured products, customer systems and proposed integrations. The model and tool connections section includes IBM watsonx Orchestrate AI Gateway, the MCP tool, and an optional MCP gateway. Nova’s request trace marks the MCP tool path as an example and shows the CRM decision separately.
+Choose **Architecture** alongside Alex and Nova or open the [reference directly](https://lpassig.github.io/trust-boundaries/#architecture). Browse the product and responsibility map, six request sequences, and examples of the threats each story teaches. This reference has no progress state. It distinguishes configured products, customer systems and proposed integrations. The model and tool connections section includes IBM watsonx Orchestrate AI Gateway, the MCP tool, and the gateway configured for Nova’s example CRM reads. The playable read shows the MCP client, gateway, server and CRM. The request trace shows the CRM decision separately.
 
 ### Technical journey
 
@@ -51,7 +51,7 @@ Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compat
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 88 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, 11 dialogue and 32 technical-flow and one architecture test bring the current game’s total to **169**.
+- `tests/v2.test.cjs`: 88 tests including the full route matrix and key security/story invariants. The 13 interaction, 24 story-flow, 12 dialogue and 34 technical-flow and one architecture test bring the current game’s total to **172**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

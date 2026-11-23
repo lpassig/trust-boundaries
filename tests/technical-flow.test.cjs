@@ -6,6 +6,27 @@ function start(mode='agent'){let s=R.act(R.fresh(),mode,'begin').state;for(const
 function sourced(){let s=start();for(const a of ['collect-source','attach-source'])s=run(s,a);return s;}
 function feedback(){let s=sourced();for(const a of ['approve-draft','send-draft','verify-contact'])s=run(s,a);return s;}
 function ready(){let s=feedback();for(const a of ['keep-minor','decline-extension','decline-private','proof-self','approve'])s=run(s,a);return s;}
+test('Nova’s CRM read follows the MCP client, gateway and server before CRM authorization',()=>{
+ const read=act(start(),'collect-source');
+ assert.equal(read.event.request.tool_route,'crm-mcp-gateway');
+ assert.equal(read.event.decision.result,'permit');
+ const nodes=T.build(read.state,'agent').nodes;
+ const roles=['Nova’s MCP client · NVIDIA OpenShell','MCP gateway','CRM MCP server'];
+ const startIndex=nodes.findIndex(n=>n.role===roles[0]);
+ assert.deepEqual(nodes.slice(startIndex,startIndex+3).map(n=>n.role),roles);
+ assert(nodes.findIndex(n=>n.label==='Enforce at the resource')>startIndex+2);
+ assert.equal(act(start('teen'),'collect-source').event.request.tool_route,undefined);
+});
+test('Alder Books uses the same route and CRM can deny or permit the read',()=>{
+ const s=feedback(),denied=act(s,'try-extension');
+ assert.equal(denied.event.request.tool_route,'crm-mcp-gateway');
+ assert.equal(denied.event.decision.result,'deny');
+ assert.equal(denied.state.extensionAdded,false);
+ const approved=act(run(run(s,'request-extension'),'resolve-extension'),'add-extension');
+ assert.equal(approved.event.request.tool_route,'crm-mcp-gateway');
+ assert.equal(approved.event.decision.result,'permit');
+ assert.equal(approved.state.extensionAdded,true);
+});
 for(const control of ['mission','principal','agent','resource']){
  test(`source read rechecks the current ${control} record limit before fetching`,()=>{
   const s=start();(control==='mission'?s.mission:s.authority[control]).records=['123'];const before=s.fileRevision,r=act(s,'collect-source');
