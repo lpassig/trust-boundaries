@@ -83,7 +83,9 @@ const DecisionLab = (() => {
   const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]};
   if(trial.route==='allowed'){
    const check=commit(begin(trial.missionVersion===1?'scope':'approved','runtime-'+(trial.reads.length+1),recordId));
-   Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,records:check.outcome.recordIds});
+   const {requestId,decisionId,receipt}=check.outcome;
+   Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,
+    records:check.outcome.recordIds,evidence:{requestId,decisionId,receipt}});
   }
   return {...trial,reads:[...trial.reads,attempt]};
  }

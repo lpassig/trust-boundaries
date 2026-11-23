@@ -2729,7 +2729,9 @@ const DecisionLab = (() => {
   const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]};
   if(trial.route==='allowed'){
    const check=commit(begin(trial.missionVersion===1?'scope':'approved','runtime-'+(trial.reads.length+1),recordId));
-   Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,records:check.outcome.recordIds});
+   const {requestId,decisionId,receipt}=check.outcome;
+   Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,
+    records:check.outcome.recordIds,evidence:{requestId,decisionId,receipt}});
   }
   return {...trial,reads:[...trial.reads,attempt]};
  }
@@ -2934,7 +2936,11 @@ function showActionRefusal(event){
  const continuation=paused?showParent:action==='try-private'?showPrivate:action==='try-extension'?showExtension:nextMove;
  const label=paused?(teen()?'Talk to my parent':'Ask Priya to review'):action==='try-private'?(teen()?'Back to Jamie’s message':'Back to the source note'):'Continue';
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
- show(event.title,`<p>${esc(event.text)}</p><div class="actions">
+ const note=action==='try-private'&&event.decision?.result==='deny'
+  ?teen()?'The school sets the sharing rule. The school app applies it and sent nothing. Your homework agreement still lets you finish your own project.'
+   :'The customer policy service evaluated the attachment. The approved mission covers the summary, and CRM applies the separate rule that protects private notes.'
+  :'';
+ show(event.title,`<p>${esc(event.text)}</p>${note?`<div class="request-result"><b>Who applied the rule?</b><p>${esc(note)}</p></div>`:''}<div class="actions">
   ${button(label,continuation)}
   ${state().last===event?button(teen()?'See what happened':'Follow this request',()=>showRequestTrace(event,()=>showReply(event)),'secondary'):''}
   ${button('Back to the room',close,'secondary')}
@@ -3260,16 +3266,19 @@ function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
 const accessChecks={
  credential:{symptom:'The old password or key still lets me sign in',question:'Can the connector sign in again?',
   hint:'Try a fresh connection with the old password or key after the job ends.',owner:'Credential issuer · HashiCorp Vault in this example',
-  check:'Revoke the credential’s lease and try a fresh sign-in with the same credential. Look for a refusal.',pilot:'vault'},
+  check:'Confirm a fresh sign-in works with a test credential, revoke its lease, then try a fresh sign-in with the same credential. Look for a refusal.',
+  evidence:'Save the lease ID, the revocation result and the target’s before-and-after sign-in results. Keep the credential value out of the record.',pilot:'vault'},
  session:{symptom:'An app that was already open still responds',question:'Does the app that was already open still respond?',
   hint:'Try a status check in the existing session without signing in again.',owner:'App session owner · CRM in this example',
-  check:'Ask the app to close that exact session, then try the same status check again.',
+  check:'Confirm the existing test session responds. Ask the app to close that exact session, then verify that the same status request is refused.',
+  evidence:'Save the session reference, the app’s closure response and the result of the retest. If you cannot reach the app, record the check as unverified.',
   replay:{probe:'Check the existing session',close:'Close the CRM session',retry:'Restore CRM contact and close the session',retest:'Retest the old session',
    confirmed:'CRM acknowledged closure. Retest the same session to verify it.',unverified:'The CRM controller did not respond.',
    active:'CRM still responds in the existing session.',closed:'CRM refused the status read from the old session.'}},
  workspace:{symptom:'The agent is still running',question:'Is the agent’s workspace still running?',
   hint:'Ask the runtime operator to check the exact workspace used for the job.',owner:'Runtime operator · NVIDIA OpenShell in this example',
-  check:'Stop the named workspace and check its status again. Check pending work and open app sessions separately.',pilot:'openshell',
+  check:'Confirm the named test workspace is running, stop it and verify that it reports stopped. Check pending work and open app sessions separately.',
+  evidence:'Save the workspace generation, the operator’s stop result and a fresh status check for that generation. A missing status response leaves the stop unverified.',pilot:'openshell',
   replay:{probe:'Check workspace S-04',close:'Stop workspace S-04',retry:'Restore runtime contact and stop S-04',retest:'Verify workspace S-04 stopped',
    confirmed:'OpenShell acknowledged the stop. Check the named workspace again to verify it.',unverified:'The runtime controller did not respond.',
    active:'OpenShell reports that sandbox generation S-04 is still running.',closed:'The runtime status check confirmed that sandbox generation S-04 stopped.'}}
@@ -3284,13 +3293,14 @@ function showBuyerAccess(back,help=false){
   'ACCESS AFTER THE JOB');
 }
 function showBuyerAccessCheck(back,key,{credential='',closeout=DecisionLab.startCloseoutCheck()}={}){
- const {symptom,owner,check,pilot,replay}=accessChecks[key];
+ const {symptom,owner,check,evidence,pilot,replay}=accessChecks[key];
  const reopen=()=>showBuyerAccessCheck(back,key,{credential,closeout});
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
  const exercise=replay?buyerCloseoutReplay(replay,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next})):
   credentialComparison(StoryRules.buyerExample().sourceLease,credential,next=>showBuyerAccessCheck(back,key,{credential:next}));
  showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li></ul>
   <h3>Try it in the simulation</h3>${exercise}
+  <details class="debrief"><summary>Evidence to save</summary><p>${esc(evidence)}</p></details>
   <div class="actions">${button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
   ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
 }
@@ -3313,7 +3323,8 @@ function showBuyerActionScope(back){
  const reopen=()=>showBuyerActionScope(back);
  showReference('The agent can open the app but can see or do too much',`<p>Check the customer app’s action permissions. Nova can reach the customer records app (CRM). The assignment covers two accounts.</p>
   <ul class="route-list"><li><b>Who owns it</b><br>The app owner enforces the operation. The business owner sets the permitted task scope.</li>
-  <li><b>What to test first</b><br>On the same allowed route, check that an in-scope record comes back and an unapproved record is refused.</li></ul>
+  <li><b>What to test first</b><br>On the same allowed route, check that an in-scope record comes back and an unapproved record is refused.</li>
+  <li><b>Evidence to save</b><br>Keep the app’s two decisions and outcomes with the request IDs, requested record IDs and active scope version. Verify that the refused request returned no record.</li></ul>
   <details class="debrief"><summary>Technical details</summary><p>The CRM policy enforcement point (PEP) observes the actual operation and record. The customer policy decision point (PDP) checks them against the active mission. CRM enforces that decision at execution.</p></details>
   <div class="actions">${button('Test the record permission',()=>showRuntimeExercise(reopen,{scopeOnly:true}))}${button('Back to the buyer guide',back,'secondary')}</div>`,'BUYER GUIDE');
 }
@@ -3642,7 +3653,10 @@ function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntim
   <b>G-042 v${attempt.missionVersion} · ${attempt.recordId==='123'?'Harbor Bikes':'Alder Books'} read</b><br>
   ${attempt.runtime==='deny'?'OpenShell denied the network request. Neither Vault nor CRM was reached.'
    :attempt.crm==='rejected'?'OpenShell permitted the route. Vault issued a connector lease. CRM refused the record because the mission still excludes it.'
-   :`OpenShell permitted the route. Vault issued a connector lease. CRM checked the ${attempt.missionVersion===1?'current':'amended'} mission and returned the requested summary.`}</li>`).join('')}</ol>`:'';
+   :`OpenShell permitted the route. Vault issued a connector lease. CRM checked the ${attempt.missionVersion===1?'current':'amended'} mission and returned the requested summary.`}
+  ${scopeOnly&&attempt.evidence?`<details><summary>View simulated evidence for record ${esc(attempt.recordId)}</summary>
+   <p>Request <code>${esc(attempt.evidence.requestId)}</code><br>Decision <code>${esc(attempt.evidence.decisionId)}</code><br>
+   ${attempt.evidence.receipt?`Receipt <code>${esc(attempt.evidence.receipt)}</code>`:'No record returned or success receipt issued.'}</p></details>`:''}</li>`).join('')}</ol>`:'';
  const review=trial.proposal==='review'?`<div class="receipt"><b>OpenShell Policy Advisor · proposed rule</b>
   <p>Allow Nova’s approved MCP client to reach the configured CRM tool endpoint over HTTPS.</p>
   <p>The simulated Policy Prover risk check finds no extra methods or unrelated destinations in the proposal. An operator still reviews the change.</p></div>`:'';
@@ -3714,8 +3728,10 @@ function showCrmReadRefusal(event){
  const next=event.action==='collect-source'?showDraft:()=>showExtension();
  const pair=RequestTrace.compareCrmReads(state(),event);
  const back=()=>showCrmReadRefusal(event);
- show(event.title,`<p>${esc(event.text)}</p>${crmReadPath(event,back)}<div class="actions">
-  ${button('Continue',next)}${event.action==='try-extension'?button('What stopped this request?',()=>showRuntimeExercise(back),'secondary'):''}
+ const outsideScope=event.action==='try-extension';
+ const owner=outsideScope?'<div class="request-result"><b>Who applied the rule?</b><p>Priya approved the two-account task. The customer policy service checked Alder Books against that scope. CRM enforced the denial and returned no record.</p></div>':'';
+ show(event.title,`<p>${esc(event.text)}</p>${owner}${crmReadPath(event,back)}<div class="actions">
+  ${button(outsideScope?'Back to the Alder Books request':'Back to the report',next)}${outsideScope?button('What stopped this request?',()=>showRuntimeExercise(back),'secondary'):''}
   ${button('Follow this request',()=>showRequestTrace(event,back),'secondary')}
   ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,back),'secondary'):button('Try the authorization lab',()=>showDecisionLab(back),'secondary')}
  </div>`,'A PERMISSION CHECK');

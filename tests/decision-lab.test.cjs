@@ -67,9 +67,11 @@ test('a new network rule opens the route while the same read still needs a separ
  const allowed=Lab.decideNetworkProposal(proposal,true);
  assert.equal(allowed.missionVersion,1);
  const retried=Lab.tryRuntimeRead(allowed);
- assert.deepEqual(retried.reads.at(-1),{recordId:'789',missionVersion:1,runtime:'permit',vault:'permit',crm:'rejected',records:[]});
+ assert.deepEqual(retried.reads.at(-1),{recordId:'789',missionVersion:1,runtime:'permit',vault:'permit',crm:'rejected',records:[],
+  evidence:{requestId:'lab-runtime-2-read',decisionId:'lab-runtime-2-decision',receipt:null}});
  const amended=Lab.approveRuntimeMission(retried);
- assert.deepEqual(Lab.tryRuntimeRead(amended).reads.at(-1),{recordId:'789',missionVersion:2,runtime:'permit',vault:'permit',crm:'committed',records:['789']});
+ assert.deepEqual(Lab.tryRuntimeRead(amended).reads.at(-1),{recordId:'789',missionVersion:2,runtime:'permit',vault:'permit',crm:'committed',records:['789'],
+  evidence:{requestId:'lab-runtime-3-read',decisionId:'lab-runtime-3-decision',receipt:'receipt-lab-runtime-3-read'}});
 });
 
 test('one open CRM route permits the approved account and denies the other until the mission changes',()=>{
@@ -85,6 +87,10 @@ test('one open CRM route permits the approved account and denies the other until
  assert.equal(denied.missionVersion,approved.missionVersion);
  assert.equal(denied.crm,'rejected');
  assert.deepEqual(denied.records,[]);
+ assert.notEqual(denied.evidence.requestId,approved.evidence.requestId);
+ assert(denied.evidence.decisionId);
+ assert.equal(denied.evidence.receipt,null);
+ assert(approved.evidence.receipt);
  const inScope=Lab.tryRuntimeRead(Lab.approveRuntimeMission(outside));
  assert.equal(inScope.reads.at(-1).crm,'committed');
  assert.deepEqual(inScope.reads.at(-1).records,['789']);
