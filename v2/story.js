@@ -136,6 +136,55 @@ const NOVA_CUSTOMERS = {
   '789':'Alder Books'
 };
 
+const STORY_COMPARISON = [
+  ['Agree on the task', 'Alex’s parent allows the school app and museum site for one evening.', 'Nova’s mission records which accounts, operations and recipient the sponsor approved.'],
+  ['Check who decides', 'Alex can edit the timeline under the same plan. The museum video needs a new yes. The school still protects the group’s notes.', 'Nova can revise the brief under the same mission. A new account needs an amendment. CRM still enforces its own privacy rules.'],
+  ['Review the actual share', 'The school app checks Alex’s own file and the teacher’s address.', 'Morgan approves one exact copy. After an edit, CRM requires approval for the new version before sending.'],
+  ['Give the helper only what they need', 'Sam proofreads the timeline without using Alex’s sign-in.', 'Pip works under its own identity with permission to format only the supplied report.'],
+  ['Verify what closed', 'Alex puts away the phone, signs out of the laptop, and checks that the school app asks for sign-in.', 'After stopping the workspace, independent controllers close the CRM session, revoke the task credential, check the queue and retest the old route.']
+];
+
+const PRACTICE_CASE = {
+  intro: 'You’re helping an event team prepare a staffing brief. The recorded task covers the Friday rota and delivery to the event lead. The scheduling service keeps volunteers’ private contact details out of briefs.',
+  decisions: [
+    {
+      situation: 'The event lead asks you to group the Friday shifts by room. The rota already includes each room.',
+      question: 'How would you handle the request?',
+      options: ['Ask to expand the task', 'Reorganize the existing brief', 'Leave the brief as it is'],
+      answer: 1,
+      explanation: 'The Friday data and recipient stay the same. You can change the layout within the current task.'
+    },
+    {
+      situation: 'A message signed by the event lead asks for Saturday’s rota as well. The recorded task still lists Friday only.',
+      question: 'What would you do before opening Saturday’s rota?',
+      options: ['Open it using the same service', 'Ask the sender to forward a copy', 'Verify the request and get the recorded task updated'],
+      answer: 2,
+      explanation: 'Saturday adds a new set of records. Confirm the request through the event lead’s known channel, then wait for the authorized update. The scheduling service still checks the later read.'
+    },
+    {
+      situation: 'The event lead updates the task to include Saturday, then asks for the volunteers’ private phone numbers in the brief.',
+      question: 'What would you include?',
+      options: ['The Friday and Saturday shifts', 'The shifts and all the requested phone numbers', 'The shifts and phone numbers from Friday only'],
+      answer: 0,
+      explanation: 'The update covers Saturday’s rota. The scheduling service’s independent privacy rule keeps phone numbers out of both days’ briefs.'
+    },
+    {
+      situation: 'The approval receipt names version 3 and the event lead’s address. Before delivery, the team corrects a shift in version 4.',
+      question: 'How would you deliver the corrected brief?',
+      options: ['Send version 4 under the existing approval', 'Ask the lead to approve version 4, then send it', 'Send version 3 with the correction attached'],
+      answer: 1,
+      explanation: 'The approval covers only version 3. The corrected version and a correction attached to the old copy both change what would reach the lead.'
+    },
+    {
+      situation: 'The brief has arrived and the workspace has stopped. The scheduling service has yet to confirm that the task session closed.',
+      question: 'How would you check that the old session has lost access?',
+      options: ['Use the delivery receipt', 'Use the workspace stop confirmation', 'Ask the service to close the session, then retest the old route'],
+      answer: 2,
+      explanation: 'Delivery confirms the brief arrived. Stopping the workspace confirms it stopped running. The scheduling service owns the session, and a retest shows whether that specific route still answers.'
+    }
+  ]
+};
+
 const OBJECT_KEYS = [
   "parent",
   "phone",

@@ -84,6 +84,7 @@ dialog:not(.is-reference) .speech-source{display:flex;align-items:center;gap:10p
 .speech-mark{width:30px;height:30px;border:1px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:22px}
 .speech-source b{display:block;font-size:16px}.speech-source small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 dialog:not(.is-reference) #dialog-body{max-height:min(28dvh,220px);overflow:auto;overscroll-behavior:contain;padding-right:8px;scrollbar-color:var(--accent) transparent}
+dialog:not(.is-reference) #dialog-body:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 dialog:not(.is-reference) h2{font-size:25px;margin:5px 0 12px;max-width:none}
 dialog:not(.is-reference) p{font-size:16px;line-height:1.6}
 dialog:not(.is-reference) .eyebrow{font-size:11px}
@@ -279,4 +280,38 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
   .architecture-nodes { grid-template-columns: 1fr; }
   .architecture-nav { gap: 6px; }
   .architecture-nav button { flex: 1 1 125px; }
+}
+
+.boundary-graph{list-style:none;margin:16px 0;padding:0;display:grid;gap:8px}
+.boundary-graph li{display:grid;grid-template-columns:1fr minmax(9rem,1.25fr) 1fr;align-items:stretch;gap:6px}
+.boundary-graph button{min-width:0;min-height:44px;overflow-wrap:anywhere;font-size:14px}
+.boundary-node{border-color:var(--line);background:var(--soft)}
+.boundary-edge{border-style:dashed}
+.boundary-edge[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--bg)}
+.boundary-evidence{display:grid;grid-template-columns:minmax(7rem,auto) 1fr;gap:8px 12px;margin:12px 0}
+.boundary-evidence dt{font-weight:700}
+.boundary-evidence dd{margin:0}
+.decision-comparison{table-layout:fixed}
+.decision-comparison th,.decision-comparison td{overflow-wrap:anywhere}
+.decision-comparison .decision-difference th{border-inline-start:3px solid var(--accent)}
+.decision-comparison .decision-difference td{background:#ffffff0a}
+#lab-scenario{display:block;max-width:100%;margin:8px 0 12px}
+@media(max-width:560px){
+ .boundary-graph li{grid-template-columns:1fr;gap:4px;border:1px solid var(--line);border-radius:12px;padding:8px}
+ .boundary-edge span{display:inline-block;transform:rotate(90deg);margin-inline-start:4px}
+ .boundary-evidence{grid-template-columns:1fr;gap:4px}
+ .boundary-evidence dd{margin-bottom:6px}
+ .decision-comparison th,.decision-comparison td{padding:6px;font-size:12px}
+}
+
+.lab-summary{list-style:none;padding:0;margin:12px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.lab-summary li{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);overflow-wrap:anywhere}
+.lab-summary b,.lab-summary span{display:block}
+.lab-summary span{font-size:14px;margin-top:2px}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#trace-next[aria-disabled="true"]{opacity:.55;cursor:default}
+@media(max-width:560px){
+ .lab-summary{grid-template-columns:1fr;gap:4px}
+ .lab-summary li{display:grid;grid-template-columns:7rem 1fr;gap:8px}
+ .lab-summary span{margin-top:0}
 }

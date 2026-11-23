@@ -72,7 +72,7 @@ const NOVA_PRODUCTS = [
   },
   {
     "id": "authorization",
-    "name": "Authorization decision service · proposed integration",
+    "name": "VAAS / proposed PDP",
     "role": "Evaluate the actual action supplied by the trusted CRM PEP",
     "how": "The proposed PDP evaluates PEP-observed action evidence against the current customer mission, identity constraints and resource rules. The resource PEP binds the decision to execution. AuthZEN is a candidate decision-exchange interface.",
     "limit": "This is a target architecture, not a verified deployed product API. AuthZEN 1.0 uses a Boolean decision; approval-required workflow, execution binding and richer status semantics need an explicitly documented application contract. Vault’s own policies remain independent.",
@@ -83,7 +83,7 @@ const NOVA_PRODUCTS = [
     ],
     "url": "https://openid.net/specs/authorization-api-1_0-final.html",
     "sourceLabel": "OpenID AuthZEN Authorization API 1.0",
-    "status": "Proposed PDP/PEP integration; no live authorization service"
+    "status": "VAAS names the proposed decision service in this example. The game simulates all decisions."
   },
   {
     "id": "openshell",
