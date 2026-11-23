@@ -7,7 +7,7 @@ function run(s,a,p={}){const r=act(s,a,p);assert(!['blocked','refused'].includes
 function sourced(mode){let s=R.act(R.fresh(),mode,'begin').state;for(const a of ['read-brief','ask-pass','open','prepare','collect-source','attach-source'])s=run(s,a,a==='ask-pass'?{scope:'task'}:{});return s;}
 function feedback(mode){let s=sourced(mode);if(mode==='agent')s=run(s,'approve-draft');return run(s,'send-draft');}
 function settled(mode){let s=feedback(mode);for(const a of ['keep-minor','decline-extension','decline-private'])s=run(s,a);return s;}
-const art=vm.createContext({});vm.runInContext(fs.readFileSync(require.resolve('../dist/art.js'),'utf8'),art);
+const art=vm.createContext({});vm.runInContext(fs.readFileSync(require.resolve('../assets/art.js'),'utf8'),art);
 for(const mode of ['teen','agent']){
  test(`${mode}: sourcing a local draft cannot produce teacher/reviewer feedback`,()=>{
   let s=sourced(mode);assert.equal(s.message,false);assert.equal(s.draftReview,null);assert.equal(s.delivered,false);

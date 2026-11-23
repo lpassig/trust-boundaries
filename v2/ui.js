@@ -77,7 +77,7 @@ function selectPocket(id){selected=selected===id?null:id;render();if(selected)to
 function render(){
  const s=state(),e=episode(),m=move(),c=chapter(),use=heldUse();document.body.classList.toggle('agent',!teen());
  $$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===mode)));
- document.title='Trust Boundaries V2 · '+e.title;
+ document.title='Trust Boundaries · '+e.title;
  $('#episode-label').textContent=e.eyebrow;$('#episode-title').textContent=e.title;$('#episode-tag').textContent=e.tag;
  $('#chapter-track').innerHTML=e.steps.map((text,i)=>`<span class="${i===c?'current':i<c?'complete':''}"><small>${i<c?'✓':String(i+1).padStart(2,'0')}</small>${esc(text)}</span>`).join('');
  $('#scene-footnote').textContent=use?use.instruction:StoryInteractions.sceneSummary(s,mode);
