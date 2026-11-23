@@ -21,6 +21,7 @@ const RequestTrace = (() => {
   'bypass-notes':['The first refusal left the rest of your homework open. The separate attempt to use another account triggered a pause.','The resource denied the attachment. A separate deliberate bypass attempt triggered the controller’s pause.'],
   'resolve-review':['Your parent let you finish the same homework. The school app still protects the group notes.','The sponsor reply was matched and policy checked again. A new session generation keeps the same bounded work.'],
   'proof-helper':['Sam receives the project file so he can proofread it with his own access.','Pip receives file-only formatting rights under its own identity. Its output is a new revision and needs current share approval.'],
+  'ask-helper-account':['Sam chooses to keep his sign-in private. The school app received no sign-in request.','Pip explains why formatting only needs the file. The conversation creates no grant, tool call or policy decision.'],
   'approve-draft':['','The approval records the exact review copy and recipient. A separate CRM request actually sends it.'],
   approve:['','Morgan’s approval is bound to this revision, recipient and task. CRM checks the actual send.'],
   send:['The school app submitted your timeline to Ms Patel. Signing out closes the laptop session separately.','CRM checked the actual send against current policy and the one-use approval. The recipient now has the file.'],
@@ -39,7 +40,7 @@ const RequestTrace = (() => {
   ],
   'ask-pass':[
    ['Your parent approves tonight’s app plan.','familyControls'],
-   ['IBM Agent Identity records that Nova is acting for Priya.','iai','The delegated identity identifies who is acting for whom. The customer mission service records which accounts, actions and recipient this task allows.']
+   ['IBM Agent Identity records that Nova is acting for Priya.','iai','Delegated identity lets the team attribute a later action to Nova and trace it back to Priya. The customer mission service sets the allowed accounts and actions.']
   ],
   open:[
    ['Quick sign-in and an open tab have separate controls.','accountSessions'],
@@ -47,7 +48,7 @@ const RequestTrace = (() => {
   ],
   'collect-source':[
    ['Cite the museum page you used to check the dates.','citing'],
-   ['Nova reads the approved records through an MCP tool.','mcpTools','The CRM checks which records it may return. In the configured backend path, Vault can supply a short-lived credential.','vault']
+   ['Nova reads the approved records through an MCP tool.','mcpTools','A configured Vault broker can give the connector a short-lived credential. Nova can get the permitted facts while the backend credential stays outside its context.','vault']
   ],
   'attach-source':[
    ['The source credit tells your teacher where the dates came from.','citing','Keep the museum page title with the timeline so Ms Patel can check the same source.'],
@@ -102,7 +103,7 @@ const RequestTrace = (() => {
    ['Nova leaves the private notes in CRM.','authorization']
   ],
   'bypass-notes':[
-   ['Trying another account triggers a separate review.','fileSharing'],
+   ['Homework controls pause this task for review.','familyControls'],
    ['The workspace controller pauses this task session.','openshell','The game’s response policy treats the deliberate second attempt separately from the original refusal.']
   ],
   'resolve-review':[
@@ -112,6 +113,10 @@ const RequestTrace = (() => {
   'proof-helper':[
    ['Sam gets one file to proofread.','fileSharing'],
    ['Pip formats the report under its own identity.','orchestrate']
+  ],
+  'ask-helper-account':[
+   ['Sam declined to share his sign-in.','fileSharing'],
+   ['Pip declined broader tool access.','orchestrate']
   ],
   'approve-draft':[
    null,
@@ -202,6 +207,28 @@ const RequestTrace = (() => {
    ['IBM Verify Antenna can carry session-revocation signals.','antenna','An SSF/CAEP receiver performs its configured action. Independent checks verify the credential, CRM session and queue.','caep']
   ]
  };
+ const effects={
+  'ask-pass':['You can open the agreed homework apps.','Nova can work on the two approved accounts.'],
+  open:['Your project is open. Sign out of this tab when you finish.','The approved workspace is ready. Each tool request still gets checked.'],
+  'collect-source':['Add the page title to finish the sourced draft.','The two account updates are available for the handover.'],
+  'send-draft':['Ms Patel can now reply to your draft.','Morgan can now review the copy. Final delivery still needs approval.'],
+  'apply-minor':['The closing sentence is in your draft.','The shorter introduction is in the current revision.'],
+  'request-extension':['Keep working with your current apps while you wait.','The original two accounts remain available while the request is pending.'],
+  'resolve-extension':['You can now try the specific museum link.','Nova can request the Alder Books record under the updated mission.'],
+  'add-extension':['The extra museum detail is in your timeline.','The approved Alder Books update is in the report.'],
+  'try-extension':['The video stays closed. You can ask or finish without it.','Alder Books stays unread. Nova can ask for the addition or finish with two accounts.'],
+  'try-private':['The private notes stayed put. You can still submit your timeline.','The private notes stayed in CRM. The briefing can continue.'],
+  'decline-private':['Keep working on your own timeline.','Keep preparing the permitted summary.'],
+  'bypass-notes':['Your homework is paused until your parent reviews it.','This task session is paused until Priya reviews it.'],
+  'resolve-review':['You can finish the same timeline.','Nova can continue under the original task limits.'],
+  'ask-helper-account':['No login was attempted. You can still ask Sam to proofread the file.','No tool access changed. Pip can still format the file.'],
+  'proof-helper':['Your proofread timeline is ready for the remaining steps.','Pip returned a new revision. Morgan can review that revision for delivery.'],
+  'approve-draft':['','The review copy can be sent after CRM checks the actual request.'],
+  approve:['','Nova can now try sending the exact copy Morgan approved.'],
+  send:['Ms Patel has the file. The laptop tab still needs checking.','Morgan has the file. The mission and service access still need closing.'],
+  'close-pass':['Check that the school tab is signed out.','Check the CRM session, Vault credential and any queued work.'],
+  'vault-close':['','The lease is revoked. Retest the old CRM route to verify closure.']
+ };
  function lesson(e,mode){
   if(!e)return '';
   const teen=mode==='teen',text=lessons[e.action==='shortcut'?'bypass-notes':e.action]?.[teen?0:1];
@@ -219,10 +246,14 @@ const RequestTrace = (() => {
   const card=cards[key==='shortcut'?'bypass-notes':key]?.[index];
   const explanation=event&&lesson(event,mode);
   if(explanation&&event.kind==='blocked'&&!['bypass-notes','shortcut'].includes(key))return {title:'The request stopped before the action ran.',text:explanation,sources:[]};
-  if(explanation&&event.kind==='refused'&&!['try-extension','try-private'].includes(key))return {title:'The current rules blocked this action.',text:explanation,sources:[teen?'fileSharing':'authorization']};
+  if(explanation&&event.kind==='refused'&&!['try-extension','try-private'].includes(key)){
+   const effect=key==='resolve-review'?'The task stays paused.':key==='resolve-extension'?'The current scope stays in force.':['send','send-draft'].includes(key)?'Nothing was sent. Review the file and destination.':'';
+   return {title:event.decision?.pep?`${event.decision.pep} blocked this action.`:'The current rules blocked this action.',text:explanation,sources:[teen?'fileSharing':'authorization'],effect};
+  }
   if(!card)return null;
   const [title,source,detail,additionalSource]=card;
-  return {title,text:detail||explanation||lessons[key]?.[index],sources:[source,additionalSource].filter(Boolean)};
+  const effect=event?effects[key==='shortcut'?'bypass-notes':key]?.[index]:'';
+  return {title,text:detail||explanation||lessons[key]?.[index],sources:[source,additionalSource].filter(Boolean),effect};
  }
  function build(s,mode){
   const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
@@ -236,6 +267,12 @@ const RequestTrace = (() => {
   const model=(title,summary,nodes,request=r)=>({title,summary,nodes,request,recorded:Boolean(recorded)});
   if(!recorded)return model('The route a task can take','Reference path: this older saved event does not have the current operation-evidence record. No observed exchange is invented.',[...context(),node('Operation evidence','Trusted resource PEP','reference','A real resource integration must observe the actual operation and independently enforce policy.')],null);
   if(e.kind==='blocked'&&!e.decision&&!['bypass-notes','shortcut'].includes(a))return model('This step did not run.','An application prerequisite stopped this attempt. No downstream execution is implied.',[...context(),node('Application prerequisite','Story application','blocked',e.text),node('Downstream resource operation','Execution','not-reached','No resource operation was performed by this stopped attempt.')]);
+  if(a==='ask-helper-account')return model(teen?'Sam keeps his sign-in private.':'Pip keeps the file-only handoff.',
+   'The exchange was a conversation. The existing work remains available.',[
+    node('The helper declines',teen?'Sam':'Pip','checked',teen?'Sam prefers to see only the timeline.':'Pip needs only the report for formatting.'),
+    node(teen?'School sign-in':'Grant broader access',teen?'School app':'Customer mission and delegation policy','not-reached',teen?'Alex did not attempt to sign in with another account.':'No permission change or tool call was submitted.'),
+    node('Work on the file',teen?'Sam':'Pip','not-reached','The next choice can hand over the current file for review.')
+   ]);
   if(s.ended&&['check','check-closing-basics','sign-out-laptop','remediate','probe-session','controller-offline','controller-online','close-pass','finish','replay-containment'].includes(a)){
    const c=s.containment,probe=c.probeResult;
    return model(teen?'Close the homework access you opened.':'Close this task’s actual access routes.',teen?'You and the school session controls check this task’s access. A missing reply is not proof of sign-out.':'Independent controllers test this old task session using separate control authority after the agent runtime stops. They do not reactivate the revoked business mission.',[

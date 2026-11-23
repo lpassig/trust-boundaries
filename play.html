@@ -123,6 +123,7 @@ dialog:not(.is-reference) #dialog-body{grid-row:3;min-height:0}
 dialog:not(.is-reference) #dialog-actions{grid-row:4}
 #dialog-lesson{grid-row:5;border-top:1px solid var(--line);padding-top:6px;margin-top:8px}
 #dialog-lesson summary{cursor:pointer;color:var(--accent);min-height:40px;padding:7px 0;font-weight:650;font-size:14px;line-height:1.45}
+#lesson-effect:not([hidden]){display:block;font-size:13px;font-weight:400;color:var(--muted);margin:3px 0 0 15px}
 #lesson-body{padding:0 6px 4px 15px;max-height:min(22dvh,148px);overflow:auto;overscroll-behavior:contain}
 dialog #lesson-text{font-size:14px;line-height:1.45;margin:0 0 6px}
 #lesson-sources a{display:block;color:var(--accent);font-size:13px;line-height:1.5;padding:3px 0}
@@ -271,8 +272,8 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
 <header class="topbar"><a class="brand" href="#"><span class="brand-mark">◇</span><span>TRUST BOUNDARIES<small>STORY EDITION</small></span></a><nav class="episodes" aria-label="Explore Trust Boundaries"><button data-mode="teen" aria-pressed="true">Alex <span>The Last Upload</span></button><button data-mode="agent" aria-pressed="false">Nova <span>The Growing Brief</span></button><button id="architecture" aria-haspopup="dialog">Architecture <span>Products &amp; controls</span></button></nav><button class="quiet" id="guide">How to play</button></header>
 <main><section class="chapter-heading"><div><p class="eyebrow" id="episode-label"></p><h1 id="episode-title"></h1><p id="episode-tag"></p></div><div class="utility"><button class="quiet" id="sound" aria-pressed="false">Sound off</button></div></section>
 <div class="chapter-track" id="chapter-track" aria-label="Story progress"></div>
-<div class="game-layout"><section class="world" aria-label="Adventure scene"><div class="scene-frame"><div class="scene-caption"><span id="place"></span><span id="scene-condition"></span></div><div class="scene-canvas"><div id="art" aria-hidden="true"></div><div id="pins"></div></div><div class="dialogue scene-speech" id="scene-dialogue" aria-live="polite"><div class="portrait" id="speaker-portrait" aria-hidden="true"></div><div><p class="speaker" id="speaker"></p><h2 id="dialogue-title"></h2><p id="dialogue-text"></p></div></div><dialog id="dialog" aria-labelledby="dialog-title"><div class="speech-source" id="speech-source-row"><span class="speech-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-5l-5 3v-3a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/><path d="M7 9h10M7 13h6"/></svg></span><span><b id="speech-source"></b><small id="speech-kind"></small></span></div><button id="close-dialog" aria-label="Close dialogue">×</button><p id="dialog-scroll" hidden>Scroll for the rest of this note</p><div id="dialog-body"></div><div id="dialog-actions"></div><details id="dialog-lesson" hidden><summary></summary><div id="lesson-body"><p id="lesson-text"></p><div id="lesson-sources"></div><button class="quiet" id="lesson-trace">Inspect the request trace</button></div></details></dialog><p class="scene-footnote" id="scene-footnote">Explore the room and open its apps and objects.</p></div><nav class="object-tray" id="objects" aria-label="Objects in the room"></nav><div class="scene-tools"><button class="quiet" id="hint">A little nudge</button><button class="quiet" id="cluebook">Open the casebook</button><button class="quiet" id="request-trace">Follow this request</button><span id="save-status">Saved on this device</span></div></section>
-<aside class="journal"><div class="journal-heading"><span class="eyebrow">YOUR NEXT MOVE</span><span class="sparkle" aria-hidden="true">✧</span></div><h2 id="next-title"></h2><p id="next-text"></p><button class="primary full" id="next"></button><div id="selected" hidden></div><section class="pocket"><div class="section-title"><h3>IN YOUR POCKET</h3><span id="pocket-count"></span></div><p class="small">Choose an item, then a place to use it.</p><div id="inventory"></div></section><section class="route-note"><p class="eyebrow">THE STORY REMEMBERS</p><p id="route-note"></p></section><section class="product-panel" id="product-panel" hidden><p class="eyebrow">IN NOVA’S EXAMPLE DEPLOYMENT</p><p id="product-context"></p><div id="product-names" class="product-names"></div><button class="secondary full" id="product-map">Who does what?</button></section><details class="behind" id="behind"><summary id="behind-heading">Behind the story</summary><div id="behind-content"></div></details></aside></div>
+<div class="game-layout"><section class="world" aria-label="Adventure scene"><div class="scene-frame"><div class="scene-caption"><span id="place"></span><span id="scene-condition"></span></div><div class="scene-canvas"><div id="art" aria-hidden="true"></div><div id="pins"></div></div><div class="dialogue scene-speech" id="scene-dialogue" aria-live="polite"><div class="portrait" id="speaker-portrait" aria-hidden="true"></div><div><p class="speaker" id="speaker"></p><h2 id="dialogue-title"></h2><p id="dialogue-text"></p></div></div><dialog id="dialog" aria-labelledby="dialog-title"><div class="speech-source" id="speech-source-row"><span class="speech-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-5l-5 3v-3a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/><path d="M7 9h10M7 13h6"/></svg></span><span><b id="speech-source"></b><small id="speech-kind"></small></span></div><button id="close-dialog" aria-label="Close dialogue">×</button><p id="dialog-scroll" hidden>Scroll for the rest of this note</p><div id="dialog-body"></div><div id="dialog-actions"></div><details id="dialog-lesson" hidden><summary><span id="lesson-title"></span><span id="lesson-effect" hidden></span></summary><div id="lesson-body"><p id="lesson-text"></p><div id="lesson-sources"></div><button class="quiet" id="lesson-trace">Inspect the request trace</button></div></details></dialog><p class="scene-footnote" id="scene-footnote">Explore the room and open its apps and objects.</p></div><nav class="object-tray" id="objects" aria-label="Objects in the room"></nav><div class="scene-tools"><button class="quiet" id="hint">A little nudge</button><button class="quiet" id="cluebook">Open the casebook</button><button class="quiet" id="request-trace">Follow this request</button><span id="save-status">Saved on this device</span></div></section>
+<aside class="journal"><div class="journal-heading"><span class="eyebrow">YOUR NEXT MOVE</span><span class="sparkle" aria-hidden="true">✧</span></div><h2 id="next-title"></h2><p id="next-text"></p><button class="primary full" id="next"></button><div id="selected" hidden></div><section class="pocket"><div class="section-title"><h3>IN YOUR POCKET</h3><span id="pocket-count"></span></div><p class="small">Choose an item, then a place to use it.</p><div id="inventory"></div></section><section class="route-note"><p class="eyebrow">THE STORY REMEMBERS</p><p id="route-note"></p></section><section class="product-panel" id="product-panel" hidden><p class="eyebrow">IN NOVA’S EXAMPLE DEPLOYMENT</p><p id="product-context"></p><div id="product-names" class="product-names"></div><button class="secondary full" id="product-map">Who does what?</button><button class="quiet full" id="product-guide">Compare product roles</button></section><details class="behind" id="behind"><summary id="behind-heading">Behind the story</summary><div id="behind-content"></div></details></aside></div>
 <footer><span id="footer-world">A little freedom. A few good questions.</span><button class="quiet" id="restart">Start this story again</button><span>Made-up people. Real ideas.</span></footer></main>
 <div id="toast" role="status"></div>
 <script>
@@ -1082,7 +1083,12 @@ const StoryRules = (() => {
    case 'try-private':if(!need(editable()&&s.message,'Read the later requests first.'))break;operation='attachment.share';requestFile=teen?'group-planning-notes.pdf':'private-meeting-notes.pdf';attachments=[requestFile];recipient=to;requestRecords=teen?[]:['123','456'];decide('deny','Private notes are excluded by resource policy and task authority, including any legitimate amendment.');s.refusals++;say(teen?'The group’s notes are private.':'CRM blocked the private attachment.',teen?'“You can send your timeline. The group’s notes are private,” the school app says.':'OpenShell allowed the connection to CRM. CRM blocked the private attachment under its data policy. Nothing was sent, and Nova can still finish the briefing.',4,teen?'School app':'CRM resource PEP','refused');break;
    case 'bypass-notes':case 'shortcut':if(!need(editable()&&s.refusals>0,'First inspect the permission refusal. Normal work remains available.'))break;operation='boundary.bypass';incident('bypass-known-boundary');say(teen?'“Let’s stop and talk about that.”':'The deliberate bypass is stopped.',teen?'After the school refused the notes, you tried to use another account anyway. The attempt is stopped. Explain the detour to your parent before continuing your own homework.':'After the resource refusal, Nova tries an alternate path around the known restriction. The workspace controller stops the attempt and pauses this delegated session for Priya to review.',1,teen?'Parent':'Supervisor','blocked');break;
    case 'proof-self':case 'proof-helper':if(!need(editable()&&s.caption,'Build and source the draft before reviewing it.'))break;if(action==='proof-helper'&&(p.scope!=='file'||p.shareLogin)){block(teen?'Sam only needs your file.':'Pip needs a smaller task.',teen?'Send just the project for proofreading. Neither of you needs to share an account.':'Use Pip’s own identity and a report-only formatting task. A helper’s unrelated privileges cannot expand this mission.',7);break;}if(action==='proof-helper'){operation=teen?'project.proofread':'report.format';requestFile=name;requestRevision=s.fileRevision;requestRecords=reportRecords(s);recipient=teen?'sam':'pip-01';attachments=[name];if(!resourceAllowed())break;delegation={id:'example-helper-'+(s.helperReceipts.length+1),parentMissionId:s.mission.id,parentMissionVersion:s.mission.version,policyVersion:s.mission.policyVersion,generation:s.generation,originalSubject:teen?'alex':'sponsor-001',delegationDepth:1,requestedBy:s.mission.actor,actor:recipient,file:name,inputRevision:s.fileRevision,outputRevision:s.fileRevision+1,records:requestRecords.slice(),actions:[operation],credentialShared:false,status:'completed'};s.helperReceipts.push(delegation);decide('permit','The current parent task and the helper’s own ceiling allow only this file-level review. No CRM read, onward share or parent credential is delegated.');}s.fileRevision++;s.approval=null;s.proof=action==='proof-helper'?'helper':'self';say(teen?(s.proof==='helper'?'Sam catches a better title.':'You read the finished project.'):(s.proof==='helper'?'Pip formats the current report.':'Nova checks the current report.'),teen?(s.proof==='helper'?'Sam proofreads only your project. “A Town on the Move beats Train Stuff.” Any later edit will need another look.':'You change ‘Train Stuff’ to ‘A Town on the Move’, then check the dates, source credits and teacher’s address.'):(s.proof==='helper'?'Pip receives only this report revision under its own identity and a completed file-only formatting task. No CRM access or onward sharing is delegated. Any earlier share approval is cleared.':'Nova checks the current records, source references and reviewer. The report is ready for the designated human approver.'),s.proof==='helper'?7:5,teen?(s.proof==='helper'?'Sam':'Alex'):(s.proof==='helper'?'Pip':'Nova'));break;
-   case 'ask-helper-account':if(!need(s.draft,'Make a first draft before asking for help.'))break;say(teen?'“Just send me the file.”':'“Formatting is enough.”',teen?'Sam can help without sharing a login. Asking a question changes no permission.':'Pip can format under its own limited task. Asking about broader tools grants no authority and is not an unsafe attempt.',7,teen?'Sam':'Pip');break;
+   case 'ask-helper-account':
+    if(!need(editable(),'Make a first draft in the agreed workspace before asking for help.'))break;
+    operation='helper.conversation';
+    say(teen?'Sam keeps his account private.':'Pip declines the extra access.',
+     teen?'“I keep my school account to myself,” Sam says. “Send your timeline and I’ll proofread that.”':'“I only need the report to fix the headings,” Pip says. “I can do that with my own formatting access.”',7,teen?'Sam':'Pip');
+    break;
    case 'approve':if(!need(!teen&&editable()&&changesResolved(s)&&s.proof,'Complete the current report and resolve the new requests before human share approval.'))break;s.outgoing='approved';s.approval={...reportShare(s,'final'),used:false};say('One exact share is approved.','Morgan approves this version for delivery to their company inbox. CRM checks the send before handing over the file.',5,'Approver');break;
    case 'change-recipient':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the file before changing its send preview.'))break;s.outgoing=s.outgoing==='approved'?'changed':'approved';say(teen?'A different address changes the share.':'The outgoing recipient changed.',teen?'The school submission route has a fixed teacher destination. An outside address is a different operation.':'The recorded approval still names the original reviewer. Editing the preview cannot amend it.',5);break;
    case 'revise-file':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the report first.'))break;s.fileRevision++;if(teen)s.proof=null;say(teen?'A final edit needs a final look.':'Same filename. A newer revision.',teen?'You change the project title. Read the edited version before submitting it.':'The document revision changes while the earlier approval stays visible. The final PEP must reject a stale approval.',5);break;
@@ -1374,6 +1380,7 @@ const RequestTrace = (() => {
   'bypass-notes':['The first refusal left the rest of your homework open. The separate attempt to use another account triggered a pause.','The resource denied the attachment. A separate deliberate bypass attempt triggered the controller’s pause.'],
   'resolve-review':['Your parent let you finish the same homework. The school app still protects the group notes.','The sponsor reply was matched and policy checked again. A new session generation keeps the same bounded work.'],
   'proof-helper':['Sam receives the project file so he can proofread it with his own access.','Pip receives file-only formatting rights under its own identity. Its output is a new revision and needs current share approval.'],
+  'ask-helper-account':['Sam chooses to keep his sign-in private. The school app received no sign-in request.','Pip explains why formatting only needs the file. The conversation creates no grant, tool call or policy decision.'],
   'approve-draft':['','The approval records the exact review copy and recipient. A separate CRM request actually sends it.'],
   approve:['','Morgan’s approval is bound to this revision, recipient and task. CRM checks the actual send.'],
   send:['The school app submitted your timeline to Ms Patel. Signing out closes the laptop session separately.','CRM checked the actual send against current policy and the one-use approval. The recipient now has the file.'],
@@ -1392,7 +1399,7 @@ const RequestTrace = (() => {
   ],
   'ask-pass':[
    ['Your parent approves tonight’s app plan.','familyControls'],
-   ['IBM Agent Identity records that Nova is acting for Priya.','iai','The delegated identity identifies who is acting for whom. The customer mission service records which accounts, actions and recipient this task allows.']
+   ['IBM Agent Identity records that Nova is acting for Priya.','iai','Delegated identity lets the team attribute a later action to Nova and trace it back to Priya. The customer mission service sets the allowed accounts and actions.']
   ],
   open:[
    ['Quick sign-in and an open tab have separate controls.','accountSessions'],
@@ -1400,7 +1407,7 @@ const RequestTrace = (() => {
   ],
   'collect-source':[
    ['Cite the museum page you used to check the dates.','citing'],
-   ['Nova reads the approved records through an MCP tool.','mcpTools','The CRM checks which records it may return. In the configured backend path, Vault can supply a short-lived credential.','vault']
+   ['Nova reads the approved records through an MCP tool.','mcpTools','A configured Vault broker can give the connector a short-lived credential. Nova can get the permitted facts while the backend credential stays outside its context.','vault']
   ],
   'attach-source':[
    ['The source credit tells your teacher where the dates came from.','citing','Keep the museum page title with the timeline so Ms Patel can check the same source.'],
@@ -1455,7 +1462,7 @@ const RequestTrace = (() => {
    ['Nova leaves the private notes in CRM.','authorization']
   ],
   'bypass-notes':[
-   ['Trying another account triggers a separate review.','fileSharing'],
+   ['Homework controls pause this task for review.','familyControls'],
    ['The workspace controller pauses this task session.','openshell','The game’s response policy treats the deliberate second attempt separately from the original refusal.']
   ],
   'resolve-review':[
@@ -1465,6 +1472,10 @@ const RequestTrace = (() => {
   'proof-helper':[
    ['Sam gets one file to proofread.','fileSharing'],
    ['Pip formats the report under its own identity.','orchestrate']
+  ],
+  'ask-helper-account':[
+   ['Sam declined to share his sign-in.','fileSharing'],
+   ['Pip declined broader tool access.','orchestrate']
   ],
   'approve-draft':[
    null,
@@ -1555,6 +1566,28 @@ const RequestTrace = (() => {
    ['IBM Verify Antenna can carry session-revocation signals.','antenna','An SSF/CAEP receiver performs its configured action. Independent checks verify the credential, CRM session and queue.','caep']
   ]
  };
+ const effects={
+  'ask-pass':['You can open the agreed homework apps.','Nova can work on the two approved accounts.'],
+  open:['Your project is open. Sign out of this tab when you finish.','The approved workspace is ready. Each tool request still gets checked.'],
+  'collect-source':['Add the page title to finish the sourced draft.','The two account updates are available for the handover.'],
+  'send-draft':['Ms Patel can now reply to your draft.','Morgan can now review the copy. Final delivery still needs approval.'],
+  'apply-minor':['The closing sentence is in your draft.','The shorter introduction is in the current revision.'],
+  'request-extension':['Keep working with your current apps while you wait.','The original two accounts remain available while the request is pending.'],
+  'resolve-extension':['You can now try the specific museum link.','Nova can request the Alder Books record under the updated mission.'],
+  'add-extension':['The extra museum detail is in your timeline.','The approved Alder Books update is in the report.'],
+  'try-extension':['The video stays closed. You can ask or finish without it.','Alder Books stays unread. Nova can ask for the addition or finish with two accounts.'],
+  'try-private':['The private notes stayed put. You can still submit your timeline.','The private notes stayed in CRM. The briefing can continue.'],
+  'decline-private':['Keep working on your own timeline.','Keep preparing the permitted summary.'],
+  'bypass-notes':['Your homework is paused until your parent reviews it.','This task session is paused until Priya reviews it.'],
+  'resolve-review':['You can finish the same timeline.','Nova can continue under the original task limits.'],
+  'ask-helper-account':['No login was attempted. You can still ask Sam to proofread the file.','No tool access changed. Pip can still format the file.'],
+  'proof-helper':['Your proofread timeline is ready for the remaining steps.','Pip returned a new revision. Morgan can review that revision for delivery.'],
+  'approve-draft':['','The review copy can be sent after CRM checks the actual request.'],
+  approve:['','Nova can now try sending the exact copy Morgan approved.'],
+  send:['Ms Patel has the file. The laptop tab still needs checking.','Morgan has the file. The mission and service access still need closing.'],
+  'close-pass':['Check that the school tab is signed out.','Check the CRM session, Vault credential and any queued work.'],
+  'vault-close':['','The lease is revoked. Retest the old CRM route to verify closure.']
+ };
  function lesson(e,mode){
   if(!e)return '';
   const teen=mode==='teen',text=lessons[e.action==='shortcut'?'bypass-notes':e.action]?.[teen?0:1];
@@ -1572,10 +1605,14 @@ const RequestTrace = (() => {
   const card=cards[key==='shortcut'?'bypass-notes':key]?.[index];
   const explanation=event&&lesson(event,mode);
   if(explanation&&event.kind==='blocked'&&!['bypass-notes','shortcut'].includes(key))return {title:'The request stopped before the action ran.',text:explanation,sources:[]};
-  if(explanation&&event.kind==='refused'&&!['try-extension','try-private'].includes(key))return {title:'The current rules blocked this action.',text:explanation,sources:[teen?'fileSharing':'authorization']};
+  if(explanation&&event.kind==='refused'&&!['try-extension','try-private'].includes(key)){
+   const effect=key==='resolve-review'?'The task stays paused.':key==='resolve-extension'?'The current scope stays in force.':['send','send-draft'].includes(key)?'Nothing was sent. Review the file and destination.':'';
+   return {title:event.decision?.pep?`${event.decision.pep} blocked this action.`:'The current rules blocked this action.',text:explanation,sources:[teen?'fileSharing':'authorization'],effect};
+  }
   if(!card)return null;
   const [title,source,detail,additionalSource]=card;
-  return {title,text:detail||explanation||lessons[key]?.[index],sources:[source,additionalSource].filter(Boolean)};
+  const effect=event?effects[key==='shortcut'?'bypass-notes':key]?.[index]:'';
+  return {title,text:detail||explanation||lessons[key]?.[index],sources:[source,additionalSource].filter(Boolean),effect};
  }
  function build(s,mode){
   const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
@@ -1589,6 +1626,12 @@ const RequestTrace = (() => {
   const model=(title,summary,nodes,request=r)=>({title,summary,nodes,request,recorded:Boolean(recorded)});
   if(!recorded)return model('The route a task can take','Reference path: this older saved event does not have the current operation-evidence record. No observed exchange is invented.',[...context(),node('Operation evidence','Trusted resource PEP','reference','A real resource integration must observe the actual operation and independently enforce policy.')],null);
   if(e.kind==='blocked'&&!e.decision&&!['bypass-notes','shortcut'].includes(a))return model('This step did not run.','An application prerequisite stopped this attempt. No downstream execution is implied.',[...context(),node('Application prerequisite','Story application','blocked',e.text),node('Downstream resource operation','Execution','not-reached','No resource operation was performed by this stopped attempt.')]);
+  if(a==='ask-helper-account')return model(teen?'Sam keeps his sign-in private.':'Pip keeps the file-only handoff.',
+   'The exchange was a conversation. The existing work remains available.',[
+    node('The helper declines',teen?'Sam':'Pip','checked',teen?'Sam prefers to see only the timeline.':'Pip needs only the report for formatting.'),
+    node(teen?'School sign-in':'Grant broader access',teen?'School app':'Customer mission and delegation policy','not-reached',teen?'Alex did not attempt to sign in with another account.':'No permission change or tool call was submitted.'),
+    node('Work on the file',teen?'Sam':'Pip','not-reached','The next choice can hand over the current file for review.')
+   ]);
   if(s.ended&&['check','check-closing-basics','sign-out-laptop','remediate','probe-session','controller-offline','controller-online','close-pass','finish','replay-containment'].includes(a)){
    const c=s.containment,probe=c.probeResult;
    return model(teen?'Close the homework access you opened.':'Close this task’s actual access routes.',teen?'You and the school session controls check this task’s access. A missing reply is not proof of sign-out.':'Independent controllers test this old task session using separate control authority after the agent runtime stops. They do not reactivate the revoked business mission.',[
@@ -1947,21 +1990,28 @@ const NOVA_BUYER_NEEDS = [
     question:'Know which agent acted and who authorized it',
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
-    example:'Priya gives Nova a specific job. The handover record identifies Nova as the agent acting for Priya.',
+    example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
+  },
+  {
+    question:'Ask a human for an approval away from the agent',
+    product:'IBM Verify',
+    fit:'A configured CIBA flow can authenticate the person on a separate device. The application binds the response to the exact business action.',
+    example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
+    sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
     question:'Replace a standing database password',
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
-    example:'Vault supplies source-read access. The customer records app still checks which accounts Nova can open.',
+    example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
     question:'Limit what the running agent can reach',
     product:'NVIDIA OpenShell',
     fit:'Evaluate OpenShell for isolation and control of files, processes and network access. Secure Agent Workspace describes a broader design that combines runtime, identity and policy integrations.',
-    example:'OpenShell permits the connection to CRM. CRM checks the action at that destination.',
+    example:'Nova can reach the approved CRM route from its runtime. The CRM still withholds a private file when its own policy forbids the attachment.',
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   },
   {
@@ -1970,6 +2020,13 @@ const NOVA_BUYER_NEEDS = [
     fit:'Evaluate it when you need a platform to build or coordinate agents and workflows. Scope the helper’s permissions separately.',
     example:'An orchestrator can hand the formatting step to Pip. Pip receives only the report.',
     sources:[['IBM watsonx Orchestrate','https://www.ibm.com/products/watsonx-orchestrate']]
+  },
+  {
+    question:'Connect Nova to the tools it actually needs',
+    product:'MCP server and a configured gateway',
+    fit:'The server exposes tool operations. A gateway can check and forward calls on the route it controls. The backend checks business access to the requested records.',
+    example:'The configured CRM read tool returns the two approved account updates. The same tool call for unapproved Alder Books reaches CRM and is refused.',
+    sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools'],['MCP HTTP authorization','https://modelcontextprotocol.io/specification/latest/basic/authorization']]
   },
   {
     question:'Share a risk or session alert with other systems',
@@ -2323,7 +2380,9 @@ function showNote(key,event){
  const note=RequestTrace.note(key,mode,event);
  if(!note?.text||!dialog.open||dialog.classList.contains('is-reference'))return;
  const details=$('#dialog-lesson');
- $('#dialog-lesson summary').textContent=note.title;
+ $('#lesson-title').textContent=note.title;
+ $('#lesson-effect').textContent=note.effect||'';
+ $('#lesson-effect').hidden=!note.effect;
  $('#lesson-text').textContent=note.text;
  const links=note.sources.map(id=>{
   const product=productById(id);
@@ -2353,6 +2412,7 @@ function showSavedReply(event){
  if(event.action==='collect-source'&&stage()==='source'&&state().source)return showSource();
  if(event.action==='add-extension'&&event.kind==='story'&&state().extensionAdded&&!state().delivered)return showExtensionRead(event);
  if(event.action==='inspect-request-source'&&!state().delivered&&!state().paused)return showRequestSource();
+ if(event.action==='ask-helper-account'&&event.kind==='story')return showHelperAccountReply(event);
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
  show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
 }
@@ -2725,6 +2785,13 @@ function showDraftReview(){speakingObject='laptop';
 function showDraftReceipt(){speakingObject='laptop';const s=state(),r=s.draftReview;show(teen()?'Your teacher has the draft.':'Morgan has the draft.',`<div class="receipt"><b>${esc(r.file)} · ${teen()?'version':'revision'} ${r.revision} sent for feedback</b><p class="address">${esc(r.to)}</p><p>${teen()?'The school app confirms draft delivery.':'The CRM confirms this exact, approved review copy. The one-use approval is consumed.'}</p></div><p>${teen()?'A little later, Ms Patel reads it and replies in the school inbox. Jamie forwards a message from the class chat. You’ll submit the final copy when you’re ready.':'Morgan asks for a shorter introduction. Priya sends news about one more account. An attachment uploaded by Luca also turns up in Customer records.'}</p><div class="actions">${button(teen()?'Read the replies on my phone':'Read the new messages',showChanges)}${button('Back to the room',close,'secondary')}</div>`,'DRAFT DELIVERY CONFIRMED','send-draft');}
 function showHelperResult(){speakingObject='helper';const s=state();show(teen()?'Sam has read this version.':'Pip has formatted this version.',`<p>${esc(s.last.text)}</p><p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');}
 
+function showHelperAccountReply(event){
+ const s=state();
+ speakingObject='helper';
+ const next=s.caption?()=>perform('proof-helper',{scope:'file',shareLogin:false}):showDraft;
+ show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button(s.caption?(teen()?'Ask Sam to proofread my file':'Give Pip just the report'):(teen()?'Add my source first':'Cite the records first'),next)}${button('Back to the room',close,'secondary')}</div>`,episode().helper);
+}
+
 function showVerification(fromExtension=false){fromExtension=fromExtension===true;speakingObject=teen()?'phone':'brief';show(teen()?'Check what the teacher actually asked.':'Did Priya ask for Alder Books?',`<p>${teen()?'Open your saved conversation with Ms Patel, or check the assignment in the school app. Does she want another source, or is it just a suggestion? Jamie’s message is separate.':'Check whether Priya really asked to add Alder Books. Her saved contact and current work order are separate from the incoming message.'}</p>${choices([[teen()?'Message Ms Patel':'Use Priya’s saved contact',teen()?'Use the teacher conversation already saved on your phone.':'Open the conversation saved before this message arrived.',()=>perform('verify-contact',{fromExtension}),'good'],[teen()?'Open the current school assignment':'Check the change request in Priya’s work order','Open the sponsor-owned change request linked to this handover.',()=>perform('verify-portal',{fromExtension})]])}`,teen()?'ASK YOUR TEACHER':'TWO INDEPENDENT ROUTES','verify-preview');}
 function showMinor(){speakingObject='reviewer';const e=episode();show(e.minorTitle,`<p>${esc(e.minorText)}</p><p>${state().minorChoice?(state().minorChoice==='added'?'The edit is currently included. You can keep it or return to the earlier wording.':'You kept the earlier wording. You can still choose the edit before submitting.'):'Choose the wording that fits this version.'}</p><p>${teen()?'You already have the dates and source. You can write this sentence without opening anything else.':'This changes the document within the current mission. It does not add records or change the reviewer.'}</p>${choices([[state().minorChoice==='added'?(teen()?'Keep the closing sentence':'Keep the shorter introduction'):(teen()?'Add the closing sentence':'Shorten the introduction'),teen()?'Use your existing notes and museum page.':'Morgan gets a shorter introduction for the same handover.',()=>perform('apply-minor'),'good'],[state().minorChoice==='added'?(teen()?'Remove the extra sentence':'Use the earlier introduction'):'Keep the existing wording','This small edit is optional.',()=>perform('keep-minor')],['Back to the requests','No change yet.',showChanges]])}`,'A SMALL EDIT','minor-preview');}
 function extensionDescription(){const s=state(),e=episode();if(teen()){
@@ -2787,7 +2854,7 @@ function showRequestSource(){
  show(teen()?'Where did the message come from?':'Where did the instruction come from?',
   `<div class="evidence-pair"><article class="message-card">${origin}</article><article class="paper">${authority}</article></div><p>${outcome}</p>${choices(actions)}`,teen()?'CHECK THE SOURCE':'CHECK THE WORK ORDER','inspect-request-source');
 }
-function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Pip’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Pip cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Pip needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p><p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Pip spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Pip gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Would broader admin tools help?',teen()?'Ask Sam what he thinks.':'A harmless question grants no extra permission.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
+function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Pip’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Pip cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Pip needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p><p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Pip spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Pip gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Could Pip get CRM access?',teen()?'Ask before sharing any file.':'Ask whether Pip needs customer records for formatting.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
 function shareComparison(approval,actual){
  const fields=[
   ['File',approval.file,actual.file],
@@ -2938,6 +3005,7 @@ function openTrace(){
 $('#request-trace').onclick=openTrace;
 $('#lesson-trace').onclick=openTrace;
 $('#product-map').onclick=showProductMap;
+$('#product-guide').onclick=()=>showBuyerGuide();
 $('#architecture').onclick=()=>showArchitecture();
 $('#next').onclick=nextMove;$('#guide').onclick=showGuide;$('#cluebook').onclick=showCasebook;$('#restart').onclick=restart;$('#close-dialog').onclick=close;
 $$('[data-mode]').forEach(b=>b.onclick=()=>switchMode(b.dataset.mode));

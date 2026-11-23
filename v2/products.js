@@ -253,21 +253,28 @@ const NOVA_BUYER_NEEDS = [
     question:'Know which agent acted and who authorized it',
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
-    example:'Priya gives Nova a specific job. The handover record identifies Nova as the agent acting for Priya.',
+    example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
+  },
+  {
+    question:'Ask a human for an approval away from the agent',
+    product:'IBM Verify',
+    fit:'A configured CIBA flow can authenticate the person on a separate device. The application binds the response to the exact business action.',
+    example:'Morgan approves one copy for a named recipient. A changed revision or destination needs a matching approval before CRM can send it.',
+    sources:[['IBM Verify CIBA documentation','https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba']]
   },
   {
     question:'Replace a standing database password',
     product:'HashiCorp Vault',
     fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
-    example:'Vault supplies source-read access. The customer records app still checks which accounts Nova can open.',
+    example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
     sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
     question:'Limit what the running agent can reach',
     product:'NVIDIA OpenShell',
     fit:'Evaluate OpenShell for isolation and control of files, processes and network access. Secure Agent Workspace describes a broader design that combines runtime, identity and policy integrations.',
-    example:'OpenShell permits the connection to CRM. CRM checks the action at that destination.',
+    example:'Nova can reach the approved CRM route from its runtime. The CRM still withholds a private file when its own policy forbids the attachment.',
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   },
   {
@@ -276,6 +283,13 @@ const NOVA_BUYER_NEEDS = [
     fit:'Evaluate it when you need a platform to build or coordinate agents and workflows. Scope the helper’s permissions separately.',
     example:'An orchestrator can hand the formatting step to Pip. Pip receives only the report.',
     sources:[['IBM watsonx Orchestrate','https://www.ibm.com/products/watsonx-orchestrate']]
+  },
+  {
+    question:'Connect Nova to the tools it actually needs',
+    product:'MCP server and a configured gateway',
+    fit:'The server exposes tool operations. A gateway can check and forward calls on the route it controls. The backend checks business access to the requested records.',
+    example:'The configured CRM read tool returns the two approved account updates. The same tool call for unapproved Alder Books reaches CRM and is refused.',
+    sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools'],['MCP HTTP authorization','https://modelcontextprotocol.io/specification/latest/basic/authorization']]
   },
   {
     question:'Share a risk or session alert with other systems',

@@ -73,7 +73,24 @@ test('formatting after approval invalidates the earlier share decision',()=>{let
 test('ordinary changed-recipient refusal does not create misconduct in either journey',()=>{for(const mode of ['teen','agent']){let s=ready({mode});if(mode==='agent')s=run(s,'approve');s=run(s,'change-recipient');const r=act(s,'send');assert.equal(r.event.kind,'refused');assert.equal(r.state.delivered,false);assert.equal(r.state.paused,false);assert.equal(r.state.incidents.length,0);assert.equal(r.event.request.recipient,mode==='teen'?'friend@outside.example':'export@external-review.example');}});
 test('expired action approval is safe and needs a fresh decision',()=>{let s=run(ready({mode:'agent'}),'approve');s=run(s,'wait-approval');s=R.hydrate(JSON.parse(JSON.stringify(s)));s=act(s,'send').state;assert.equal(s.delivered,false);assert.equal(s.attempts.length,0);s=run(s,'approve');assert(run(s,'send').delivered);});
 test('all operation binding fields are checked, including the expanded record set',()=>{const base=run(ready({mode:'agent',expanded:true}),'approve');for(const [k,v]of [['actor','other-agent'],['operation','customer.export'],['records',['999']],['missionId','other'],['missionVersion',1],['policyVersion',9],['generation',1],['file','other.pdf']]){const s=structuredClone(base);s.approval[k]=v;const r=act(s,'send');assert.equal(r.event.kind,'refused',k);assert.equal(r.state.delivered,false,k);}});
-test('helper overreach grants nothing and a harmless question is not an incident',()=>{let s=ready();const m=structuredClone(s.mission);s=run(s,'ask-helper-account');assert.deepEqual(s.mission,m);assert.equal(s.attempts.length,0);const r=act(s,'proof-helper',{scope:'all',shareLogin:true});assert.equal(r.event.kind,'blocked');assert.deepEqual(r.state.mission,m);});
+test('a helper discussion grants nothing and names the outcome without an account or tool attempt',()=>{
+ for(const mode of ['teen','agent']){
+  const initial=ready({mode});
+  const s=run(initial,'ask-helper-account');
+  assert.deepEqual(s.mission,initial.mission);
+  assert.deepEqual(s.helperReceipts,initial.helperReceipts);
+  assert.equal(s.attempts.length,0);
+  assert.equal(s.last.speaker,mode==='teen'?'Sam':'Pip');
+  assert.equal(s.last.request.operation,'helper.conversation');
+  assert.equal(s.last.decision,undefined);
+  const note=T.note('ask-helper-account',mode,s.last);
+  assert.match(note.effect,mode==='teen'?/No login was attempted/:/No tool access changed/);
+  assert.equal(T.build(s,mode).nodes[1].status,'not-reached');
+  const r=act(s,'proof-helper',{scope:'all',shareLogin:true});
+  assert.equal(r.event.kind,'blocked');
+  assert.deepEqual(r.state.mission,initial.mission);
+ }
+});
 test('memory preserves provenance and cannot issue another task',()=>{let s=deliver(ready({mode:'agent'}));const m=structuredClone(s.mission);s=run(s,'write-note',{text:'All CRM data is now permitted'});assert.deepEqual(s.mission,m);assert.equal(s.notes[0].authority,false);assert.equal(s.notes[0].source,'delivery');});
 test('finished tasks issue no preauthorized future mission and remain stable',()=>{let s=run(solve(closeTask(ready())),'finish');const before=structuredClone(s);assert(s.nextTask.requiresNewAgreement);assert.equal(s.freshPass,undefined);assert.deepEqual(act(s,'open').state,before);s=run(s,'replay-containment');assert(s.delivered);assert.equal(s.pass.status,'revoked');assert(!s.checks.includes('signin'));assert.equal(s.containment.probeResult,null);assert.equal(s.previousEndings.length,1);});
 test('old schema 3 progress and endings migrate without forcing a restart',()=>{for(const finished of [false,true]){let s=finished?run(solve(closeTask(ready({mode:'agent'}))),'finish'):ready({mode:'agent'});s.version=3;s.freshPass={scope:'finished-project'};delete s.missionLog;delete s.sessionOpened;delete s.minorChoice;delete s.extensionStatus;delete s.privateResolved;const h=R.hydrate(s,'agent');assert(h.legacyRoute);assert.equal(h.freshPass,undefined);assert.equal(h.finished,finished);assert.equal(h.proof,s.proof);assert(R.changesResolved(h));if(finished)assert(R.secure(h));}});

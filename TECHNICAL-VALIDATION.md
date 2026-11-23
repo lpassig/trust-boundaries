@@ -25,7 +25,7 @@ The sequence is consistent with the reference architecture after the corrections
 
 ## Educational review
 
-The most useful choices teach a cause and a consequence: the app checks a link, the CRM withholds a private attachment, or the controller verifies the old route. The dialogue includes a short expandable note tied to the current step, with a brief explanation, relevant documentation and a manually stepped trace for completed actions. Alex uses a fictional managed homework app profile that evaluates the specific museum link. Commercial parental-control products vary in what they can enforce.
+The most useful choices teach a cause and a consequence: the app checks a link, the CRM withholds a private attachment, or the controller verifies the old route. The dialogue includes a short expandable note tied to the current step, with a brief explanation, relevant documentation and a manually stepped trace for completed actions. Alex uses a fictional managed homework app profile that evaluates the specific museum link. Commercial parental-control products vary in what they can enforce. In the helper conversation, Sam declines to share his sign-in and Pip declines broader access. No authentication or delegation request occurs. The player can proceed with the file-only handoff.
 
 Scope verification looks up a sponsor-owned proposal linked to the original work order. The active work order on its own describes current scope. The UI and trace distinguish verification of a proposal, approval of an amendment and authorization of the later read.
 
