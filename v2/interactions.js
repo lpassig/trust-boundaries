@@ -91,6 +91,7 @@ const StoryInteractions = (() => {
    policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
    outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
+   sentToJamie:{name:'Alex → Jamie',kind:'Sent message',channel:'Class group chat · phone',point:[526,404],object:'phone'},
    extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop'},
    homework:{name:'Homework mode',kind:'On screen',channel:'Phone',point:[526,404],object:'phone'},
    stop:{name:teen?'Homework controls':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone'},
@@ -119,7 +120,8 @@ const StoryInteractions = (() => {
   if(['send-draft','send','try-private','prepare','apply-minor','keep-minor','attach-source'].includes(action))return 'laptop';
   if(action==='try-extension')return mode==='teen'?'homework':'laptop';
   if(['bypass-notes','shortcut'].includes(action))return 'stop';
-  if(['inspect-request-source','decline-private'].includes(action))return 'outside';
+  if(action==='inspect-request-source')return 'outside';
+  if(action==='decline-private')return mode==='teen'?'sentToJamie':'hero';
   if(action==='verify-contact')return mode==='teen'?'reviewer':'sponsorMessage';
   if(mode==='agent'&&['request-extension','resolve-extension','review','resolve-review'].includes(action))return 'missionControl';
   if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
@@ -136,10 +138,17 @@ const StoryInteractions = (() => {
    return teen?'Ms Patel and Jamie':'Review feedback and proposed change';
   }
   if(key!=='laptop')return '';
-  if(s.ended&&s.containment?.controllerReachable){
-   if(teen&&s.checks.includes('signin'))return 'Sign in';
-   if(!s.containment.sessionClosed)return teen?'School tab still open':'CRM session still open';
-   return teen?'Tab signed out':'CRM session closed';
+  if(s.ended&&s.containment){
+   const c=s.containment;
+   if(!teen){
+    if(!c.controllerReachable||c.probeResult==='unknown')return 'CRM session unverified';
+    if(c.sessionClosed)return c.probeResult==='denied'?'CRM session closed':'CRM retest pending';
+    return c.probeResult==='allowed'?'CRM session still open':'CRM session status unchecked';
+   }
+   if(c.controllerReachable){
+    if(s.checks.includes('signin'))return 'Sign in';
+    return c.sessionClosed?'Tab signed out':'School tab still open';
+   }
   }
   if(s.delivered)return teen?'Sent to Ms Patel':'Sent to Morgan';
   if(s.caption)return 'Source credited';

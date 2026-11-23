@@ -84,6 +84,13 @@ for(const mode of ['teen','agent']){
   const source=event=>I.speechSource(mode,I.eventSource(mode,event.speaker,event.action,event.kind));
   assert.equal(source(compared.event).tool,'outside');
   assert.equal(source(compared.event).object,teen?'phone':'laptop');
+  const message=R.act(replied,mode,'decline-private').event;
+  assert.equal(source(message).key,teen?'sentToJamie':'hero');
+  if(teen){
+   assert.equal(source(message).name,'Alex → Jamie');
+   assert.equal(source(message).kind,'Sent message');
+   assert.equal(source(message).object,'phone');
+  }
   assert.equal(source(denied.event).key,'laptop');
   assert.equal(I.speechSource(mode,'reviewer').name,teen?'Ms Patel':'Morgan · reviewer');
   assert.equal(denied.state.paused,false);

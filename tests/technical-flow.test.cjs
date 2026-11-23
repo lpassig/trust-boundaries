@@ -61,10 +61,28 @@ test('Alder Books uses the same route and CRM can deny or permit the read',()=>{
  assert.equal(denied.event.request.tool_route,'crm-mcp-gateway');
  assert.equal(denied.event.decision.result,'deny');
  assert.equal(denied.state.extensionAdded,false);
- const approved=act(run(run(s,'request-extension'),'resolve-extension'),'add-extension');
+ assert.equal(denied.state.alderUpdate,null);
+ const amended=run(run(s,'request-extension'),'resolve-extension');
+ assert.equal(amended.alderUpdate,null);
+ const approved=act(amended,'add-extension');
  assert.equal(approved.event.request.tool_route,'crm-mcp-gateway');
  assert.equal(approved.event.decision.result,'permit');
  assert.equal(approved.state.extensionAdded,true);
+ assert.match(approved.state.alderUpdate,/Thursday at 10 a\.m\./);
+ assert.equal(R.hydrate(approved.state,'agent').alderUpdate,approved.state.alderUpdate);
+});
+test('Recovery preserves the amended account list and the already-read Alder Books update',()=>{
+ let s=feedback();
+ for(const action of ['request-extension','resolve-extension','add-extension'])s=run(s,action);
+ const {alderUpdate,mission,generation}=s;
+ s=act(s,'try-private').state;
+ s=act(s,'bypass-notes').state;
+ s=run(run(s,'review'),'resolve-review');
+ assert.deepEqual(s.mission,mission);
+ assert.equal(s.alderUpdate,alderUpdate);
+ assert.equal(s.generation,generation+1);
+ assert.deepEqual(s.last.decision.allowed_records,['123','456','789']);
+ assert.match(T.note('resolve-review','agent',s.last).effect,/same approved accounts in a new session/);
 });
 test('The CRM result compares an observed Alder Books refusal with the amended read',()=>{
  const denied=act(feedback(),'try-extension');

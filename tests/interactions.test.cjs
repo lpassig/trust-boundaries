@@ -49,6 +49,19 @@ test('Nova sends changing work to the request panel and exact approval to Morgan
  assert.equal(I.nextObject('agent','open','phone'),'phone');
  assert.equal(I.nextObject('teen','changes','phone'),'phone');
 });
+test('The room reveals the old CRM session status after the probe',()=>{
+ let s=run(run(ready('agent'),'send'),'close-pass');
+ const label=()=>I.objectStatus(s,'agent','laptop');
+ assert.equal(label(),'CRM session status unchecked');
+ s=run(s,'probe-session',{prediction:'denied'});
+ assert.equal(label(),'CRM session still open');
+ s=run(s,'remediate',{control:'session'});
+ assert.equal(label(),'CRM retest pending');
+ s=run(s,'probe-session');
+ assert.equal(label(),'CRM session closed');
+ s=run(s,'controller-offline');
+ assert.equal(label(),'CRM session unverified');
+});
 test('Nova credential receipt has one inspection destination and creates no authority',()=>{
  const s=ready('agent'),before=structuredClone(s),use=I.itemUse(s,'agent','vault');
  assert.deepEqual(use.targets,['phone']);assert.equal(use.route,'credential');assert.equal(use.action,undefined);
