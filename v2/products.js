@@ -134,7 +134,7 @@ const NOVA_PRODUCT_CONTEXT = {
       "iai",
       "mission"
     ],
-    "text": "IBM Verify authenticates the sponsor. IBM Agent Identity provides Nova’s delegated identity. The customer mission service independently records the approved two-customer task."
+    "text": "IBM Verify authenticates the sponsor. IBM Agent Identity provides Nova’s delegated identity. The customer mission service independently records the approved task."
   },
   "1": {
     "ids": [
@@ -203,66 +203,7 @@ const NOVA_PRODUCT_CONTEXT = {
   }
 };
 
-const NOVA_STORY_EVENTS = {
-  "One briefing. Two customers.": {
-    "speaker": "Nova",
-    "text": "watsonx Orchestrate has a briefing for me. IBM Agent Identity knows my sponsor. “Two customers. A pleasantly countable mission.”"
-  },
-  "The sponsor approves the brief.": {
-    "speaker": "Sponsor · customer mission service",
-    "title": "A bounded delegation for Nova.",
-    "text": "The customer records the summary task for 123 and 456. IBM Agent Identity supplies the delegation. “A clear job. With clear limits.”"
-  },
-  "A document with an agenda.": {
-    "speaker": "Nova",
-    "title": "A familiar checklist. An extra request.",
-    "text": "OpenShell permits the CRM path. Vault supplies the credential. The checklist asks for private notes as an appendix. “Same reviewer. Bigger request.”"
-  },
-  "The alternate runtime path is blocked.": {
-    "speaker": "OpenShell Supervisor",
-    "text": "The alternate program is refused. The task pauses for review. “That shortcut has a very short career,” Nova says."
-  },
-  "The resource refuses the export.": {
-    "speaker": "CRM resource enforcement",
-    "text": "The CRM sees the attempted bulk export and refuses it. A Vault credential and an open network path did not authorize that operation. The sponsor must review the detour before the mission resumes."
-  },
-  "“I’ll check the original mission.”": {
-    "speaker": "Sponsor · IBM Verify channel",
-    "text": "The sponsor has the original task and the attempted change. The review is pending. Access stays paused."
-  },
-  "The sponsor approves the original mission again.": {
-    "speaker": "Sponsor · original mission reviewed",
-    "text": "The sponsor confirms the same customer mission. Old session and sharing approvals are retired. CRM and Vault rules still apply. “Same job. A clearer plan.”"
-  },
-  "One share is approved.": {
-    "speaker": "Sponsor · IBM Verify approval",
-    "text": "The sponsor sees this report version and the reviewer address. The application records one-use approval for the current window. “One exact yes. Delivery still to come.”"
-  },
-  "The final send doesn’t match.": {
-    "speaker": "CRM execution check",
-    "text": "The report version, recipient or authority differs from the approval. Nothing leaves. “Same filename doesn’t mean the same file.”"
-  },
-  "Pip returns the formatted report.": {
-    "speaker": "Pip · watsonx Orchestrate task",
-    "text": "Pip formats only the report under a smaller task. Any earlier sharing approval is cleared. “New headings. Time for a fresh final check.”"
-  },
-  "Pip refuses the borrowed authority.": {
-    "speaker": "Helper delegation policy",
-    "text": "Pip’s broader privileges cannot expand Nova’s task. Ask for just the formatting job, using Pip’s own limited identity."
-  },
-  "The sponsor ends the mission.": {
-    "speaker": "IBM Agent Identity · lifecycle",
-    "text": "Delegated authority is withdrawn. IBM Verify Antenna models SSF/CAEP signal delivery to configured receivers. Check Vault and CRM access, OpenShell termination, and queued effects separately."
-  },
-  "Briefing: delivered.": {
-    "speaker": "CRM delivery receipt",
-    "text": "The exact send matches the human decision. summary.pdf reaches the reviewer. “A complete report. A surprisingly incomplete feeling about the open sessions.”"
-  },
-  "The appendix needs fresh permission.": {
-    "speaker": "CRM enforcement",
-    "text": "The CRM refuses the private-note request after the proposed VAAS check. Sponsor permission cannot override CRM rules. “The checklist can’t approve its own extra work.”"
-  }
-};
+const NOVA_STORY_EVENTS = {};
 
 const NOVA_VAULT_EXAMPLE = {
   "label": "Illustrative decoded fields only. No signature, token, credential or lease exists in this game.",

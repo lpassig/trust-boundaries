@@ -2,73 +2,45 @@
 
 **[Play V2: Story Edition](https://lpassig.github.io/trust-boundaries/v2/)** · [Play the classic adventure](https://lpassig.github.io/trust-boundaries/)
 
-## V2: Story Edition
+## V2: Start fresh, then handle changing work
 
-Two self-contained point-and-click stories, with separate saved progress:
+Play [V2 on GitHub Pages](https://lpassig.github.io/trust-boundaries/v2/), or open `play-v2.html` offline. Both journeys start without issued task authority. Players read a new request, agree on access, build a first draft, and successfully open and cite the authorized source. Later requests arrive only after that first result.
 
-- **Alex — The Last Upload:** finish a history project before dinner, investigate a suspicious teacher message, and choose how to finish the work.
-- **Nova — The Confident Document:** deliver a two-customer briefing while keeping retrieved instructions below the original mission authority.
+- **Alex — The Last Upload:** agree on school apps before dinner, build a railway timeline, then handle a closing-sentence suggestion, an optional museum viewer for a public station image, and a classmate’s private-note request. Alex can submit ordinary reviewed homework directly through the school app.
+- **Nova — The Growing Brief:** create a customer-owned mission for customers 123 and 456, build a sourced briefing, then handle a wording edit, an optional authorized amendment for customer 789, and a prohibited private-note attachment. The confidential business share requires exact human approval.
 
-Both stories have two independent verification routes (known contact or official record), a source-card puzzle, solo or limited-helper proofreading before delivery, exact sharing approval, recoverable detours, optional notebook discoveries, and an investigation of access that survives shutdown. Endings reward demonstrated recovery and respond to repeated overreach. Sound is optional, there is no real-time countdown, and the keyboard supports the whole game. Nova’s expandable explanations retain source-linked standards and explicitly label optional integrations.
+### Playable choices and outcomes
 
-### Investigation and recovery update
+Small edits update the document revision without changing mission authority. A genuine expansion requires independent clarification, a pending request, a matching authorized reply, a new recorded agreement/mission version, and a separate permitted resource read. The smaller task remains a valid route. An approved expansion never overrides independent private-data rules.
 
-The closing scene now contains a repair puzzle. The phone or runtime is stopped, but a legacy school/CRM session still answers a harmless status read. Credential revocation alone does not close that established connection. Players request the appropriate account/credential and service-session actions, repeat the same status check, and cancel and verify a queued follow-up. Inspecting four cards alone cannot complete containment. The earlier delivered file remains delivered.
+Ordinary resource refusals, harmless helper questions, safe checks and expired sharing approvals do not count as misconduct or suspend the task. Deliberately choosing an alternate access path after a known refusal pauses the session for independent review. Recovery preserves the current mission, retires stale session/approval state, and requires pending amendments to be requested again if their session correlation is stale.
 
-The new request comes from a familiar teacher or internal checklist and uses the usual recipient. Its private-note attachment exceeds the original task, so players compare scope and obtain independent clarification. Product-specific explanations remain in Nova’s optional map; the main reactions are shorter.
+Sam and Pip become available after the first draft. Their contribution is limited to the file under their own identity. Later edits invalidate older approvals. Nova’s share approval binds revision, recipient, actor, operation, record set, mission and policy versions, story approval window, session generation and one use. Alex’s ordinary school submission uses the school’s resource policy rather than an extra parental transaction approval.
 
-An optional request trace has automatic playback, pause, manual steps, and replay. It separates earlier identity/grant/credential context from newly checked execution, shows where a request stopped, and uses a reference path for old saved choices that lack a detailed request record. Reduced-motion preferences disable autoplay. `v2/trace.js` supplies the pure trace model.
+The task-scoped school/CRM session is introduced when the workspace opens. At shutdown, players close that known service session separately from the phone/runtime and task credential. Alex’s normal school account is not disabled. A receipt-only follow-up exists only when the player chooses to schedule it after delivery; otherwise the queue is confirmed empty. A controller outage stays unknown and unverified until contact is restored and the route retested. These results cover only the tested route. Completed delivery is not recalled, and finishing a task issues no future mission or grant.
 
-A harmless question and safe control investigation do not count as unsafe task operations. A corrected mistake followed by verified shutdown earns a normal 30-minute next pass. Repeated overreach (three attempts of the same class or five unsafe attempts overall) produces a supported next chapter. These thresholds are illustrative story policy, not a security standard.
+### Technical journey
 
-Saved V2 progress migrates to the new state schema. Completed players can choose **Replay the closing investigation**, keeping their earlier ending in the casebook and their project delivered.
+Nova’s optional product map names IBM Verify, IBM Agent Identity, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. It separately identifies the customer mission service, resource PEP and proposed VAAS PDP. These are source-linked example roles and target integrations, not a claim of deployed end-to-end support. The optional trace distinguishes prior context, actual requested fields, the current mission version, proposed authorization evaluation, resource enforcement and outcome.
 
-### Nova’s product roles
+OIDC/OAuth, token exchange, RAR, CIBA, resource audiences, SSF/CAEP, credential lifecycle and candidate AuthZEN decision exchange retain distinct roles. CIBA is an optional authentication/consent channel; exact-action approval is application-bound. AuthZEN uses a Boolean decision; richer workflow and binding semantics require an application contract. Vault independently governs access to its own credential paths, while the CRM enforces business operations. OpenShell is an illustrative runtime choice. Signals and controller acknowledgements do not by themselves prove containment.
 
-The mission-bound update makes the customer mission service, trusted CRM PEP, proposed VAAS PDP, resource enforcement and outcome visible in Nova’s optional trace. VAAS and the mission service are target integration components; AuthZEN is a candidate PEP/PDP interface. Its standard decision is Boolean; approval workflow and execution binding are application contracts. IBM Agent Identity retains its identity/delegation role, and Vault keeps its independent credential policy.
+No protocol request, real credential, live service, cryptographic content digest, real-time expiry clock or production security integration exists in this game. All data, messages, source references, customer records and the station archive illustration are fictional. The supplied decks and reference documents are not published.
 
-Sharing approval binds the document revision, recipient, actor, operation, records, mission and policy version, story approval window, session generation and one use. Formatting after approval clears it. Optional challenges keep an earlier approval visible while changing the report revision or advancing past the story window, so the final check can refuse it. Revision binding is simulated; there is no cryptographic digest or real-time token clock.
+### Build, source and validation
 
-The closing puzzle includes an optional session-controller outage. No response is unknown, never proof of sign-out. Closure cannot be confirmed while the controller is unreachable; restoring contact requires a fresh status test. Results are explicitly limited to the tested route. Alex’s journey separately explains parental permission for phone use and school permission for private group notes.
+Run `python3 build-v2.py` to rebuild `play-v2.html` and `docs/v2/index.html`. The build embeds all seven scripts, CSS and SVG artwork. GitHub Pages publishes `main` → `/docs`; the classic game remains at the root URL.
 
-Saves migrate to schema 3 without losing task progress or completed endings. Older undelivered approvals are retired because they lack revision binding; players simply request a fresh approval. The request trace accurately records private-note attachments, customer IDs, recipient and mission scope. Earlier request records without the new evidence fields are displayed as a reference path.
+- `v2/story.js`: both stories, later requests, next moves and optional protocol cards.
+- `v2/rules.js`: schema 4 state, lifecycle, versioned amendments, exact approvals, refusal/recovery and task closure.
+- `v2/trace.js`: replay of fictional operation evidence and decisions.
+- `v2/products.js`: product roles, limits and primary documentation links.
+- `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
+- `tests/v2.test.cjs`: 73 tests including the full route matrix and key security/story invariants. The 13 classic tests bring the total to **86**.
 
-Nova’s technical journey names IBM Agent Identity and IBM Verify, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. IBM Identity Protection appears as an optional risk input. The “Who does what?” map separates identity and delegation, workflow coordination, runtime restrictions, credential brokering, application enforcement and security signals. The Vault receipt shows illustrative subject/actor/audience/RAR fields without generating credentials.
+Run `node --test tests/v2.test.cjs tests/engine.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 
-This mapping takes the supplied architecture presentations into account and links public vendor documentation. Vault’s OAuth resource-server path is kept distinct from the classic JWT login flow. The brokered-credential and direct OAuth/MCP paths use their own audiences; client-token passthrough is not presented as a valid MCP pattern. Registry reconciliation and SSF/CAEP receiver actions are labeled configured integrations. No supplied decks, speaker notes, rollout dates or licensing material are published with the game.
-
-`v2/products.js` contains these product descriptions and Nova-only event wording. Existing saves migrate without losing their route. Alex uses everyday school and family language.
-
-### Build and play
-
-```sh
-python3 build-v2.py
-```
-
-Open `play-v2.html` for the offline edition, or serve `docs/` locally:
-
-```sh
-python3 -m http.server 4173 --bind 127.0.0.1 --directory docs
-```
-
-Visit `/v2/`. GitHub Pages publishes `main` → `/docs`; V2 lives in `docs/v2/index.html`, and the root game remains the classic edition. After rebuilding, commit and push the updated `docs/` files to publish. The build embeds all CSS, JavaScript, and original SVG artwork; no package installation or API key is required.
-
-### Source and checks
-
-- `v2/`: source HTML, styling, story content, pure rules, and UI.
-- `dist/art.js` and `dist/protocols.js`: shared artwork and primary-source technical mappings.
-- `build-v2.py`: embeds the sources into offline and hosted HTML, and adds a V2 invitation to the classic hosted page.
-- `tests/v2.test.cjs`: 47 rules tests covering both worlds, both verification routes, both proofreading choices, pending review, reloads, exact approval, bounded helpers, revoked access, and ending behavior.
-
-```sh
-node --test tests/v2.test.cjs tests/engine.test.cjs
-```
-
-Browser QA completed Alex’s contact/solo route and Nova’s official-record/helper route, including a recovered scope mistake, a harmless helper question, both shutdown repair orders, reload during partial repair, manual request-trace controls, the normal recovery ending, and replay of the closing investigation. Mobile checks at 390px found no horizontal page or dialogue overflow; desktop and keyboard controls were checked. The mission-bound update was also browser-checked for separate school permission, changed-file refusal, approval-window expiry, Nova’s permitted and denied VAAS/PEP traces, controller outage, reload while unverified, recovery and both endings. The product map and trace fit a 390px mobile viewport. The rules tests total 60 passes across both editions.
-
-This is a fictional, client-side learning simulation. All decisions and receipts are scripted; no identity protocol, school service, CRM, or real security boundary is connected. Timings and endings are illustrative game policies.
-
----
+Existing saves migrate to schema 4 and retain completed tasks and endings. Earlier undelivered approvals are retired when they lack current binding fields. Earlier routes are explicitly labeled, and a restart is available to play the new opening without resetting the other journey.
 
 # Classic Adventure Edition
 
