@@ -144,6 +144,11 @@ dialog #lesson-text{font-size:14px;line-height:1.45;margin:0 0 6px}
 
 .speech-mark{border:0;border-radius:0}.speech-mark svg{width:26px;height:26px}
 
+.share-wording{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.share-wording>div{background:#101a2266;border:1px solid var(--line);border-radius:10px;padding:9px;overflow-wrap:anywhere}
+.share-wording>div:last-child{border-color:var(--accent)}
+.share-wording b{font-size:12px;color:var(--accent)}
+dialog:not(.is-reference) .share-wording p{font-size:14px;line-height:1.4;margin:4px 0 0}
 .share-comparison {
   width: 100%;
   table-layout: fixed;

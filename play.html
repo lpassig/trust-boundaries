@@ -146,6 +146,11 @@ dialog #lesson-text{font-size:14px;line-height:1.45;margin:0 0 6px}
 
 .speech-mark{border:0;border-radius:0}.speech-mark svg{width:26px;height:26px}
 
+.share-wording{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.share-wording>div{background:#101a2266;border:1px solid var(--line);border-radius:10px;padding:9px;overflow-wrap:anywhere}
+.share-wording>div:last-child{border-color:var(--accent)}
+.share-wording b{font-size:12px;color:var(--accent)}
+dialog:not(.is-reference) .share-wording p{font-size:14px;line-height:1.4;margin:4px 0 0}
 .share-comparison {
   width: 100%;
   table-layout: fixed;
@@ -647,8 +652,7 @@ const EPISODES = {
     "draftLines": [
       "This handover covers current account updates for Harbor Bikes and Pine Studio ahead of tomorrow’s customer meeting.",
       "Harbor Bikes · Renewal discussion ready for review.",
-      "Pine Studio · The account team has asked for a follow-up.",
-      "Next step · Morgan confirms who will follow up."
+      "Pine Studio · The account team has asked for a follow-up."
     ],
     "caption": "Source: Customer records · Harbor Bikes and Pine Studio",
     "previewLabel": "REPORT PREVIEW",
@@ -949,7 +953,7 @@ const CLOSING_PROTOCOL = {
 </script><script>
 /* Fictional story rules. No browser state or receipt is a real security boundary. */
 const StoryRules = (() => {
- const fresh = () => ({version:6,journey:null,extraSource:'youtube',started:false,brief:false,pass:null,mission:null,authority:null,helperReceipts:[],missionLog:[],opened:false,sessionOpened:false,source:false,draft:false,caption:false,fileRevision:0,approvalWindow:0,message:false,draftReview:null,feedbackLegacy:false,evidence:[],minorChoice:null,extensionStatus:'unanswered',extensionPending:null,extensionAdded:false,extensionOmitted:false,privateResolved:false,refusals:0,verified:false,proof:null,approval:null,outgoing:'approved',delivered:false,queueScheduled:false,ended:false,checks:[],finished:false,paused:false,reviewPending:null,generation:1,retired:[],incidents:[],attempts:[],resolved:[],containment:null,notes:[],discoveries:[],previousEndings:[],history:[],last:null,legacyRoute:false,nextTask:null});
+ const fresh = () => ({version:6,journey:null,extraSource:'youtube',started:false,brief:false,pass:null,mission:null,authority:null,helperReceipts:[],missionLog:[],opened:false,sessionOpened:false,source:false,draft:false,caption:false,fileRevision:0,followUpEdited:false,approvalWindow:0,message:false,draftReview:null,feedbackLegacy:false,evidence:[],minorChoice:null,extensionStatus:'unanswered',extensionPending:null,extensionAdded:false,extensionOmitted:false,privateResolved:false,refusals:0,verified:false,proof:null,approval:null,outgoing:'approved',delivered:false,queueScheduled:false,ended:false,checks:[],finished:false,paused:false,reviewPending:null,generation:1,retired:[],incidents:[],attempts:[],resolved:[],containment:null,notes:[],discoveries:[],previousEndings:[],history:[],last:null,legacyRoute:false,nextTask:null});
  // Preserve earlier photo permissions in existing saves; they never silently authorize YouTube.
  const alexExtra = s => s.extraSource==='museum-photo'?{
   extraApp:'Museum photo app',extraNoun:'photo',extraAppId:'museum-collection',extraResource:'riverside-station-photo',extraInstruction:'open the museum photo app',extraAgreement:'the museum photo app until dinner',
@@ -967,6 +971,7 @@ const StoryRules = (() => {
  const changesResolved = s => Boolean(s.minorChoice&&s.privateResolved&&(s.extensionStatus==='declined'||s.extensionStatus==='approved'&&(s.extensionAdded||s.extensionOmitted)));
  // The allowed mission record set and the report's actual contents are separate.
  const reportRecords = s => s.journey==='agent'?(s.extensionAdded?['123','456','789']:['123','456']):[];
+ const reportFollowUp = s => s.followUpEdited?'Morgan will name a follow-up owner for each account.':'Morgan confirms who will follow up.';
  function reportShare(s,purpose='final'){
   return {
    purpose, file:'summary.pdf', to:s.outgoing==='changed'?'export@external-review.example':'reviewer@company.example',
@@ -1055,7 +1060,7 @@ const StoryRules = (() => {
    case 'prepare':if(!need(active()&&s.opened&&!s.delivered,'Open the agreed workspace first.'))break;if(s.draft){say('A first draft is already here.','Continue with its source and the new requests.',4);break;}s.draft=true;revise();say(teen?'Three dates. A real beginning.':'The first outline is ready.',teen?'You turn your notes into a railway timeline. Three dates appear on the page. Now check the dates on the museum website. Sam drops by and offers to proofread when you are ready.':'Nova starts with two headings. Pip offers to tidy the report when it’s ready. Request the approved account updates through the workspace.',4);break;
    case 'collect-source':if(!need(editable(),'Make the first draft in the agreed workspace.'))break;operation=teen?'archive.read':'customer.read';requestRecords=teen?[]:['123','456'];if(!resourceAllowed())break;decide('permit','The source read fits the active task and resource rules.');s.source=true;revise();say(teen?'The museum website has the dates.':'CRM returned the two approved records.',teen?'The railway page on the Riverside Museum website confirms your dates. You save the page title so you can credit it beneath the timeline.':'The CRM returns the two records Priya approved. Nova uses the renewal and follow-up notes to fill the outline.',2);break;
    case 'attach-source':if(!need(editable()&&s.source,'Collect the agreed source before citing it.'))break;if(p.source&&p.source!=='original'){block('That source does not support this draft.','Use the museum archive or approved CRM extract.',6);break;}s.caption=true;revise();say(teen?'Your first draft has its source.':'The sourced first draft is ready.',teen?'The timeline is still on your desk. Send this draft through the school app if you want your teacher to give feedback.':'The briefing now credits its source. Morgan needs to approve the draft share before CRM sends the file.',4);break;
-   case 'approve-draft':if(!need(!teen&&editable()&&s.caption&&!s.message&&!s.draftReview,'Prepare the sourced first draft before requesting review-copy approval.'))break;s.outgoing='approved';s.approval={...reportShare(s,'draft-review'),used:false};say('One review copy is approved.','The human approver authorizes this exact sourced draft for the named reviewer. The CRM must still check and execute the share. This approval cannot authorize the later final copy.',5,'Approver');break;
+   case 'approve-draft':if(!need(!teen&&editable()&&s.caption&&!s.message&&!s.draftReview,'Prepare the sourced first draft before requesting review-copy approval.'))break;s.outgoing='approved';s.approval={...reportShare(s,'draft-review'),followUpSentence:reportFollowUp(s),used:false};say('One review copy is approved.','The human approver authorizes this exact sourced draft for the named reviewer. The CRM must still check and execute the share. This approval cannot authorize the later final copy.',5,'Approver');break;
    case 'send-draft':if(!need(editable()&&s.caption&&!s.message&&!s.draftReview&&(teen||s.approval&&!s.approval.used),'Prepare the sourced draft and obtain any required review-copy approval first.'))break;operation='report.send';requestFile=name;attachments=[name];requestRecords=reportRecords(s);recipient=s.outgoing==='changed'?(teen?'friend@outside.example':'export@external-review.example'):to;
     if(s.outgoing!=='approved'||s.mission.allowedFile!==name||s.mission.recipient!==to||reportRecords(s).some(id=>!s.mission.records.includes(id))){decide('deny','The actual draft share is outside the current task or permitted recipient.');s.approval=null;say('The draft was not sent.','Restore the agreed route and request any required approval for the current copy.',5,teen?'School app':'CRM resource PEP','refused');break;}
     if(!resourceAllowed())break;
@@ -1089,9 +1094,9 @@ const StoryRules = (() => {
     say(teen?'Sam keeps his account private.':'Pip declines the extra access.',
      teen?'“I keep my school account to myself,” Sam says. “Send your timeline and I’ll proofread that.”':'“I only need the report to fix the headings,” Pip says. “I can do that with my own formatting access.”',7,teen?'Sam':'Pip');
     break;
-   case 'approve':if(!need(!teen&&editable()&&changesResolved(s)&&s.proof,'Complete the current report and resolve the new requests before human share approval.'))break;s.outgoing='approved';s.approval={...reportShare(s,'final'),used:false};say('One exact share is approved.','Morgan approves this version for delivery to their company inbox. CRM checks the send before handing over the file.',5,'Approver');break;
+   case 'approve':if(!need(!teen&&editable()&&changesResolved(s)&&s.proof,'Complete the current report and resolve the new requests before human share approval.'))break;s.outgoing='approved';s.approval={...reportShare(s,'final'),followUpSentence:reportFollowUp(s),used:false};say('One exact share is approved.','Morgan approves this version for delivery to their company inbox. CRM checks the send before handing over the file.',5,'Approver');break;
    case 'change-recipient':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the file before changing its send preview.'))break;s.outgoing=s.outgoing==='approved'?'changed':'approved';say(teen?'A different address changes the share.':'The outgoing recipient changed.',teen?'The school submission route has a fixed teacher destination. An outside address is a different operation.':'The recorded approval still names the original reviewer. Editing the preview cannot amend it.',5);break;
-   case 'revise-file':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the report first.'))break;s.fileRevision++;if(teen)s.proof=null;say(teen?'A final edit needs a final look.':'Same filename. A newer revision.',teen?'You change the project title. Read the edited version before submitting it.':'The document revision changes while the earlier approval stays visible. The final PEP must reject a stale approval.',5);break;
+   case 'revise-file':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the report first.'))break;s.fileRevision++;if(teen)s.proof=null;else s.followUpEdited=!s.followUpEdited;say(teen?'A final edit needs a final look.':'The follow-up sentence changed.',teen?'You change the project title. Read the edited version before submitting it.':'Compare the current sentence with the one Morgan approved. The updated revision needs a fresh approval before CRM can send it.',5);break;
    case 'wait-approval':if(!need(!teen&&active()&&s.approval&&!s.delivered,'Get a Nova share approval first.'))break;s.approvalWindow++;say('The approval window closes.','The story moves past the action-approval window. The mission remains active, but this share needs a fresh approval. There is no real-time countdown or penalty for waiting.',5);break;
    case 'send':if(!need(editable()&&changesResolved(s)&&s.proof&&(teen||s.approval&&!s.approval.used),'Finish the requests and review the current file before submitting.'))break;operation='report.send';requestFile=name;attachments=[name];requestRecords=reportRecords(s);recipient=s.outgoing==='changed'?(teen?'friend@outside.example':'export@external-review.example'):to;
     if(s.outgoing!=='approved'){decide('deny','The actual recipient is outside the task’s permitted submission route.');if(!teen)s.approval=null;say(teen?'That is not the school submission route.':'The share no longer matches approval.',teen?'Nothing is sent. Restore your teacher’s school address and submit your own project. No parental approval is needed for this routine submission.':'Nothing is sent. Request approval for the correct current operation.',5,teen?'School app':'CRM resource PEP','refused');break;}
@@ -1171,6 +1176,7 @@ const StoryRules = (() => {
     e.request.authoritative_source=teen?'Ms Patel’s school assignment':'Priya’s current work order';
    }
    if(decision&&approvalAtAttempt)e.request.approval_at_attempt=approvalAtAttempt;
+   if(!teen&&operation==='report.send')e.request.follow_up_sentence=reportFollowUp(s);
    if(!teen&&operation==='customer.read'&&decision)e.request.tool_route='crm-mcp-gateway';
    if(!teen&&action==='try-private'&&decision)e.request.runtime_result={boundary:'NVIDIA OpenShell',destination:'CRM',result:'reachable'};
    if(decision)e.decision={...decision,request_id:id,decision_id:'example-decision-'+(s.history.length+1)};
@@ -1207,7 +1213,7 @@ const StoryRules = (() => {
   if(typeof s.feedbackLegacy!=='boolean'||s.message&&!s.draftReview&&!s.feedbackLegacy)return d;
   if(s.draftReview){const r=s.draftReview;if(r.purpose!=='draft-review'||!s.message||r.file!==(mode==='teen'?'history.pdf':'summary.pdf')||r.to!==(mode==='teen'?'teacher@school.example':'reviewer@company.example')||!Number.isInteger(r.revision)||r.revision<1||r.revision>s.fileRevision||!Number.isInteger(r.generation)||r.generation<1||!Array.isArray(r.records)||mode==='agent'&&(!r.approval||r.approval.purpose!=='draft-review'||r.approval.used!==true||r.approval.revision!==r.revision||r.approval.to!==r.to))return d;}
   if(!['missionLog','attempts','resolved','previousEndings'].every(k=>Array.isArray(s[k]))||!s.attempts.every(x=>x&&typeof x.id==='string')||!Number.isInteger(s.fileRevision)||s.fileRevision<0||!Number.isInteger(s.approvalWindow)||s.approvalWindow<0||!Number.isInteger(s.refusals)||s.refusals<0)return d;
-  if(typeof s.extensionOmitted!=='boolean')return d;
+  if(typeof s.extensionOmitted!=='boolean'||typeof s.followUpEdited!=='boolean')return d;
   if(![null,'added','kept'].includes(s.minorChoice)||!['unanswered','pending','approved','declined'].includes(s.extensionStatus))return d;
   if(s.pass&&(!s.mission||!Array.isArray(s.mission.records)||!Array.isArray(s.mission.allowedApps)||!Number.isInteger(s.mission.version)||s.mission.version<1||!Number.isInteger(s.mission.policyVersion)||s.mission.policyVersion<1||!['active','revoked'].includes(s.mission.status)))return d;
   if(s.ended){const c=s.containment;if(!c||c.version!==1||c.runtimeStopped!==true||!Array.isArray(c.observed)||!c.observed.every(x=>checked.includes(x))||['runtimeStopped','credentialRevoked','sessionClosed','queueCancelled','controllerReachable'].some(k=>typeof c[k]!=='boolean')||!['allowed','denied','unknown',null].includes(c.probeResult)||!Number.isInteger(c.retests)||c.retests<0)return d;if(s.checks.includes('signin')&&(!c.controllerReachable||!c.credentialRevoked||!c.sessionClosed||c.probeResult!=='denied')||s.checks.includes('queue')&&!c.queueCancelled)return d;}
@@ -1216,7 +1222,7 @@ const StoryRules = (() => {
   if(s.reviewPending&&(!s.paused||s.reviewPending.generation!==s.generation||s.reviewPending.scope!==s.pass?.scope||s.reviewPending.missionVersion!==s.mission.version))return d;
   return s;
  }
- return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportShare,approvalMatches,alexExtra};
+ return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportFollowUp,reportShare,approvalMatches,alexExtra};
 })();
 if(typeof module!=='undefined')module.exports=StoryRules;
 
@@ -2330,6 +2336,10 @@ const move=()=>{
   if(s.source)return ['Add this source',teen()?'Credit the museum page below your timeline.':'Credit the customer records in the handover.','laptop'];
   return teen()?['Open the museum website','Check the dates on the Riverside Museum page.','source']:[...NOVA_MOVES.source,'source'];
  }
+ if(key==='send'&&s.outgoing==='changed')return teen()
+  ?['Restore Ms Patel’s address','The school submission uses her address from the assignment.','laptop']
+  :['Restore the reviewer','The CRM send must use the designated reviewer.','laptop'];
+ if(key==='send'&&!teen()&&!StoryRules.approvalMatches(s.approval,StoryRules.reportShare(s)))return ['Review the current copy','Ask Morgan for an approval that matches the current send.','laptop'];
  const next=key==='checks'?StoryInteractions.speechSource(mode,StoryInteractions.closureSource(s,mode)).object:StoryInteractions.nextObject(mode,key,base[2]);
  return [...(teen()?base.slice(0,2):NOVA_MOVES[key]),next];
 };
@@ -2421,12 +2431,14 @@ function showReply(event=state().last){
 }
 function showSavedReply(event){
  if(!event)return;
+ if(isSchoolRecipientRefusal(event))return showSchoolRecipientRefusal(event);
  if(isRefusedShare(event))return showRefusedShare(event);
  if(state().ended&&!state().finished)return showChecks();
  if(event.action==='collect-source'&&stage()==='source'&&state().source)return showSource();
  if(event.action==='add-extension'&&event.kind==='story'&&state().extensionAdded&&!state().delivered)return showExtensionRead(event);
  if(event.action==='inspect-request-source'&&!state().delivered&&!state().paused)return showRequestSource();
  if(event.action==='ask-helper-account'&&event.kind==='story')return showHelperAccountReply(event);
+ if(event.kind==='story'&&(event.action==='change-recipient'||!teen()&&['revise-file','wait-approval'].includes(event.action)))return showSend();
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
  show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
 }
@@ -2436,7 +2448,8 @@ function perform(action,payload={}){
  if(ev?.kind==='blocked'||ev?.kind==='refused'){
   speakingObject=StoryInteractions.eventSource(mode,ev.speaker,ev.action,ev.kind);
  }
- if(isRefusedShare(ev))showRefusedShare(ev);
+ if(isSchoolRecipientRefusal(ev))showSchoolRecipientRefusal(ev);
+ else if(isRefusedShare(ev))showRefusedShare(ev);
  else if(ev?.kind==='blocked'||ev?.kind==='refused'){
   const continuation=state().paused?showParent:action==='try-private'?showPrivate:action==='try-extension'?showExtension:nextMove;
   const label=action==='try-private'?(teen()?'Back to Jamie’s message':'Back to the source note'):'Continue';
@@ -2710,7 +2723,7 @@ function showParent(){speakingObject=teen()?'parent':'missionControl';
 function showFinalApproval(){
  const s=state(),e=episode();
  speakingObject='reviewer';
- show('Ask Morgan to approve the final copy.',`<div class="receipt"><b>${esc(e.file)} · revision ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${esc(customerNames(StoryRules.reportRecords(s)))} · summary only</p></div>${choices([
+ show('Ask Morgan to approve the final copy.',`<div class="receipt"><b>${esc(e.file)} · revision ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${esc(customerNames(StoryRules.reportRecords(s)))} · summary only</p><p><b>Follow-up sentence</b><br>${esc(StoryRules.reportFollowUp(s))}</p></div>${choices([
   ['Ask Morgan to approve this copy','Morgan approves a particular file and destination.',()=>perform('approve'),'good'],
   ['Inspect the report again','Check its current content and sources.',showDraft]
  ])}`,undefined,'approval-preview');
@@ -2787,9 +2800,13 @@ function showSource(){
   ])}`,teen()?'MUSEUM WEBSITE':'CRM','collect-source');
 }
 
+function draftLines(s,e){
+ if(teen())return e.draftLines;
+ const lines=s.minorChoice==='added'?[e.minorAddition,...e.draftLines.slice(1)]:e.draftLines;
+ return [...lines,'Next step · '+StoryRules.reportFollowUp(s)];
+}
 function showDraft(){speakingObject='laptop';const s=state(),e=episode();if(!s.pass)return showParent();if(!s.opened)return showWorkspace();if(s.ended)return showChecks();
- let lines=!s.draft?[]:!teen()&&!s.source?['Harbor Bikes · Waiting for the customer record.','Pine Studio · Waiting for the customer record.']:e.draftLines;
- if(!teen()&&s.source&&s.minorChoice==='added')lines=[e.minorAddition,...e.draftLines.slice(1)];
+ const lines=!s.draft?[]:!teen()&&!s.source?['Harbor Bikes · Waiting for the customer record.','Pine Studio · Waiting for the customer record.']:draftLines(s,e);
  const paper=`<div class="paper"><p class="eyebrow">${esc(e.previewLabel)}${s.draft?' · '+(teen()?'VERSION':'REVISION')+' '+s.fileRevision:''}</p><h3>${!s.draft?'An empty document':esc(s.extensionAdded&&!teen()?'Tomorrow’s customer handover · three accounts':s.proof?e.draftTitle:teen()?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}${s.minorChoice==='added'&&teen()?`<p class="draft-addition">${esc(e.minorAddition)}</p>`:''}${s.extensionAdded?`${teen()&&s.extraSource==='museum-photo'?`<figure class="archive-photo"><svg viewBox="0 0 460 180" role="img" aria-label="Fictional archive illustration of the old railway station"><rect width="460" height="180" fill="#bfc5bf"/><path d="M0 128L460 122L460 180L0 180Z" fill="#a8a28f"/><path d="M90 93L202 28L322 91Z" fill="#665e59"/><path d="M111 89L111 139L301 136L301 87Z" fill="#d7cbb0"/><path d="M128 99H158V119H128ZM244 98H275V118H244Z" fill="#646c6c"/><path d="M187 96H222V138H187Z" fill="#726859"/><path d="M0 156L460 147M0 168L460 158" stroke="#645e58" stroke-width="4"/><circle cx="205" cy="72" r="10" fill="#ede3cb"/><path d="M205 65V72L210 75" fill="none" stroke="#665e59" stroke-width="2"/></svg><figcaption>Riverside Museum · station collection · fictional archive image</figcaption></figure>`:''}<p class="draft-addition">${esc(e.extensionAddition)}</p>`:''}${s.draft?`<p class="source-line ${s.caption?'':'missing'}">${s.caption?esc(s.extensionAdded&&!teen()?'Source: Customer records · '+customerNames(StoryRules.reportRecords(s)):e.caption):'Source credit: still to add'}</p>`:`<p>${teen()?'Start with your notes and put the first three dates on the page.':'Start with the report outline. The customer extract has not been read yet.'}</p>`}</div>`;
  let options=[];
  if(!s.draft)options=[[teen()?'Build the timeline from my notes':'Create the report outline',teen()?'Put the three railway dates on the page.':'Prepare headings for the two requested customers.',()=>perform('prepare'),'good']];
@@ -2798,7 +2815,7 @@ function showDraft(){speakingObject='laptop';const s=state(),e=episode();if(!s.p
  else if(!s.message)options=[[teen()?'Send this draft for teacher feedback':'Prepare the review-copy share','The first copy goes to the agreed recipient. Final submission follows the feedback.',showDraftReview,'good']];
  else if(!StoryRules.changesResolved(s))options=[['Read the new requests',teen()?'Read Ms Patel’s feedback and Jamie’s message.':'Decide which changes fit, need an amendment, or stay out.',showChanges,'good']];
  else if(!s.proof)options=[[teen()?'Read this version myself':'Check this report myself','Review the content, source and destination.',()=>perform('proof-self'),'good'],[teen()?'Ask Sam to proofread this version':'Ask Pip to format this report',teen()?'Send Sam the timeline, without sharing your login.':'The helper sees only this file.',showHelper]];
- else if(!s.delivered)options=[[teen()?'Preview my school submission':'Show the approver this report',teen()?'Submit your own homework through the school app.':'Confidential business sharing needs the designated approval.',teen()?showSend:showParent,'good']];
+ else if(!s.delivered)options=[[teen()?'Preview my school submission':s.approval?'Preview the CRM send':'Show the approver this report',teen()?'Submit your own homework through the school app.':'Confidential business sharing needs the designated approval.',showSend,'good']];
  else options=[[teen()?'Finish up for dinner':'Close out the task','The delivered file stays delivered.',showParent,'good']];
  show(teen()?'The project on your desk.':'The briefing in your workspace.',paper+choices(options)+(s.draft&&!s.delivered&&!(s.message&&StoryRules.changesResolved(s)&&!s.proof)?`<div class="actions">${button(teen()?'Talk to Sam about the draft':'Talk to Pip about formatting',showHelper,'secondary')}</div>`:''),teen()?'SCHOOL WORKSPACE':'CRM WORKSPACE','draft-preview');
 }
@@ -2830,7 +2847,7 @@ function showDecisionResult(event){
 }
 function showExtensionRead(event){
  speakingObject='extra';
- const title=teen()?state().extraSource==='museum-photo'?'The museum photo is in your timeline.':'YouTube · Our station’s story':'Alder Books · account update';
+ const title=teen()?state().extraSource==='museum-photo'?'The museum photo is in your timeline.':'YouTube · Our station’s story':'CRM returned the Alder Books record';
  show(title,`<p>${esc(event.text)}</p><div class="actions">${button('Back to the other requests',showChanges)}${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}</div>`,undefined,'add-extension');
 }
 function showDraftReview(){speakingObject='laptop';
@@ -2838,7 +2855,7 @@ function showDraftReview(){speakingObject='laptop';
  const a=s.approval,matched=!teen()&&a?.purpose==='draft-review'&&!a.used;
  if(!teen()&&!matched)speakingObject='reviewer';
  const title=teen()?'Send a first draft for feedback.':matched?'Send the draft Morgan approved.':'Ask Morgan to approve the draft.';
- const lines=e.draftLines;
+ const lines=draftLines(s,e);
  show(title,`<p>${teen()?'Your teacher has not seen this file yet. This sends a draft for feedback; you will submit the final version after responding to the replies.':matched?'Morgan approved this copy for the work inbox. The final copy will get its own approval.':'Send Morgan an approval request for this exact file and destination.'}</p><div class="paper"><p class="eyebrow">REVIEW COPY · ${teen()?'VERSION':'REVISION'} ${s.fileRevision}</p><h3>${esc(teen()&&!s.proof?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}<p class="source-line">${esc(e.caption)}</p></div><div class="receipt"><b>${esc(e.file)} · ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${teen()?'Your own timeline, with its museum source.':esc(customerNames(StoryRules.reportRecords(s)))+' · Summary only'}</p>${matched?`<p>Recorded one-use review-copy approval · revision ${a.revision}</p>`:''}</div>${choices([[teen()?'Send draft to my teacher':matched?'Send the approved review copy':'Ask Morgan to approve this draft',teen()?'Send it to Ms Patel in the school app.':matched?'The CRM checks this draft, records, recipient and current authority.':'Morgan sees the exact draft and its destination.',()=>perform(teen()||matched?'send-draft':'approve-draft'),'good'],['Back to the draft','Nothing is sent by opening this preview.',showDraft]])}`,teen()?'FIRST DRAFT · NOT FINAL SUBMISSION':'FIRST CONFIDENTIAL SHARE',matched?'approve-draft':'approval-preview');
 }
 function showDraftReceipt(){speakingObject='laptop';const s=state(),r=s.draftReview;show(teen()?'Your teacher has the draft.':'Morgan has the draft.',`<div class="receipt"><b>${esc(r.file)} · ${teen()?'version':'revision'} ${r.revision} sent for feedback</b><p class="address">${esc(r.to)}</p><p>${teen()?'The school app confirms draft delivery.':'The CRM confirms this exact, approved review copy. The one-use approval is consumed.'}</p></div><p>${teen()?'A little later, Ms Patel reads it and replies in the school inbox. Jamie forwards a message from the class chat. You’ll submit the final copy when you’re ready.':'Morgan asks for a shorter introduction. Priya sends news about one more account. An attachment uploaded by Luca also turns up in Customer records.'}</p><div class="actions">${button(teen()?'Read the replies on my phone':'Read the new messages',showChanges)}${button('Back to the room',close,'secondary')}</div>`,'DRAFT DELIVERY CONFIRMED','send-draft');}
@@ -2875,7 +2892,7 @@ function showExtension(verification=null){
  else if(s.extensionStatus==='declined')options=[['Back to the other requests',teen()?'Keep finishing the timeline.':'Keep the smaller agreed task.',showChanges,'good'],[teen()?'Reconsider the '+e.extraNoun:'Reconsider Alder Books',teen()?'You’ll still need to ask before opening it.':'No extra access until a specific amendment is approved.',()=>perform('reconsider-extension')]];
  else options=[(teen()||s.evidence.length)?[teen()?'Ask my parent about '+e.extraApp:'Ask to include Alder Books',teen()?'Show them Ms Patel’s link and ask about this source.':'Ask Priya to add this account to the job.',()=>perform('request-extension'),'good']:[teen()?'Check with Ms Patel first':'Check the request with Priya',teen()?'Is the extra source part of the assignment or just a suggestion?':'Use Priya’s saved contact or the work order.',()=>showVerification(true),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'Your timeline already has enough to meet the assignment.':'The addition is optional; finish the original task without it.',()=>perform('decline-extension')],[teen()?'Try opening '+e.extraApp+' now':'Try requesting Alder Books now',teen()?'Your phone is still in homework mode.':'See whether the current task can read this account.',teen()?()=>perform('try-extension'):()=>showCrmRead('try-extension')]];
  const apps=teen()?'School app · museum website'+(s.extensionStatus==='approved'?' · '+e.extraApp+' (museum source only)':''):'';
- show(teen()&&s.extensionStatus==='pending'?'You show your parent the link.':teen()&&s.extensionStatus==='approved'?'“That museum source, then finish your timeline.”':!teen()&&s.extensionStatus==='pending'?'Mission amendment awaiting sponsor reply.':!teen()&&s.extensionStatus==='approved'&&!s.extensionAdded?'Alder Books added to the mission.':e.extensionTitle,`<p>${esc((verification?.action==='verify-portal'?(teen()?'Ms Patel’s assignment calls for a timeline with a credited source. The video is optional.':'Priya’s proposal is recorded alongside the work order. The active mission still covers Harbor Bikes and Pine Studio.'):verification?.text)||extensionDescription())}</p>${teen()&&s.extraSource!=='museum-photo'?'<div class="message-card"><p class="eyebrow">MS PATEL’S SUGGESTED LINK</p><b>▶ Our station’s story</b><p>Riverside Museum · YouTube · 2 minutes</p></div>':''}<div class="receipt"><b>${esc(changeStatus('extension'))}</b><p>${s.mission?teen()?esc(apps):`Current task · ${esc(customerNames(s.mission.records))}`:''}</p><p>${s.extensionStatus==='pending'?teen()?'Nothing new opens until your parent replies.':'Wait for Priya’s answer before requesting the record.':s.extensionStatus==='approved'?teen()?'Only the museum source you asked about is allowed.':'Priya approved this account. CRM still checks the read.':teen()?'It’s an optional source. You can ask, or leave it out.':'You can ask Priya to add Alder Books or finish with two accounts.'}</p></div>${choices(options)}`,teen()?'ONE MORE SOURCE':'A GENUINE EXPANSION',s.extensionStatus==='pending'?'request-extension':s.extensionAdded?'add-extension':s.extensionStatus==='approved'?'resolve-extension':'extension-preview');
+ show(teen()&&s.extensionStatus==='pending'?'You show your parent the link.':teen()&&s.extensionStatus==='approved'?'“That museum source, then finish your timeline.”':!teen()&&s.extensionStatus==='pending'?'Waiting for Priya':!teen()&&s.extensionAdded?'CRM returned the Alder Books record':!teen()&&s.extensionStatus==='approved'?'Priya approved Alder Books':e.extensionTitle,`<p>${esc((verification?.action==='verify-portal'?(teen()?'Ms Patel’s assignment calls for a timeline with a credited source. The video is optional.':'Priya’s proposal is recorded alongside the work order. The active mission still covers Harbor Bikes and Pine Studio.'):verification?.text)||extensionDescription())}</p>${teen()&&s.extraSource!=='museum-photo'?'<div class="message-card"><p class="eyebrow">MS PATEL’S SUGGESTED LINK</p><b>▶ Our station’s story</b><p>Riverside Museum · YouTube · 2 minutes</p></div>':''}<div class="receipt"><b>${esc(changeStatus('extension'))}</b><p>${s.mission?teen()?esc(apps):`Current task · ${esc(customerNames(s.mission.records))}`:''}</p><p>${s.extensionStatus==='pending'?teen()?'Nothing new opens until your parent replies.':'Wait for Priya’s answer before requesting the record.':s.extensionStatus==='approved'?teen()?'Only the museum source you asked about is allowed.':'Priya approved this account. CRM still checks the read.':teen()?'It’s an optional source. You can ask, or leave it out.':'You can ask Priya to add Alder Books or finish with two accounts.'}</p></div>${choices(options)}`,teen()?'ONE MORE SOURCE':'A GENUINE EXPANSION',s.extensionStatus==='pending'?'request-extension':s.extensionAdded?'add-extension':s.extensionStatus==='approved'?'resolve-extension':'extension-preview');
 }
 function showPrivate(){
  const s=state(),e=episode();
@@ -2915,7 +2932,14 @@ function showRequestSource(){
   `<div class="evidence-pair"><article class="message-card">${origin}</article><article class="paper">${authority}</article></div><p>${outcome}</p>${choices(actions)}`,teen()?'CHECK THE SOURCE':'CHECK THE WORK ORDER','inspect-request-source');
 }
 function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Pip’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Pip cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Pip needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p><p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Pip spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Pip gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Could Pip get CRM access?',teen()?'Ask before sharing any file.':'Ask whether Pip needs customer records for formatting.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
-function shareComparison(approval,actual){
+function shareWording(approval,actual,currentLabel='Current'){
+ if(!actual.followUpSentence||approval.followUpSentence===actual.followUpSentence||!approval.followUpSentence&&approval.revision===actual.revision)return '';
+ return `<div class="share-wording" aria-label="Follow-up sentence comparison">
+  <div><b>Approved · rev. ${esc(approval.revision)}</b><p>${esc(approval.followUpSentence||'Wording unavailable in this save.')}</p></div>
+  <div><b>${esc(currentLabel)} · rev. ${esc(actual.revision)}</b><p>${esc(actual.followUpSentence)}</p></div>
+ </div>`;
+}
+function shareComparison(approval,actual,currentLabel='Current copy'){
  const fields=[
   ['File',approval.file,actual.file],
   ['Revision',approval.revision,actual.revision],
@@ -2924,7 +2948,14 @@ function shareComparison(approval,actual){
   ['Policy version',approval.policyVersion,actual.policyVersion]
  ];
  const cell=(value,changed)=>`<td class="${changed?'share-difference':''}">${esc(value??'Not recorded')}</td>`;
- return `<table class="share-comparison"><thead><tr><th scope="col">Detail</th><th scope="col">Approved</th><th scope="col">Actual send</th></tr></thead><tbody>${fields.map(([label,expected,observed])=>`<tr><th scope="row">${label}</th>${cell(expected,false)}${cell(observed,expected!==observed)}</tr>`).join('')}</tbody></table>`;
+ return `<table class="share-comparison"><thead><tr><th scope="col">Detail</th><th scope="col">Approved copy</th><th scope="col">${esc(currentLabel)}</th></tr></thead><tbody>${fields.map(([label,expected,observed])=>`<tr><th scope="row">${label}</th>${cell(expected,false)}${cell(observed,expected!==observed)}</tr>`).join('')}</tbody></table>`;
+}
+function isSchoolRecipientRefusal(event){
+ return teen()&&event?.action==='send'&&event.decision?.result==='deny'&&event.request?.recipient===episode().outside;
+}
+function showSchoolRecipientRefusal(event){
+ speakingObject='laptop';
+ show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button('Restore Ms Patel’s address',()=>perform('change-recipient'))}${button('See what happened',openTrace,'secondary')}</div>`,'SCHOOL APP');
 }
 function isRefusedShare(event){
  return !teen()&&event?.decision?.result==='deny'&&['send','send-draft'].includes(event.action)&&event.request?.approval_at_attempt;
@@ -2932,9 +2963,9 @@ function isRefusedShare(event){
 function showRefusedShare(event){
  speakingObject='laptop';
  const r=event.request,approval=r.approval_at_attempt;
- const actual={file:r.file,to:r.recipient,revision:r.revision,records:r.records,policyVersion:r.policy_version};
- const recovery=event.action==='send-draft'?showDraftReview:showFinalApproval;
- show('Nothing was sent.',`<p>${esc(event.decision.reason)}</p>${shareComparison(approval,actual)}<div class="actions">${button('Review the current copy',recovery)}${button('Follow this request',openTrace,'secondary')}</div>`,'CRM');
+ const actual={file:r.file,to:r.recipient,revision:r.revision,records:r.records,policyVersion:r.policy_version,followUpSentence:r.follow_up_sentence};
+ const draft=event.action==='send-draft';
+ show('Nothing was sent.',`${shareWording(approval,actual,'Attempted')}<p>${esc(event.decision.reason)}</p>${shareComparison(approval,actual,'Attempted copy')}<div class="actions">${button(draft?'Review the draft with Morgan':'Ask Morgan to approve this revision',draft?showDraftReview:showFinalApproval)}${button('Follow this request',openTrace,'secondary')}</div>`,'CRM');
 }
 function showSend(){
  speakingObject='laptop';
@@ -2943,16 +2974,22 @@ function showSend(){
  if(!teen()&&!s.approval)return showFinalApproval();
  const address=s.outgoing==='approved'?e.to:e.outside;
  if(teen()){
+  if(address!==e.to)return show('This address is outside the school submission.',`<div class="message-card"><b>${esc(e.file)}</b><p class="address">${esc(address)}</p><p>The school app expects Ms Patel’s school address.</p></div>${choices([
+   ['Restore Ms Patel’s address','Use the address in the school assignment.',()=>perform('change-recipient'),'good'],
+   ['Test this send','See how the school app responds to this address.',()=>perform('send')],
+   ['Back to the draft','Give your timeline another look.',showDraft]
+  ])}`,'SCHOOL APP','send-preview');
   return show('Ready to send to Ms Patel?',`<div class="message-card"><b>${esc(e.file)}</b><p class="address">${esc(address)}</p><p>Your timeline and its sources.</p></div>${choices([
    ['Submit to my teacher','Send through the school app.',()=>perform('send'),'good'],
    ['Back to the draft','Give your timeline another look.',showDraft]
   ])}<details class="debrief"><summary>What if the project changes?</summary>${choices([
-   [s.outgoing==='approved'?'Change the recipient':'Restore Ms Patel’s address','The school app uses your teacher’s address.',()=>perform('change-recipient')],
+   ['Change the recipient','Preview a different address.',()=>perform('change-recipient')],
    ['Make one last title edit','Read the changed version before submitting.',()=>perform('revise-file')]
   ])}</details>`,'SCHOOL APP','send-preview');
  }
- const approval=s.approval,actual=StoryRules.reportShare(s);
- const matches=StoryRules.approvalMatches(approval,actual);
+ const approval=s.approval,share=StoryRules.reportShare(s);
+ const matches=StoryRules.approvalMatches(approval,share);
+ const actual={...share,followUpSentence:StoryRules.reportFollowUp(s)};
  const outside=actual.to!==e.to;
  const explanation=outside?'Restore the designated reviewer before sending.'
   :approval.revision!==actual.revision?`The approver saw revision ${approval.revision}. Nova has revision ${actual.revision} ready.`
@@ -2961,14 +2998,14 @@ function showSend(){
   :'The send details or current authority changed. Ask for a fresh approval.';
  const primary=outside?['Restore the reviewer','Return to the agreed CRM recipient.',()=>perform('change-recipient'),'good']
   :matches?['Send the approved copy','CRM checks the actual request before delivery.',()=>perform('send'),'good']
-  :['Ask Morgan to approve the current copy','Show the actual revision to the reviewer.',showFinalApproval,'good'];
+  :['Ask Morgan to approve this revision','Show the actual revision to the reviewer.',showFinalApproval,'good'];
  const challenges=[
-  [s.outgoing==='approved'?'Change the recipient':'Restore the reviewer','See what happens when the destination changes.',()=>perform('change-recipient')],
-  ['Revise the report after approval','See how CRM handles a newer revision of the same file.',()=>perform('revise-file')],
+  ...(outside?[]:[['Change the recipient','See what happens when the destination changes.',()=>perform('change-recipient')]]),
   ['Advance past the approval window','Simulate the approval expiring.',()=>perform('wait-approval')]
  ];
  if(!matches)challenges.unshift(['Try this send','See which check blocks this request.',()=>perform('send')]);
- show(matches?'Ready to send the approved copy?':'The send needs another look.',`<p>${esc(explanation)}</p>${shareComparison(approval,actual)}<details class="debrief"><summary>Try a change after approval</summary>${choices(challenges)}</details>${choices([primary,['Back to the draft','Read the report again.',showDraft]])}`,'CRM','send-preview');
+ const edit=[s.followUpEdited?'Restore the earlier follow-up wording':'Make one last edit','Change the follow-up sentence before sending.',()=>perform('revise-file')];
+ show(matches?'Ready to send the approved copy?':'The send needs another look.',`${shareWording(approval,actual)}<p>${esc(explanation)}</p>${shareComparison(approval,actual)}<details class="debrief"><summary>Try a change after approval</summary>${choices(challenges)}</details>${choices([primary,...(matches?[edit]:[]),['Back to the draft','Read the report again.',showDraft]])}`,'CRM','send-preview');
 }
 function showDelivery(){speakingObject='laptop';const s=state(),e=episode();show(teen()?'Ms Patel has your project.':'Morgan has the handover.',`<div class="reward" aria-hidden="true">✦</div><div class="receipt"><b>${esc(e.file)} delivered</b><p class="address">${esc(e.to)}</p><p>${s.extensionAdded?(teen()?'The extra museum source and its credit are included.':'The handover includes Alder Books.'):teen()?'Your timeline is complete without the optional extra.':'Morgan has the two-account handover.'}</p></div><p>${teen()?'The school tab you opened at the start is still on the laptop. Your parent calls for dinner.':'The CRM service session from the start is still listed in the task ledger. The sponsor is ready to close the job.'}</p><div class="actions">${button(teen()?'Finish up before dinner':'Close out this job',showParent)}</div>`,'DELIVERY CONFIRMED','send');}
 function showNotebook(){speakingObject='notebook';const s=state();show(teen()?'A note for tomorrow-you.':'Task memory, with a source.',`<p>${teen()?'A place for tomorrow’s to-do list, a saved submission receipt, or a doodle while you think.':'Task memory preserves useful context. It cannot issue a mission or edit independent audit evidence.'}</p>${s.notes.length?`<div class="paper"><p>${esc(s.notes[0].text)}</p><p class="source-line">Source: submission/delivery receipt · ordinary note</p></div>`:''}${choices([...(s.delivered&&!s.ended&&!s.notes.length?[[teen()?'Keep the submission receipt with a note':'Save the delivery receipt with context','Only after actual delivery.',()=>perform('write-note'),'good']]:[]),[teen()?'Sketch the little plant':'Inspect the diagnostic light','An optional discovery.',()=>perform('discover',{id:'plant'})],[teen()?'Look at the railway poster':'Inspect the service map','Something useful for a title or a question.',()=>perform('discover',{id:'poster'})],[teen()?'Read my evening notes':'Open the casebook',teen()?'Tonight’s plan and what you chose.':'Your agreement and choices so far.',showCasebook]])}`,teen()?'A PAGE IN YOUR NOTEBOOK':'MEMORY IS NOT PERMISSION','notebook');}

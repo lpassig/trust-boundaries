@@ -99,8 +99,7 @@ const EPISODES = {
     "draftLines": [
       "This handover covers current account updates for Harbor Bikes and Pine Studio ahead of tomorrow’s customer meeting.",
       "Harbor Bikes · Renewal discussion ready for review.",
-      "Pine Studio · The account team has asked for a follow-up.",
-      "Next step · Morgan confirms who will follow up."
+      "Pine Studio · The account team has asked for a follow-up."
     ],
     "caption": "Source: Customer records · Harbor Bikes and Pine Studio",
     "previewLabel": "REPORT PREVIEW",

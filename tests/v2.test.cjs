@@ -68,9 +68,44 @@ for(const mode of ['teen','agent']){
 }
 test('Alex submits ordinary homework without a second parental transaction approval',()=>{let s=ready();assert.equal(s.approval,null);assert.equal(R.stage(s),'send');assert.equal(act(s,'approve').event.kind,'blocked');s=run(s,'send');assert(s.delivered);assert.equal(s.last.decision.result,'permit');});
 test('Nova requires current one-use human approval for its business share',()=>{let s=ready({mode:'agent'});assert.equal(R.stage(s),'approval');assert.equal(act(s,'send').event.kind,'blocked');s=run(s,'approve');assert.equal(s.approval.revision,s.fileRevision);s=run(s,'send');assert(s.approval.used);assert.equal(act(s,'send').event.kind,'blocked');});
-test('same filename with changed report content cannot reuse approval',()=>{let s=run(ready({mode:'agent'}),'approve');s=run(s,'revise-file');assert.notEqual(s.fileRevision,s.approval.revision);s=act(s,'send').state;assert.equal(s.delivered,false);assert.equal(s.approval,null);assert.equal(s.paused,false);s=run(s,'approve');assert(run(s,'send').delivered);});
+test('an actual follow-up edit persists and requires a fresh approval for the new revision',()=>{
+ const approved=run(ready({mode:'agent'}),'approve');
+ const edited=R.hydrate(JSON.parse(JSON.stringify(run(approved,'revise-file'))),'agent');
+ const current=R.reportFollowUp(edited);
+ assert.notEqual(current,R.reportFollowUp(approved));
+ assert.equal(edited.approval.followUpSentence,R.reportFollowUp(approved));
+ assert.notEqual(edited.fileRevision,edited.approval.revision);
+ assert.equal(R.approvalMatches(edited.approval,R.reportShare(edited)),false);
+ const denied=act(edited,'send');
+ assert.equal(denied.event.request.approval_at_attempt.followUpSentence,R.reportFollowUp(approved));
+ assert.equal(denied.event.request.follow_up_sentence,current);
+ assert.equal(denied.state.delivered,false);
+ const reapproved=run(edited,'approve');
+ assert.equal(reapproved.approval.followUpSentence,current);
+ assert.equal(run(reapproved,'send').delivered,true);
+});
 test('formatting after approval invalidates the earlier share decision',()=>{let s=run(ready({mode:'agent'}),'approve');s=run(s,'proof-helper',{scope:'file',shareLogin:false});assert.equal(s.approval,null);assert.equal(act(s,'send').event.kind,'blocked');});
 test('ordinary changed-recipient refusal does not create misconduct in either journey',()=>{for(const mode of ['teen','agent']){let s=ready({mode});if(mode==='agent')s=run(s,'approve');s=run(s,'change-recipient');const r=act(s,'send');assert.equal(r.event.kind,'refused');assert.equal(r.state.delivered,false);assert.equal(r.state.paused,false);assert.equal(r.state.incidents.length,0);assert.equal(r.event.request.recipient,mode==='teen'?'friend@outside.example':'export@external-review.example');}});
+test('Alex can restore the teacher address with or without testing the outside destination',()=>{
+ const changed=run(ready(),'change-recipient');
+ for(const state of [changed,act(changed,'send').state]){
+  const restored=run(R.hydrate(JSON.parse(JSON.stringify(state)),'teen'),'change-recipient');
+  assert.equal(restored.outgoing,'approved');
+  assert.equal(restored.fileRevision,changed.fileRevision);
+  const submitted=run(restored,'send');
+  assert.equal(submitted.last.request.recipient,'teacher@school.example');
+  assert(submitted.delivered);
+ }
+});
+test('an earlier saved approval without a sentence snapshot preserves the same approved revision',()=>{
+ const approved=run(ready({mode:'agent'}),'approve');
+ delete approved.followUpEdited;
+ delete approved.approval.followUpSentence;
+ const restored=R.hydrate(approved,'agent');
+ assert.equal(restored.followUpEdited,false);
+ assert(R.approvalMatches(restored.approval,R.reportShare(restored)));
+ assert(run(restored,'send').delivered);
+});
 test('expired action approval is safe and needs a fresh decision',()=>{let s=run(ready({mode:'agent'}),'approve');s=run(s,'wait-approval');s=R.hydrate(JSON.parse(JSON.stringify(s)));s=act(s,'send').state;assert.equal(s.delivered,false);assert.equal(s.attempts.length,0);s=run(s,'approve');assert(run(s,'send').delivered);});
 test('all operation binding fields are checked, including the expanded record set',()=>{const base=run(ready({mode:'agent',expanded:true}),'approve');for(const [k,v]of [['actor','other-agent'],['operation','customer.export'],['records',['999']],['missionId','other'],['missionVersion',1],['policyVersion',9],['generation',1],['file','other.pdf']]){const s=structuredClone(base);s.approval[k]=v;const r=act(s,'send');assert.equal(r.event.kind,'refused',k);assert.equal(r.state.delivered,false,k);}});
 test('a helper discussion grants nothing and names the outcome without an account or tool attempt',()=>{
