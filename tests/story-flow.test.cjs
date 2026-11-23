@@ -113,3 +113,37 @@ test('the phone and request panel keep opening feedback after every decision is 
   assert.equal(I.objectView({...settled(mode),delivered:true},mode,inbox),inbox);
  }
 });
+
+test('opening the untrusted instruction never supplies amendment authority or changes the report',()=>{
+ for(const mode of ['teen','agent']){
+  const before=feedback(mode);
+  const checked=run(before,'inspect-request-source');
+  assert.deepEqual(checked.mission,before.mission);
+  assert.deepEqual(checked.draftReview,before.draftReview);
+  assert.equal(checked.fileRevision,before.fileRevision);
+  assert.deepEqual(checked.evidence,[]);
+  assert(checked.discoveries.includes('request-source'));
+  assert.equal(checked.privateResolved,false);
+  const saved=R.hydrate(JSON.parse(JSON.stringify(checked)),mode);
+  assert(saved.discoveries.includes('request-source'));
+  const trace=T.build(saved,mode);
+  assert.equal(trace.nodes.at(-1).status,'not-reached');
+  assert.notEqual(trace.request.instruction_source,trace.request.authoritative_source);
+  if(mode==='agent')assert.equal(act(saved,'request-extension').event.kind,'blocked');
+  const attempted=act(saved,'try-private');
+  assert.equal(attempted.event.decision.result,'deny');
+  assert.equal(attempted.state.delivered,false);
+  assert.equal(attempted.state.paused,false);
+  assert(run(attempted.state,'decline-private').privateResolved);
+ }
+});
+
+test('the school app displays sign-in only after the old route is checked',()=>{
+ let s=settled('teen');
+ for(const action of ['proof-self','send','close-pass','sign-out-laptop'])s=run(s,action);
+ assert.equal(I.objectStatus(s,'teen','laptop'),'Tab signed out');
+ s=run(s,'probe-session');
+ assert.equal(I.objectStatus(s,'teen','laptop'),'Sign in');
+ s=run(s,'controller-offline');
+ assert.notEqual(I.objectStatus(s,'teen','laptop'),'Sign in');
+});

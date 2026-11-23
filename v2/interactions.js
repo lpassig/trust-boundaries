@@ -15,18 +15,18 @@ const StoryInteractions = (() => {
   const unavailable=instruction=>({targets:[],instruction:instruction||'This is a reference item at this step. Look closer, or put it away to continue.'});
   const use=(target,label,instruction,route,action)=>({targets:[target],label,instruction,route,action});
   if(!s.started||s.finished)return unavailable('This task has no remaining item actions. You can still look closer at your records.');
-  if(id==='brief'||id==='pass')return use('parent',s.ended?'Discuss the closing checks':teen?'Discuss the homework plan':'Discuss the mission',teen?'Choose Parent to discuss the current homework plan.':'Choose Mission authority to discuss the current customer-owned mission.','parent');
-  if(id==='checklist'&&s.ended&&s.checks.length===4)return use('parent',teen?'Show the closing evidence':'Present the closure evidence',teen?'Choose Parent to review the finished homework and closing checks.':'Choose Mission authority to present this task’s closure evidence.','parent');
+  if(id==='brief'||id==='pass')return use('parent',s.ended?'Discuss the closing checks':teen?'Discuss the homework plan':'Discuss the mission',teen?'Choose Parent to discuss the current homework plan.':'Choose Priya to discuss the current customer-owned mission.','parent');
+  if(id==='checklist'&&s.ended&&s.checks.length===4)return use('parent',teen?'Show the closing evidence':'Present the closure evidence',teen?'Choose Parent to review the finished homework and closing checks.':'Choose Priya to present this task’s closure evidence.','parent');
   if(s.paused)return unavailable(teen?'Put this item away and talk to your parent while the phone is paused.':'Put this item away and request sponsor review while the mission is paused.');
-  if(id==='vault'&&!teen&&s.opened)return use('phone','Inspect the credential receipt','Choose Runtime console to inspect the recorded Vault credential path. This does not test live credential or service status.','credential');
+  if(id==='vault'&&!teen&&s.opened)return use('phone','Inspect the credential receipt','Choose Workspace controls to inspect the recorded Vault credential path. This does not test live credential or service status.','credential');
   const active=s.pass?.status==='active'&&s.mission?.status==='active'&&!s.ended;
   if(!active)return unavailable(s.ended?'Task access has ended. Put this item away to continue the independent closing checks.':id==='contact'?'Keep this contact for later requests. Put it away to read the new assignment and agree on the task.':'Agree on this task before using its working items. You can look closer or put this item away.');
-  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose Phone to check the new messages with your saved teacher contact.':'Choose Request panel to verify the new requests with the known sponsor.','action','verify-contact');
-  if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use('laptop','Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose CRM workspace to cite the approved extract in the briefing.','action','attach-source');
-  if(id==='draft'&&s.draft&&!s.delivered)return {...use('laptop',teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose CRM workspace to review the report, or Pip for report-only formatting.','draft'),targets:['laptop','helper'],routes:{laptop:'draft',helper:'helper'}};
-  if(id==='approval'&&s.approval&&!s.approval.used&&!s.delivered)return use('laptop','Review the approved share','Choose CRM workspace to review the current share. The resource still checks the exact operation before delivery.',s.approval.purpose==='draft-review'?'draftReview':'send');
-  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose Phone to revisit the teacher’s clarification.':'Choose Request panel to revisit the verified requests.','changes');
-  if(id==='delivery'&&s.delivered&&!s.notes.length)return use('notebook','Keep the receipt with a note',teen?'Choose Notebook to save the submission receipt with a note.':'Choose Task memory to save the delivery receipt with its source.','action','write-note');
+  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose Phone to check the new messages with your saved teacher contact.':'Choose Messages to verify the new requests with the known sponsor.','action','verify-contact');
+  if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use('laptop','Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
+  if(id==='draft'&&s.draft&&!s.delivered)return {...use('laptop',teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:['laptop','helper'],routes:{laptop:'draft',helper:'helper'}};
+  if(id==='approval'&&s.approval&&!s.approval.used&&!s.delivered)return use('laptop','Review the approved share','Choose Customer records to review the current share. The resource still checks the exact operation before delivery.',s.approval.purpose==='draft-review'?'draftReview':'send');
+  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose Phone to revisit the teacher’s clarification.':'Choose Messages to revisit the verified requests.','changes');
+  if(id==='delivery'&&s.delivered&&!s.notes.length)return use('notebook','Keep the receipt with a note',teen?'Choose Notebook to save the submission receipt with a note.':'Choose Task notebook to save the delivery receipt with its source.','action','write-note');
   if(id==='contact')return unavailable(s.evidence.includes('contact')?'These requests have already been independently checked. Look closer at the contact, or put it away.':'Keep this contact for later requests. There is no new request to verify yet.');
   if(id==='source'&&s.caption)return unavailable('This source is already credited in the draft. Look closer, or put it away.');
   if(id==='delivery'&&s.notes.length)return unavailable('The delivery receipt is already saved with your task note. Look closer, or put it away.');
@@ -35,20 +35,21 @@ const StoryInteractions = (() => {
  function feedbackCards(s,mode){
   const teen=mode==='teen',extensionDone=s.extensionStatus==='declined'||s.extensionStatus==='approved'&&(s.extensionAdded||s.extensionOmitted);
   return [
-   {key:'minor',done:Boolean(s.minorChoice),status:s.minorChoice==='added'?(teen?'Closing sentence added':'Introduction shortened'):s.minorChoice?'Original wording kept':'Needs a decision',summary:s.minorChoice?(s.minorChoice==='added'?'The edit is in your current draft.':'You kept the earlier wording.'):(teen?'Teacher feedback on the draft you sent.':'Reviewer feedback on the approved copy.'),button:s.minorChoice?'Review wording':teen?'Choose the closing sentence':'Choose the introduction'},
-   {key:'extension',done:Boolean(extensionDone),status:s.extensionAdded?'Added with permission':s.extensionOmitted?'Approved, left unused':s.extensionStatus==='declined'?'Optional extra left out':s.extensionStatus==='pending'?(teen?'Waiting for my parent':'Waiting for a reply'):s.extensionStatus==='approved'?(teen?'Parent said yes':'Approved · ready to collect'):'Needs a decision',summary:s.extensionAdded?(teen?s.extraSource==='museum-photo'?'The station photo and its credit are in the timeline.':'The museum video’s extra detail and source are in the timeline.':'Customer 789 is included under the amended mission.'):s.extensionOmitted?'The additional permission was left unused.':s.extensionStatus==='declined'?teen?'Your timeline works without the extra source.':'The original task can continue without the extra.':s.extensionStatus==='pending'?'The original agreement stays in force until the reply.':teen?s.extraSource==='museum-photo'?'Ask your parent before opening the museum photo app.':'Ask your parent about the museum’s YouTube video.':'The sponsor’s new customer request needs a mission amendment.',button:extensionDone?'Review the optional extra':s.extensionStatus==='pending'?'Read the reply':s.extensionStatus==='approved'?'Choose whether to use it':teen?s.extraSource==='museum-photo'?'Decide about the photo':'Decide about the YouTube video':'Decide about customer 789'},
-   {key:'private',done:Boolean(s.privateResolved),status:s.privateResolved?'Private notes left out':'Needs a decision',summary:s.privateResolved?'Your file contains no private-note attachment.':teen?'A separate classmate request concerns other people’s information.':'A checklist asks for data outside the permitted share.',button:s.privateResolved?'Why the notes stayed private':teen?'Respond about the group notes':'Respond about private notes'}
+   {key:'minor',done:Boolean(s.minorChoice),status:s.minorChoice==='added'?(teen?'Closing sentence added':'Introduction shortened'):s.minorChoice?'Original wording kept':'Needs a decision',summary:s.minorChoice?(s.minorChoice==='added'?'The edit is in your current draft.':'You kept the earlier wording.'):(teen?'Teacher feedback on the draft you sent.':'Morgan’s feedback on the draft.'),button:s.minorChoice?'Review wording':teen?'Choose the closing sentence':'Choose the introduction'},
+   {key:'extension',done:Boolean(extensionDone),status:s.extensionAdded?'Added with permission':s.extensionOmitted?'Approved, left unused':s.extensionStatus==='declined'?'Optional extra left out':s.extensionStatus==='pending'?(teen?'Waiting for my parent':'Waiting for a reply'):s.extensionStatus==='approved'?(teen?'Parent said yes':'Approved · ready to collect'):'Needs a decision',summary:s.extensionAdded?(teen?s.extraSource==='museum-photo'?'The station photo and its credit are in the timeline.':'The museum video’s extra detail and source are in the timeline.':'Alder Books is in the handover.'):s.extensionOmitted?'The additional permission was left unused.':s.extensionStatus==='declined'?teen?'Your timeline works without the extra source.':'The original task can continue without the extra.':s.extensionStatus==='pending'?'The original agreement stays in force until the reply.':teen?s.extraSource==='museum-photo'?'Ask your parent before opening the museum photo app.':'Ask your parent about the museum’s YouTube video.':'The sponsor’s new customer request needs a mission amendment.',button:extensionDone?'Review the optional extra':s.extensionStatus==='pending'?'Read the reply':s.extensionStatus==='approved'?'Choose whether to use it':teen?s.extraSource==='museum-photo'?'Decide about the photo':'Decide about the YouTube video':'Decide about Alder Books'},
+   {key:'private',done:Boolean(s.privateResolved),status:s.privateResolved?'Private notes left out':'Needs a decision',summary:s.privateResolved?'Your file contains no private-note attachment.':teen?'A separate classmate request concerns other people’s information.':'A note in the source document asks for an attachment.',button:s.privateResolved?'Why the notes stayed private':teen?'Respond about the group notes':'Respond about private notes'}
   ];
  }
  function speechSource(mode,key){
   const teen=mode==='teen';
   const sources={
+   reviewer:{name:'Morgan · reviewer',kind:'Conversation',point:[449,173],object:'brief'},
    hero:{name:teen?'Alex':'Nova',kind:'Thought',point:teen?[636,329]:[516,214]},
-   parent:{name:teen?'Parent':'Sponsor · mission authority',kind:'Conversation',point:teen?[298,291]:[250,230]},
-   phone:{name:teen?'Phone · messages':'Runtime console · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
-   laptop:{name:teen?'School app':'CRM workspace',kind:'On screen',point:teen?[716,259]:[716,254]},
-   brief:{name:teen?'Assignment card':'Request panel',kind:'Reading',point:teen?[449,167]:[449,173]},
-   notebook:{name:teen?'Notebook':'Task memory',kind:'Reading',point:teen?[471,424]:[349,441]},
+   parent:{name:teen?'Parent':'Priya · account lead',kind:'Conversation',point:teen?[298,291]:[250,230]},
+   phone:{name:teen?'Phone · messages':'Workspace controls · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
+   laptop:{name:teen?'School app':'Customer records',kind:'On screen',point:teen?[716,259]:[716,254]},
+   brief:{name:teen?'Assignment card':'Messages',kind:'Reading',point:teen?[449,167]:[449,173]},
+   notebook:{name:teen?'Notebook':'Task notebook',kind:'Reading',point:teen?[471,424]:[349,441]},
    helper:{name:teen?'Sam':'Pip',kind:'Speaking',point:teen?[747,329]:[839,385]},
    pocket:{name:'Selected item',kind:'Look closer',point:teen?[636,329]:[516,214]}
   };
@@ -60,11 +61,28 @@ const StoryInteractions = (() => {
   if(action==='open')return 'phone';
   if(['collect-source','send-draft','send'].includes(action))return 'laptop';
   if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
-  if(/Parent|Sponsor|Approver|Supervisor/.test(speaker))return 'parent';
+  if(mode==='agent'&&/Approver|Morgan/.test(speaker))return 'reviewer';
+  if(/Parent|Sponsor|Supervisor|Priya/.test(speaker))return 'parent';
   if(/Teacher/.test(speaker))return 'phone';
   if(/receipt|School app|School service|School tab|CRM|resource PEP/i.test(speaker))return 'laptop';
   if(/controller|App control|Phone control/.test(speaker))return 'phone';
   return 'hero';
+ }
+ function objectStatus(s,mode,key){
+  const teen=mode==='teen';
+  if(s.message&&!s.delivered&&key===(teen?'phone':'brief')){
+   return teen?'Ms Patel and Jamie':'Priya, Morgan and a source note';
+  }
+  if(key!=='laptop')return '';
+  if(s.ended&&s.containment?.controllerReachable){
+   if(teen&&s.checks.includes('signin'))return 'Sign in';
+   if(!s.containment.sessionClosed)return teen?'School tab still open':'CRM session still open';
+   return teen?'Tab signed out':'CRM session closed';
+  }
+  if(s.delivered)return teen?'Sent to Ms Patel':'Sent to Morgan';
+  if(s.caption)return 'Source credited';
+  if(s.source)return 'Source ready to add';
+  return '';
  }
  function sceneSummary(s,mode){
   const teen=mode==='teen';
@@ -74,10 +92,10 @@ const StoryInteractions = (() => {
   if(!s.pass)return 'An empty document waits. Start with the new request.';
   if(!s.draft)return 'The workspace is ready. Build your first draft.';
   if(!s.caption)return teen?'Your three dates are on the page. Check them on the museum website, then add its page title.':'The first draft is local. Open and credit its agreed source.';
-  if(!s.message)return teen?'Ms Patel hasn’t seen your draft yet. Send it through the school app for feedback.':'The sourced draft is still local. Send a review copy to get feedback.';
-  if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Customer 789 is in the amended briefing. Review this version before the final share.';
+  if(!s.message)return teen?'Ms Patel hasn’t seen your draft yet. Send it through the school app for feedback.':'The sourced draft is still local. Ask Morgan to review it.';
+  if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,objectView,itemUse,feedbackCards,sceneSummary,speechSource,eventSource};
+ return {nextObject,objectView,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;

@@ -144,3 +144,24 @@ dialog:not(.is-reference) #dialog-actions>.request-progress{position:sticky;top:
   background: #493b2a55;
   font-weight: 700;
 }
+
+.product-moment {
+  color: var(--muted);
+  font-size: .9rem;
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+}
+.product-moment button {
+  margin-left: 4px;
+}
+.evidence-pair {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.evidence-pair > * { margin: 0; }
+.evidence-pair h3 { font-size: 1rem; margin-top: 0; }
+.object-status { color: var(--accent); }
+@media (max-width: 560px) {
+  .evidence-pair { grid-template-columns: 1fr; }
+}

@@ -247,3 +247,41 @@ const NOVA_VAULT_EXAMPLE = {
     "credential_use": "The source-read credential is not used or upgraded to authorize report delivery. No Vault-audience token is forwarded to the CRM."
   }
 };
+
+const NOVA_BUYER_NEEDS = [
+  {
+    question:'Know which agent acted and who authorized it',
+    product:'IBM Agent Identity',
+    fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
+    example:'Priya gives Nova a specific job. The handover record identifies Nova as the agent acting for Priya.',
+    sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
+  },
+  {
+    question:'Replace a standing database password',
+    product:'HashiCorp Vault',
+    fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
+    example:'Vault supplies source-read access. The customer records app still checks which accounts Nova can open.',
+    sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
+  },
+  {
+    question:'Limit what the running agent can reach',
+    product:'NVIDIA OpenShell',
+    fit:'Evaluate OpenShell for isolation and control of files, processes and network access. Secure Agent Workspace describes a broader design that combines runtime, identity and policy integrations.',
+    example:'OpenShell permits the connection to CRM. CRM checks the action at that destination.',
+    sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
+  },
+  {
+    question:'Coordinate agents and their work',
+    product:'IBM watsonx Orchestrate',
+    fit:'Evaluate it when you need a platform to build or coordinate agents and workflows. Scope the helper’s permissions separately.',
+    example:'An orchestrator can hand the formatting step to Pip. Pip receives only the report.',
+    sources:[['IBM watsonx Orchestrate','https://www.ibm.com/products/watsonx-orchestrate']]
+  },
+  {
+    question:'Share a risk or session alert with other systems',
+    product:'IBM Verify Antenna',
+    fit:'Evaluate it when connected systems need to exchange security events. Check that each receiver can take the action your workflow requires.',
+    example:'A configured alert can tell receivers about a revoked session. Nova’s ending separately checks whether CRM access actually closed.',
+    sources:[['IBM Verify Antenna','https://www.ibm.com/docs/en/security-verify?topic=integrations-verify-antenna']]
+  }
+];

@@ -55,8 +55,18 @@ const RequestTrace = (() => {
     node('Share with the designated reviewer','CRM or school submission endpoint','not-reached','The helper did not submit the report to the reviewer. That separate action still needs current permission and any required human approval.')
    ],{...r,decision:d});
   }
+  if(a==='inspect-request-source'&&r.instruction_source){
+   return model(teen?'Compare the forwarded message with the assignment.':'Compare retrieved text with task authority.',
+    teen?'The assignment in the school app sets the homework.':'The customer records supply facts. An independent work order defines the permitted action.',[
+     node('Where the instruction appeared',r.instruction_source,'context','The text is content presented to the player.'),
+     node('Check the authorized task',r.authoritative_source,'checked','The task permits the summary and excludes private attachments.'),
+     node('Permission and delivery','Resource policy','not-reached','Inspecting the instruction did not grant access or send anything.')
+    ]);
+  }
   if(e.decision){
    const d=e.decision,denied=d.result==='deny',nodes=context();
+   if(r.instruction_source)nodes.push(node('Where the instruction appeared',r.instruction_source,'context',
+    'The instruction was discovered in content. The authorized task comes from '+r.authoritative_source+'.'));
    if(!teen){
     if(r.runtime_result?.result==='reachable')nodes.push(node('Reach CRM','NVIDIA OpenShell','checked','The configured runtime permitted connectivity to CRM. The resource still checks this particular attachment.'));
     nodes.push(node('Read the authoritative mission','Customer mission service','checked',`${d.mission_id} version ${d.mission_version}; policy version ${d.policy_version}; allowed summary records ${d.allowed_records.join(', ')}. Owner: ${d.authority_source}.`));
