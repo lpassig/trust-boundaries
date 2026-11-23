@@ -43,7 +43,18 @@ function syncSpeech(){
  const passive=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,last?.speaker,last?.action,last?.kind));
  $('#speech-source').textContent=active.name;
  $('#speech-kind').textContent=[active.kind,active.channel].filter(Boolean).join(' · ');
- const reading=$('#dialog-body');$('#dialog-scroll').hidden=!inline||reading.scrollHeight<=reading.clientHeight+12;
+ const reading=$('#dialog-body');
+ const scrollable=inline&&reading.scrollHeight>reading.clientHeight+1;
+ $('#dialog-scroll').hidden=!scrollable;
+ if(scrollable){
+  reading.tabIndex=0;
+  reading.setAttribute('role','region');
+  reading.setAttribute('aria-label','Conversation text');
+ }else{
+  reading.removeAttribute('tabindex');
+  reading.removeAttribute('role');
+  reading.removeAttribute('aria-label');
+ }
  dialog.dataset.source=active.key;
  $('.scene-frame').classList.toggle('hero-thinking',!reference&&(inline?active:passive).key==='hero');
  $('#objects').classList.toggle('has-conversation',inline);
@@ -377,12 +388,13 @@ function useItem(key){
 function showIntro(){
  const labels=key=>states[key].finished?'View '+EPISODES[key].name+'’s ending':states[key].started?'Continue '+EPISODES[key].name:'Play '+EPISODES[key].name;
  showReference('Trust Boundaries',
-  `<div class="launch-choices">${choices([
-   [labels('teen'),'The Last Upload · Finish a school project before dinner.',()=>switchMode('teen',true),'good'],
-   [labels('agent'),'The Growing Brief · Work within an approved mission to deliver a customer handover.',()=>switchMode('agent',true),'good'],
-   ['Explore Architecture','Browse the technical controls, product roles and request sequences.',()=>showArchitecture()]
+  `<p>Two interactive stories about who can approve a change, what you can share, and how you know access has ended. Set aside about 15 minutes per story.</p>
+  <div class="launch-choices">${choices([
+   [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
+   [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
+   ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()]
   ])}</div><div class="actions">${button('How to play',showGuide,'quiet')}</div>
-  <p class="small-print">Progress is saved on this device. The journeys simulate fictional requests.</p>`,
+  <p class="small-print">The stories are fictional. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'POINT-AND-CLICK ADVENTURE');
 }
 function showBrief(){
@@ -560,12 +572,21 @@ function showClarification(action=state().last?.action){
 }
 function showDecisionResult(event){
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
- show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button('Back to the other requests',showChanges)}</div>`);
+ const ready=StoryRules.changesResolved(state());
+ show(event.title,`<p>${esc(event.text)}</p><div class="actions">
+  ${ready?button(teen()?'Open my project':'Open the report',showDraft):''}
+  ${button(ready?'Review the decisions':'Back to the other requests',showChanges,ready?'secondary':'primary')}
+ </div>`);
 }
 function showExtensionRead(event){
  speakingObject='extra';
  const title=teen()?state().extraSource==='museum-photo'?'The museum photo is in your timeline.':'YouTube · Our station’s story':'CRM returned the Alder Books record';
- show(title,`${teen()?'':crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">${button('Back to the other requests',showChanges)}${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}</div>`,undefined,'add-extension');
+ const ready=StoryRules.changesResolved(state());
+ show(title,`${teen()?'':crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">
+  ${ready?button(teen()?'Open my project':'Open the report',showDraft):''}
+  ${button(ready?'Review the decisions':'Back to the other requests',showChanges,ready?'secondary':'primary')}
+  ${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}
+ </div>`,undefined,'add-extension');
 }
 function showDraftReview(){speakingObject='laptop';
  const s=state(),e=episode();if(!s.caption)return showDraft();if(s.message)return showChanges();
@@ -788,7 +809,7 @@ function showChecks(){
  const signals=!alex&&routeChecked?productDetails('Where SSF and CAEP fit',[['antenna','Verify Antenna can exchange a CAEP session-revoked event over SSF. Configured receivers carry out their own controls. A CRM closure receipt and a repeat status check give separate evidence for the old route.']]):'';
  const layers=['pass','device','signin',...(s.queueScheduled||!alex?['queue']:[])];
  const details=`<details class="debrief"><summary>${alex?'What was checked?':'View closure details'}</summary><ul class="route-list">${layers.map(layer=>`<li><b>${esc(episode().checks[{pass:0,signin:1,device:2,queue:3}[layer]])}</b><br>${esc(checkText(layer))}</li>`).join('')}</ul><div class="actions">${button(alex?'Explore the sign-out checks':'Explore session and controller tests',showAccessPuzzle,'secondary')}${button(alex?'See what happened':'Follow the closure trace',openTrace,'secondary')}</div></details>`;
- show(title,`<p>${confirmed}</p>${prompt}${signIn}${result}${compare}${signals}${details}${choices(options)}<div class="actions">${button('Back to the room',close,'secondary')}</div>`,alex?'BEFORE DINNER':'MISSION CLOSURE',speakingObject==='vaultControl'?'vault-close':'closure-preview');
+ show(title,`${result?'':`<p>${confirmed}</p>`}${result}${prompt}${signIn}${compare}${signals}${details}${choices(options)}<div class="actions">${button('Back to the room',close,'secondary')}</div>`,alex?'BEFORE DINNER':'MISSION CLOSURE',speakingObject==='vaultControl'?'vault-close':'closure-preview');
 }
 function showAccessPuzzle(){speakingObject='laptop';
  if(!state().ended)return showParent();const c=state().containment;
@@ -804,8 +825,118 @@ function novaDebrief(s){
   +'<li><b>Resist</b><br>The mission and runtime stopped. The credential, CRM session and queue were checked separately. The delivered copy stayed with the reviewer.</li>'
   +'</ul><p class="sources"><a href="https://blog.iamidentity.ai/blog/ai-agent-not-a-secret-manager/" target="_blank" rel="noopener noreferrer">Credential custody</a> · <a href="https://blog.iamidentity.ai/blog/litellm-breach-standing-credentials/" target="_blank" rel="noopener noreferrer">Credential lifetime case study</a> · <a href="https://blog.iamidentity.ai/blog/agent-policy-lifecycle/" target="_blank" rel="noopener noreferrer">Policy review and drift</a></p>';
 }
-function showEnding(){if(!state().finished)return nextMove();const s=state(),e=episode();if(teen())return showReference(s.ending?.title||'Ready for dinner.',`<div class="reward" aria-hidden="true">✦</div><p>${esc(s.ending?.text||'Ms Patel has your project. The laptop is signed out and your phone is put away.')}</p><ul class="route-list"><li><b>${s.minorChoice==='added'?'A stronger final sentence':'You kept your original wording'}</b><br>Your timeline uses your own notes and the museum website.</li><li><b>${s.extensionAdded?'You asked before opening another source':s.extensionOmitted?'You decided you had enough':'You finished without the optional extra'}</b><br>${s.extensionAdded?esc(s.extraSource==='museum-photo'?'The station photo is included, with its credit.':'One detail from the museum’s YouTube video is included, with its credit.'):s.extensionOmitted?'Your parent said yes, but you left the extra source unopened.':'The timeline already met the assignment.'}</li><li><b>Jamie’s notes stayed private</b><br>Ms Patel received your own project.</li><li><b>${s.proof==='helper'?'Sam gave it a final read':'You checked it yourself'}</b><br>${esc(e.file)} sent to your teacher.</li><li><b>Everything put away</b><br>The school app asks you to sign in again. Your phone is on the counter.${s.queueScheduled?' You cancelled the reminder before it sent.':''}</li></ul><details class="debrief"><summary>What did tonight’s choices change?</summary><p>You could improve the writing with the sources you had, ask before opening something new, and say no to sharing other people’s notes. Locking your phone didn’t sign you out of the family laptop.</p><details><summary>Show the security connection</summary>${protocolHTML(CLOSING_PROTOCOL)}</details></details><div class="actions">${button('Play Nova’s mission',()=>switchMode('agent'))}${button('Start Alex’s evening again',restart,'secondary')}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}${button('Look around the room',close,'secondary')}</div><p class="small-print">A fictional story. No real messages, videos or school accounts are connected.</p>`,'ALEX’S EVENING');showReference(s.ending?.title||'Task complete.',`<div class="reward" aria-hidden="true">✦</div><p>${esc(s.ending?.text||'The task is complete and its tested access is closed.')}</p>${s.legacyRoute?'<div class="receipt"><b>Earlier route preserved</b><p>This ending is from the earlier story. Start the revised story to play the fresh opening and new change choices.</p></div>':''}<ul class="route-list">${s.legacyRoute?'':`<li><b>${s.minorChoice==='added'?'A small edit within the agreement':'The smaller wording kept'}</b><br>${s.minorChoice==='added'?teen()?'Your new sentence used the same railway notes and source.':'The document changed without expanding the mission.':'The optional edit was left out.'}</li><li><b>${s.extensionAdded?'A genuine expansion approved and used':s.extensionOmitted?'An approved addition left unused':'The smaller task completed'}</b><br>${s.extensionAdded?(teen()?'You asked your parent before opening the extra museum source.':'Priya approved Alder Books before Nova opened its record.'):s.extensionOmitted?'The additional access was approved, but no extra material was read or included.':'No extra app or customer permission was needed.'}</li><li><b>Private notes stayed out</b><br>Morgan received the summary. The meeting notes stayed in the customer records app.</li>`}<li><b>${esc(e.file)} delivered</b><br>${esc(e.to)} · ${s.proof==='helper'?esc(e.helper)+' helped with only the file.':'You reviewed the file yourself.'}</li><li><b>The actual loose ends were checked</b><br>${s.queueScheduled?'Your chosen follow-up was cancelled and verified.':'You chose no follow-up; the queue was confirmed empty.'} The task session opened at the start is closed.</li></ul><details class="debrief"><summary>Build, authorize and resist</summary>${novaDebrief(s)}<details><summary>Revocation protocols</summary>${protocolHTML(CLOSING_PROTOCOL)}</details></details><div class="actions">${button(teen()?'Play Nova’s mission':'Play Alex’s story',()=>switchMode(teen()?'agent':'teen'))}${button('Start Nova’s story again',restart,'secondary')}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}${button('Explore the room',close,'secondary')}${button('Which control do we need?',()=>showBuyerGuide(true),'secondary')}${button('Technical product map',showProductMap,'secondary')}</div><p class="small-print">Fictional local simulation. No real messages or security services are connected.</p>`,'YOUR ENDING · '+e.name.toUpperCase());}
-function showGuide(){showReference('Start a task. Handle a change. Finish it.',`<p>Read the new assignment or sponsor request, agree on the needed access, and make a useful first draft. Send the sourced first draft for feedback. Nova needs a separate exact approval for that review copy. Replies arrive after its confirmed delivery; the final version is submitted later.</p><p><b>Three different changes.</b> A small edit can fit the current agreement. A new app or customer can need an authorized amendment. Private notes can remain prohibited even after that amendment.</p><p><b>Your route matters.</b> Accept or keep the smaller wording. Ask for the optional addition or finish without it. Work alone or ask for file-only help. A reminder is optional and appears in the closing queue only if you schedule it.</p><p><b>Refusal is useful.</b> An ordinary denied request does not suspend the job. Deliberately trying another path around a known refusal triggers review. You can recover under the current task limits.</p><p><b>Finish the actual task.</b> Alex submits ordinary homework directly through the school app. Nova’s business share needs exact human approval. Then close the service session you opened earlier, disable only task-scoped access, and check any pending follow-up.</p><p>Use the Next button or the highlighted object for the current step. Other objects open a short description. Conversations appear as speech bubbles inside the room. Choices stay below the bubble text. Technical reference screens open separately. Matching icons identify objects. The highlighted Next object opens the choices for the current task. When you select a pocket item, amber Use here targets show where that item works; reference items have no highlighted destination. Pocket items can be inspected and used on relevant objects. Tab and Enter work; Escape closes dialogue. Reading and exploring have no countdown. Expand the short note beneath the choices for an explanation and a source. After a decision you can also step through its request trace.</p><div class="actions">${button(state().started?'Back to the room':'Back to the first screen',state().started?close:showIntro)}</div>`,'HOW TO PLAY');}
+function storyComparison(){
+ return `<details class="debrief"><summary>Compare Alex and Nova</summary>
+  <ul class="route-list">${STORY_COMPARISON.map(([title,alex,nova])=>`<li>
+   <b>${esc(title)}</b><br><strong>Alex</strong> · ${esc(alex)}<br><strong>Nova</strong> · ${esc(nova)}
+  </li>`).join('')}</ul>
+ </details>`;
+}
+
+function showPractice(step=0,selected=null){
+ const {intro,decisions}=PRACTICE_CASE;
+ const decision=decisions[step];
+ if(!decision){
+  showReference('Staffing brief complete',`<p>The task record sets the scope. The service applies its own rules. Confirm what will be sent, then verify which access actually closed.</p>
+   <div class="actions">${button('Back to the ending',showEnding)}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
+   'PRACTICE CASE');
+  return;
+ }
+ const answered=selected!==null;
+ const correct=selected===decision.answer;
+ const body=answered
+  ?`<div class="receipt">
+   <b>${correct?'That fits this task':'Here’s what fits this task'}</b>
+   <p>Your choice: ${esc(decision.options[selected])}</p>
+   ${correct?'':`<p>Better choice: ${esc(decision.options[decision.answer])}</p>`}
+   <p>${esc(decision.explanation)}</p>
+  </div><div class="actions">${button(step+1===decisions.length?'Finish the case':'Next decision',()=>showPractice(step+1))}</div>`
+  :choices(decision.options.map((option,index)=>[option,'',()=>showPractice(step,index)]));
+ showReference(answered?'What would happen?':decision.question,
+  `${answered?'':`<p>${esc(intro)}</p>`}<div class="message-card"><p>${esc(decision.situation)}</p></div>
+  ${body}<div class="actions">${button('Back to the ending',showEnding,'secondary')}</div>`,
+  `STAFFING BRIEF · ${step+1} OF ${decisions.length}`);
+}
+
+function showEnding(){
+ if(!state().finished)return nextMove();
+ const s=state(),e=episode(),alex=teen();
+ const comparison=storyComparison();
+ const practice=button('Try a new case',()=>showPractice());
+ const otherMode=alex?'agent':'teen';
+ const otherName=EPISODES[otherMode].name;
+ const otherLabel=states[otherMode].finished?`View ${otherName}’s ending`
+  :states[otherMode].started?`Continue ${otherName}`:`Play ${otherName}`;
+ const otherStory=button(otherLabel,()=>switchMode(otherMode,true),'secondary');
+
+ if(alex){
+  const extraTitle=s.extensionAdded?'You asked before opening another source'
+   :s.extensionOmitted?'You decided you had enough':'You finished without the optional extra';
+  const extraResult=s.extensionAdded
+   ?s.extraSource==='museum-photo'?'The station photo is included, with its credit.':'One detail from the museum’s YouTube video is included, with its credit.'
+   :s.extensionOmitted?'Your parent said yes, but you left the extra source unopened.':'The timeline already met the assignment.';
+  return showReference(s.ending?.title||'Ready for dinner.',`
+   <div class="reward" aria-hidden="true">✦</div>
+   <p>${esc(s.ending?.text||'Ms Patel has your project. The laptop is signed out and your phone is put away.')}</p>
+   <ul class="route-list">
+    <li><b>${s.minorChoice==='added'?'A stronger final sentence':'You kept your original wording'}</b><br>Your timeline uses your own notes and the museum website.</li>
+    <li><b>${extraTitle}</b><br>${extraResult}</li>
+    <li><b>Jamie’s notes stayed private</b><br>Ms Patel received your own project.</li>
+    <li><b>${s.proof==='helper'?'Sam gave it a final read':'You checked it yourself'}</b><br>${esc(e.file)} sent to your teacher.</li>
+    <li><b>Everything put away</b><br>The school app asks you to sign in again. Your phone is on the counter.${s.queueScheduled?' You cancelled the reminder before it sent.':''}</li>
+   </ul>
+   ${comparison}
+   <details class="debrief"><summary>Technical notes on sign-out</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
+   <div class="actions">
+    ${practice}${otherStory}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}
+    ${button('Start Alex’s evening again',restart,'secondary')}${button('Look around the room',close,'secondary')}
+   </div>
+   <p class="small-print">A fictional story with simulated messages, videos and school accounts.</p>`,'ALEX’S EVENING');
+ }
+
+ const legacy=s.legacyRoute?'<div class="receipt"><b>Earlier route preserved</b><p>This ending is from the earlier story. Start the revised story to play the fresh opening and new change choices.</p></div>':'';
+ const expansionTitle=s.extensionAdded?'A genuine expansion approved and used'
+  :s.extensionOmitted?'An approved addition left unused':'The smaller task completed';
+ const expansionResult=s.extensionAdded?'Priya approved Alder Books before Nova opened its record.'
+  :s.extensionOmitted?'The new permission stayed unused. The report kept the original two accounts.'
+  :'The original two accounts were enough for the handover.';
+ const changes=s.legacyRoute?'':`
+  <li><b>${s.minorChoice==='added'?'A small edit within the agreement':'The original wording kept'}</b><br>${s.minorChoice==='added'?'The document changed within the same mission.':'You left out the optional edit.'}</li>
+  <li><b>${expansionTitle}</b><br>${expansionResult}</li>
+  <li><b>Private notes stayed out</b><br>Morgan received the summary. The meeting notes stayed in the customer records app.</li>`;
+ showReference(s.ending?.title||'Task complete.',`
+  <div class="reward" aria-hidden="true">✦</div>
+  <p>${esc(s.ending?.text||'The task is complete and its tested access is closed.')}</p>
+  ${legacy}
+  <ul class="route-list">
+   ${changes}
+   <li><b>${esc(e.file)} delivered</b><br>${esc(e.to)} · ${s.proof==='helper'?esc(e.helper)+' helped with only the file.':'You reviewed the file yourself.'}</li>
+   <li><b>Closure verified</b><br>${s.queueScheduled?'Your chosen follow-up was cancelled and verified.':'The queue was confirmed empty.'} The task session opened at the start is closed.</li>
+  </ul>
+  ${comparison}
+  <details class="debrief"><summary>Build, authorize and resist</summary>
+   ${novaDebrief(s)}<details><summary>Revocation protocols</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
+  </details>
+  <div class="actions">
+   ${practice}${otherStory}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}
+   ${button('Start Nova’s story again',restart,'secondary')}${button('Explore the room',close,'secondary')}
+   ${button('Which control do we need?',()=>showBuyerGuide(true),'secondary')}${button('Technical product map',showProductMap,'secondary')}
+  </div>
+  <p class="small-print">A fictional story with simulated messages and security services.</p>`,'YOUR ENDING · NOVA');
+}
+
+function showGuide(){
+ const started=state().started;
+ showReference('How to play',`
+  <p>Read the request, agree on access, and send a first draft. Handle replies, send the finished work, then check that the access you opened has closed.</p>
+  <ul class="route-list">
+   <li><b>Keep going</b><br>Choose Next or the matching highlighted object. Open other objects to see what they do.</li>
+   <li><b>Explore your pocket</b><br>Select an item to inspect it or try a highlighted Use here target. Choose Put away to return to the next step.</li>
+   <li><b>Read the outcome</b><br>Choices sit below the conversation. Expand the note for a short explanation and, when available, a request trace.</li>
+   <li><b>Use a keyboard</b><br>Tab moves between controls, Enter activates them, and Escape closes dialogue. There’s no countdown.</li>
+  </ul>
+  <div class="actions">${button(started?'Back to the room':'Back to the first screen',started?close:showIntro)}</div>`);
+}
 function switchMode(next,launch=false){
  close();clearTimeout(toast.timer);$('#toast').classList.remove('visible');$('#toast').textContent='';
  mode=next;selected=null;render();

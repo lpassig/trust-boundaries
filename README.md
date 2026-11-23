@@ -9,6 +9,8 @@ Play [Trust Boundaries on GitHub Pages](https://lpassig.github.io/trust-boundari
 - **Alex — The Last Upload:** agree on school apps before dinner, build a railway timeline, then handle a closing-sentence suggestion, an optional two-minute museum video on YouTube, and a classmate’s private-note request. Alex can submit ordinary reviewed homework directly through the school app.
 - **Nova — The Growing Brief:** prepare a one-page handover for Priya’s customer meeting. Morgan reviews Harbor Bikes and Pine Studio, then Priya may add Alder Books. Luca uploads an outside document to Customer records. Its footer asks Nova for a private attachment. The confidential business share requires exact human approval.
 
+Start with Alex if you’re new to access controls. Nova applies the same ideas to an AI agent in a workplace. Allow about 15 minutes per story as a planning estimate. Both endings offer a comparison of the two journeys and an optional staffing case. The case asks what you would do before revealing the consequences of each answer. It covers small edits, changes to the task, private information, approval for a specific version, and verifying that an old session has closed.
+
 ### Shared story beats
 
 Both journeys give the player a source to open, a reviewer to hear from, and an outside request to inspect. Alex uses the Riverside Museum website and Ms Patel’s school inbox and can read Jamie’s forwarded message in the class group chat. Nova opens the CRM tool, reads Morgan’s review inbox and inspects the document Luca uploaded. These controls appear as the work reaches each stage. In both journeys the speaker, current screen and next action have separate cues.
@@ -48,6 +50,8 @@ No protocol request, real credential, live service, cryptographic content digest
 ### Build, source and validation
 
 Run `python3 build-v2.py` to rebuild the current game in `play.html`, its compatible `play-v2.html` copy, and the main GitHub Pages entry in `docs/index.html`. The build embeds all nine scripts, CSS and SVG artwork, and generates a redirect at `docs/v2/index.html`. GitHub Pages publishes `main` → `/docs`. Only the current story edition is available.
+
+Run `python3 build-v2.py --check` to detect missing or stale generated files before release. This mode compares the offline copies, Pages entry and redirect with the build output without writing files.
 
 - `assets/art.js`, `assets/protocols.js`: original SVG scenes and optional technical mappings.
 - `v2/story.js`: both stories, later requests, next moves and optional protocol cards.

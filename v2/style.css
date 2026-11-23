@@ -84,6 +84,7 @@ dialog:not(.is-reference) .speech-source{display:flex;align-items:center;gap:10p
 .speech-mark{width:30px;height:30px;border:1px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:22px}
 .speech-source b{display:block;font-size:16px}.speech-source small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
 dialog:not(.is-reference) #dialog-body{max-height:min(28dvh,220px);overflow:auto;overscroll-behavior:contain;padding-right:8px;scrollbar-color:var(--accent) transparent}
+dialog:not(.is-reference) #dialog-body:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 dialog:not(.is-reference) h2{font-size:25px;margin:5px 0 12px;max-width:none}
 dialog:not(.is-reference) p{font-size:16px;line-height:1.6}
 dialog:not(.is-reference) .eyebrow{font-size:11px}
