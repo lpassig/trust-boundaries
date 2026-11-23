@@ -34,3 +34,12 @@ test('example decision binds the PEP observation to the approval and live versio
  assert.equal(response.enforcement.expected_policy_version,request.mission.policy_version);
  assert.equal(response.enforcement.expected_session_generation,request.identity.session_generation);
 });
+
+test('deployment options refer to published protocol sources',()=>{
+ const sources=vm.runInNewContext(fs.readFileSync(require.resolve('../assets/protocols.js'),'utf8')+'\nPROTOCOL_SOURCES');
+ assert.deepEqual(architecture.deploymentOptions.map(option=>option.id),['scim','registration','spiffe','transaction','a2a']);
+ for(const option of architecture.deploymentOptions){
+  assert(option.sources.length);
+  for(const id of option.sources)assert.match(sources[id].url,/^https:\/\//);
+ }
+});

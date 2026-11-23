@@ -20,6 +20,29 @@ test('Nova’s CRM read follows the MCP client, gateway and server before CRM au
  assert(nodes.findIndex(n=>n.label==='Enforce at the resource')>startIndex+2);
  assert.equal(act(start('teen'),'collect-source').event.request.tool_route,undefined);
 });
+test('the first CRM trace records MCP discovery and audience before the gateway and Vault checks',()=>{
+ const initial=start();
+ const blocked=act(R.fresh(),'collect-source');
+ assert.equal(blocked.event.request.mcp_authorization,undefined);
+ const read=run(initial,'collect-source');
+ const auth=read.last.request.mcp_authorization;
+ assert.equal(auth.resource,auth.token_audience);
+ assert.notEqual(auth.resource,auth.authorization_server);
+ const nodes=T.build(R.hydrate(read,'agent'),'agent').nodes;
+ const setup=nodes.findIndex(node=>node.label==='Discover the authorization server');
+ assert.deepEqual(nodes.slice(setup,setup+4).map(node=>node.label),[
+  'Discover the authorization server','Request a token for the MCP resource','Send the record request','Forward the tool call'
+ ]);
+ assert.equal(nodes[setup].status,'checked');
+ assert(nodes[setup].sources.includes('protectedResource'));
+ assert(nodes[setup+1].sources.includes('resource'));
+ assert.match(nodes[setup+3].detail,/audience/);
+ assert(nodes.findIndex(node=>node.role==='Configured broker + HashiCorp Vault')>setup+3);
+ const legacy=structuredClone(read);
+ delete legacy.last.request.mcp_authorization;
+ assert.equal(T.build(R.hydrate(legacy,'agent'),'agent').nodes[setup].status,'reference');
+ assert.equal(run(read,'collect-source').last.request.mcp_authorization,undefined);
+});
 test('The first read and Vault revocation refer to the same lease, independently of the CRM session',()=>{
  let s=ready();
  const lease=s.sourceLease;

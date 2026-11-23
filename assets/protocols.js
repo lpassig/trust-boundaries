@@ -5,6 +5,14 @@ const PROTOCOL_SOURCES = {
  ciba:{name:'CIBA Core 1.0 — Final',url:'https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html'},
  rar:{name:'RFC 9396 — Rich Authorization Requests',url:'https://www.rfc-editor.org/rfc/rfc9396.html'},
  resource:{name:'RFC 8707 — Resource Indicators',url:'https://www.rfc-editor.org/rfc/rfc8707.html'},
+ protectedResource:{name:'RFC 9728 — Protected Resource Metadata',url:'https://www.rfc-editor.org/rfc/rfc9728.html'},
+ oauth21:{name:'OAuth 2.1 Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/'},
+ jwt:{name:'RFC 7519 — JSON Web Token',url:'https://www.rfc-editor.org/rfc/rfc7519.html'},
+ clientRegistration:{name:'RFC 7591 — Dynamic Client Registration',url:'https://www.rfc-editor.org/rfc/rfc7591.html'},
+ scimProtocol:{name:'RFC 7644 — SCIM Protocol',url:'https://www.rfc-editor.org/rfc/rfc7644.html'},
+ scimSchema:{name:'RFC 7643 — SCIM Core Schema',url:'https://www.rfc-editor.org/rfc/rfc7643.html'},
+ transactionTokens:{name:'Transaction Tokens Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/'},
+ a2a:{name:'Agent2Agent protocol specification',url:'https://a2a-protocol.org/latest/specification/'},
  exchange:{name:'RFC 8693 — Token Exchange',url:'https://www.rfc-editor.org/rfc/rfc8693.html'},
  revoke:{name:'RFC 7009 — Token Revocation',url:'https://www.rfc-editor.org/rfc/rfc7009.html'},
  ssf:{name:'OpenID Shared Signals Framework 1.0',url:'https://openid.net/specs/openid-sharedsignals-framework-1_0.html'},
@@ -35,13 +43,13 @@ const AGENT_PROTOCOLS = [
   title:'Start only inside the verified runtime boundary',tags:['TLS','Sandbox JWT','OpenShell runtime'],status:'Documented runtime foundation; deployment still needs testing',
   how:'OpenShell documents an authenticated Sandbox Protocol using TLS and a sandbox JWT, plus a trusted Supervisor and an outer egress fence. Controls must be confirmed before the workload starts. SPIFFE/SVID is an optional workload-identity integration choice.',
   boundary:'Identity authenticates a component; runtime policy constrains its operations. Neither CIBA nor a model response replaces sandbox enforcement. Network permission does not establish every business permission.',
-  evidence:{boundary:'confirmed',program:'approved agent',destination:'crm.example',business_action_authority:'checked separately'},sources:['openshell','spiffe']
+  evidence:{boundary:'confirmed',program:'approved agent',destination:'crm.example',business_action_authority:'checked separately'},sources:['openshell','jwt','spiffe']
  },
  {
-  title:'Authorize the actual CRM read',tags:['OAuth access token','RFC 8707','MCP · if used','Vault · optional'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
-  how:'For an HTTP MCP path, the server validates its access-token audience and validity. Resource indicators identify the intended service. The trusted tool PEP must also check the actual operation and records. Vault can constrain access to Vault and broker credentials where configured.',
+  title:'Authorize the actual CRM read',tags:['OAuth 2.1 · MCP HTTP profile','RFC 9728','RFC 8707','CRM resource check'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
+  how:'On the HTTP MCP path, protected resource metadata points Nova to the authorization server (RFC 9728). Nova requests an access token for the MCP resource (RFC 8707). The MCP boundary validates that token, and Vault separately authorizes its credential path. The CRM PEP checks the actual operation and records.',
   boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The PDP-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
-  evidence:{audience:'https://crm.example',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','resource','vault']
+  evidence:{audience:'https://crm-tools.example/mcp',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','oauth21','protectedResource','resource','vault']
  },
  {
   title:'Keep retrieved instructions below the authority boundary',tags:['Untrusted content','Authenticated source ≠ authority','Independent PEP'],status:'Application security control; no injection-proof protocol',

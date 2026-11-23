@@ -229,7 +229,13 @@ const StoryRules = (() => {
    }
    if(decision&&approvalAtAttempt)e.request.approval_at_attempt=approvalAtAttempt;
    if(!teen&&operation==='report.send')e.request.follow_up_sentence=reportFollowUp(s);
-   if(!teen&&operation==='customer.read'&&decision)e.request.tool_route='crm-mcp-gateway';
+   if(!teen&&operation==='customer.read'&&decision){
+    e.request.tool_route='crm-mcp-gateway';
+    if(action==='collect-source'&&!current.source){
+     const resource='https://crm-tools.example/mcp';
+     e.request.mcp_authorization={resource,authorization_server:'https://identity.example',token_audience:resource};
+    }
+   }
    if(!teen&&s.sourceLease&&(action==='collect-source'&&decision?.result==='permit'||action==='remediate'&&p.control==='credential'&&s.containment?.credentialRevoked))e.request.source_lease=s.sourceLease;
    if(!teen&&action==='probe-session'&&['allowed','denied'].includes(p.prediction))e.request.prediction=p.prediction;
    if(!teen&&action==='try-private'&&decision)e.request.runtime_result={boundary:'NVIDIA OpenShell',destination:'CRM',result:'reachable'};

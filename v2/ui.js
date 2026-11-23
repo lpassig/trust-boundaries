@@ -266,7 +266,14 @@ function render(){
  $('#sound').textContent=sound?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(sound));$('#footer-world').textContent=teen()?'A little freedom. A few good questions.':'Useful autonomy. Independently checked.';
  renderBehind();renderProducts();syncSpeech();persist();
 }
-function protocolHTML(card){return `<p><b>${esc(card.title)}</b></p><div class="protocol-tags">${card.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p>${esc(card.how)}</p><p><b>Limit:</b> ${esc(card.boundary)}</p><p class="sources">${card.sources.map(id=>`<a href="${PROTOCOL_SOURCES[id].url}" target="_blank" rel="noopener noreferrer">${esc(PROTOCOL_SOURCES[id].name)}</a>`).join(' · ')}</p><p class="small-print">Illustrative mapping. Optional integrations are not claims of native product support. No protocol exchange is sent by this game.</p>`;}
+function protocolSourceLinks(ids=[]){
+ if(!ids.length)return '';
+ return `<p class="sources">${ids.map(id=>{
+  const {name,url}=PROTOCOL_SOURCES[id];
+  return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`;
+ }).join(' · ')}</p>`;
+}
+function protocolHTML(card){return `<p><b>${esc(card.title)}</b></p><div class="protocol-tags">${card.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p>${esc(card.how)}</p><p><b>Limit:</b> ${esc(card.boundary)}</p>${protocolSourceLinks(card.sources)}<p class="small-print">Illustrative mapping. Optional integrations are not claims of native product support. No protocol exchange is sent by this game.</p>`;}
 function renderBehind(){const s=state(),action=s.history.at(-1)?.action,card=s.finished||s.ended?CLOSING_PROTOCOL:['approve-draft','send-draft'].includes(action)?(teen()?SUBMISSION_PROTOCOL:AGENT_PROTOCOLS[5]):teen()&&['send','send-draft','approve-draft','proof-self','proof-helper'].includes(action)?SUBMISSION_PROTOCOL:s.message&&!s.verified||['request-extension','resolve-extension','add-extension','apply-minor','keep-minor','decline-extension','omit-extension','reconsider-extension','decline-private','try-extension'].includes(action)?CHANGE_PROTOCOL:action==='attach-source'?SOURCE_PROTOCOL:['review','resolve-review'].includes(action)?REVIEW_PROTOCOL:AGENT_PROTOCOLS[s.last?.topic??0];$('#behind-heading').textContent=teen()?'Behind the story':'Protocols behind this outcome';$('#behind-content').innerHTML=teen()?`<p>Your parent allows homework phone use. The school separately controls access to private notes. The phone checks which app can open; the school app checks each action. A message can’t give you permission, and an old yes can’t approve a different share.</p><details><summary>Technical lens</summary>${protocolHTML(card)}</details>`:protocolHTML(card);}
 function productById(id){return NOVA_PRODUCTS.find(p=>p.id===id);}
 function renderProducts(){
@@ -284,6 +291,7 @@ const architectureViews = [
  ['map','Product map'],
  ['sequences','Request sequences'],
  ['runtime','Runtime and containment'],
+ ['deployment','Deployment options'],
  ['threats','Threat coverage']
 ];
 
@@ -377,11 +385,21 @@ function architectureRuntime(){
   </div><p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`;
 }
 
+function architectureDeployment(open=null){
+ const {deploymentOptions}=ArchitectureReference;
+ const options=open?deploymentOptions.filter(option=>option.id===open).concat(deploymentOptions.filter(option=>option.id!==open)):deploymentOptions;
+ return `<h3>Deployment options</h3>
+  <p>Expand a standard to see when it fits and how it relates to Nova’s example deployment.</p>
+  <div class="product-cards">${options.map(option=>`<details class="product-card" ${option.id===open?'open':''}>
+   <summary><b>${esc(option.title)}</b></summary><p>${esc(option.when)}</p><p>${esc(option.inStory)}</p>
+   ${protocolSourceLinks(option.sources)}</details>`).join('')}</div>`;
+}
+
 function showArchitecture(view='boundaries',flowId='read',componentId=null,focusControl=false){
  const {flows}=ArchitectureReference;
  const boundary=flowId;
  if(!flows[flowId])flowId='read';
- const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='threats'?architectureThreats():architectureMap(componentId);
+ const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='threats'?architectureThreats():architectureMap(componentId);
  showReference('Mission-bound authorization',
   `<p>This reference describes a target deployment. The game replays fictional requests and outcomes. Product and protocol links identify the documented capabilities used in each layer.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -560,6 +578,7 @@ function crmReadPath(event,back){
   ['CRM','Checks the actual records against the current mission and its own rules.']
  ];
  return `<details class="debrief"><summary>How the request travels</summary>
+  ${event.request?.mcp_authorization?'<p>The MCP client discovers its authorization server, then obtains a token for the MCP gateway. That token, the Vault connector lease and the CRM record decision are separate checks.</p>':''}
   ${crmDecisionSummary(event)}
   <ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol>
   <div class="actions">${button('Inspect policy roles',()=>showPolicyConsole(back),'secondary')}</div>
@@ -749,7 +768,7 @@ function showSource(){
    ...(!s.caption&&!s.delivered?[['Add this source',teen()?'Put the museum page title under your timeline.':'Credit Harbor Bikes and Pine Studio below the handover.',()=>perform('attach-source',{source:'original'}),'good']]:[]),
    ...(lease?[['Compare connector credentials','See what survives after the task ends.',()=>showCredentialComparison(lease)]]:[]),
    [s.delivered?'See the delivery receipt':'Back to the draft','',s.delivered?showDelivery:showDraft],
-   ...(event?[['Follow the CRM request','See which services handled the read.',()=>showRequestTrace(event,showSource)]]:[])
+   ...(event?[['Follow the CRM request','Follow discovery, token audience and the CRM decision.',()=>showRequestTrace(event,showSource)]]:[])
   ])}`,teen()?'MUSEUM WEBSITE':'CRM','collect-source');
 }
 function showCredentialComparison(lease,checked=''){
@@ -841,6 +860,11 @@ function showDraftReview(){speakingObject='laptop';
  show(title,`<p>${teen()?'Your teacher has not seen this file yet. This sends a draft for feedback; you will submit the final version after responding to the replies.':matched?'Morgan approved this copy for the work inbox. The final copy will get its own approval.':'Send Morgan an approval request for this exact file and destination.'}</p>${!teen()&&!matched?approvalProduct():''}<div class="paper"><p class="eyebrow">REVIEW COPY · ${teen()?'VERSION':'REVISION'} ${s.fileRevision}</p><h3>${esc(teen()&&!s.proof?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}<p class="source-line">${esc(e.caption)}</p></div><div class="receipt"><b>${esc(e.file)} · ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${teen()?'Your own timeline, with its museum source.':esc(customerNames(StoryRules.reportRecords(s)))+' · Summary only'}</p>${matched?`<p>Recorded one-use review-copy approval · revision ${a.revision}</p>`:''}</div>${choices([[teen()?'Send draft to my teacher':matched?'Send the approved review copy':'Ask Morgan to approve this draft',teen()?'Send it to Ms Patel in the school app.':matched?'The CRM checks this draft, records, recipient and current authority.':'Morgan sees the exact draft and its destination.',teen()||matched?()=>perform('send-draft'):()=>showMorganApproval('draft-review',showDraftReview),'good'],['Back to the draft','Nothing is sent by opening this preview.',showDraft]])}`,teen()?'FIRST DRAFT · NOT FINAL SUBMISSION':'FIRST CONFIDENTIAL SHARE',matched?'approve-draft':'approval-preview');
 }
 function showDraftReceipt(){speakingObject='laptop';const s=state(),r=s.draftReview;show(teen()?'Your teacher has the draft.':'Morgan has the draft.',`<div class="receipt"><b>${esc(r.file)} · ${teen()?'version':'revision'} ${r.revision} sent for feedback</b><p class="address">${esc(r.to)}</p><p>${teen()?'The school app confirms draft delivery.':'The CRM confirms this exact, approved review copy. The one-use approval is consumed.'}</p></div><p>${teen()?'A little later, Ms Patel reads it and replies in the school inbox. Jamie forwards a message from the class chat. You’ll submit the final copy when you’re ready.':'Morgan asks for a shorter introduction. Priya sends news about one more account. An attachment uploaded by Luca also turns up in Customer records.'}</p><div class="actions">${button(teen()?'Read the replies on my phone':'Read the new messages',showChanges)}${button('Back to the room',close,'secondary')}</div>`,'DRAFT DELIVERY CONFIRMED','send-draft');}
+function showPipDeployment(){
+ showReference('Standards for Pip’s handoff',`${architectureDeployment('a2a')}
+  <div class="actions">${button('Back to Pip’s result',showHelperResult,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+}
+
 function showHelperResult(){
  speakingObject='helper';
  const receipt=!teen()&&state().last.request?.delegation;
@@ -848,7 +872,7 @@ function showHelperResult(){
   ?'<details class="debrief"><summary>See how Nova handles this</summary><p>Sam can read your timeline with his own account. Nova gives Pip just the handover to format. Pip’s own identity and formatting-only grant let it finish that file without signing in as Nova or reading CRM.</p></details>'
   :productDetails('Why use IBM watsonx Orchestrate here?',[['orchestrate','In this deployment, it coordinates the handoff. Pip uses its own identity and a separate formatting-only grant for this report. The task gives Pip no CRM access or share permission.']]);
  show(teen()?'Sam has read this version.':'Pip has formatted this version.',
-  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
+  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${!teen()?button('Explore deployment options for Pip',showPipDeployment,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
   teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');
 }
 function showHelperAudit(receipt,answer=null){
@@ -1257,7 +1281,7 @@ function updateTrace(announce=false){
  if(!tracePlayback||!dialog.open)return;
  const t=tracePlayback,n=t.model.nodes[t.index];
  $$('[data-trace-step]').forEach(b=>{const active=Number(b.dataset.traceStep)===t.index;b.classList.toggle('trace-current',active);b.setAttribute('aria-current',active?'step':'false');});
- $('#trace-detail').innerHTML=`<p class="eyebrow">STEP ${t.index+1} OF ${t.model.nodes.length} · ${esc(n.status.replaceAll('-',' '))}</p><h3>${esc(n.label)}</h3><p>${esc(n.detail)}</p>`;
+ $('#trace-detail').innerHTML=`<p class="eyebrow">STEP ${t.index+1} OF ${t.model.nodes.length} · ${esc(n.status.replaceAll('-',' '))}</p><h3>${esc(n.label)}</h3><p>${esc(n.detail)}</p>${protocolSourceLinks(n.sources)}`;
  $('#trace-position').textContent=`${t.index+1} / ${t.model.nodes.length}`;
  $('#trace-play').textContent=t.playing?'Pause':'Play';
  $('#trace-next').setAttribute('aria-disabled',String(t.index===t.model.nodes.length-1));

@@ -508,6 +508,14 @@ const PROTOCOL_SOURCES = {
  ciba:{name:'CIBA Core 1.0 — Final',url:'https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0-final.html'},
  rar:{name:'RFC 9396 — Rich Authorization Requests',url:'https://www.rfc-editor.org/rfc/rfc9396.html'},
  resource:{name:'RFC 8707 — Resource Indicators',url:'https://www.rfc-editor.org/rfc/rfc8707.html'},
+ protectedResource:{name:'RFC 9728 — Protected Resource Metadata',url:'https://www.rfc-editor.org/rfc/rfc9728.html'},
+ oauth21:{name:'OAuth 2.1 Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/'},
+ jwt:{name:'RFC 7519 — JSON Web Token',url:'https://www.rfc-editor.org/rfc/rfc7519.html'},
+ clientRegistration:{name:'RFC 7591 — Dynamic Client Registration',url:'https://www.rfc-editor.org/rfc/rfc7591.html'},
+ scimProtocol:{name:'RFC 7644 — SCIM Protocol',url:'https://www.rfc-editor.org/rfc/rfc7644.html'},
+ scimSchema:{name:'RFC 7643 — SCIM Core Schema',url:'https://www.rfc-editor.org/rfc/rfc7643.html'},
+ transactionTokens:{name:'Transaction Tokens Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/'},
+ a2a:{name:'Agent2Agent protocol specification',url:'https://a2a-protocol.org/latest/specification/'},
  exchange:{name:'RFC 8693 — Token Exchange',url:'https://www.rfc-editor.org/rfc/rfc8693.html'},
  revoke:{name:'RFC 7009 — Token Revocation',url:'https://www.rfc-editor.org/rfc/rfc7009.html'},
  ssf:{name:'OpenID Shared Signals Framework 1.0',url:'https://openid.net/specs/openid-sharedsignals-framework-1_0.html'},
@@ -538,13 +546,13 @@ const AGENT_PROTOCOLS = [
   title:'Start only inside the verified runtime boundary',tags:['TLS','Sandbox JWT','OpenShell runtime'],status:'Documented runtime foundation; deployment still needs testing',
   how:'OpenShell documents an authenticated Sandbox Protocol using TLS and a sandbox JWT, plus a trusted Supervisor and an outer egress fence. Controls must be confirmed before the workload starts. SPIFFE/SVID is an optional workload-identity integration choice.',
   boundary:'Identity authenticates a component; runtime policy constrains its operations. Neither CIBA nor a model response replaces sandbox enforcement. Network permission does not establish every business permission.',
-  evidence:{boundary:'confirmed',program:'approved agent',destination:'crm.example',business_action_authority:'checked separately'},sources:['openshell','spiffe']
+  evidence:{boundary:'confirmed',program:'approved agent',destination:'crm.example',business_action_authority:'checked separately'},sources:['openshell','jwt','spiffe']
  },
  {
-  title:'Authorize the actual CRM read',tags:['OAuth access token','RFC 8707','MCP · if used','Vault · optional'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
-  how:'For an HTTP MCP path, the server validates its access-token audience and validity. Resource indicators identify the intended service. The trusted tool PEP must also check the actual operation and records. Vault can constrain access to Vault and broker credentials where configured.',
+  title:'Authorize the actual CRM read',tags:['OAuth 2.1 · MCP HTTP profile','RFC 9728','RFC 8707','CRM resource check'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
+  how:'On the HTTP MCP path, protected resource metadata points Nova to the authorization server (RFC 9728). Nova requests an access token for the MCP resource (RFC 8707). The MCP boundary validates that token, and Vault separately authorizes its credential path. The CRM PEP checks the actual operation and records.',
   boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The PDP-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
-  evidence:{audience:'https://crm.example',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','resource','vault']
+  evidence:{audience:'https://crm-tools.example/mcp',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','oauth21','protectedResource','resource','vault']
  },
  {
   title:'Keep retrieved instructions below the authority boundary',tags:['Untrusted content','Authenticated source ≠ authority','Independent PEP'],status:'Application security control; no injection-proof protocol',
@@ -1279,7 +1287,13 @@ const StoryRules = (() => {
    }
    if(decision&&approvalAtAttempt)e.request.approval_at_attempt=approvalAtAttempt;
    if(!teen&&operation==='report.send')e.request.follow_up_sentence=reportFollowUp(s);
-   if(!teen&&operation==='customer.read'&&decision)e.request.tool_route='crm-mcp-gateway';
+   if(!teen&&operation==='customer.read'&&decision){
+    e.request.tool_route='crm-mcp-gateway';
+    if(action==='collect-source'&&!current.source){
+     const resource='https://crm-tools.example/mcp';
+     e.request.mcp_authorization={resource,authorization_server:'https://identity.example',token_audience:resource};
+    }
+   }
    if(!teen&&s.sourceLease&&(action==='collect-source'&&decision?.result==='permit'||action==='remediate'&&p.control==='credential'&&s.containment?.credentialRevoked))e.request.source_lease=s.sourceLease;
    if(!teen&&action==='probe-session'&&['allowed','denied'].includes(p.prediction))e.request.prediction=p.prediction;
    if(!teen&&action==='try-private'&&decision)e.request.runtime_result={boundary:'NVIDIA OpenShell',destination:'CRM',result:'reachable'};
@@ -1512,7 +1526,7 @@ if(typeof module!=='undefined')module.exports=StoryInteractions;
 </script><script>
 /* Fictional operation replay. This visualizer makes no live authentication or API calls. */
 const RequestTrace = (() => {
- const node=(label,role,status,detail)=>({label,role,status,detail});
+ const node=(label,role,status,detail,sources)=>({label,role,status,detail,...(sources?{sources}:{})});
  const lessons={
   'read-brief':['The assignment tells Alex what to make. Tonight’s app agreement is a separate step.','The work order describes the requested job. The mission service records the limits Nova can act under.'],
   'ask-pass':['Your parent sets which apps you can use tonight. The school still decides whose files you can share.','The mission service records the accounts, deliverable and reviewer. Nova’s identity and the CRM’s own rules still apply.'],
@@ -1878,10 +1892,27 @@ const RequestTrace = (() => {
    if(!teen){
     if(r.runtime_result?.result==='reachable')nodes.push(node('Reach CRM','NVIDIA OpenShell','checked','The configured runtime permitted connectivity to CRM. The resource still checks this particular attachment.'));
     if(r.tool_route==='crm-mcp-gateway'){
+     const auth=r.mcp_authorization;
+     if(a==='collect-source'){
+      const status=auth?'checked':'reference';
+      const resource=auth?.resource||'the MCP resource';
+      nodes.push(
+       node('Discover the authorization server','MCP protected resource metadata · RFC 9728',status,
+        auth?`Nova’s MCP client reads protected resource metadata for ${resource}. Its authorization_servers entry points to ${auth.authorization_server} in this example.`
+         :'In this example path, a client reads the MCP resource metadata to find its authorization server. This read has no saved discovery evidence.', ['protectedResource','mcp']),
+       node('Request a token for the MCP resource','Authorization server · OAuth 2.1 profile · RFC 8707',status,
+        auth?`The client requests resource=${resource} in its authorization and token requests. The issuer returns an access token for ${auth.token_audience}.`
+         :'The MCP client requests an access token for the intended resource. This read has no saved token-audience evidence.', ['resource','mcp','oauth21'])
+      );
+     }
      nodes.push(
-      node('Send the record request','Nova’s MCP client · NVIDIA OpenShell','checked','Nova’s client sends the call for the requested records from its governed workspace.'),
-      node('Forward the tool call','MCP gateway','checked','The configured gateway accepts this tool call and forwards it to the CRM MCP server.'),
-      node('Resolve the tool call','CRM MCP server','checked','The server validates its HTTP authorization and maps the tool call to a CRM read. The configured connector uses a separate backend credential.'),
+      node('Send the record request','Nova’s MCP client · NVIDIA OpenShell','checked',auth
+       ?`Nova’s MCP client presents the access token intended for ${auth.resource} at the protected MCP gateway and requests summary fields for the selected accounts.`
+       :'Nova’s client sends the call for the requested records from its governed workspace.'),
+      node('Forward the tool call','MCP gateway','checked',auth
+       ?'The gateway checks the access token’s issuer, validity, and audience for its MCP endpoint. It authorizes its connection to the CRM MCP server separately.'
+       :'The configured gateway accepts this tool call and forwards it to the CRM MCP server.',auth?['mcp','resource']:undefined),
+      node('Resolve the tool call','CRM MCP server','checked','The server validates the gateway’s authorization for this hop and maps the tool call to a CRM read. The configured connector uses a separate backend credential.'),
       r.source_lease?node('Broker the first-read credential','Configured broker + HashiCorp Vault','checked',
        `${r.source_lease.id}: read-only connector role, ${r.source_lease.lifetimeSeconds} seconds in the simulation. The connector holds the credential outside Nova’s context. CRM checks record access separately.`)
        :node('Obtain scoped source access if configured','Configured broker + HashiCorp Vault','reference','A broker obtains the short-lived backend credential before the CRM read. Vault authorizes its own credential path. The CRM owns its service session and still decides record access.')
@@ -2288,8 +2319,9 @@ const ArchitectureReference = (() => {
    steps:[
     ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
     ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
-    ['openshell','Nova’s MCP client sends the read request from inside the governed workspace.'],
-    ['mcpGateway','The configured MCP gateway checks that the tool call can proceed and forwards it to the CRM MCP server.'],
+    ['openshell','Run Nova’s MCP client inside the governed workspace.'],
+    ['mcpGateway','The client discovers the authorization server from the protected MCP resource metadata (RFC 9728), then requests a token for that MCP resource (RFC 8707).'],
+    ['mcpGateway','The configured gateway validates the client’s access token and forwards the tool call using separate authorization for the MCP server hop.'],
     ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.'],
     ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.'],
     ['crm','The CRM enforcement point (PEP) verifies the caller and observes the actual record IDs and read operation.'],
@@ -2519,7 +2551,30 @@ const ArchitectureReference = (() => {
    ['Policy Prover','https://docs.nvidia.com/openshell/latest/how-it-works/policies/prover']]
  };
 
- return {groups,components,flows,threats,outsideCoverage,technical,runtime};
+ const deploymentOptions = [
+  {id:'scim',title:'SCIM · Identity provisioning',
+   when:'Use SCIM to create, update or deactivate identity records between a directory and a registry when both support the chosen representation.',
+   inStory:'Nova and Pip already have registered identities. If a deployment provisions agents via SCIM, it needs an agreed schema or mapping for those records. Provisioning establishes the identity record. The mission and resource policies govern what that identity can do.',
+   sources:['scimProtocol','scimSchema']},
+  {id:'registration',title:'Dynamic Client Registration · OAuth client onboarding',
+   when:'Use RFC 7591 when an authorization server supports accepting client metadata and issuing a client identifier dynamically.',
+   inStory:'Nova’s MCP client is configured before the task. The MCP authorization profile also allows pre-registration and Client ID Metadata Documents under its client registration rules. Client registration and agent ownership are separate responsibilities.',
+   sources:['clientRegistration','mcp']},
+  {id:'spiffe',title:'SPIFFE and SVID · Workload identity',
+   when:'Use an X.509-SVID or JWT-SVID where services need to verify a workload’s identity within a configured trust domain.',
+   inStory:'The OpenShell bootstrap illustrates its sandbox and gateway JWTs. SPIFFE can be a separate identity integration between workloads. A caller identity is an input to the mission and resource checks.',
+   sources:['spiffe','openshell','jwt']},
+  {id:'transaction',title:'Transaction Tokens · Transaction context',
+   when:'The IETF draft describes carrying short-lived, signed identity and transaction context across calls within a trust domain.',
+   inStory:'Pip’s recorded task already keeps the parent mission and exact file revision. A deployment could carry selected context across services using Transaction Tokens. The receiver still checks current authority and the operation.',
+   sources:['transactionTokens']},
+  {id:'a2a',title:'Agent2Agent (A2A) · Agent messaging',
+   when:'Use A2A when independently deployed agents need to exchange messages, tasks or artifacts.',
+   inStory:'Nova’s workflow hands Pip a file-only formatting task. A deployment could carry that same handoff over A2A. The receiver authenticates the caller and enforces Pip’s own grant for the exact file and operation.',
+   sources:['a2a']}
+ ];
+
+ return {groups,components,flows,threats,outsideCoverage,technical,runtime,deploymentOptions};
 })();
 
 if(typeof module!=='undefined')module.exports=ArchitectureReference;
@@ -2910,7 +2965,14 @@ function render(){
  $('#sound').textContent=sound?'Sound on':'Sound off';$('#sound').setAttribute('aria-pressed',String(sound));$('#footer-world').textContent=teen()?'A little freedom. A few good questions.':'Useful autonomy. Independently checked.';
  renderBehind();renderProducts();syncSpeech();persist();
 }
-function protocolHTML(card){return `<p><b>${esc(card.title)}</b></p><div class="protocol-tags">${card.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p>${esc(card.how)}</p><p><b>Limit:</b> ${esc(card.boundary)}</p><p class="sources">${card.sources.map(id=>`<a href="${PROTOCOL_SOURCES[id].url}" target="_blank" rel="noopener noreferrer">${esc(PROTOCOL_SOURCES[id].name)}</a>`).join(' · ')}</p><p class="small-print">Illustrative mapping. Optional integrations are not claims of native product support. No protocol exchange is sent by this game.</p>`;}
+function protocolSourceLinks(ids=[]){
+ if(!ids.length)return '';
+ return `<p class="sources">${ids.map(id=>{
+  const {name,url}=PROTOCOL_SOURCES[id];
+  return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`;
+ }).join(' · ')}</p>`;
+}
+function protocolHTML(card){return `<p><b>${esc(card.title)}</b></p><div class="protocol-tags">${card.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div><p>${esc(card.how)}</p><p><b>Limit:</b> ${esc(card.boundary)}</p>${protocolSourceLinks(card.sources)}<p class="small-print">Illustrative mapping. Optional integrations are not claims of native product support. No protocol exchange is sent by this game.</p>`;}
 function renderBehind(){const s=state(),action=s.history.at(-1)?.action,card=s.finished||s.ended?CLOSING_PROTOCOL:['approve-draft','send-draft'].includes(action)?(teen()?SUBMISSION_PROTOCOL:AGENT_PROTOCOLS[5]):teen()&&['send','send-draft','approve-draft','proof-self','proof-helper'].includes(action)?SUBMISSION_PROTOCOL:s.message&&!s.verified||['request-extension','resolve-extension','add-extension','apply-minor','keep-minor','decline-extension','omit-extension','reconsider-extension','decline-private','try-extension'].includes(action)?CHANGE_PROTOCOL:action==='attach-source'?SOURCE_PROTOCOL:['review','resolve-review'].includes(action)?REVIEW_PROTOCOL:AGENT_PROTOCOLS[s.last?.topic??0];$('#behind-heading').textContent=teen()?'Behind the story':'Protocols behind this outcome';$('#behind-content').innerHTML=teen()?`<p>Your parent allows homework phone use. The school separately controls access to private notes. The phone checks which app can open; the school app checks each action. A message can’t give you permission, and an old yes can’t approve a different share.</p><details><summary>Technical lens</summary>${protocolHTML(card)}</details>`:protocolHTML(card);}
 function productById(id){return NOVA_PRODUCTS.find(p=>p.id===id);}
 function renderProducts(){
@@ -2928,6 +2990,7 @@ const architectureViews = [
  ['map','Product map'],
  ['sequences','Request sequences'],
  ['runtime','Runtime and containment'],
+ ['deployment','Deployment options'],
  ['threats','Threat coverage']
 ];
 
@@ -3021,11 +3084,21 @@ function architectureRuntime(){
   </div><p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`;
 }
 
+function architectureDeployment(open=null){
+ const {deploymentOptions}=ArchitectureReference;
+ const options=open?deploymentOptions.filter(option=>option.id===open).concat(deploymentOptions.filter(option=>option.id!==open)):deploymentOptions;
+ return `<h3>Deployment options</h3>
+  <p>Expand a standard to see when it fits and how it relates to Nova’s example deployment.</p>
+  <div class="product-cards">${options.map(option=>`<details class="product-card" ${option.id===open?'open':''}>
+   <summary><b>${esc(option.title)}</b></summary><p>${esc(option.when)}</p><p>${esc(option.inStory)}</p>
+   ${protocolSourceLinks(option.sources)}</details>`).join('')}</div>`;
+}
+
 function showArchitecture(view='boundaries',flowId='read',componentId=null,focusControl=false){
  const {flows}=ArchitectureReference;
  const boundary=flowId;
  if(!flows[flowId])flowId='read';
- const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='threats'?architectureThreats():architectureMap(componentId);
+ const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='threats'?architectureThreats():architectureMap(componentId);
  showReference('Mission-bound authorization',
   `<p>This reference describes a target deployment. The game replays fictional requests and outcomes. Product and protocol links identify the documented capabilities used in each layer.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -3204,6 +3277,7 @@ function crmReadPath(event,back){
   ['CRM','Checks the actual records against the current mission and its own rules.']
  ];
  return `<details class="debrief"><summary>How the request travels</summary>
+  ${event.request?.mcp_authorization?'<p>The MCP client discovers its authorization server, then obtains a token for the MCP gateway. That token, the Vault connector lease and the CRM record decision are separate checks.</p>':''}
   ${crmDecisionSummary(event)}
   <ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol>
   <div class="actions">${button('Inspect policy roles',()=>showPolicyConsole(back),'secondary')}</div>
@@ -3393,7 +3467,7 @@ function showSource(){
    ...(!s.caption&&!s.delivered?[['Add this source',teen()?'Put the museum page title under your timeline.':'Credit Harbor Bikes and Pine Studio below the handover.',()=>perform('attach-source',{source:'original'}),'good']]:[]),
    ...(lease?[['Compare connector credentials','See what survives after the task ends.',()=>showCredentialComparison(lease)]]:[]),
    [s.delivered?'See the delivery receipt':'Back to the draft','',s.delivered?showDelivery:showDraft],
-   ...(event?[['Follow the CRM request','See which services handled the read.',()=>showRequestTrace(event,showSource)]]:[])
+   ...(event?[['Follow the CRM request','Follow discovery, token audience and the CRM decision.',()=>showRequestTrace(event,showSource)]]:[])
   ])}`,teen()?'MUSEUM WEBSITE':'CRM','collect-source');
 }
 function showCredentialComparison(lease,checked=''){
@@ -3485,6 +3559,11 @@ function showDraftReview(){speakingObject='laptop';
  show(title,`<p>${teen()?'Your teacher has not seen this file yet. This sends a draft for feedback; you will submit the final version after responding to the replies.':matched?'Morgan approved this copy for the work inbox. The final copy will get its own approval.':'Send Morgan an approval request for this exact file and destination.'}</p>${!teen()&&!matched?approvalProduct():''}<div class="paper"><p class="eyebrow">REVIEW COPY · ${teen()?'VERSION':'REVISION'} ${s.fileRevision}</p><h3>${esc(teen()&&!s.proof?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}<p class="source-line">${esc(e.caption)}</p></div><div class="receipt"><b>${esc(e.file)} · ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${teen()?'Your own timeline, with its museum source.':esc(customerNames(StoryRules.reportRecords(s)))+' · Summary only'}</p>${matched?`<p>Recorded one-use review-copy approval · revision ${a.revision}</p>`:''}</div>${choices([[teen()?'Send draft to my teacher':matched?'Send the approved review copy':'Ask Morgan to approve this draft',teen()?'Send it to Ms Patel in the school app.':matched?'The CRM checks this draft, records, recipient and current authority.':'Morgan sees the exact draft and its destination.',teen()||matched?()=>perform('send-draft'):()=>showMorganApproval('draft-review',showDraftReview),'good'],['Back to the draft','Nothing is sent by opening this preview.',showDraft]])}`,teen()?'FIRST DRAFT · NOT FINAL SUBMISSION':'FIRST CONFIDENTIAL SHARE',matched?'approve-draft':'approval-preview');
 }
 function showDraftReceipt(){speakingObject='laptop';const s=state(),r=s.draftReview;show(teen()?'Your teacher has the draft.':'Morgan has the draft.',`<div class="receipt"><b>${esc(r.file)} · ${teen()?'version':'revision'} ${r.revision} sent for feedback</b><p class="address">${esc(r.to)}</p><p>${teen()?'The school app confirms draft delivery.':'The CRM confirms this exact, approved review copy. The one-use approval is consumed.'}</p></div><p>${teen()?'A little later, Ms Patel reads it and replies in the school inbox. Jamie forwards a message from the class chat. You’ll submit the final copy when you’re ready.':'Morgan asks for a shorter introduction. Priya sends news about one more account. An attachment uploaded by Luca also turns up in Customer records.'}</p><div class="actions">${button(teen()?'Read the replies on my phone':'Read the new messages',showChanges)}${button('Back to the room',close,'secondary')}</div>`,'DRAFT DELIVERY CONFIRMED','send-draft');}
+function showPipDeployment(){
+ showReference('Standards for Pip’s handoff',`${architectureDeployment('a2a')}
+  <div class="actions">${button('Back to Pip’s result',showHelperResult,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+}
+
 function showHelperResult(){
  speakingObject='helper';
  const receipt=!teen()&&state().last.request?.delegation;
@@ -3492,7 +3571,7 @@ function showHelperResult(){
   ?'<details class="debrief"><summary>See how Nova handles this</summary><p>Sam can read your timeline with his own account. Nova gives Pip just the handover to format. Pip’s own identity and formatting-only grant let it finish that file without signing in as Nova or reading CRM.</p></details>'
   :productDetails('Why use IBM watsonx Orchestrate here?',[['orchestrate','In this deployment, it coordinates the handoff. Pip uses its own identity and a separate formatting-only grant for this report. The task gives Pip no CRM access or share permission.']]);
  show(teen()?'Sam has read this version.':'Pip has formatted this version.',
-  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
+  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${!teen()?button('Explore deployment options for Pip',showPipDeployment,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
   teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');
 }
 function showHelperAudit(receipt,answer=null){
@@ -3901,7 +3980,7 @@ function updateTrace(announce=false){
  if(!tracePlayback||!dialog.open)return;
  const t=tracePlayback,n=t.model.nodes[t.index];
  $$('[data-trace-step]').forEach(b=>{const active=Number(b.dataset.traceStep)===t.index;b.classList.toggle('trace-current',active);b.setAttribute('aria-current',active?'step':'false');});
- $('#trace-detail').innerHTML=`<p class="eyebrow">STEP ${t.index+1} OF ${t.model.nodes.length} · ${esc(n.status.replaceAll('-',' '))}</p><h3>${esc(n.label)}</h3><p>${esc(n.detail)}</p>`;
+ $('#trace-detail').innerHTML=`<p class="eyebrow">STEP ${t.index+1} OF ${t.model.nodes.length} · ${esc(n.status.replaceAll('-',' '))}</p><h3>${esc(n.label)}</h3><p>${esc(n.detail)}</p>${protocolSourceLinks(n.sources)}`;
  $('#trace-position').textContent=`${t.index+1} / ${t.model.nodes.length}`;
  $('#trace-play').textContent=t.playing?'Pause':'Play';
  $('#trace-next').setAttribute('aria-disabled',String(t.index===t.model.nodes.length-1));

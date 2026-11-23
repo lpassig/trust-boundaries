@@ -1,6 +1,6 @@
 /* Fictional operation replay. This visualizer makes no live authentication or API calls. */
 const RequestTrace = (() => {
- const node=(label,role,status,detail)=>({label,role,status,detail});
+ const node=(label,role,status,detail,sources)=>({label,role,status,detail,...(sources?{sources}:{})});
  const lessons={
   'read-brief':['The assignment tells Alex what to make. Tonight’s app agreement is a separate step.','The work order describes the requested job. The mission service records the limits Nova can act under.'],
   'ask-pass':['Your parent sets which apps you can use tonight. The school still decides whose files you can share.','The mission service records the accounts, deliverable and reviewer. Nova’s identity and the CRM’s own rules still apply.'],
@@ -366,10 +366,27 @@ const RequestTrace = (() => {
    if(!teen){
     if(r.runtime_result?.result==='reachable')nodes.push(node('Reach CRM','NVIDIA OpenShell','checked','The configured runtime permitted connectivity to CRM. The resource still checks this particular attachment.'));
     if(r.tool_route==='crm-mcp-gateway'){
+     const auth=r.mcp_authorization;
+     if(a==='collect-source'){
+      const status=auth?'checked':'reference';
+      const resource=auth?.resource||'the MCP resource';
+      nodes.push(
+       node('Discover the authorization server','MCP protected resource metadata · RFC 9728',status,
+        auth?`Nova’s MCP client reads protected resource metadata for ${resource}. Its authorization_servers entry points to ${auth.authorization_server} in this example.`
+         :'In this example path, a client reads the MCP resource metadata to find its authorization server. This read has no saved discovery evidence.', ['protectedResource','mcp']),
+       node('Request a token for the MCP resource','Authorization server · OAuth 2.1 profile · RFC 8707',status,
+        auth?`The client requests resource=${resource} in its authorization and token requests. The issuer returns an access token for ${auth.token_audience}.`
+         :'The MCP client requests an access token for the intended resource. This read has no saved token-audience evidence.', ['resource','mcp','oauth21'])
+      );
+     }
      nodes.push(
-      node('Send the record request','Nova’s MCP client · NVIDIA OpenShell','checked','Nova’s client sends the call for the requested records from its governed workspace.'),
-      node('Forward the tool call','MCP gateway','checked','The configured gateway accepts this tool call and forwards it to the CRM MCP server.'),
-      node('Resolve the tool call','CRM MCP server','checked','The server validates its HTTP authorization and maps the tool call to a CRM read. The configured connector uses a separate backend credential.'),
+      node('Send the record request','Nova’s MCP client · NVIDIA OpenShell','checked',auth
+       ?`Nova’s MCP client presents the access token intended for ${auth.resource} at the protected MCP gateway and requests summary fields for the selected accounts.`
+       :'Nova’s client sends the call for the requested records from its governed workspace.'),
+      node('Forward the tool call','MCP gateway','checked',auth
+       ?'The gateway checks the access token’s issuer, validity, and audience for its MCP endpoint. It authorizes its connection to the CRM MCP server separately.'
+       :'The configured gateway accepts this tool call and forwards it to the CRM MCP server.',auth?['mcp','resource']:undefined),
+      node('Resolve the tool call','CRM MCP server','checked','The server validates the gateway’s authorization for this hop and maps the tool call to a CRM read. The configured connector uses a separate backend credential.'),
       r.source_lease?node('Broker the first-read credential','Configured broker + HashiCorp Vault','checked',
        `${r.source_lease.id}: read-only connector role, ${r.source_lease.lifetimeSeconds} seconds in the simulation. The connector holds the credential outside Nova’s context. CRM checks record access separately.`)
        :node('Obtain scoped source access if configured','Configured broker + HashiCorp Vault','reference','A broker obtains the short-lived backend credential before the CRM read. Vault authorizes its own credential path. The CRM owns its service session and still decides record access.')

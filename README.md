@@ -45,6 +45,8 @@ Choose **Architecture** alongside Alex and Nova or open the [reference directly]
 
 ### Technical journey
 
+Nova’s first CRM trace shows discovery through protected resource metadata (RFC 9728), the resource-specific access token (RFC 8707), and the separate Vault and CRM checks. **Deployment options** in Explore Architecture links SCIM, Dynamic Client Registration, SPIFFE/SVID, Transaction Tokens and A2A to the configured example. The same reference opens from Pip’s result.
+
 In Explore Architecture, **Runtime and containment** separates the Gateway, Compute Driver, sandbox and Supervisor. **What stopped this request?** compares network and CRM denials on the same fictional read. The incident examples distinguish a frozen workload, a stopped workload, partial containment and independently verified closure.
 
 The product guide in Nova’s sidebar and at the ending starts with practical needs and identifies customer policy and CRM enforcement as a separate design responsibility. Nova’s optional technical product map names IBM Verify, IBM Agent Identity, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. It separately identifies the customer mission service, resource PEP and proposed policy decision point. These are source-linked example roles and target integrations, not a claim of deployed end-to-end support. The send panel compares the approved report with the actual send, including the revision, recipient, records and policy version. A refused send keeps that comparison in its recorded request. The optional trace shows the actual call, the point of enforcement and the outcome.
@@ -70,7 +72,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **191**.
+- `tests/v2.test.cjs`: 90 tests including the full route matrix and key security/story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **193**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

@@ -65,8 +65,9 @@ const ArchitectureReference = (() => {
    steps:[
     ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
     ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
-    ['openshell','Nova’s MCP client sends the read request from inside the governed workspace.'],
-    ['mcpGateway','The configured MCP gateway checks that the tool call can proceed and forwards it to the CRM MCP server.'],
+    ['openshell','Run Nova’s MCP client inside the governed workspace.'],
+    ['mcpGateway','The client discovers the authorization server from the protected MCP resource metadata (RFC 9728), then requests a token for that MCP resource (RFC 8707).'],
+    ['mcpGateway','The configured gateway validates the client’s access token and forwards the tool call using separate authorization for the MCP server hop.'],
     ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.'],
     ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.'],
     ['crm','The CRM enforcement point (PEP) verifies the caller and observes the actual record IDs and read operation.'],
@@ -296,7 +297,30 @@ const ArchitectureReference = (() => {
    ['Policy Prover','https://docs.nvidia.com/openshell/latest/how-it-works/policies/prover']]
  };
 
- return {groups,components,flows,threats,outsideCoverage,technical,runtime};
+ const deploymentOptions = [
+  {id:'scim',title:'SCIM · Identity provisioning',
+   when:'Use SCIM to create, update or deactivate identity records between a directory and a registry when both support the chosen representation.',
+   inStory:'Nova and Pip already have registered identities. If a deployment provisions agents via SCIM, it needs an agreed schema or mapping for those records. Provisioning establishes the identity record. The mission and resource policies govern what that identity can do.',
+   sources:['scimProtocol','scimSchema']},
+  {id:'registration',title:'Dynamic Client Registration · OAuth client onboarding',
+   when:'Use RFC 7591 when an authorization server supports accepting client metadata and issuing a client identifier dynamically.',
+   inStory:'Nova’s MCP client is configured before the task. The MCP authorization profile also allows pre-registration and Client ID Metadata Documents under its client registration rules. Client registration and agent ownership are separate responsibilities.',
+   sources:['clientRegistration','mcp']},
+  {id:'spiffe',title:'SPIFFE and SVID · Workload identity',
+   when:'Use an X.509-SVID or JWT-SVID where services need to verify a workload’s identity within a configured trust domain.',
+   inStory:'The OpenShell bootstrap illustrates its sandbox and gateway JWTs. SPIFFE can be a separate identity integration between workloads. A caller identity is an input to the mission and resource checks.',
+   sources:['spiffe','openshell','jwt']},
+  {id:'transaction',title:'Transaction Tokens · Transaction context',
+   when:'The IETF draft describes carrying short-lived, signed identity and transaction context across calls within a trust domain.',
+   inStory:'Pip’s recorded task already keeps the parent mission and exact file revision. A deployment could carry selected context across services using Transaction Tokens. The receiver still checks current authority and the operation.',
+   sources:['transactionTokens']},
+  {id:'a2a',title:'Agent2Agent (A2A) · Agent messaging',
+   when:'Use A2A when independently deployed agents need to exchange messages, tasks or artifacts.',
+   inStory:'Nova’s workflow hands Pip a file-only formatting task. A deployment could carry that same handoff over A2A. The receiver authenticates the caller and enforces Pip’s own grant for the exact file and operation.',
+   sources:['a2a']}
+ ];
+
+ return {groups,components,flows,threats,outsideCoverage,technical,runtime,deploymentOptions};
 })();
 
 if(typeof module!=='undefined')module.exports=ArchitectureReference;
