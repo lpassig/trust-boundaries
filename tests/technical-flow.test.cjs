@@ -59,7 +59,7 @@ test('Alex asks about one linked museum video, not unrestricted YouTube',()=>{
  let s=start('teen');for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension'])s=run(s,a);
  assert.equal(s.extraSource,'youtube');assert(!s.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(s.mission.allowedMedia,[]);
  const pending=act(s,'try-extension');assert.equal(pending.event.request.operation,'video.watch');assert.equal(pending.event.decision.result,'deny');
- s=run(s,'resolve-extension');assert(s.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(s.mission.allowedMedia,['riverside-station-video']);
+ s=run(s,'resolve-extension');assert(s.mission.allowedApps.includes('youtube-museum-video'));assert.equal(s.mission.scope,'project-with-museum-video');assert.deepEqual(s.mission.allowedMedia,['riverside-station-video']);
  const other=act(s,'add-extension',{media:'unrelated-recommendation'});assert.equal(other.event.decision.result,'deny');assert.equal(other.state.extensionAdded,false);assert.equal(other.event.request.resource,'unrelated-recommendation');
  s=run(s,'add-extension');assert.equal(s.last.request.resource,'riverside-station-video');assert.equal(s.extensionAdded,true);assert.match(s.last.text,/YouTube/);
 });
