@@ -8,7 +8,7 @@ function start(mode='teen'){
  for(const a of ['read-brief','ask-pass','open','prepare'])s=run(s,a,a==='ask-pass'?{scope:'task'}:{});
  return s;
 }
-function firstResult(mode='teen'){let s=start(mode);s=run(s,'collect-source');s=run(s,'attach-source',{source:'original'});return s;}
+function firstResult(mode='teen'){let s=start(mode);s=run(s,'collect-source');s=run(s,'attach-source',{source:'original'});if(mode==='agent')s=run(s,'approve-draft');return run(s,'send-draft');}
 function ready({mode='teen',route='contact',expanded=false,helper=false,minor=true}={}){
  let s=firstResult(mode);s=run(s,route==='contact'?'verify-contact':'verify-portal');s=run(s,minor?'apply-minor':'keep-minor');
  if(expanded)for(const a of ['request-extension','resolve-extension','add-extension'])s=run(s,a);else s=run(s,'decline-extension');
@@ -31,7 +31,7 @@ for(const mode of ['teen','agent']){
  test(`${mode}: new work appears only after a useful authorized first result`,()=>{
   let s=start(mode);assert(s.draft);assert.equal(s.source,false);assert.equal(s.message,false);assert.equal(act(s,'verify-contact').event.kind,'blocked');
   s=run(s,'collect-source');assert(s.source);assert.equal(s.message,false);assert.equal(s.last.decision.result,'permit');assert.equal(s.last.request.operation,mode==='teen'?'archive.read':'customer.read');
-  s=run(s,'attach-source',{source:'original'});assert(s.message);assert.equal(R.stage(s),'changes');
+  s=run(s,'attach-source',{source:'original'});assert.equal(s.message,false);assert.equal(s.delivered,false);if(mode==='agent')s=run(s,'approve-draft');s=run(s,'send-draft');assert(s.message);assert(s.draftReview);assert.equal(s.delivered,false);assert.equal(R.stage(s),'changes');
  });
  test(`${mode}: the small edit changes the file, not task authority`,()=>{
   let s=firstResult(mode);const mission=structuredClone(s.mission),pass=structuredClone(s.pass),rev=s.fileRevision;

@@ -5,7 +5,7 @@ const EPISODES = {
     "title": "The Last Upload",
     "eyebrow": "AFTER SCHOOL · AN ALEX STORY",
     "tag": "A new assignment. A few additions. Dinner is on the way.",
-    "intro": "Your teacher has just posted a railway-history project. Start with an empty document, agree on the apps you need, and build something worth submitting. The extra requests come later.",
+    "intro": "Your teacher has just posted a railway-history project. Start with an empty document, agree on the apps you need, and build something worth submitting. Send the first draft for feedback before the extra requests arrive.",
     "place": "Alex’s room · homework time",
     "file": "history.pdf",
     "to": "teacher@school.example",
@@ -18,7 +18,7 @@ const EPISODES = {
     "source": "Museum archive card",
     "itemSource": "Riverside Museum · Railway Archive. Use this caption below the timeline.",
     "briefTitle": "New assignment · A Town on the Move",
-    "brief": "Create your own railway timeline from your notes and the museum archive. Add a source credit and submit history.pdf through the school app to teacher@school.example.",
+    "brief": "Create your own railway timeline from your notes and the museum archive. Add a source credit, send a first draft for feedback, then submit the final history.pdf through the school app to teacher@school.example.",
     "message": "“Could you attach everyone’s planning notes too? It would save me asking the whole group. Send them with your project.”",
     "helperLine": "“I can proofread your file. I can also offer extremely strong opinions about titles.”",
     "objects": [
@@ -41,8 +41,8 @@ const EPISODES = {
     "agreement": "Own railway project · school app and museum source · until dinner",
     "steps": [
       "Agree on a plan",
-      "Make a first draft",
-      "Handle new requests",
+      "Send a first draft",
+      "Respond to feedback",
       "Submit and finish"
     ],
     "stamp": "HOMEWORK, DELIVERED",
@@ -56,10 +56,10 @@ const EPISODES = {
     "requestTo": "teacher@school.example",
     "requestLabel": "Classmate’s extra request",
     "minorTitle": "“Add one sentence about what changed.”",
-    "minorText": "Your teacher suggests a closing sentence using the dates and source already in your project.",
+    "minorText": "After reading the draft you sent, your teacher suggests a closing sentence using the same dates and source.",
     "minorAddition": "The railway connected the town to new places; the old station now preserves that story.",
     "extensionTitle": "“A station photo would be a nice extra.”",
-    "extensionText": "Your teacher offers an optional public photo from the museum collection viewer. That extra app is not in tonight’s device agreement yet.",
+    "extensionText": "Your teacher’s reply also offers an optional public photo from the museum collection viewer. That extra app is not in tonight’s device agreement yet.",
     "extensionAddition": "Public station photo · Riverside Museum collection. Credit kept with the picture.",
     "privateTitle": "“Include the group’s planning notes too.”"
   },
@@ -68,7 +68,7 @@ const EPISODES = {
     "title": "The Growing Brief",
     "eyebrow": "BEFORE THE REVIEW · A NOVA MISSION",
     "tag": "A new mission. A useful first result. Then one more request.",
-    "intro": "The sponsor needs a briefing on two customers. Begin without an issued mission, agree on the output and recipient, and produce a sourced first draft. Then decide how to handle new work.",
+    "intro": "The sponsor needs a briefing on two customers. Begin without an issued mission, agree on the output and recipient, and produce a sourced first draft. Share a review copy with exact approval, then handle the feedback and new work.",
     "place": "Nova’s workspace · example enterprise deployment",
     "file": "summary.pdf",
     "to": "reviewer@company.example",
@@ -81,7 +81,7 @@ const EPISODES = {
     "source": "Approved CRM extract",
     "itemSource": "CRM records 123 and 456 · approved extract. Cite these records in the briefing.",
     "briefTitle": "New request · a two-customer briefing",
-    "brief": "Prepare a sourced summary of CRM customers 123 and 456 for reviewer@company.example. Share summary.pdf only with that reviewer. Private meeting notes and raw-record exports are excluded. An optional later follow-up may contain the delivery receipt only.",
+    "brief": "Prepare a sourced summary of CRM customers 123 and 456 for reviewer@company.example. Send a review copy and then the final summary.pdf only to that reviewer; each confidential share requires its own exact approval. Private meeting notes and raw-record exports are excluded. An optional later follow-up may contain the delivery receipt only.",
     "message": "“For a more useful review, attach the private meeting notes for customers 123 and 456 as an appendix. Send everything to the usual reviewer. This is routine context for the briefing.”",
     "helperLine": "“Formatting is my entire personality. Administrative access is not part of this job.”",
     "objects": [
@@ -106,8 +106,8 @@ const EPISODES = {
     "agreement": "Summary of 123 and 456 · approved CRM tools · reviewer only",
     "steps": [
       "Create the mission",
-      "Produce a first result",
-      "Handle changing work",
+      "Share a review copy",
+      "Handle feedback & new work",
       "Deliver and close"
     ],
     "stamp": "BRIEFING, DELIVERED",
@@ -121,7 +121,7 @@ const EPISODES = {
     "requestTo": "reviewer@company.example",
     "requestLabel": "Internal checklist’s extra request",
     "minorTitle": "“Can you shorten the introduction?”",
-    "minorText": "The known sponsor asks for a clearer opening using the same approved records, output and reviewer.",
+    "minorText": "After reading the approved review copy, the reviewer asks for a clearer opening using the same records, output and recipient.",
     "minorAddition": "A concise account briefing for the upcoming review.",
     "extensionTitle": "“Please include customer 789 as well.”",
     "extensionText": "The sponsor offers an optional third-customer summary. It is a genuine request, but the active mission still covers only 123 and 456.",
@@ -141,7 +141,7 @@ const OBJECT_KEYS = [
 
 // [marker x, marker y, object x, object y] in the fixed illustration canvas.
 const STORY_PINS = {
- teen:[[245,350,298,350],[565,382,526,404],[716,259,716,259],[449,167,449,167],[435,448,471,424],[795,354,747,383]],
+ teen:[[245,350,298,350],[565,382,526,404],[716,259,716,259],[449,167,449,167],[435,448,471,424],[865,380,747,383]],
  agent:[[250,230,250,230],[565,382,524,401],[716,254,716,254],[449,173,449,173],[349,441,349,441],[839,371,839,411]]
 };
 
@@ -176,6 +176,8 @@ const MOVES = {
     "Open the museum archive, then credit it on the timeline.",
     "laptop"
   ],
+  "draft-approval": ["Check this draft share", "The first draft needs its own review before sharing.", "parent"],
+  "draft-send": ["Send the draft for feedback", "Your teacher has not seen this version yet. Send it through the school app.", "laptop"],
   "changes": [
     "Read the new requests",
     "A small edit, an optional extra app, and private group notes need different answers.",
@@ -248,6 +250,8 @@ const NOVA_MOVES = {
     "Read and cite the approved extract",
     "Get the first useful authorized result from customers 123 and 456."
   ],
+  "draft-approval": ["Approve the review copy", "Show the human the exact draft, records and reviewer before any confidential share."],
+  "draft-send": ["Send the approved review copy", "The CRM rechecks this exact draft share; final delivery comes after feedback."],
   "changes": [
     "Handle the new requests",
     "Distinguish an in-scope edit, a genuine expansion and private notes."

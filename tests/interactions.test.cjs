@@ -7,7 +7,8 @@ function run(s,action,payload={}){
  return result.state;
 }
 function draft(mode){let s=R.act(R.fresh(),mode,'begin').state;for(const a of ['read-brief','ask-pass','open','prepare','collect-source'])s=run(s,a,a==='ask-pass'?{scope:'task'}:{});return s;}
-function ready(mode){let s=run(draft(mode),'attach-source');for(const a of ['verify-contact','keep-minor','decline-extension','decline-private','proof-self'])s=run(s,a);if(mode==='agent')s=run(s,'approve');return s;}
+function feedback(mode){let s=run(draft(mode),'attach-source');if(mode==='agent')s=run(s,'approve-draft');return run(s,'send-draft');}
+function ready(mode){let s=feedback(mode);for(const a of ['verify-contact','keep-minor','decline-extension','decline-private','proof-self'])s=run(s,a);if(mode==='agent')s=run(s,'approve');return s;}
 for(const mode of ['teen','agent']){
  test(`${mode}: a saved contact has no destination before requests arrive`,()=>{
   const opening=R.act(R.fresh(),mode,'begin').state;assert.match(I.itemUse(opening,mode,'contact').instruction,/later requests/);assert.doesNotMatch(I.itemUse(opening,mode,'contact').instruction,/ended|closing checks/);
@@ -16,7 +17,7 @@ for(const mode of ['teen','agent']){
   assert.deepEqual(s,before);
  });
  test(`${mode}: contact verification belongs to the incoming requests, then becomes reference only`,()=>{
-  let s=run(draft(mode),'attach-source');const use=I.itemUse(s,mode,'contact');
+  let s=feedback(mode);const use=I.itemUse(s,mode,'contact');
   assert.deepEqual(use.targets,[mode==='teen'?'phone':'brief']);
   s=run(s,use.action);assert(s.evidence.includes('contact'));
   assert.deepEqual(I.itemUse(s,mode,'contact').targets,[]);
@@ -36,7 +37,7 @@ for(const mode of ['teen','agent']){
   assert.deepEqual(I.itemUse(s,mode,'delivery').targets,[]);
  });
  test(`${mode}: a paused job offers discussion instead of item actions`,()=>{
-  const s=run(draft(mode),'attach-source');s.paused=true;
+  const s=feedback(mode);s.paused=true;
   for(const id of ['contact','source','draft','approval','clue','vault'])assert.deepEqual(I.itemUse(s,mode,id).targets,[],id);
   assert.deepEqual(I.itemUse(s,mode,'pass').targets,['parent']);
  });
