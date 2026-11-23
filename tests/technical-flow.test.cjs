@@ -87,6 +87,10 @@ test('The CRM result compares an observed Alder Books refusal with the amended r
  assert.deepEqual(allowed.request.records,earlier.request.records);
  assert.equal(earlier.decision.decision_id,denied.event.decision.decision_id);
  assert.deepEqual(T.compareCrmReads(R.hydrate(amended,'agent')), [allowed,earlier]);
+ const earlierTrace=T.build(amended,'agent',earlier);
+ assert.equal(earlierTrace.request.request_id,denied.event.request.request_id);
+ assert.equal(earlierTrace.nodes.find(node=>node.label==='Enforce at the resource').status,'blocked');
+ assert.match(earlierTrace.nodes.at(-1).detail,/Nothing was sent or read/);
 });
 test('The CRM result never displays an earlier refusal for a skipped or unrecorded attempt',()=>{
  for(const previous of [feedback(),act(feedback(),'try-extension').state]){

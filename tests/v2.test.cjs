@@ -153,7 +153,19 @@ test('using an approved-but-omitted addition later invalidates a two-record appr
 test('a refused send trace describes refusal rather than falsely claiming an approval match',()=>{for(const change of ['change-recipient','revise-file','wait-approval']){let s=run(ready({mode:'agent'}),'approve');s=run(s,change);s=act(s,'send').state;const t=T.build(s,'agent'),n=t.nodes.find(x=>x.label==='Enforce at the resource');assert.equal(n.status,'blocked');assert.match(n.detail,/refuses/);assert.doesNotMatch(n.detail,/match the one-use/);}});
 test('the phone app profile, rather than school business policy, refuses the unapproved museum app',()=>{let s=firstResult();s=act(s,'try-extension').state;assert.equal(s.last.decision.pep,'Homework app profile');assert.equal(s.last.decision.pdp,'Parent app agreement');assert.equal(s.last.request.observed_by,'Homework app profile');s=act(s,'try-private').state;assert.equal(s.last.decision.pep,'School application');});
 test('a matching content approval cannot override the current mission resource constraints',()=>{const base=run(ready({mode:'agent',expanded:true}),'approve');for(const mutate of [s=>s.mission.records=['123','456'],s=>s.mission.allowedFile='other.pdf',s=>s.mission.recipient='other@company.example']){const s=structuredClone(base);mutate(s);const r=act(s,'send');assert.equal(r.event.kind,'refused');assert.equal(r.state.delivered,false);}});
-test('post-stop verification is performed by independent control authority, not the terminated agent',()=>{let s=closeTask(ready({mode:'agent'}));s=run(s,'probe-session');assert.equal(s.last.request.actor,'independent-task-controller');assert.equal(s.last.request.tested_actor,'nova-042');assert.equal(s.last.request.operation,'control.status.read');assert.equal(s.last.request.authorization_basis,'independent task-control authority');assert.equal(s.mission.status,'revoked');assert.match(T.build(s,'agent').summary,/Independent controllers/);});
+test('post-stop verification is performed by independent control authority, not the terminated agent',()=>{
+ let s=closeTask(ready({mode:'agent'}));
+ s=run(s,'probe-session',{prediction:'denied'});
+ assert.equal(s.last.request.prediction,'denied');
+ assert.equal(s.containment.probeResult,'allowed');
+ assert(!s.checks.includes('signin'));
+ assert.equal(s.last.request.actor,'independent-task-controller');
+ assert.equal(s.last.request.tested_actor,'nova-042');
+ assert.equal(s.last.request.operation,'control.status.read');
+ assert.equal(s.last.request.authorization_basis,'independent task-control authority');
+ assert.equal(s.mission.status,'revoked');
+ assert.match(T.build(s,'agent').summary,/Independent controllers/);
+});
 test('a dependency refusal cannot appear in the trace as a successfully opened runtime',()=>{let s=R.act(R.fresh(),'agent','begin').state;s=act(s,'open').state;assert.equal(s.last.kind,'blocked');const t=T.build(s,'agent');assert.equal(t.nodes.at(-1).status,'not-reached');assert.match(t.summary,/prerequisite/);});
 
 test('a refused share keeps the approval and actual revision together after clearing live approval',()=>{

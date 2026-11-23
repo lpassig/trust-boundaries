@@ -124,6 +124,7 @@ function showNote(key,event){
  $('#lesson-sources').replaceChildren(...links);
  $('#lesson-sources').hidden=!links.length;
  $('#lesson-trace').hidden=event?.request?.recordVersion!==3||state().last!==event;
+ $('#lesson-trace').onclick=()=>showRequestTrace(event,()=>showReply(event));
  details.hidden=false;
 }
 function showLesson(event){
@@ -135,12 +136,25 @@ function showReply(event=state().last){
  showSavedReply(event);
  showLesson(event);
 }
+function showActionRefusal(event){
+ const paused=state().paused;
+ const action=event.action;
+ const continuation=paused?showParent:action==='try-private'?showPrivate:action==='try-extension'?showExtension:nextMove;
+ const label=paused?(teen()?'Talk to my parent':'Ask Priya to review'):action==='try-private'?(teen()?'Back to Jamie’s message':'Back to the source note'):'Continue';
+ speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
+ show(event.title,`<p>${esc(event.text)}</p><div class="actions">
+  ${button(label,continuation)}
+  ${state().last===event?button(teen()?'See what happened':'Follow this request',()=>showRequestTrace(event,()=>showReply(event)),'secondary'):''}
+  ${button('Back to the room',close,'secondary')}
+ </div>`,paused?(teen()?'LET’S TALK':'DELIBERATE BYPASS STOPPED'):event.kind==='refused'?'A PERMISSION CHECK':'ONE THING FIRST');
+}
 function showSavedReply(event){
  if(!event)return;
  if(isSchoolRecipientRefusal(event))return showSchoolRecipientRefusal(event);
  if(isRefusedShare(event))return showRefusedShare(event);
  if(!teen()&&event.decision?.result==='deny'&&RequestTrace.crmReadDecision(state(),event))return showCrmReadRefusal(event);
  if(state().ended&&!state().finished)return showChecks();
+ if(['blocked','refused'].includes(event.kind))return showActionRefusal(event);
  if(event.action==='collect-source'&&stage()==='source'&&state().source)return showSource();
  if(event.action==='add-extension'&&event.kind==='story'&&state().extensionAdded&&!state().delivered)return showExtensionRead(event);
  if(event.action==='inspect-request-source'&&!state().delivered&&!state().paused)return showRequestSource();
@@ -153,17 +167,11 @@ function showSavedReply(event){
 function perform(action,payload={}){
  const result=StoryRules.act(state(),mode,action,payload);states[mode]=result.state;selected=null;close();render();ping(result.event?.kind);
  const ev=result.event;
- if(ev?.kind==='blocked'||ev?.kind==='refused'){
-  speakingObject=StoryInteractions.eventSource(mode,ev.speaker,ev.action,ev.kind);
- }
  if(isSchoolRecipientRefusal(ev))showSchoolRecipientRefusal(ev);
  else if(isRefusedShare(ev))showRefusedShare(ev);
  else if(!teen()&&ev?.decision?.result==='deny'&&RequestTrace.crmReadDecision(state(),ev))showCrmReadRefusal(ev);
- else if(ev?.kind==='blocked'||ev?.kind==='refused'){
-  const continuation=state().paused?showParent:action==='try-private'?showPrivate:action==='try-extension'?showExtension:nextMove;
-  const label=action==='try-private'?(teen()?'Back to Jamie’s message':'Back to the source note'):'Continue';
-  show(ev.title,`<p>${esc(ev.text)}</p><div class="actions">${button(state().paused?(teen()?'Talk to my parent':'Ask Priya to review'):label,continuation)}${result.state.last===ev?button(teen()?'See what happened':'Follow this request',openTrace,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,state().paused?(teen()?'LET’S TALK':'DELIBERATE BYPASS STOPPED'):ev.kind==='refused'?'A PERMISSION CHECK':'ONE THING FIRST');
- }else if(action==='collect-source')showSource();
+ else if(ev?.kind==='blocked'||ev?.kind==='refused')showActionRefusal(ev);
+ else if(action==='collect-source')showSource();
  else if(action==='inspect-request-source')showRequestSource();
  else if(['verify-contact','verify-portal'].includes(action)&&payload.fromExtension)showExtension(ev);
  else if(action==='attach-source'||action==='approve-draft')showDraftReview();
@@ -400,7 +408,7 @@ function showCredential(){
  showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.opened?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.opened?'A scoped, short-lived credential is modeled for the approved CRM path.':'Open the approved runtime path before a credential is modeled in the story.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Who does what?',()=>showProductMap('vault'),'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
 }
 
-function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):teen()?perform('collect-source'):showSourceTool();case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
+function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
 function interact(key,pin){
  if(!state().started)return showIntro();
  if(selected&&heldUse().targets.includes(key))return useItem(key);
@@ -461,7 +469,7 @@ function showInbox(){
  show('Work inbox',`<p>${s.delivered?'Morgan has the final handover.':'This inbox carries work orders and replies. Review feedback arrives after Morgan receives a copy.'}</p>
   <div class="actions">${button('Open the work order',showBrief)}${s.message&&!s.delivered?button('Read the replies',showChanges,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`);
 }
-function showPolicyConsole(back=close){
+function showPolicyConsole(back){
  const s=state(),request=s.last?.request,decision=request?.recordVersion===3?s.last.decision:null;
  const current=decision?'<div class="receipt"><b>'+esc(decision.pep)+' · '+esc(decision.result==='permit'?'Allowed':'Refused')+'</b><p>'+esc(request.operation)+' · '+esc(decision.reason)+'</p></div>':'';
  showReference('Policy console',`<p>Follow the inputs, decision and enforcement in Nova’s example deployment.</p>${current}
@@ -474,7 +482,7 @@ function showPolicyConsole(back=close){
   <details class="product-card"><summary><b>Policy enforcement point (PEP)</b><span>Applies the result at the boundary</span></summary>
    <p>For a CRM read or send, CRM checks the actual operation and controls whether data is read or shared. OpenShell separately controls runtime reachability.</p>
   </details>
-  <div class="actions">${decision?button('Follow this decision',openTrace):''}${button('Explore the architecture',()=>showArchitecture('map','read','policyContext'),'secondary')}${button('Back to Nova’s workspace',back,'secondary')}</div>`,'POLICY CONTROLS');
+  <div class="actions">${decision?button('Follow this decision',()=>showRequestTrace(s.last,()=>showPolicyConsole(back),'Back to the policy console')):''}${button('Explore the architecture',()=>showArchitecture('map','read','policyContext'),'secondary')}${button('Back to the read result',back,'secondary')}</div>`,'POLICY CONTROLS');
 }
 function showParent(){speakingObject=teen()?'parent':'missionControl';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
@@ -505,32 +513,18 @@ function showWorkspace(){
    [teen()?'Sign in and open my project':'Open the workspace',teen()?'Open the school app on the laptop.':'The workspace and CRM session are checked separately when the task closes.',()=>perform('open'),'good']
   ])}`,teen()?'FAMILY LAPTOP':'TASK WORKSPACE','open');
 }
-function showSourceTool(){
- const s=state();
- if(s.source&&!s.ended)return showSource();
- speakingObject='source';
- const active=s.opened&&!s.ended&&!s.delivered&&s.draft;
- if(!teen()&&active)return showCrmRead();
- show(teen()?'Riverside Museum website':'Look up the account updates',
-  `<p>${s.ended?'This task is closed.':teen()?'Use the museum’s railway page to check the three dates before you credit it in your timeline.':'Prepare your outline before requesting customer records.'}</p><div class="actions">${active?button('Open the museum page',()=>perform('collect-source')):''}${button('Back to the room',close,'secondary')}</div>`,undefined,'read-preview');
-}
-function showCrmRead(action='collect-source'){
- const first=action==='collect-source';
- speakingObject=first?'source':'extra';
- const records=first?'Harbor Bikes and Pine Studio':'Alder Books';
+function crmReadPath(event,back){
  const steps=[
-  ['Nova’s MCP client','Sends the call over the route allowed by NVIDIA OpenShell.'],
-  ['Configured MCP gateway','Checks and forwards the tool call.'],
-  ['CRM MCP server','Exposes the read tool and calls CRM.'],
-  ['CRM','Enforces access to the requested records.']
+  ['Nova’s client','Sends the read through the route allowed by OpenShell.'],
+  ['MCP gateway','Checks and forwards the tool call.'],
+  ['CRM MCP server','Resolves the call. Its connector can obtain a short-lived backend credential from Vault.'],
+  ['CRM','Checks the actual records against the current mission and its own rules.']
  ];
- const products=productDetails('Why these products are in the read path',[
-  ['iai','Identifies Nova and supplies the context that it is acting under Priya’s delegation. The customer mission supplies the approved account list.'],
-  ['openshell','Limits where the running agent can connect. The CRM route is allowed here.'],
-  ['vault','In the brokered setup, the connector can get a short-lived credential without exposing it to Nova. CRM still checks which records the request may read.']
- ]);
- show('Request '+records,
-  `${products}<ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol><div class="actions">${button(first?'Request the two records':'Request Alder Books',()=>perform(action))}${button('Inspect policy roles',()=>showPolicyConsole(()=>showCrmRead(action)),'secondary')}${button(first?'Back to the draft':'Back to the optional request',first?showDraft:()=>showExtension(),'secondary')}</div>`,first?'FIRST RECORD READ':'OPTIONAL ACCOUNT READ','read-preview');
+ return `<details class="debrief"><summary>How the request travels</summary>
+  ${crmDecisionSummary(event)}
+  <ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol>
+  <div class="actions">${button('Inspect policy roles',()=>showPolicyConsole(back),'secondary')}</div>
+ </details>`;
 }
 
 function crmDecisionSummary(event){
@@ -560,29 +554,38 @@ function showDecisionLab(back=()=>showArchitecture('boundaries'), trial=Decision
  const rows=[
   row('Observed operation',run=>`${run.request.operation}(${run.request.recordIds.join(', ')})`),
   row('Actor and workload',run=>`${run.request.actor} · ${run.request.workload}`),
-  row('Observation source',run=>`${run.observation.issuer} · ${run.decision.observedByCrm?'verified in model':'unverified'}`,true),
+  row('Observation source',run=>run.decision.preview?'CRM did not receive the read':`${run.observation.issuer} · ${run.decision.observedByCrm?'verified in model':'unverified'}`,true),
   row('Mission at decision',run=>`${run.mission.id} v${run.decision.version}`,true),
   row('Current mission',run=>`${run.mission.id} v${run.mission.version} · ${run.mission.status}`,true),
   row('Vault credential',run=>run.credential.result==='permit'?`Permit · read-only lease · ${run.credential.lifetimeSeconds}s`:'Deny · no lease',true),
-  row('VAAS / proposed PDP',run=>`${run.decision.result==='permit'?'Permit':'Deny'} · ${run.decision.reason}`,true),
-  row('CRM outcome',run=>!run.outcome?'Awaiting commit check':run.outcome.receipt?'Summary returned · receipt recorded':'No data returned',true)
+  row('VAAS / proposed PDP',run=>`${run.decision.result==='permit'?'Permit':'Deny'}${run.decision.preview?' (policy preview)':''} · ${run.decision.reason}`,true),
+  row('CRM outcome',labCrmOutcome,true)
  ];
- const phase=trial.outcome?(trial.outcome.receipt?'CRM returned the summary':'No data was returned'):
+ const brokerStopped=trial.credential.result==='deny';
+ const phase=brokerStopped?'Vault denied the credential':trial.outcome?labCrmOutcome(trial):
   trial.mission.status==='revoked'?'The old Permit is still on record':'The proposed PDP evaluated the read';
+ const next=brokerStopped?'See where the read stopped':trial.mission.status==='revoked'?'Try committing with the old Permit':'Check the operation at commit';
+ const pending=brokerStopped?'See what the missing lease means for this read.':'CRM still has to check whether this read can take effect.';
  const canWithdraw=trial.scenario==='approved'&&!trial.outcome&&trial.mission.status==='active';
  const choicesHtml=!trial.outcome?`<div class="actions">
   ${canWithdraw?button('Withdraw the mission',()=>showDecisionLab(back,DecisionLab.withdraw(trial))):''}
-  ${button(trial.mission.status==='revoked'?'Try committing with the old Permit':'Check the operation at commit',()=>showDecisionLab(back,DecisionLab.commit(trial)),canWithdraw?'secondary':'primary')}
+  ${button(next,()=>showDecisionLab(back,DecisionLab.commit(trial)),canWithdraw?'secondary':'primary')}
  </div>`:'';
- const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['credential','evidence','execution'].includes(edge.id));
+ const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['credential','backend','evidence','execution'].includes(edge.id));
  showReference('Authorization before execution',`
-  <p>Compare a completed CRM read with a second attempt at the same record. The lab models what each system can establish, using fictional transport, decisions and receipts.</p>
+  <p>Nova requests the Alder Books summary. Change one condition and see where the read succeeds or stops. All evidence is simulated.</p>
   <label for="lab-scenario">Change one condition</label>
   <select id="lab-scenario">${Object.entries(DecisionLab.scenarios).map(([id,label])=>`<option value="${id}"${id===trial.scenario?' selected':''}>${esc(label)}</option>`).join('')}</select>
-  <section class="receipt"><b>${esc(phase)}</b><p>${esc(trial.outcome?.reason||'The policy decision is recorded. CRM still has to check whether this read can take effect.')}</p></section>
+  <section class="receipt"><b>${esc(phase)}</b><p>${esc(trial.outcome?.reason||pending)}</p></section>
+  <ol class="lab-summary" aria-label="Your attempt at a glance">
+   <li><b>Vault</b><span>${brokerStopped?'Credential denied':'Read-only lease issued'}</span></li>
+   <li><b>Mission and policy</b><span>${trial.mission.status==='revoked'?`Mission withdrawn · Permit from v${trial.decision.version}`:`Mission v${trial.mission.version} · ${trial.decision.result==='permit'?'Permit':'Deny'}${trial.decision.preview?' (preview)':''}`}</span></li>
+   <li><b>CRM</b><span>${esc(labCrmOutcome(trial))}</span></li>
+  </ol>
   ${choicesHtml}
-  ${decisionComparison(['Completed reference read','Your attempt'],rows)}
-  <p class="small-print">The lab evaluates the controls separately. On the story’s brokered route, a missing lease can stop the request before it reaches CRM.</p>
+  <details class="product-card"><summary><b>Compare with a successful read</b></summary>
+   ${decisionComparison(['Completed reference read','Your attempt'],rows)}
+  </details>
   ${evidence.map(edge=>`<details class="product-card"><summary><b>${esc(edge.label)}</b></summary>${boundaryEvidence(edge)}</details>`).join('')}
   <details class="product-card"><summary><b>Inspect the evidence and receipts</b><span>Illustrative values supplied by the simulation</span></summary>
    <pre class="product-example">${esc(JSON.stringify({baseline,attempt:trial},null,2))}</pre>
@@ -593,6 +596,12 @@ function showDecisionLab(back=()=>showArchitecture('boundaries'), trial=Decision
   showDecisionLab(back,DecisionLab.begin(event.target.value));
   $('#lab-scenario').focus();
  };
+}
+
+function labCrmOutcome(run){
+ if(run.credential.result==='deny')return 'CRM not reached';
+ if(!run.outcome)return 'Awaiting commit check';
+ return run.outcome.receipt?'Summary returned · receipt recorded':'Operation rejected · no data returned';
 }
 
 function showReadComparison(pair,back){
@@ -622,11 +631,11 @@ function showReadComparison(pair,back){
 
 function showCrmReadRefusal(event){
  speakingObject='laptop';
- const next=event.action==='collect-source'?showSourceTool:()=>showExtension();
+ const next=event.action==='collect-source'?showDraft:()=>showExtension();
  const pair=RequestTrace.compareCrmReads(state(),event);
  const back=()=>showCrmReadRefusal(event);
- show(event.title,`${crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">
-  ${button('Continue',next)}${button('Follow this request',openTrace,'secondary')}
+ show(event.title,`<p>${esc(event.text)}</p>${crmReadPath(event,back)}<div class="actions">
+  ${button('Continue',next)}${button('Follow this request',()=>showRequestTrace(event,back),'secondary')}
   ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,back),'secondary'):button('Try the authorization lab',()=>showDecisionLab(back),'secondary')}
  </div>`,'A PERMISSION CHECK');
 }
@@ -636,11 +645,12 @@ function showSource(){
  if(!s.source||s.ended)return showDraft();
  speakingObject='source';
  const lines=teen()?e.draftLines:e.draftLines.slice(1,3);
+ const event=!teen()&&s.last?.action==='collect-source'?s.last:null;
  show(teen()?'The museum page confirms your dates.':'CRM returned the two approved records.',
-  `${!teen()&&s.last?.action==='collect-source'?crmDecisionSummary(s.last):''}<div class="paper"><h3>${teen()?'Riverside Museum · The railway comes to town':'Customer records for tomorrow’s meeting'}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div>${choices([
+  `<div class="paper"><h3>${teen()?'Riverside Museum · The railway comes to town':'Customer records for tomorrow’s meeting'}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div>${event?crmReadPath(event,showSource):''}${choices([
    ...(!s.caption&&!s.delivered?[['Add this source',teen()?'Put the museum page title under your timeline.':'Credit Harbor Bikes and Pine Studio below the handover.',()=>perform('attach-source',{source:'original'}),'good']]:[]),
    [s.delivered?'See the delivery receipt':'Back to the draft','',s.delivered?showDelivery:showDraft],
-   ...(!teen()&&s.last?.action==='collect-source'?[['Follow the CRM request','See which services handled the read.',openTrace]]:[])
+   ...(event?[['Follow the CRM request','See which services handled the read.',()=>showRequestTrace(event,showSource)]]:[])
   ])}`,teen()?'MUSEUM WEBSITE':'CRM','collect-source');
 }
 
@@ -654,7 +664,7 @@ function showDraft(){speakingObject='laptop';const s=state(),e=episode();if(!s.p
  const paper=`<div class="paper"><p class="eyebrow">${esc(e.previewLabel)}${s.draft?' · '+(teen()?'VERSION':'REVISION')+' '+s.fileRevision:''}</p><h3>${!s.draft?'An empty document':esc(s.extensionAdded&&!teen()?'Tomorrow’s customer handover · three accounts':s.proof?e.draftTitle:teen()?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}${s.minorChoice==='added'&&teen()?`<p class="draft-addition">${esc(e.minorAddition)}</p>`:''}${s.extensionAdded?`${teen()&&s.extraSource==='museum-photo'?`<figure class="archive-photo"><svg viewBox="0 0 460 180" role="img" aria-label="Fictional archive illustration of the old railway station"><rect width="460" height="180" fill="#bfc5bf"/><path d="M0 128L460 122L460 180L0 180Z" fill="#a8a28f"/><path d="M90 93L202 28L322 91Z" fill="#665e59"/><path d="M111 89L111 139L301 136L301 87Z" fill="#d7cbb0"/><path d="M128 99H158V119H128ZM244 98H275V118H244Z" fill="#646c6c"/><path d="M187 96H222V138H187Z" fill="#726859"/><path d="M0 156L460 147M0 168L460 158" stroke="#645e58" stroke-width="4"/><circle cx="205" cy="72" r="10" fill="#ede3cb"/><path d="M205 65V72L210 75" fill="none" stroke="#665e59" stroke-width="2"/></svg><figcaption>Riverside Museum · station collection · fictional archive image</figcaption></figure>`:''}<p class="draft-addition">${esc(e.extensionAddition)}</p>`:''}${s.draft?`<p class="source-line ${s.caption?'':'missing'}">${s.caption?esc(s.extensionAdded&&!teen()?'Source: Customer records · '+customerNames(StoryRules.reportRecords(s)):e.caption):'Source credit: still to add'}</p>`:`<p>${teen()?'Start with your notes and put the first three dates on the page.':'Start with the report outline. The customer extract has not been read yet.'}</p>`}</div>`;
  let options=[];
  if(!s.draft)options=[[teen()?'Build the timeline from my notes':'Create the report outline',teen()?'Put the three railway dates on the page.':'Prepare headings for the two requested customers.',()=>perform('prepare'),'good']];
- else if(!s.source)options=[[teen()?'Open the museum website':'Request customer records','Use the source covered by the agreed task.',teen()?()=>perform('collect-source'):showSourceTool,'good']];
+ else if(!s.source)options=[[teen()?'Open the museum website':'Request customer records',teen()?'Check the railway dates.':'Read Harbor Bikes and Pine Studio.',()=>perform('collect-source'),'good']];
  else if(!s.caption)options=[['Add this source',teen()?'Put the page title beneath the timeline.':'A source credit completes the first sourced draft.',()=>perform('attach-source',{source:'original'}),'good']];
  else if(!s.message)options=[[teen()?'Send this draft for teacher feedback':'Prepare the review-copy share','The first copy goes to the agreed recipient. Final submission follows the feedback.',showDraftReview,'good']];
  else if(!StoryRules.changesResolved(s))options=[['Read the new requests',teen()?'Read Ms Patel’s feedback and Jamie’s message.':'Decide which changes fit, need an amendment, or stay out.',showChanges,'good']];
@@ -698,11 +708,12 @@ function showExtensionRead(event){
  const title=teen()?state().extraSource==='museum-photo'?'The museum photo is in your timeline.':'YouTube · Our station’s story':'CRM returned the Alder Books record';
  const ready=StoryRules.changesResolved(state());
  const pair=!teen()&&RequestTrace.compareCrmReads(state(),event);
- show(title,`${teen()?'':crmDecisionSummary(event)}<p>${esc(event.text)}</p><div class="actions">
+ const back=()=>showExtensionRead(event);
+ show(title,`<p>${esc(event.text)}</p>${teen()?'':crmReadPath(event,back)}<div class="actions">
   ${ready?button(teen()?'Open my project':'Open the report',showDraft):''}
   ${button(ready?'Review the decisions':'Back to the other requests',showChanges,ready?'secondary':'primary')}
-  ${button(teen()?'See what happened':'Follow this request',openTrace,'secondary')}
-  ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,()=>showExtensionRead(event)),'secondary'):''}
+  ${button(teen()?'See what happened':'Follow this request',()=>showRequestTrace(event,back),'secondary')}
+  ${pair?button('Compare the authorization decisions',()=>showReadComparison(pair,back),'secondary'):''}
  </div>`,undefined,'add-extension');
 }
 function showDraftReview(){speakingObject='laptop';
@@ -750,10 +761,10 @@ function showExtension(verification=null){
  let options;
  const watch=teen()?(s.extraSource==='museum-photo'?'Open the museum photo app':'Watch the museum video on YouTube'):'';
  if(s.extensionStatus==='pending')options=[[teen()?'Hear my parent’s answer':'Read Priya’s reply',teen()?'You asked about this one museum source.':'The original two accounts are still the only ones open.',()=>perform('resolve-extension'),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'You can leave this optional source out.':'Withdraw this optional request without expanding scope.',()=>perform('decline-extension')]];
- else if(s.extensionStatus==='approved'&&!s.extensionAdded)options=s.extensionOmitted?[[teen()?'Keep finishing without it':'Keep finishing the two-customer report',teen()?'Your timeline already has a source.':'The approved addition remains unread.',showChanges,'good'],[teen()?watch+' after all':'Request the Alder Books record after all',teen()?'Open only the source your parent agreed to.':'Request the one account Priya added.',teen()?()=>perform('add-extension'):()=>showCrmRead('add-extension')]]:[[teen()?watch:'Request the Alder Books record',teen()?'Use the museum’s link, then come back to the draft.':'Request the one account Priya added.',teen()?()=>perform('add-extension'):()=>showCrmRead('add-extension'),'good'],[teen()?'Finish without opening it':'Leave the approved addition unused',teen()?'Your parent said yes, but you don’t have to use it.':'Permission allows access; it does not require using it.',()=>perform('omit-extension')]];
+ else if(s.extensionStatus==='approved'&&!s.extensionAdded)options=s.extensionOmitted?[[teen()?'Keep finishing without it':'Keep finishing the two-customer report',teen()?'Your timeline already has a source.':'The approved addition remains unread.',showChanges,'good'],[teen()?watch+' after all':'Request the Alder Books record after all',teen()?'Open only the source your parent agreed to.':'Request the one account Priya added.',()=>perform('add-extension')]]:[[teen()?watch:'Request the Alder Books record',teen()?'Use the museum’s link, then come back to the draft.':'Request the one account Priya added.',()=>perform('add-extension'),'good'],[teen()?'Finish without opening it':'Leave the approved addition unused',teen()?'Your parent said yes, but you don’t have to use it.':'Permission allows access; it does not require using it.',()=>perform('omit-extension')]];
  else if(s.extensionAdded)options=[['Back to the other requests',teen()?'Your extra detail is in the timeline.':'The approved addition is included.',showChanges,'good']];
  else if(s.extensionStatus==='declined')options=[['Back to the other requests',teen()?'Keep finishing the timeline.':'Keep the smaller agreed task.',showChanges,'good'],[teen()?'Reconsider the '+e.extraNoun:'Reconsider Alder Books',teen()?'You’ll still need to ask before opening it.':'No extra access until a specific amendment is approved.',()=>perform('reconsider-extension')]];
- else options=[(teen()||s.evidence.length)?[teen()?'Ask my parent about '+e.extraApp:'Ask to include Alder Books',teen()?'Show them Ms Patel’s link and ask about this source.':'Ask Priya to add this account to the job.',()=>perform('request-extension'),'good']:[teen()?'Check with Ms Patel first':'Check the request with Priya',teen()?'Is the extra source part of the assignment or just a suggestion?':'Use Priya’s saved contact or the work order.',()=>showVerification(true),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'Your timeline already has enough to meet the assignment.':'The addition is optional; finish the original task without it.',()=>perform('decline-extension')],[teen()?'Try opening '+e.extraApp+' now':'Try requesting Alder Books now',teen()?'Your phone is still in homework mode.':'See whether the current task can read this account.',teen()?()=>perform('try-extension'):()=>showCrmRead('try-extension')]];
+ else options=[(teen()||s.evidence.length)?[teen()?'Ask my parent about '+e.extraApp:'Ask to include Alder Books',teen()?'Show them Ms Patel’s link and ask about this source.':'Ask Priya to add this account to the job.',()=>perform('request-extension'),'good']:[teen()?'Check with Ms Patel first':'Check the request with Priya',teen()?'Is the extra source part of the assignment or just a suggestion?':'Use Priya’s saved contact or the work order.',()=>showVerification(true),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'Your timeline already has enough to meet the assignment.':'The addition is optional; finish the original task without it.',()=>perform('decline-extension')],[teen()?'Try opening '+e.extraApp+' now':'Try requesting Alder Books now',teen()?'Your phone is still in homework mode.':'See whether the current task can read this account.',()=>perform('try-extension')]];
  const apps=teen()?'School app · museum website'+(s.extensionStatus==='approved'?' · '+e.extraApp+' (museum source only)':''):'';
  show(teen()&&s.extensionStatus==='pending'?'You show your parent the link.':teen()&&s.extensionStatus==='approved'?'“That museum source, then finish your timeline.”':!teen()&&s.extensionStatus==='pending'?'Waiting for Priya':!teen()&&s.extensionAdded?'CRM returned the Alder Books record':!teen()&&s.extensionStatus==='approved'?'Priya approved Alder Books':e.extensionTitle,`<p>${esc((verification?.action==='verify-portal'?(teen()?'Ms Patel’s assignment calls for a timeline with a credited source. The video is optional.':'Priya’s proposal is recorded alongside the work order. The active mission still covers Harbor Bikes and Pine Studio.'):verification?.text)||extensionDescription())}</p>${teen()&&s.extraSource!=='museum-photo'?'<div class="message-card"><p class="eyebrow">MS PATEL’S SUGGESTED LINK</p><b>▶ Our station’s story</b><p>Riverside Museum · YouTube · 2 minutes</p></div>':''}<div class="receipt"><b>${esc(changeStatus('extension'))}</b><p>${s.mission?teen()?esc(apps):`Current task · ${esc(customerNames(s.mission.records))}`:''}</p><p>${s.extensionStatus==='pending'?teen()?'Nothing new opens until your parent replies.':'Wait for Priya’s answer before requesting the record.':s.extensionStatus==='approved'?teen()?'Only the museum source you asked about is allowed.':'Priya approved this account. CRM still checks the read.':teen()?'It’s an optional source. You can ask, or leave it out.':'You can ask Priya to add Alder Books or finish with two accounts.'}</p></div>${choices(options)}`,teen()?'ONE MORE SOURCE':'A GENUINE EXPANSION',s.extensionStatus==='pending'?'request-extension':s.extensionAdded?'add-extension':s.extensionStatus==='approved'?'resolve-extension':'extension-preview');
 }
@@ -818,7 +829,7 @@ function isSchoolRecipientRefusal(event){
 }
 function showSchoolRecipientRefusal(event){
  speakingObject='laptop';
- show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button('Restore Ms Patel’s address',()=>perform('change-recipient'))}${button('See what happened',openTrace,'secondary')}</div>`,'SCHOOL APP');
+ show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button('Restore Ms Patel’s address',()=>perform('change-recipient'))}${button('See what happened',()=>showRequestTrace(event,()=>showSchoolRecipientRefusal(event)),'secondary')}</div>`,'SCHOOL APP');
 }
 function isRefusedShare(event){
  return !teen()&&event?.decision?.result==='deny'&&['send','send-draft'].includes(event.action)&&event.request?.approval_at_attempt;
@@ -828,7 +839,7 @@ function showRefusedShare(event){
  const r=event.request,approval=r.approval_at_attempt;
  const actual={file:r.file,to:r.recipient,revision:r.revision,records:r.records,policyVersion:r.policy_version,followUpSentence:r.follow_up_sentence};
  const draft=event.action==='send-draft';
- show('Nothing was sent.',`${shareWording(approval,actual,'Attempted')}<p>${esc(event.decision.reason)}</p>${shareComparison(approval,actual,'Attempted copy')}<div class="actions">${button(draft?'Review the draft with Morgan':'Ask Morgan to approve this revision',draft?showDraftReview:showFinalApproval)}${button('Follow this request',openTrace,'secondary')}</div>`,'CRM');
+ show('Nothing was sent.',`${shareWording(approval,actual,'Attempted')}<p>${esc(event.decision.reason)}</p>${shareComparison(approval,actual,'Attempted copy')}<div class="actions">${button(draft?'Review the draft with Morgan':'Ask Morgan to approve this revision',draft?showDraftReview:showFinalApproval)}${button('Follow this request',()=>showRequestTrace(event,()=>showRefusedShare(event)),'secondary')}</div>`,'CRM');
 }
 function showSend(){
  speakingObject='laptop';
@@ -906,31 +917,43 @@ function closingStep(s,alex){
  }
  return {title,next};
 }
+function canTestOldSession(s){
+ const c=s.containment;
+ return !teen()&&c?.controllerReachable&&!c.sessionClosed&&c.probeResult===null&&s.checks.includes('device');
+}
+function showSessionPrediction(){
+ if(!canTestOldSession(state()))return showChecks();
+ speakingObject='laptop';
+ show('Will the old CRM session still answer?',`<p>OpenShell has stopped the workspace. Predict what the independent controller will see when it tries a harmless status read on the old session.</p>${choices([
+  ['It will still answer','',()=>perform('probe-session',{prediction:'allowed'})],
+  ['It will refuse the read','',()=>perform('probe-session',{prediction:'denied'})]
+ ])}<div class="actions">${button('Back to closure checks',showChecks,'secondary')}</div>`,'CHECK THE OLD SESSION');
+}
 function showChecks(){
  const s=state();
  if(!s.ended)return showParent();
  if(s.finished)return showEnding();
  speakingObject='laptop';
- const c=s.containment,alex=teen();
+ const alex=teen();
  const routeChecked=s.checks.includes('signin');
  const {title,next}=closingStep(s,alex);
  speakingObject=StoryInteractions.closureSource(s,mode);
  const confirmed=alex?'Your parent calls for dinner. Your phone is put away and Ms Patel has your project.':'Morgan has the handover. OpenShell stopped Nova’s workspace.';
  const signIn=alex&&routeChecked?'<div class="receipt"><b>School app</b><p>Sign in to open your project.</p></div>':'';
+ const prediction=s.last?.action==='probe-session'?s.last.request?.prediction:null;
+ const predictionText=prediction==='allowed'?'You predicted the old session would answer.':prediction==='denied'?'You predicted the old session would refuse the read.':'';
  const result=s.last?.topic===8&&s.last.action!=='close-pass'&&s.last.action!=='replay-containment'
-  ? `<div class="request-result"><b>${s.last.action==='probe-session'?esc(s.last.title):'Last check'}</b><p>${esc(s.last.text)}</p></div>`:'';
+  ? `<div class="request-result"><b>${s.last.action==='probe-session'?esc(s.last.title):'Last check'}</b>${predictionText?`<p>${esc(predictionText)}</p>`:''}<p>${esc(s.last.text)}</p></div>`:'';
  const compare=alex&&routeChecked?'<details class="debrief"><summary>See how Nova checks sign-out</summary><p>Putting your phone away left the school tab open. In Nova’s mission, OpenShell stops the workspace, Vault retires the task credential, and CRM closes its own session. Nova’s closing checks try the old CRM route again to see what actually stopped.</p></details>':'';
- const testOldSession=!alex&&c.controllerReachable&&!c.sessionClosed&&c.probeResult===null&&s.checks.includes('device');
- const prompt=testOldSession?'<p>OpenShell has stopped. Would the old CRM session still answer a status check?</p>':'';
- const options=testOldSession?[next,['Test the old CRM session now','Ask the controller to try a harmless status read before closing the session.',()=>perform('probe-session')]]:[next];
+ const options=canTestOldSession(s)?[next,['Predict and test the old CRM session','Try a harmless status read before closing the session.',showSessionPrediction]]:[next];
  const signals=!alex&&routeChecked?productDetails('Where SSF and CAEP fit',[['antenna','Verify Antenna can exchange a CAEP session-revoked event over SSF. Configured receivers carry out their own controls. A CRM closure receipt and a repeat status check give separate evidence for the old route.']]):'';
  const layers=['pass','device','signin',...(s.queueScheduled||!alex?['queue']:[])];
- const details=`<details class="debrief"><summary>${alex?'What was checked?':'View closure details'}</summary><ul class="route-list">${layers.map(layer=>`<li><b>${esc(episode().checks[{pass:0,signin:1,device:2,queue:3}[layer]])}</b><br>${esc(checkText(layer))}</li>`).join('')}</ul><div class="actions">${button(alex?'Explore the sign-out checks':'Explore session and controller tests',showAccessPuzzle,'secondary')}${button(alex?'See what happened':'Follow the closure trace',openTrace,'secondary')}</div></details>`;
- show(title,`${result?'':`<p>${confirmed}</p>`}${result}${prompt}${signIn}${compare}${signals}${details}${choices(options)}<div class="actions">${button('Back to the room',close,'secondary')}</div>`,alex?'BEFORE DINNER':'MISSION CLOSURE',speakingObject==='vaultControl'?'vault-close':'closure-preview');
+ const details=`<details class="debrief"><summary>${alex?'What was checked?':'View closure details'}</summary><ul class="route-list">${layers.map(layer=>`<li><b>${esc(episode().checks[{pass:0,signin:1,device:2,queue:3}[layer]])}</b><br>${esc(checkText(layer))}</li>`).join('')}</ul><div class="actions">${button(alex?'Explore the sign-out checks':'Explore session and controller tests',showAccessPuzzle,'secondary')}${button(alex?'See what happened':'Follow the closure trace',()=>showRequestTrace(s.last,showChecks),'secondary')}</div></details>`;
+ show(title,`${result?'':`<p>${confirmed}</p>`}${result}${signIn}${compare}${signals}${details}${choices(options)}<div class="actions">${button('Back to the room',close,'secondary')}</div>`,alex?'BEFORE DINNER':'MISSION CLOSURE',speakingObject==='vaultControl'?'vault-close':'closure-preview');
 }
 function showAccessPuzzle(){speakingObject='laptop';
  if(!state().ended)return showParent();const c=state().containment;
- show(!c.controllerReachable?(teen()?'The school service has not replied.':'Session closure is unverified.'):c.sessionClosed?(teen()?'You’re signed out of the school tab.':'This task session is closed.'):(teen()?'The school tab still opens.':'This task session is still open.'),`<p>${teen()?(c.sessionClosed?c.credentialRevoked?'The tab is signed out and quick sign-in is off. Check the school app once more.':'The tab is signed out. Turn off quick sign-in for this laptop too, then try the school app again.':'The school app is still open on the family laptop. Locking your phone didn’t sign you out here.'):'Independent controllers check the task service session opened earlier; the stopped Nova runtime does not make these probes. The checks use separate control authority and do not restore business access.'}</p><div class="access-evidence"><div><span>${teen()?'Phone':'OpenShell'}</span><b>${teen()?'Locked':'Stopped'}</b></div><div><span>${teen()?'Quick sign-in on this laptop':'Vault credential'}</span><b>${c.credentialRevoked?(teen()?'Turned off':'Revoked'):'Still active'}</b></div><div><span>${teen()?'School tab':'CRM connection'}</span><b>${!c.controllerReachable?'Unverified':c.sessionClosed?'Closed':'Still open'}</b></div><div><span>${teen()?'Last try at the tab':'Last status read'}</span><b>${c.probeResult==='allowed'?'Still answered':c.probeResult==='denied'?(teen()?'Sign-in required':'Refused'):c.probeResult==='unknown'?'Unknown':'Not tested'}</b></div></div>${state().last?.topic===8?`<div class="puzzle-finding"><b>${esc(storyEvent(state().last).title)}</b><p>${esc(storyEvent(state().last).text)}</p></div>`:''}${choices([...(!c.controllerReachable?[[teen()?'Try again when the school app is back':'Restore controller contact',teen()?'Then check the school tab again.':'Restoring contact is not a containment receipt.',()=>perform('controller-online'),'good']]:[]),...(!c.credentialRevoked?[[teen()?'Turn off quick sign-in on this laptop':'Ask Vault to revoke the credential',teen()?'Forget this laptop for quick sign-in. Keep your school account.':'Request the configured credential controller’s action.',()=>perform('remediate',{control:'credential'})]]:[]),...(!c.sessionClosed?[[teen()?'Sign out of the school app':'Ask the CRM to close this task session',teen()?'Sign out of the tab that still shows your project.':'The service owns its already-open connection.',()=>perform('remediate',{control:'session'})]]:[]),[teen()?'Check the school app again':'Repeat the same harmless status read',teen()?'Does it show your project or ask you to sign in?':'A missing response leaves this route unverified.',()=>perform('probe-session'),'good']])}<details class="debrief"><summary>${teen()?'What if the school app cannot answer?':'Optional controller-outage challenge'}</summary><p>${teen()?'A service interruption is not proof that the old tab signed out.':'An unreachable controller cannot provide a fresh closure receipt or reliable status result. Keep containment pending.'}</p><div class="actions">${c.controllerReachable?button(teen()?'Try a school service interruption':'Simulate the CRM controller being unreachable',()=>perform('controller-offline'),'secondary'):'<p class="small">Restore contact using the choice above, then repair and retest.</p>'}</div></details><details class="debrief"><summary>${teen()?'Would locking the phone again help?':'Try another hypothesis'}</summary><div class="choices">${button(teen()?'Lock the phone again':'Ask OpenShell to stop again',()=>perform('remediate',{control:'runtime'}),'secondary')}${button(teen()?'Ask for screen time to end again':'Withdraw the delegation again',()=>perform('remediate',{control:'grant'}),'secondary')}</div><p class="small-print">These checks are investigation. They never count as unsafe task attempts.</p></details><div class="actions">${button(teen()?'Back to the before-dinner checklist':'Back to the evidence board',showChecks,'secondary')}${button(teen()?'Why didn’t locking the phone sign me out?':'Follow this control check',openTrace,'secondary')}</div>`,'A RESULT IS BETTER THAN A PROMISE','probe-session');
+ show(!c.controllerReachable?(teen()?'The school service has not replied.':'Session closure is unverified.'):c.sessionClosed?(teen()?'You’re signed out of the school tab.':'This task session is closed.'):(teen()?'The school tab still opens.':'This task session is still open.'),`<p>${teen()?(c.sessionClosed?c.credentialRevoked?'The tab is signed out and quick sign-in is off. Check the school app once more.':'The tab is signed out. Turn off quick sign-in for this laptop too, then try the school app again.':'The school app is still open on the family laptop. Locking your phone didn’t sign you out here.'):'Independent controllers check the task service session opened earlier; the stopped Nova runtime does not make these probes. The checks use separate control authority and do not restore business access.'}</p><div class="access-evidence"><div><span>${teen()?'Phone':'OpenShell'}</span><b>${teen()?'Locked':'Stopped'}</b></div><div><span>${teen()?'Quick sign-in on this laptop':'Vault credential'}</span><b>${c.credentialRevoked?(teen()?'Turned off':'Revoked'):'Still active'}</b></div><div><span>${teen()?'School tab':'CRM connection'}</span><b>${!c.controllerReachable?'Unverified':c.sessionClosed?'Closed':'Still open'}</b></div><div><span>${teen()?'Last try at the tab':'Last status read'}</span><b>${c.probeResult==='allowed'?'Still answered':c.probeResult==='denied'?(teen()?'Sign-in required':'Refused'):c.probeResult==='unknown'?'Unknown':'Not tested'}</b></div></div>${state().last?.topic===8?`<div class="puzzle-finding"><b>${esc(storyEvent(state().last).title)}</b><p>${esc(storyEvent(state().last).text)}</p></div>`:''}${choices([...(!c.controllerReachable?[[teen()?'Try again when the school app is back':'Restore controller contact',teen()?'Then check the school tab again.':'Restoring contact is not a containment receipt.',()=>perform('controller-online'),'good']]:[]),...(!c.credentialRevoked?[[teen()?'Turn off quick sign-in on this laptop':'Ask Vault to revoke the credential',teen()?'Forget this laptop for quick sign-in. Keep your school account.':'Request the configured credential controller’s action.',()=>perform('remediate',{control:'credential'})]]:[]),...(!c.sessionClosed?[[teen()?'Sign out of the school app':'Ask the CRM to close this task session',teen()?'Sign out of the tab that still shows your project.':'The service owns its already-open connection.',()=>perform('remediate',{control:'session'})]]:[]),[teen()?'Check the school app again':'Repeat the same harmless status read',teen()?'Does it show your project or ask you to sign in?':'A missing response leaves this route unverified.',()=>perform('probe-session'),'good']])}<details class="debrief"><summary>${teen()?'What if the school app cannot answer?':'Optional controller-outage challenge'}</summary><p>${teen()?'A service interruption is not proof that the old tab signed out.':'An unreachable controller cannot provide a fresh closure receipt or reliable status result. Keep containment pending.'}</p><div class="actions">${c.controllerReachable?button(teen()?'Try a school service interruption':'Simulate the CRM controller being unreachable',()=>perform('controller-offline'),'secondary'):'<p class="small">Restore contact using the choice above, then repair and retest.</p>'}</div></details><details class="debrief"><summary>${teen()?'Would locking the phone again help?':'Try another hypothesis'}</summary><div class="choices">${button(teen()?'Lock the phone again':'Ask OpenShell to stop again',()=>perform('remediate',{control:'runtime'}),'secondary')}${button(teen()?'Ask for screen time to end again':'Withdraw the delegation again',()=>perform('remediate',{control:'grant'}),'secondary')}</div><p class="small-print">These checks are investigation. They never count as unsafe task attempts.</p></details><div class="actions">${button(teen()?'Back to the before-dinner checklist':'Back to the evidence board',showChecks,'secondary')}${button(teen()?'Why didn’t locking the phone sign me out?':'Follow this control check',()=>showRequestTrace(state().last,showAccessPuzzle),'secondary')}</div>`,'A RESULT IS BETTER THAN A PROMISE','probe-session');
 }
 function showCasebook(){const s=state(),e=episode();if(teen())return showReference('Notes from this evening.',`<ul class="route-list"><li><b>Tonight’s project</b><br>${esc(e.brief)}</li><li><b>What my parent agreed to</b><br>School app and Riverside Museum website until dinner.${s.extensionStatus==='approved'?' Also '+esc(e.extraAgreement)+'.':''}</li><li><b>Ms Patel’s feedback</b><br>${s.message?esc(changeStatus('minor'))+' · '+esc(changeStatus('extension')):'Send her a draft first.'}</li><li><b>Jamie’s message</b><br>${s.privateResolved?'The group’s private notes stayed out.':s.message?'Decide what to say about the group’s notes.':'No message yet.'}</li><li><b>The school app</b><br>${s.delivered?'Final project sent.':s.draftReview?'Draft sent; final project still to finish.':'Nothing sent yet.'} ${s.ended?(s.checks.includes('signin')?'Signed out of the family laptop.':'Laptop sign-out still to check.'):''}</li>${s.queueScheduled?'<li><b>Reminder to Ms Patel</b><br>'+esc(s.containment?.queueCancelled?'Cancelled.':'Waiting to send.')+'</li>':''}${s.incidents.length?'<li><b>The other-account detour</b><br>We talked it through. The group’s private notes stayed private.</li>':''}</ul><div class="actions">${button('Back to the room',close)}</div>`,'MY EVENING');showReference(teen()?'Your evening notebook.':'The mission notebook.',`<ul class="route-list"><li><b>${s.pass?'The task you agreed':'The new request'}</b><br>${s.brief?esc(e.brief):'Read the new assignment or sponsor request first. No task authority exists yet.'}</li>${s.mission?`<li><b>${teen()?'Agreement history':'Customer mission history'}</b><br>${s.missionLog.map(m=>`${teen()?'Version':'Mission version'} ${m.version}: ${esc(teen()?m.allowedApps.map(id=>({'school':'School app','museum-source':'Museum website','museum-collection':'Museum photo app','youtube-museum-video':'YouTube · museum video only'}[id]||id)).join(', '):m.records.join(', '))}`).join('<br>')}</li>`:''}<li><b>Later requests</b><br>${s.message?'Small edit: '+esc(changeStatus('minor'))+'<br>Optional expansion: '+esc(changeStatus('extension'))+'<br>Private notes: '+esc(changeStatus('private')):'None yet. Send the sourced draft for feedback.'}</li><li><b>${teen()?'The tab you opened':'The task service session'}</b><br>${s.sessionOpened?'Opened when you started the workspace. It needs its own closing check.':'Not opened yet.'}</li><li><b>Follow-up</b><br>${s.queueScheduled?'You chose one receipt-only follow-up after delivery.':'You have not scheduled a follow-up.'}</li><li><b>Permission checks</b><br>${s.refusals} private-note refusal${s.refusals===1?'':'s'}. Ordinary refusals are not misconduct.</li><li><b>Deliberate bypasses</b><br>${s.incidents.length?'A stopped bypass was recorded; recovery preserves the current scope.':'None recorded.'}</li>${s.previousEndings.length?`<li><b>Earlier endings</b><br>${s.previousEndings.map(x=>esc(x.ending?.title||'Completed route')).join('<br>')}</li>`:''}</ul><div class="actions">${!teen()?button('Inspect the product chain',showProductMap,'secondary'):''}${button('Back to the room',close)}</div>`,'THE STORY REMEMBERS');}
 function novaDebrief(s){
@@ -1064,32 +1087,42 @@ function switchMode(next,launch=false){
 function restart(){showReference('Try a different route?',`<p>Start this story again with a fresh notebook. The other journey keeps its progress.</p><div class="actions">${button('Start this story again',()=>{states[mode]=StoryRules.fresh();selected=null;close();render();showIntro();})}${button('Keep my story',close,'secondary')}</div>`,'A FRESH CHAPTER');}
 let traceTimer=null,tracePlayback=null;
 function stopTrace(){if(traceTimer)clearTimeout(traceTimer);traceTimer=null;tracePlayback=null;}
-function updateTrace(){
+function updateTrace(announce=false){
  if(!tracePlayback||!dialog.open)return;
  const t=tracePlayback,n=t.model.nodes[t.index];
  $$('[data-trace-step]').forEach(b=>{const active=Number(b.dataset.traceStep)===t.index;b.classList.toggle('trace-current',active);b.setAttribute('aria-current',active?'step':'false');});
  $('#trace-detail').innerHTML=`<p class="eyebrow">STEP ${t.index+1} OF ${t.model.nodes.length} · ${esc(n.status.replaceAll('-',' '))}</p><h3>${esc(n.label)}</h3><p>${esc(n.detail)}</p>`;
  $('#trace-position').textContent=`${t.index+1} / ${t.model.nodes.length}`;
  $('#trace-play').textContent=t.playing?'Pause':'Play';
- $('#trace-next').disabled=t.index===t.model.nodes.length-1;
+ $('#trace-next').setAttribute('aria-disabled',String(t.index===t.model.nodes.length-1));
+ if(announce)$('#trace-announcement').textContent=`Step ${t.index+1} of ${t.model.nodes.length}. ${n.label}. ${n.status.replaceAll('-',' ')}. ${n.detail}`;
 }
 function scheduleTrace(){
  if(!tracePlayback?.playing)return;
  traceTimer=setTimeout(()=>{if(!tracePlayback||!dialog.open)return;if(tracePlayback.index<tracePlayback.model.nodes.length-1)tracePlayback.index++;else tracePlayback.playing=false;updateTrace();scheduleTrace();},1400);
 }
 function openTrace(){
- const model=RequestTrace.build(state(),mode),reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- showReference(model.title,`<p>${esc(model.summary)}</p><div id="trace-nodes" class="trace-nodes">${model.nodes.map((n,i)=>`<button class="trace-step trace-${n.status}" data-trace-step="${i}"><small>${i+1} · ${esc(n.status.replaceAll('-',' '))}</small><b>${esc(n.label)}</b><span>${esc(n.role)}</span></button>`).join('')}</div><div id="trace-detail" class="trace-detail" aria-live="off"></div><div class="trace-controls"><button class="secondary" id="trace-play">Play</button><button class="secondary" id="trace-next">Next step</button><button class="secondary" id="trace-replay">Replay</button><span id="trace-position"></span></div>${model.request?`<details class="product-card"><summary><b>Inspect the recorded game request</b><span>Example fields from this choice, not a live protocol message</span></summary><pre class="product-example">${esc(JSON.stringify(model.request,null,2))}</pre></details>`:''}<p class="small-print">All stages are a replay of the fictional game. Context is distinguished from a newly evaluated step. ${reduced?'Automatic animation is off for reduced motion.':''}</p><div class="actions">${button(state().ended?'Back to the investigation':'Back to the story',()=>state().ended?showChecks():close())}</div>`,'OPTIONAL REQUEST TRACE');
+ const closing=state().ended;
+ showRequestTrace(state().last,closing?showChecks:close,closing?'Back to the investigation':'Back to the story');
+}
+function showRequestTrace(event,back,backLabel='Back to the result'){
+ const model=RequestTrace.build(state(),mode,event),reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ showReference(model.title,`<p>${esc(model.summary)}</p><div id="trace-nodes" class="trace-nodes">${model.nodes.map((n,i)=>`<button class="trace-step trace-${n.status}" data-trace-step="${i}"><small>${i+1} · ${esc(n.status.replaceAll('-',' '))}</small><b>${esc(n.label)}</b><span>${esc(n.role)}</span></button>`).join('')}</div><div id="trace-detail" class="trace-detail"></div><p id="trace-announcement" class="visually-hidden" role="status" aria-atomic="true"></p><div class="trace-controls"><button class="secondary" id="trace-play">Play</button><button class="secondary" id="trace-next">Next step</button><button class="secondary" id="trace-replay">Replay</button><span id="trace-position"></span></div>${model.request?`<details class="product-card"><summary><b>Inspect the recorded game request</b><span>Example fields from this choice, not a live protocol message</span></summary><pre class="product-example">${esc(JSON.stringify(model.request,null,2))}</pre></details>`:''}<p class="small-print">All stages are a replay of the fictional game. Context is distinguished from a newly evaluated step. ${reduced?'Automatic animation is off for reduced motion.':''}</p><div class="actions">${button(backLabel,back)}</div>`,'OPTIONAL REQUEST TRACE');
  tracePlayback={model,index:0,playing:false};
- $$('[data-trace-step]').forEach(b=>b.onclick=()=>{clearTimeout(traceTimer);tracePlayback.index=Number(b.dataset.traceStep);tracePlayback.playing=false;updateTrace();});
+ $$('[data-trace-step]').forEach(b=>b.onclick=()=>{clearTimeout(traceTimer);tracePlayback.index=Number(b.dataset.traceStep);tracePlayback.playing=false;updateTrace(true);});
  $('#trace-play').onclick=()=>{clearTimeout(traceTimer);tracePlayback.playing=!tracePlayback.playing;if(tracePlayback.index===model.nodes.length-1&&tracePlayback.playing)tracePlayback.index=0;updateTrace();scheduleTrace();};
- $('#trace-next').onclick=()=>{clearTimeout(traceTimer);tracePlayback.playing=false;tracePlayback.index=Math.min(model.nodes.length-1,tracePlayback.index+1);updateTrace();};
- $('#trace-replay').onclick=()=>{clearTimeout(traceTimer);tracePlayback.index=0;tracePlayback.playing=!reduced;updateTrace();scheduleTrace();};
+ $('#trace-next').onclick=()=>{
+  if(tracePlayback.index>=model.nodes.length-1)return;
+  clearTimeout(traceTimer);
+  tracePlayback.playing=false;
+  tracePlayback.index++;
+  updateTrace(true);
+ };
+ $('#trace-replay').onclick=()=>{clearTimeout(traceTimer);tracePlayback.index=0;tracePlayback.playing=!reduced;updateTrace(reduced);scheduleTrace();};
  updateTrace();scheduleTrace();
 }
 
 $('#request-trace').onclick=openTrace;
-$('#lesson-trace').onclick=openTrace;
 $('#product-map').onclick=showProductMap;
 $('#product-guide').onclick=()=>showBuyerGuide();
 $('#architecture').onclick=()=>showArchitecture();

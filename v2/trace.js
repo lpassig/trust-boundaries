@@ -279,8 +279,8 @@ const RequestTrace = (() => {
   if(!other)return null;
   return verdict.result==='permit'?[event,other]:[other,event];
  }
- function build(s,mode){
-  const teen=mode==='teen',e=s.last,r=e?.request,a=e?.action||'',m=s.mission;
+ function build(s,mode,e=s.last){
+  const teen=mode==='teen',r=e?.request,a=e?.action||'',m=s.mission;
   const recorded=r?.recordVersion===3,draftShare=a==='send-draft',share=a==='send'||draftShare;
   const context=()=>[
    node(teen?'Who is doing the work?':'Human and agent identity',teen?'Alex':'IBM Verify + IBM Agent Identity','context',teen?'Alex is the student. School ownership of private group information is separate from parental device permission.':'Sponsor-001 and nova-042 have distinct identities. Identity context alone does not create business authority.'),

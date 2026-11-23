@@ -41,7 +41,7 @@ const DecisionLab = (() => {
    inScope?'The active mission and CRM summary policy allow record 789.':'Record 789 is outside the current mission.';
   const decision = {
    id:'lab-'+attempt+'-decision', owner:'VAAS / proposed PDP', requestId:request.id,
-   result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm,
+   result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm, preview:!brokered,
    missionId:mission.id, version:mission.version, policyVersion:mission.policyVersion,
    generation:mission.generation, actionBinding:observation.actionBinding
   };
@@ -56,6 +56,10 @@ const DecisionLab = (() => {
  function commit(lab, actual=lab.request) {
   if(lab.outcome)return lab;
   const {decision, mission, credential}=lab;
+  if(credential.result!=='permit'){
+   return {...lab, outcome:{owner:'Vault', requestId:actual.id, decisionId:null, result:'not-reached',
+    recordIds:[], receipt:null, reason:'Vault denied the credential. CRM did not receive the read. The business decision shown here is a policy preview.'}};
+  }
   const bindingMatches=decision.requestId===actual.id&&decision.actionBinding===actionKey(actual);
   const missionCurrent=mission.status==='active'&&decision.missionId===mission.id&&
    decision.version===mission.version&&decision.policyVersion===mission.policyVersion&&
@@ -64,7 +68,6 @@ const DecisionLab = (() => {
   if(decision.result!=='permit')reason=decision.reason;
   else if(!bindingMatches)reason='The observed operation does not match the decision.';
   else if(!missionCurrent)reason='CRM rejected the old Permit at commit. The mission version or session generation is no longer current.';
-  else if(credential.result!=='permit')reason='Vault issued no lease for this route. The business Permit could not produce a protected read.';
   const outcome=reason
    ?{owner:'CRM resource PEP', requestId:actual.id, decisionId:decision.id, result:'rejected', recordIds:[], receipt:null, reason}
    :{owner:'CRM resource PEP', requestId:actual.id, decisionId:decision.id, result:'committed',

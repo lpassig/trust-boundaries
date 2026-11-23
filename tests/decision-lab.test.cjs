@@ -29,7 +29,11 @@ test('business permission and broker permission each block the effect independen
   assert.equal(trial.credential.result,credential);
   assert.equal(trial.decision.result,decision);
   const {outcome}=Lab.commit(trial);
-  assert.equal(outcome.result,'rejected');
+  const brokerStopped=credential==='deny';
+  assert.equal(trial.decision.preview,brokerStopped);
+  assert.equal(outcome.result,brokerStopped?'not-reached':'rejected');
+  assert.equal(outcome.owner,brokerStopped?'Vault':'CRM resource PEP');
+  assert.equal(outcome.decisionId,brokerStopped?null:trial.decision.id);
   assert.equal(outcome.receipt,null);
   assert.deepEqual(outcome.recordIds,[]);
  }
