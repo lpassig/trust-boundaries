@@ -71,8 +71,8 @@ const NOVA_PRODUCTS = [
     "status": "Version-dependent feature and configured secrets engine"
   },
   {
-    "id": "vaas",
-    "name": "VAAS · proposed authorization service",
+    "id": "authorization",
+    "name": "Authorization decision service · proposed integration",
     "role": "Evaluate the actual action supplied by the trusted CRM PEP",
     "how": "The proposed PDP evaluates PEP-observed action evidence against the current customer mission, identity constraints and resource rules. The resource PEP binds the decision to execution. AuthZEN is a candidate decision-exchange interface.",
     "limit": "This is a target architecture, not a verified deployed product API. AuthZEN 1.0 uses a Boolean decision; approval-required workflow, execution binding and richer status semantics need an explicitly documented application contract. Vault’s own policies remain independent.",
@@ -83,7 +83,7 @@ const NOVA_PRODUCTS = [
     ],
     "url": "https://openid.net/specs/authorization-api-1_0-final.html",
     "sourceLabel": "OpenID AuthZEN Authorization API 1.0",
-    "status": "Proposed PDP/PEP integration; no live VAAS service"
+    "status": "Proposed PDP/PEP integration; no live authorization service"
   },
   {
     "id": "openshell",
@@ -147,10 +147,10 @@ const NOVA_PRODUCT_CONTEXT = {
   "2": {
     "ids": [
       "mission",
-      "vaas",
+      "authorization",
       "vault"
     ],
-    "text": "The trusted CRM PEP observes the requested records. The proposed VAAS PDP evaluates current mission and resource policy. Vault independently controls access to the credential path."
+    "text": "The trusted CRM PEP observes the requested records. The proposed policy decision point evaluates current mission and resource policy. Vault independently controls access to the credential path."
   },
   "3": {
     "ids": [
@@ -162,17 +162,17 @@ const NOVA_PRODUCT_CONTEXT = {
   "4": {
     "ids": [
       "mission",
-      "vaas",
+      "authorization",
       "vault",
       "openshell"
     ],
-    "text": "OpenShell permits connectivity and Vault controls the credential path. The CRM PEP supplies actual operation evidence to the proposed VAAS decision service, then enforces the result under customer mission and resource rules."
+    "text": "OpenShell permits connectivity and Vault controls the credential path. The CRM PEP supplies actual operation evidence to the proposed authorization decision service, then enforces the result under customer mission and resource rules."
   },
   "5": {
     "ids": [
       "verify",
       "mission",
-      "vaas"
+      "authorization"
     ],
     "text": "IBM Verify can supply an optional CIBA channel. The application binds approval to this document revision, recipient, actor, records, current mission/policy, story window and one use. The CRM PEP rechecks the actual send."
   },

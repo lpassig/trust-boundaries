@@ -295,9 +295,9 @@ const WORLDS = {
       ]
     ],
     "inspect": {
-      "parent": "The customer’s mission authority establishes approved scope. VAAS is the proposed decision service, not a mission invented by the agent.",
+      "parent": "The customer’s mission authority establishes approved scope. An external service evaluates action authorization, not a mission invented by the agent.",
       "phone": "OpenShell is the runtime foundation in this story. Runtime restrictions and stopping a workload are different from business-level authorization.",
-      "laptop": "The trusted tool PEP validates the actual CRM operation and parameters. A proposed VAAS integration decides whether that exact action is authorized.",
+      "laptop": "The trusted tool PEP validates the actual CRM operation and parameters. A proposed external authorization integration decides whether that exact action is authorized.",
       "note": "A document or tool response is data. Even an apparently official instruction cannot modify the agent’s grant.",
       "memory": "Persistent writes need their own scope and provenance checks. A memory entry cannot become an authorization grant.",
       "sibling": "Child agents need explicit identities and bounded delegation. Calling another agent must not unlock its broader privileges."
@@ -352,10 +352,10 @@ const WORLDS = {
         "objective": "Read only the customer records needed for the approved summary.",
         "narration": "“I need customer records 123 and 456.” This is where a tool request becomes an exact, enforceable operation.",
         "lesson": "Authorize the operation the tool will execute, not the story the agent tells.",
-        "tech": "Proposed PEP → VAAS contract includes principal, agent, mission, resource, action, normalized parameters, execution ID, expiry, and policy/grant versions. Vault is an optional credential integration.",
+        "tech": "Proposed PEP → external PDP contract includes principal, agent, mission, resource, action, normalized parameters, execution ID, expiry, and policy/grant versions. Vault is an optional credential integration.",
         "flow": [
           "PEP validates",
-          "VAAS evaluates",
+          "Policy service evaluates",
           "Credential scoped",
           "PEP executes"
         ],
@@ -404,7 +404,7 @@ const WORLDS = {
         "roles": [
           "Network PEP",
           "Actual parameters",
-          "Proposed VAAS",
+          "Proposed decision service",
           "Execution PEP"
         ]
       },

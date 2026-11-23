@@ -32,7 +32,7 @@ const StoryRules = (() => {
   const editable=()=>active()&&s.draft&&!s.delivered;
   const revise=()=>{s.fileRevision++;s.proof=null;s.approval=null;};
   const incident=id=>{if(!s.incidents.includes(id))s.incidents.push(id);s.attempts.push({id,at:s.history.length+1});s.resolved=s.resolved.filter(x=>x!==id);s.paused=true;s.approval=null;};
-  const decide=(result,reason)=>{const appGate=teen&&operation==='collection.read',archive=teen&&operation==='archive.read';decision={pep:teen?(appGate?'Homework app profile':archive?'Museum archive viewer':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'VAAS · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
+  const decide=(result,reason)=>{const appGate=teen&&operation==='collection.read',archive=teen&&operation==='archive.read';decision={pep:teen?(appGate?'Homework app profile':archive?'Museum archive viewer':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'Authorization decision service · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
   const controlResult=()=>{
    operation='control.status.read';
    const c=s.containment;c.retests++;if(!c.observed.includes('signin'))c.observed.push('signin');
@@ -123,6 +123,7 @@ const StoryRules = (() => {
    if(raw.finished)s.nextTask={requiresNewAgreement:true,supportRecommended:raw.assessment?.kind==='supported'};
   }
   if(raw.version<5){s.feedbackLegacy=Boolean(s.message);s.draftReview=null;if(s.approval)s.approval.purpose='final';}
+  if(mode==='agent'&&s.last?.decision)s.last.decision.pdp='Authorization decision service · proposed PDP integration';
   s.verified=changesResolved(s);
   if(typeof s.feedbackLegacy!=='boolean'||s.message&&!s.draftReview&&!s.feedbackLegacy)return d;
   if(s.draftReview){const r=s.draftReview;if(r.purpose!=='draft-review'||!s.message||r.file!==(mode==='teen'?'history.pdf':'summary.pdf')||r.to!==(mode==='teen'?'teacher@school.example':'reviewer@company.example')||!Number.isInteger(r.revision)||r.revision<1||r.revision>s.fileRevision||!Number.isInteger(r.generation)||r.generation<1||!Array.isArray(r.records)||mode==='agent'&&(!r.approval||r.approval.purpose!=='draft-review'||r.approval.used!==true||r.approval.revision!==r.revision||r.approval.to!==r.to))return d;}

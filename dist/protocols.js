@@ -16,7 +16,7 @@ const PROTOCOL_SOURCES = {
  spiffe:{name:'SPIFFE workload identity concepts',url:'https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'},
  owasp:{name:'OWASP AI Agent Security',url:'https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html'}
 };
-const PROTOCOL_NOTE='Educational mapping only: these exchanges are not sent. CIBA, SSF/CAEP, token exchange, and external VAAS integration depend on deployment support; they are not claimed as native OpenShell or Vault features. Durations are simulated; production signature, expiry, and token validation are not implemented here.';
+const PROTOCOL_NOTE='Educational mapping only: these exchanges are not sent. CIBA, SSF/CAEP, token exchange, and external authorization service integration depend on deployment support; they are not claimed as native OpenShell or Vault features. Durations are simulated; production signature, expiry, and token validation are not implemented here.';
 const AGENT_PROTOCOLS = [
  {
   title:'Establish who may delegate, then bound the task',tags:['OIDC','OAuth 2.0','RAR · RFC 9396'],status:'Standards + proposed mission integration',
@@ -33,7 +33,7 @@ const AGENT_PROTOCOLS = [
  {
   title:'Authorize the actual CRM read',tags:['OAuth access token','RFC 8707','MCP · if used','Vault · optional'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
   how:'For an HTTP MCP path, the server validates its access-token audience and validity. Resource indicators identify the intended service. The trusted tool PEP must also check the actual operation and records. Vault can constrain access to Vault and broker credentials where configured.',
-  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The VAAS-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
+  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The PDP-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
   evidence:{audience:'https://crm.example',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','resource','vault']
  },
  {
@@ -43,8 +43,8 @@ const AGENT_PROTOCOLS = [
   evidence:{input_class:'retrieved document',claimed_override:'not authoritative',mission:'unchanged'},sources:['owasp','oidc']
  },
  {
-  title:'An allowed endpoint still needs an action decision',tags:['OAuth / RAR','Resource PEP','VAAS PDP · proposed'],status:'Application authorization; exact CRM policy is an integration',
-  how:'The trusted resource PEP observes actual parameters and obtains a proposed VAAS PDP decision against the customer-owned mission and resource policy. AuthZEN can carry the evaluation exchange; the resource still binds and enforces the result at execution.',
+  title:'An allowed endpoint still needs an action decision',tags:['OAuth / RAR','Resource PEP','External PDP · proposed'],status:'Application authorization; exact CRM policy is an integration',
+  how:'The trusted resource PEP observes actual parameters and obtains a proposed policy decision point decision against the customer-owned mission and resource policy. AuthZEN can carry the evaluation exchange; the resource still binds and enforces the result at execution.',
   boundary:'The runtime allows connectivity. The action-aware resource boundary separately denies an out-of-mission export. An unavailable or unverifiable sensitive-action decision must not silently permit execution. AuthZEN uses a Boolean decision; approval workflow, richer statuses and execution-binding fields are application extensions.',
   evidence:{network:'allowed',attempted_action:'customer.export',mission:'summary only',resource_decision:'deny'},sources:['authzen','rar','openshell','owasp']
  },

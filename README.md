@@ -21,7 +21,7 @@ The task-scoped school/CRM session is introduced when the workspace opens. At sh
 
 ### Technical journey
 
-Nova’s optional product map names IBM Verify, IBM Agent Identity, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. It separately identifies the customer mission service, resource PEP and proposed VAAS PDP. These are source-linked example roles and target integrations, not a claim of deployed end-to-end support. The optional trace distinguishes prior context, actual requested fields, the current mission version, proposed authorization evaluation, resource enforcement and outcome.
+Nova’s optional product map names IBM Verify, IBM Agent Identity, HashiCorp Vault, IBM watsonx Orchestrate, IBM Verify Antenna and NVIDIA OpenShell. It separately identifies the customer mission service, resource PEP and proposed policy decision point. These are source-linked example roles and target integrations, not a claim of deployed end-to-end support. The optional trace distinguishes prior context, actual requested fields, the current mission version, proposed authorization evaluation, resource enforcement and outcome.
 
 OIDC/OAuth, token exchange, RAR, CIBA, resource audiences, SSF/CAEP, credential lifecycle and candidate AuthZEN decision exchange retain distinct roles. CIBA is an optional authentication/consent channel; exact-action approval is application-bound. AuthZEN uses a Boolean decision; richer workflow and binding semantics require an application contract. Vault independently governs access to its own credential paths, while the CRM enforces business operations. OpenShell is an illustrative runtime choice. Signals and controller acknowledgements do not by themselves prove containment.
 
@@ -116,7 +116,7 @@ Browser walkthroughs reached the supervised ending with four recorded incident c
 
 The game is a scripted learning simulation, not a security product or deployment validation. Its client-side state is not a real authorization boundary. Technical content adapts the supplied notes; it is not independent verification of current product capabilities or standards.
 
-The agent journey separates OpenShell’s runtime foundation, broader enterprise architecture patterns, and optional Vault credential integration. VAAS-to-PEP action decisions, customer mission authority, bound human approvals, memory enforcement, and cross-system revocation are proposed integrations to build and test. Vault request restrictions do not automatically authorize arbitrary CRM operations. The game does not reproduce legal dates or assert regulatory compliance.
+The agent journey separates OpenShell’s runtime foundation, broader enterprise architecture patterns, and optional Vault credential integration. PDP-to-PEP action decisions, customer mission authority, bound human approvals, memory enforcement, and cross-system revocation are proposed integrations to build and test. Vault request restrictions do not automatically authorize arbitrary CRM operations. The game does not reproduce legal dates or assert regulatory compliance.
 
 
 The visual placement pass uses floor-anchored human figures with distinct adult and teenager proportions. Object pins share the SVG coordinate system, including letterboxing. Desktop labels use connector lines and avoid character faces; mobile uses a separate numbered object tray so labels do not cover the people or furniture.

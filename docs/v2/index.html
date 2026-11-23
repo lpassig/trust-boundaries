@@ -254,7 +254,7 @@ const PROTOCOL_SOURCES = {
  spiffe:{name:'SPIFFE workload identity concepts',url:'https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'},
  owasp:{name:'OWASP AI Agent Security',url:'https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html'}
 };
-const PROTOCOL_NOTE='Educational mapping only: these exchanges are not sent. CIBA, SSF/CAEP, token exchange, and external VAAS integration depend on deployment support; they are not claimed as native OpenShell or Vault features. Durations are simulated; production signature, expiry, and token validation are not implemented here.';
+const PROTOCOL_NOTE='Educational mapping only: these exchanges are not sent. CIBA, SSF/CAEP, token exchange, and external authorization service integration depend on deployment support; they are not claimed as native OpenShell or Vault features. Durations are simulated; production signature, expiry, and token validation are not implemented here.';
 const AGENT_PROTOCOLS = [
  {
   title:'Establish who may delegate, then bound the task',tags:['OIDC','OAuth 2.0','RAR · RFC 9396'],status:'Standards + proposed mission integration',
@@ -271,7 +271,7 @@ const AGENT_PROTOCOLS = [
  {
   title:'Authorize the actual CRM read',tags:['OAuth access token','RFC 8707','MCP · if used','Vault · optional'],status:'Standard resource authorization + proposed action-aware PEP/PDP',
   how:'For an HTTP MCP path, the server validates its access-token audience and validity. Resource indicators identify the intended service. The trusted tool PEP must also check the actual operation and records. Vault can constrain access to Vault and broker credentials where configured.',
-  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The VAAS-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
+  boundary:'MCP authorization does not define the business mission. Vault permissions and RAR restrictions on Vault requests do not automatically authorize arbitrary CRM operations. The PDP-to-PEP decision contract is proposed. AuthZEN is a candidate interface, not a deployed integration in this game.',
   evidence:{audience:'https://crm.example',action:'customer.read',records:['123','456'],decision:'permit only within current grant'},sources:['mcp','resource','vault']
  },
  {
@@ -281,8 +281,8 @@ const AGENT_PROTOCOLS = [
   evidence:{input_class:'retrieved document',claimed_override:'not authoritative',mission:'unchanged'},sources:['owasp','oidc']
  },
  {
-  title:'An allowed endpoint still needs an action decision',tags:['OAuth / RAR','Resource PEP','VAAS PDP · proposed'],status:'Application authorization; exact CRM policy is an integration',
-  how:'The trusted resource PEP observes actual parameters and obtains a proposed VAAS PDP decision against the customer-owned mission and resource policy. AuthZEN can carry the evaluation exchange; the resource still binds and enforces the result at execution.',
+  title:'An allowed endpoint still needs an action decision',tags:['OAuth / RAR','Resource PEP','External PDP · proposed'],status:'Application authorization; exact CRM policy is an integration',
+  how:'The trusted resource PEP observes actual parameters and obtains a proposed policy decision point decision against the customer-owned mission and resource policy. AuthZEN can carry the evaluation exchange; the resource still binds and enforces the result at execution.',
   boundary:'The runtime allows connectivity. The action-aware resource boundary separately denies an out-of-mission export. An unavailable or unverifiable sensitive-action decision must not silently permit execution. AuthZEN uses a Boolean decision; approval workflow, richer statuses and execution-binding fields are application extensions.',
   evidence:{network:'allowed',attempted_action:'customer.export',mission:'summary only',resource_decision:'deny'},sources:['authzen','rar','openshell','owasp']
  },
@@ -738,7 +738,7 @@ const StoryRules = (() => {
   const editable=()=>active()&&s.draft&&!s.delivered;
   const revise=()=>{s.fileRevision++;s.proof=null;s.approval=null;};
   const incident=id=>{if(!s.incidents.includes(id))s.incidents.push(id);s.attempts.push({id,at:s.history.length+1});s.resolved=s.resolved.filter(x=>x!==id);s.paused=true;s.approval=null;};
-  const decide=(result,reason)=>{const appGate=teen&&operation==='collection.read',archive=teen&&operation==='archive.read';decision={pep:teen?(appGate?'Homework app profile':archive?'Museum archive viewer':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'VAAS · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
+  const decide=(result,reason)=>{const appGate=teen&&operation==='collection.read',archive=teen&&operation==='archive.read';decision={pep:teen?(appGate?'Homework app profile':archive?'Museum archive viewer':'School application'):'CRM resource PEP',pdp:teen?(appGate?'Parent app agreement':archive?'Public archive access policy':'School permission policy'):'Authorization decision service · proposed PDP integration',result,reason,mission_id:s.mission.id,mission_version:s.mission.version,policy_version:s.mission.policyVersion,scope:s.mission.scope,allowed_records:s.mission.records.slice(),authority_source:s.mission.owner};};
   const controlResult=()=>{
    operation='control.status.read';
    const c=s.containment;c.retests++;if(!c.observed.includes('signin'))c.observed.push('signin');
@@ -829,6 +829,7 @@ const StoryRules = (() => {
    if(raw.finished)s.nextTask={requiresNewAgreement:true,supportRecommended:raw.assessment?.kind==='supported'};
   }
   if(raw.version<5){s.feedbackLegacy=Boolean(s.message);s.draftReview=null;if(s.approval)s.approval.purpose='final';}
+  if(mode==='agent'&&s.last?.decision)s.last.decision.pdp='Authorization decision service · proposed PDP integration';
   s.verified=changesResolved(s);
   if(typeof s.feedbackLegacy!=='boolean'||s.message&&!s.draftReview&&!s.feedbackLegacy)return d;
   if(s.draftReview){const r=s.draftReview;if(r.purpose!=='draft-review'||!s.message||r.file!==(mode==='teen'?'history.pdf':'summary.pdf')||r.to!==(mode==='teen'?'teacher@school.example':'reviewer@company.example')||!Number.isInteger(r.revision)||r.revision<1||r.revision>s.fileRevision||!Number.isInteger(r.generation)||r.generation<1||!Array.isArray(r.records)||mode==='agent'&&(!r.approval||r.approval.purpose!=='draft-review'||r.approval.used!==true||r.approval.revision!==r.revision||r.approval.to!==r.to))return d;}
@@ -952,7 +953,7 @@ const RequestTrace = (() => {
    if(!teen){
     nodes.push(node('Read the authoritative mission','Customer mission service','checked',`${d.mission_id} version ${d.mission_version}; policy version ${d.policy_version}; allowed summary records ${d.allowed_records.join(', ')}. Owner: ${d.authority_source}.`));
     nodes.push(node('Observe the actual operation','Trusted CRM resource PEP','checked',`${r.operation}; requested records ${r.records.join(', ')||'none'}${r.file?'; file '+r.file:''}${r.recipient?'; recipient '+r.recipient:''}. Evidence comes from the operation, not Nova’s explanation.`));
-    nodes.push(node('Evaluate the exact request','VAAS · proposed PDP integration',denied?'blocked':'checked',`${d.result.toUpperCase()}: ${d.reason} AuthZEN is a candidate interface. Richer approval and execution-binding semantics remain an application contract.`));
+    nodes.push(node('Evaluate the exact request','Authorization decision service · proposed PDP integration',denied?'blocked':'checked',`${d.result.toUpperCase()}: ${d.reason} AuthZEN is a candidate interface. Richer approval and execution-binding semantics remain an application contract.`));
    }
    nodes.push(node(teen?'The responsible control checks this operation':'Enforce at the resource',teen?d.pep:'CRM resource PEP',denied?'blocked':'checked',teen?(denied?`Refused at ${d.pep}: ${d.reason} The rest of the homework can continue.`:`Permitted at ${d.pep}: ${d.reason} Device/app permission and the resource’s own rules remain distinct.`):share?(denied?`The resource refuses the actual send: ${d.reason} No approval is consumed for delivery.`:`The actual revision ${r.revision}, records, recipient and current authority match the one-use human approval.`):'The resource enforces this request under the current mission and its own policy.'));
    nodes.push(node(share&&!denied?(draftShare?'Review copy delivered':'Final file delivered'):'Actual outcome','Fictional resource receipt','checked',denied?'Nothing was sent or read by this refused attempt. Authorized work remains available.':share?(draftShare?'The approved review copy was delivered. Feedback follows this receipt; the final version still needs its own share approval.':'The final agreed report was delivered. Later revocation does not recall either delivered copy.'):a==='add-extension'?'The specifically approved addition was read and included in the draft.':'The originally agreed source was read successfully. This is the useful first result before later requests.'));
@@ -1041,8 +1042,8 @@ const NOVA_PRODUCTS = [
     "status": "Version-dependent feature and configured secrets engine"
   },
   {
-    "id": "vaas",
-    "name": "VAAS · proposed authorization service",
+    "id": "authorization",
+    "name": "Authorization decision service · proposed integration",
     "role": "Evaluate the actual action supplied by the trusted CRM PEP",
     "how": "The proposed PDP evaluates PEP-observed action evidence against the current customer mission, identity constraints and resource rules. The resource PEP binds the decision to execution. AuthZEN is a candidate decision-exchange interface.",
     "limit": "This is a target architecture, not a verified deployed product API. AuthZEN 1.0 uses a Boolean decision; approval-required workflow, execution binding and richer status semantics need an explicitly documented application contract. Vault’s own policies remain independent.",
@@ -1053,7 +1054,7 @@ const NOVA_PRODUCTS = [
     ],
     "url": "https://openid.net/specs/authorization-api-1_0-final.html",
     "sourceLabel": "OpenID AuthZEN Authorization API 1.0",
-    "status": "Proposed PDP/PEP integration; no live VAAS service"
+    "status": "Proposed PDP/PEP integration; no live authorization service"
   },
   {
     "id": "openshell",
@@ -1117,10 +1118,10 @@ const NOVA_PRODUCT_CONTEXT = {
   "2": {
     "ids": [
       "mission",
-      "vaas",
+      "authorization",
       "vault"
     ],
-    "text": "The trusted CRM PEP observes the requested records. The proposed VAAS PDP evaluates current mission and resource policy. Vault independently controls access to the credential path."
+    "text": "The trusted CRM PEP observes the requested records. The proposed policy decision point evaluates current mission and resource policy. Vault independently controls access to the credential path."
   },
   "3": {
     "ids": [
@@ -1132,17 +1133,17 @@ const NOVA_PRODUCT_CONTEXT = {
   "4": {
     "ids": [
       "mission",
-      "vaas",
+      "authorization",
       "vault",
       "openshell"
     ],
-    "text": "OpenShell permits connectivity and Vault controls the credential path. The CRM PEP supplies actual operation evidence to the proposed VAAS decision service, then enforces the result under customer mission and resource rules."
+    "text": "OpenShell permits connectivity and Vault controls the credential path. The CRM PEP supplies actual operation evidence to the proposed authorization decision service, then enforces the result under customer mission and resource rules."
   },
   "5": {
     "ids": [
       "verify",
       "mission",
-      "vaas"
+      "authorization"
     ],
     "text": "IBM Verify can supply an optional CIBA channel. The application binds approval to this document revision, recipient, actor, records, current mission/policy, story window and one use. The CRM PEP rechecks the actual send."
   },
@@ -1332,7 +1333,7 @@ function productCard(product,open=false){return `<details class="product-card" $
 function showProductMap(selectedProduct=''){
  if(teen())return;
  const s=state();
- show('Who does what around Nova?',`<p>In this episode Nova has an owner, a delegated task and a brokered credential. These are separate decisions made by configured components.</p><ol class="product-flow"><li><b>Human</b> · IBM Verify or an existing enterprise IdP authenticates the sponsor.</li><li><b>Agent identity</b> · IBM Agent Identity records Nova’s owner and governs delegated identity. watsonx Orchestrate coordinates the work.</li><li><b>Customer mission</b> · The customer-owned mission service records the sponsor-approved task outside Nova’s prompt, notes and identity registry.</li><li><b>Credential</b> · HashiCorp Vault validates its own audience-bound request and brokers a scoped credential.</li><li><b>Action decision</b> · The trusted CRM PEP observes the real request. The proposed VAAS PDP evaluates it against current customer mission and resource rules. The CRM binds and enforces the result at execution. OpenShell separately constrains the runtime.</li><li><b>Stop and verify</b> · IBM Verify Antenna can carry SSF/CAEP signals. Configured receivers apply changes and report their own results.</li></ol><div class="receipt"><b>${s.mission?`Nova · ${esc(s.mission.id)} · version ${s.mission.version}`:'No task mission issued yet'}</b><p>${s.ended?'Task mission withdrawn':s.paused?'Mission paused':s.pass?'Scoped delegation active':'Task approval still required'}. This is a fictional case record, not a response from a live identity system.</p></div><div class="product-cards">${NOVA_PRODUCTS.map(p=>productCard(p,p.id===selectedProduct)).join('')}</div><details class="product-card"><summary><b>Two paths to a resource</b><span>Brokered credential or a token intended for that resource</span></summary><p><b>This episode uses the Vault broker path.</b> Vault checks the credential-path request and returns a managed credential. The CRM still checks its own business operations.</p><p><b>A direct OAuth/MCP path is another deployment option.</b> The resource validates a token issued for its own audience and enforces its supported authorization details. A Vault-audience token cannot simply be reused at the CRM. An MCP server must not pass through the client’s token to a downstream service.</p><p><b>Separate Vault flows:</b> Vault Enterprise’s OAuth resource-server path accepts the configured external access token for Vault requests. The classic JWT/OIDC auth method at /auth/jwt/login instead exchanges a login credential for a Vault token. They are not interchangeable.</p><p class="sources"><a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">Vault OAuth resource server</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">IBM Verify configuration for Vault</a> · <a href="${PROTOCOL_SOURCES.mcp.url}" target="_blank" rel="noopener noreferrer">MCP authorization</a></p></details><details class="product-card"><summary><b>What this example assumes</b><span>Configuration and receiver actions still need implementation</span></summary><p>Nova and its human sponsor are registered and mapped. The customer mission service, resource-side PEP and external VAAS PDP are proposed integrations. Their contracts, deployment and trusted evidence require implementation and validation. AuthZEN is a candidate PEP/PDP interface; approval-required workflow and execution binding are explicitly application extensions. The task uses customer-defined policy. Vault has the appropriate Enterprise feature, OAuth validation profile, Agent Registry record and secrets-engine role. Agent Identity and Vault keep separate registries; reconciliation requires configured integration.</p><p>OpenShell is an illustrative runtime choice alongside the orchestration layer. Antenna receivers need the correct APIs, event mapping and processors for each target. No universal instantaneous kill switch or automatic registry mirroring is implied.</p><p>The simulation binds approvals to document revision, recipient, actor, records, mission and policy version, story approval window, session generation and single use. Production integrity, authenticated PEP evidence, cryptographic content binding and transaction guarantees still require implementation. Runtime stops, lease revocation, service sign-out and queued-operation reconciliation need separate checks. These fictional receipts do not validate a production deployment.</p></details><div class="actions">${button('Inspect the Vault credential path',showCredential,'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div><p class="small-print">Example deployment with source-linked product roles. Connections and receiver actions require configuration. All game decisions and receipts are scripted locally.</p>`,'NOVA · PRODUCTS, PROTOCOLS AND ENFORCEMENT');
+ show('Who does what around Nova?',`<p>In this episode Nova has an owner, a delegated task and a brokered credential. These are separate decisions made by configured components.</p><ol class="product-flow"><li><b>Human</b> · IBM Verify or an existing enterprise IdP authenticates the sponsor.</li><li><b>Agent identity</b> · IBM Agent Identity records Nova’s owner and governs delegated identity. watsonx Orchestrate coordinates the work.</li><li><b>Customer mission</b> · The customer-owned mission service records the sponsor-approved task outside Nova’s prompt, notes and identity registry.</li><li><b>Credential</b> · HashiCorp Vault validates its own audience-bound request and brokers a scoped credential.</li><li><b>Action decision</b> · The trusted CRM PEP observes the real request. The proposed policy decision point evaluates it against current customer mission and resource rules. The CRM binds and enforces the result at execution. OpenShell separately constrains the runtime.</li><li><b>Stop and verify</b> · IBM Verify Antenna can carry SSF/CAEP signals. Configured receivers apply changes and report their own results.</li></ol><div class="receipt"><b>${s.mission?`Nova · ${esc(s.mission.id)} · version ${s.mission.version}`:'No task mission issued yet'}</b><p>${s.ended?'Task mission withdrawn':s.paused?'Mission paused':s.pass?'Scoped delegation active':'Task approval still required'}. This is a fictional case record, not a response from a live identity system.</p></div><div class="product-cards">${NOVA_PRODUCTS.map(p=>productCard(p,p.id===selectedProduct)).join('')}</div><details class="product-card"><summary><b>Two paths to a resource</b><span>Brokered credential or a token intended for that resource</span></summary><p><b>This episode uses the Vault broker path.</b> Vault checks the credential-path request and returns a managed credential. The CRM still checks its own business operations.</p><p><b>A direct OAuth/MCP path is another deployment option.</b> The resource validates a token issued for its own audience and enforces its supported authorization details. A Vault-audience token cannot simply be reused at the CRM. An MCP server must not pass through the client’s token to a downstream service.</p><p><b>Separate Vault flows:</b> Vault Enterprise’s OAuth resource-server path accepts the configured external access token for Vault requests. The classic JWT/OIDC auth method at /auth/jwt/login instead exchanges a login credential for a Vault token. They are not interchangeable.</p><p class="sources"><a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">Vault OAuth resource server</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">IBM Verify configuration for Vault</a> · <a href="${PROTOCOL_SOURCES.mcp.url}" target="_blank" rel="noopener noreferrer">MCP authorization</a></p></details><details class="product-card"><summary><b>What this example assumes</b><span>Configuration and receiver actions still need implementation</span></summary><p>Nova and its human sponsor are registered and mapped. The customer mission service, resource-side PEP and external policy decision point are proposed integrations. Their contracts, deployment and trusted evidence require implementation and validation. AuthZEN is a candidate PEP/PDP interface; approval-required workflow and execution binding are explicitly application extensions. The task uses customer-defined policy. Vault has the appropriate Enterprise feature, OAuth validation profile, Agent Registry record and secrets-engine role. Agent Identity and Vault keep separate registries; reconciliation requires configured integration.</p><p>OpenShell is an illustrative runtime choice alongside the orchestration layer. Antenna receivers need the correct APIs, event mapping and processors for each target. No universal instantaneous kill switch or automatic registry mirroring is implied.</p><p>The simulation binds approvals to document revision, recipient, actor, records, mission and policy version, story approval window, session generation and single use. Production integrity, authenticated PEP evidence, cryptographic content binding and transaction guarantees still require implementation. Runtime stops, lease revocation, service sign-out and queued-operation reconciliation need separate checks. These fictional receipts do not validate a production deployment.</p></details><div class="actions">${button('Inspect the Vault credential path',showCredential,'secondary')}${button('Back to the story',()=>s.started?close():showIntro())}</div><p class="small-print">Example deployment with source-linked product roles. Connections and receiver actions require configuration. All game decisions and receipts are scripted locally.</p>`,'NOVA · PRODUCTS, PROTOCOLS AND ENFORCEMENT');
 }
 function showCredential(){
  if(teen())return;
