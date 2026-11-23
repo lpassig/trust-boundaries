@@ -29,16 +29,19 @@ No protocol request, real credential, live service, cryptographic content digest
 
 ### Build, source and validation
 
-Run `python3 build-v2.py` to rebuild `play-v2.html` and `docs/v2/index.html`. The build embeds all seven scripts, CSS and SVG artwork. GitHub Pages publishes `main` → `/docs`; the classic game remains at the root URL.
+Run `python3 build-v2.py` to rebuild `play-v2.html` and `docs/v2/index.html`. The build embeds all eight scripts, CSS and SVG artwork. GitHub Pages publishes `main` → `/docs`; the classic game remains at the root URL.
 
 - `v2/story.js`: both stories, later requests, next moves and optional protocol cards.
 - `v2/rules.js`: schema 4 state, lifecycle, versioned amendments, exact approvals, refusal/recovery and task closure.
+- `v2/interactions.js`: state-aware item destinations shared by highlights and click handling.
 - `v2/trace.js`: replay of fictional operation evidence and decisions.
 - `v2/products.js`: product roles, limits and primary documentation links.
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
-- `tests/v2.test.cjs`: 85 tests including the full route matrix and key security/story invariants. The 13 classic tests bring the total to **98**.
+- `tests/v2.test.cjs`: 85 tests including the full route matrix and key security/story invariants. The 13 classic tests and 13 interaction tests bring the total to **111**.
 
-Run `node --test tests/v2.test.cjs tests/engine.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The unapproved museum viewer is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
+Run `node --test tests/v2.test.cjs tests/engine.test.cjs tests/interactions.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The unapproved museum viewer is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
+
+Filled icons with “Next” identify the suggested story action. Holding an item replaces those hints with amber “Use here” destinations supported by the same routing logic. Reference-only items have no destination. Hover does not copy the filled state. Nova’s request panel opens incoming work; the OpenShell runtime console remains separate. Object labels name their function, with technical context below. New-message artwork appears only after new requests arrive.
 
 Existing saves migrate to schema 4 and retain completed tasks and endings. Earlier undelivered approvals are retired when they lack current binding fields. Earlier routes are explicitly labeled, and a restart is available to play the new opening without resetting the other journey.
 

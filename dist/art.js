@@ -124,7 +124,7 @@ function roomStateOverlay(mode,act,state) {
   const teen=mode==='teen',step=state.step??act*3;
   const tone=state.revoked||state.paused?'#e6b09e':'#a5ddc8';
   let art='';
-  if(step>=3&&!state.verified&&!state.revoked) {
+  if((state.hasIncoming??(step>=3))&&!state.verified&&!state.revoked) {
     art+=teen?`<g class="incoming-signal" data-event="phone-message"><ellipse cx="526" cy="404" rx="33" ry="13" fill="#e7bf8b" opacity=".22"/><rect x="504" y="365" width="45" height="29" rx="5" fill="#dcb68e" stroke="#f4dcad" stroke-width="2"/><path d="M508 370L526 381L545 370" fill="none" stroke="#6c5266" stroke-width="2"/><path d="M526 394L526 401" stroke="#e6c995" stroke-width="2"/></g>`:`<g class="incoming-signal" data-event="retrieved-document"><path d="M419 134L474 119L474 214L419 231Z" fill="none" stroke="#e7bd87" stroke-width="3"/><path d="M450 187L463 210L438 217Z" fill="#dfb784"/><path d="M451 196L451 203M451 207L451 209" stroke="#614d54" stroke-width="2"/></g>`;
   }
   if(state.verified)art+=teen?`<g data-event="message-verified"><circle cx="544" cy="392" r="10" fill="#476e65" stroke="#b1ddc8"/><path d="M539 392L543 396L550 386" stroke="#c5edd7" stroke-width="2" fill="none"/></g>`:`<g data-event="document-verified"><circle cx="464" cy="205" r="10" fill="#396a61" stroke="#a7dec8"/><path d="M459 205L463 209L470 199" stroke="#c5edd7" stroke-width="2" fill="none"/></g>`;

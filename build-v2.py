@@ -4,7 +4,7 @@ root=Path(__file__).resolve().parent
 src=root/'v2'
 html=(src/'index.html').read_text()
 html=html.replace('<link rel="stylesheet" href="style.css">','<style>\n'+(src/'style.css').read_text()+'\n</style>')
-for name,path in [('../dist/art.js',root/'dist/art.js'),('../dist/protocols.js',root/'dist/protocols.js'),('story.js',src/'story.js'),('rules.js',src/'rules.js'),('trace.js',src/'trace.js'),('products.js',src/'products.js'),('ui.js',src/'ui.js')]:
+for name,path in [('../dist/art.js',root/'dist/art.js'),('../dist/protocols.js',root/'dist/protocols.js'),('story.js',src/'story.js'),('rules.js',src/'rules.js'),('interactions.js',src/'interactions.js'),('trace.js',src/'trace.js'),('products.js',src/'products.js'),('ui.js',src/'ui.js')]:
     code=path.read_text().replace('</script','<\\/script')
     html=html.replace(f'<script src="{name}"></script>','<script>\n'+code+'\n</script>')
 (root/'play-v2.html').write_text(html.replace('__CLASSIC_LINK__','play.html'))
