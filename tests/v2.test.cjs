@@ -91,6 +91,8 @@ test('Alex can restore the teacher address with or without testing the outside d
  for(const state of [changed,act(changed,'send').state]){
   const restored=run(R.hydrate(JSON.parse(JSON.stringify(state)),'teen'),'change-recipient');
   assert.equal(restored.outgoing,'approved');
+  assert.equal(restored.last.title,'Ms Patel’s address is restored.');
+  assert.equal(restored.delivered,false);
   assert.equal(restored.fileRevision,changed.fileRevision);
   const submitted=run(restored,'send');
   assert.equal(submitted.last.request.recipient,'teacher@school.example');

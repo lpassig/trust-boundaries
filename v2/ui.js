@@ -6,6 +6,9 @@ let mode='teen',states={teen:StoryRules.fresh(),agent:StoryRules.fresh()},select
 try{const raw=JSON.parse(localStorage.getItem(SAVE));if(raw){if(['teen','agent'].includes(raw.mode))mode=raw.mode;for(const key of ['teen','agent'])states[key]=StoryRules.hydrate(raw.states?.[key],key);sound=raw.sound===true;}}catch{stored=false;}
 const state=()=>states[mode],episode=()=>mode==='teen'?{...EPISODES.teen,...StoryRules.alexExtra(state())}:EPISODES.agent,teen=()=>mode==='teen',stage=()=>StoryRules.stage(state());
 function storyEvent(event){return event;}
+function needsShareReapproval(s){
+ return !teen()&&s.approval&&s.outgoing==='approved'&&!StoryRules.approvalMatches(s.approval,StoryRules.reportShare(s));
+}
 const move=()=>{
  const key=stage(),s=state(),base=MOVES[key];
  if(key==='paused'&&s.reviewPending)return teen()
@@ -18,7 +21,7 @@ const move=()=>{
  if(key==='send'&&s.outgoing==='changed')return teen()
   ?['Restore Ms Patel’s address','The school submission uses her address from the assignment.','schoolApp']
   :['Restore the reviewer','The CRM send must use the designated reviewer.','laptop'];
- if(key==='send'&&!teen()&&!StoryRules.approvalMatches(s.approval,StoryRules.reportShare(s)))return ['Review the current copy','Ask Morgan for an approval that matches the current send.','laptop'];
+ if(key==='send'&&needsShareReapproval(s))return ['Ask Morgan to approve this revision','Show Morgan the current copy before CRM can send it.','reviewer'];
  if(key==='checks'){
   const {next}=closingStep(s,teen());
   const source=StoryInteractions.speechSource(mode,StoryInteractions.closureSource(s,mode));
@@ -823,7 +826,13 @@ function showCredential(back=null){
  showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.sourceLease?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.sourceLease?'The connector obtained a scoped, short-lived credential for the approved CRM read.':'The connector requests the credential at the first CRM read.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Back to the product map',returnToMap,'secondary')}${typeof back==='function'?'':button('Back to the story',()=>state().started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
 }
 
-function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
+function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return followSendCue();case'checks':return showChecks();case'ending':return showEnding();}}
+function followSendCue(){
+ const s=state();
+ if(s.outgoing==='changed')return perform('change-recipient');
+ if(needsShareReapproval(s))return showMorganApproval('final',showSend);
+ return showSend();
+}
 function interact(key,pin){
  const target=selected&&StoryInteractions.findTarget(mode,heldUse().targets,key,pin);
  if(target)return useItem(target);
@@ -938,17 +947,19 @@ function showParent(){speakingObject=teen()?'parent':'missionControl';
 }
 function showFinalApproval(){return showMorganApproval('final',showDraft);}
 function showMorganApproval(purpose,back){
- const preview=StoryRules.approvalPreview(state(),purpose);
- showMorganRequest(preview,()=>perform(purpose==='draft-review'?'approve-draft':'approve',{preview}),back);
+ const s=state(),preview=StoryRules.approvalPreview(s,purpose);
+ const previous=purpose==='final'&&needsShareReapproval(s)?s.approval:null;
+ showMorganRequest(preview,()=>perform(purpose==='draft-review'?'approve-draft':'approve',{preview}),back,previous);
 }
-function showMorganRequest(preview,approve,back){
+function showMorganRequest(preview,approve,back,previous=null){
  const draft=preview.purpose==='draft-review';
+ const comparison=previous?shareWording(previous,preview):'';
  showReference('Morgan’s approval request',`<div class="receipt">
   <b>${draft?'Review copy':'Final delivery'} · ${esc(preview.file)} · revision ${preview.revision}</b>
   <p>To <span class="address">${esc(preview.to)}</span></p>
-  <p><b>Follow-up sentence</b><br>${esc(preview.followUpSentence)}</p>
+  ${comparison?'':`<p><b>Follow-up sentence</b><br>${esc(preview.followUpSentence)}</p>`}
   <p>${esc(customerNames(preview.records))} · summary only</p>
- </div><p>With IBM Verify and CIBA configured, Morgan can authenticate and respond on a separate device. The application binds that response to this copy and destination. CRM checks the actual send.</p>
+ </div>${comparison}<p>With IBM Verify and CIBA configured, Morgan can authenticate and respond on a separate device. The application binds that response to this copy and destination. CRM checks the actual send.</p>
  <div class="actions">${button('Approve as Morgan',approve)}${button('Back without approving',back,'secondary')}</div>`,
  'SIMULATED VIEW ON MORGAN’S DEVICE');
 }
