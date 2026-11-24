@@ -321,15 +321,38 @@ const RequestTrace = (() => {
   if(a==='resolve-extension'&&e.decision?.result==='deny')return model('The amendment was refused.','A sponsor reply cannot override independent policy. The current mission and session generation are preserved.',[
    ...context(),node('Evaluate the proposed addition','Customer mission service + independent policy','blocked',e.decision.reason),node('Expanded delegation and additional read','Execution','not-reached','No scope expanded and no additional customer data was read.')
   ],{...r,decision:e.decision});
-  if(['request-extension','resolve-extension'].includes(a))return model(teen?'Ask about one new source. Wait for the reply.':'A genuine request needs an authorized amendment.','A pending request cannot enlarge the agreement. The reply and later resource read are separate steps.',[
+  if(teen&&['request-extension','resolve-extension'].includes(a)){
+   const pending=a==='request-extension';
+   const photo=s.extraSource==='museum-photo';
+   return model(pending?'Ask about one more source.':'Your parent allows the museum link.',
+    pending?'Your parent will check the link and decide whether to allow it.':'Your parent makes the decision. The phone applies it for this source until dinner.',[
+     node('Ask about the museum link','Alex','checked',photo?'Alex asks to use the museum’s station photo.':'Alex asks to open the museum’s YouTube video, “Our station’s story.”'),
+     ...(r.authoritative_source?[node('Earlier check of the teacher’s message',r.authoritative_source,'context',parentSourceCheck)]:[]),
+     node('Decide what to allow','Parent',pending?'pending':'checked',pending?'Your parent is still deciding.':'Your parent gives permission for the specific museum link until dinner.'),
+     node('Apply the app setting','Phone homework controls',pending?'not-reached':'checked',
+      pending?'The school app and museum website are available under tonight’s agreement.':'Homework mode now allows the one museum link.'),
+     node('Open the source','Alex','not-reached','Choose the link if you want to use the extra source.')
+    ]);
+  }
+  if(['request-extension','resolve-extension'].includes(a))return model('A genuine request needs an authorized amendment.','A pending request cannot enlarge the agreement. The reply and later resource read are separate steps.',[
    node('Current agreement','Independent task authority','context',`${m.id}. The starting plan was agreed on screen, before these later requests.`),
-   ...(!teen?[node('Propose the permission change','Nova via the configured workflow',r.requested_operation?'checked':'reference',r.requested_operation?`The proposal asks for ${r.requested_operation} on record ${r.records[0]}. The mission service receives it for approval.`:'The story requests one summary read. This earlier record did not store the proposed operation.')]:[]),
-   node(teen?s.extraSource==='museum-photo'?'One station photo':'One museum video on YouTube':'One additional customer: 789','Specific requested addition','checked','This request excludes private notes and keeps the agreed recipient.'),
-   ...(teen&&r.authoritative_source?[node('Earlier check of the teacher’s message',r.authoritative_source,'context',parentSourceCheck)]:[]),
-   node(teen?'Your parent’s app decision':'Customer mission authority',teen?'Parent + school resource rules':'Authorized sponsor + resource constraints',a==='request-extension'?'pending':'checked',a==='request-extension'?'The reply is pending. No permission expanded.':`The authorized reply records version ${m.version}. An ordinary instruction could not make that change.`),
-   node(teen?'Updated homework apps':'Refreshed delegated scope',teen?'Phone app agreement':'IBM Agent Identity + configured issuer',a==='request-extension'?'not-reached':'checked',a==='request-extension'?'Existing scope stays in force.':'Old session generation and sharing approvals are retired. The existing task is preserved and scope expands only by the approved addition.'),
+   node('Propose the permission change','Nova via the configured workflow',r.requested_operation?'checked':'reference',r.requested_operation?`The proposal asks for ${r.requested_operation} on record ${r.records[0]}. The mission service receives it for approval.`:'The story requests one summary read. This earlier record did not store the proposed operation.'),
+   node('One additional customer: 789','Specific requested addition','checked','This request excludes private notes and keeps the agreed recipient.'),
+   node('Customer mission authority','Authorized sponsor + resource constraints',a==='request-extension'?'pending':'checked',a==='request-extension'?'The reply is pending. No permission expanded.':`The authorized reply records version ${m.version}. An ordinary instruction could not make that change.`),
+   node('Refreshed delegated scope','IBM Agent Identity + configured issuer',a==='request-extension'?'not-reached':'checked',a==='request-extension'?'Existing scope stays in force.':'Old session generation and sharing approvals are retired. The existing task is preserved and scope expands only by the approved addition.'),
    node('Read the additional material','Independent resource PEP','not-reached','Permission itself does not open the extra source or customer record. Use the approved addition next.')
   ]);
+  if(teen&&['try-extension','add-extension'].includes(a)&&e.decision){
+   const allowed=e.decision.result==='permit';
+   const photo=s.extraSource==='museum-photo';
+   return model('Follow the museum link.', 'Your parent sets the homework rule. The phone checks the link when you open it.',[
+    node('Select the link','Alex','checked',photo?'Alex selects the station photo link.':'Alex selects the museum video link.'),
+    node('Check the requested link','Phone homework controls',allowed?'checked':'blocked',
+     allowed?'The link matches the one your parent allowed.':'The requested link is outside the current homework agreement.'),
+    node(photo?'Open the station photo':'Play the museum video',photo?'Museum photo app':'YouTube',allowed?'checked':'not-reached',
+     allowed?'Alex uses the source and adds its credit to the timeline.':'Homework mode stops the link before the source opens.')
+   ],{...r,decision:e.decision});
+  }
   if(['verify-contact','verify-portal'].includes(a))return model(teen?'Verify what the teacher asked for.':'Verify the origin of the proposed change.','A source check verifies the request. Changing effective access requires a separate decision.',[
    node('Check independent evidence',a==='verify-contact'?(teen?'Saved conversation with Ms Patel':'Saved contact for Priya'):(teen?'School assignment':'Sponsor-owned proposal linked to the work order'),'checked',e.text),
    node('Scope decision','Current agreement and policy','not-reached','The verification leaves the existing agreement and any resource restrictions in force.')

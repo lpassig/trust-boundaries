@@ -283,6 +283,9 @@ test('Alex asks about one linked museum video, not unrestricted YouTube',()=>{
  let s=start('teen');for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension'])s=run(s,a);
  assert.equal(s.extraSource,'youtube');assert(!s.mission.allowedApps.includes('youtube-museum-video'));assert.deepEqual(s.mission.allowedMedia,[]);
  const pending=act(s,'try-extension');assert.equal(pending.event.request.operation,'video.watch');assert.equal(pending.event.decision.result,'deny');
+ const deniedTrace=T.build(pending.state,'teen').nodes;
+ assert(deniedTrace.some(node=>node.role==='Phone homework controls'&&node.status==='blocked'));
+ assert(deniedTrace.some(node=>node.role==='YouTube'&&node.status==='not-reached'));
  const beforeCheck=structuredClone(s.mission);
  assert.equal(act(s,'resolve-extension').event.kind,'blocked');
  s=run(s,'check-extension-source');
@@ -296,9 +299,14 @@ test('Alex asks about one linked museum video, not unrestricted YouTube',()=>{
  s=run(s,'resolve-extension');assert(s.mission.allowedApps.includes('youtube-museum-video'));assert.equal(s.mission.scope,'project-with-museum-video');assert.deepEqual(s.mission.allowedMedia,['riverside-station-video']);
  assert.equal(s.last.request.authoritative_source,'Ms Patel’s school inbox message');
  assert.equal(s.last.request.resource,'riverside-station-video');
- assert(T.build(s,'teen').nodes.some(node=>node.role==='Ms Patel’s school inbox message'&&node.status==='context'));
+ const grantTrace=T.build(s,'teen').nodes;
+ assert(grantTrace.some(node=>node.role==='Ms Patel’s school inbox message'&&node.status==='context'));
+ assert(grantTrace.some(node=>node.label==='Decide what to allow'&&node.role==='Parent'&&node.status==='checked'));
+ assert(grantTrace.some(node=>node.role==='Phone homework controls'&&node.status==='checked'));
+ assert(grantTrace.some(node=>node.label==='Open the source'&&node.status==='not-reached'));
  const other=act(s,'add-extension',{media:'unrelated-recommendation'});assert.equal(other.event.decision.result,'deny');assert.equal(other.state.extensionAdded,false);assert.equal(other.event.request.resource,'unrelated-recommendation');
  s=run(s,'add-extension');assert.equal(s.last.request.resource,'riverside-station-video');assert.equal(s.extensionAdded,true);assert.match(s.last.text,/YouTube/);
+ assert(T.build(s,'teen').nodes.some(node=>node.role==='YouTube'&&node.status==='checked'));
 });
 test('removing the allowed video after parent permission blocks playback at use time',()=>{
  let s=start('teen');for(const a of ['collect-source','attach-source','send-draft','verify-contact','request-extension','check-extension-source','resolve-extension'])s=run(s,a);s.mission.allowedMedia=[];
