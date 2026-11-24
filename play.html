@@ -108,6 +108,8 @@ dialog.is-reference .speech-source{display:none}
 .object-tray.has-conversation button.is-speaking b{background:var(--accent);color:#20172d;border-radius:50%;width:32px;height:32px;align-items:center;margin:-5px auto 5px}
 .object-tray .scene-tool{grid-column:span 2;background:#ffffff07}
 .tool-tray-label{grid-column:1/-1;color:var(--muted);font-size:13px;margin:8px 0 2px}
+.bar-stages{display:grid;gap:10px;padding-inline-start:24px;margin:18px 0}
+.bar-stages li::marker{color:var(--accent);font-weight:750}
 @media(max-width:1100px){.object-tray .scene-tool{grid-column:span 1}}
 .hero-thinking [data-character="alex"],.hero-thinking [data-character="nova"]{filter:drop-shadow(0 0 6px var(--accent))}
 dialog #dialog-scroll{font-size:12px;color:var(--muted);margin:0 0 4px}
@@ -764,17 +766,20 @@ const STORY_COMPARISON = [
 ];
 
 const BAR_STAGES = [
-  {name:'Build',question:'We need to know which agents are running and who owns them',
+  {name:'Build',label:'Agent AI Assistant',mode:'A person asks the assistant for help and reviews its output.',
+   value:['Security value','Track whether the pilot has a named owner, an inventory of what it can reach, and a recorded result when you try an unapproved data path.'],
    first:'Pick one workflow with test data. Record the agent, owner, purpose, model, tools and data it can reach. Use a named identity, keep keys outside the agent, and log one run.',
    evidence:'An owner can identify the agent and draw its data path from one run record. Check that an unapproved model or data path is refused before widening the pilot.',
    next:'Use your existing inventory and identity controls where they cover the workflow. Consider IBM Agent Identity for agent registration and Verify Identity Protection for discovery from connected activity sources.',
    example:'Nova and Pip have separate identities. Their registry entries make ownership visible before Priya approves the task.'},
-  {name:'Authorize',question:'We know the agents and need to limit what a tool can do',
+  {name:'Authorize',label:'Semi-Autonomous',mode:'The agent calls tools at defined steps, within limits you can test.',
+   value:['Operational value','Compare how long the same approved task takes before and after the pilot. Track manual handoffs and confirm that the out-of-scope request still fails.'],
    first:'Choose one tool and one allowed operation on test data. Give the agent only that scope and a short-lived credential where the target supports it. Have the target enforce the operation outside the agent. Add exact approval before sensitive writes or sends.',
    evidence:'Run a permitted and a refused request over the same connection. Save the observed operation, scope, decision and actual result.',
    next:'Use your application’s enforcement first. Evaluate a broker such as Vault for short-lived credentials, IBM Verify for separate-device approval, or an MCP gateway when you need a shared tool boundary.',
    example:'Nova can reach CRM. CRM returns an approved account and refuses Alder Books until the scope changes.'},
-  {name:'Resist',question:'Access is scoped and we need to detect trouble and prove it stopped',
+  {name:'Resist',label:'Governed Autonomy',mode:'The agent chooses tools or adapts its plan within an approved scope. The team can detect, stop, and verify risky activity.',
+   value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
    first:'Start with one alert and a named response owner. Practice stopping the workload, revoking its credential and closing the app session separately. Check waiting work and retest what previously worked.',
    evidence:'Keep the alert, each controller’s outcome and a fresh check of the old route. An unreachable controller leaves its part unverified.',
    next:'Add containment automation and more signal sources as autonomy increases. Verify Identity Protection can help surface risky activity. Verify Antenna can carry configured signals to systems that apply their own controls.',
@@ -3299,24 +3304,26 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
    ['The agent can open the app but can see or do too much','Check what the app allows after the agent connects.',()=>showBuyerActionScope(reopen)]
   ])}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
-  <div class="actions">${button('Open the maturity guide',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
+  <div class="actions">${button('Raise the BAR',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
 function showMaturity(back=showIntro,selected=null){
  const reopen=()=>showMaturity(back,selected);
- if(selected)return showReference(`${selected.name} · first pilot`,
-  `<ul class="route-list">
+ const title=stage=>`${stage.label} (${stage.name.toUpperCase()})`;
+ if(selected)return showReference(title(selected),
+  `<p>${esc(selected.mode)}</p><ul class="route-list">
   <li><b>Start here</b><br>${esc(selected.first)}</li>
   <li><b>Evidence to save</b><br>${esc(selected.evidence)}</li>
+  <li><b>${esc(selected.value[0])} to measure</b><br>${esc(selected.value[1])}</li>
   <li><b>Where products fit</b><br>${esc(selected.next)}</li>
   <li><b>In Nova’s story</b><br>${esc(selected.example)}</li></ul>
-  <div class="actions">${button('Match a work problem to a control',()=>showBuyerGuide(reopen,'Back to the maturity guide'))}
-  ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'BAR MATURITY GUIDE');
- showReference('Where should we start?',`<p>Build, Authorize and Resist is a maturity guide. Start with one agent and one workflow. Reuse controls you already have and add coverage where the pilot reveals a gap.</p>
-  <p>Begin with Build when ownership or inventory is missing. Before enabling sensitive tool actions, put an Authorize check in place. Practice stopping the pilot early, then deepen Resist as autonomy and impact grow.</p>
-  ${choices(BAR_STAGES.map(stage=>[stage.name,stage.question,()=>showMaturity(back,stage)]))}
-  <details class="debrief"><summary>Framework basis</summary><p>This is the game’s adaptation of the supplied BAR model. It uses governance and inventory, testing controls, and response and recovery as prompts for a pilot. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
-  <div class="actions">${button('Go back',back,'secondary')}</div>`,'BAR MATURITY GUIDE');
+  <div class="actions">${button('Match a work problem to a control',()=>showBuyerGuide(reopen,'Back to Raise the BAR'))}
+  ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
+ showReference('Raise the BAR',`<p>Choose the stage that best describes one workflow. If the work is still manual, start with one assisted task.</p>
+  <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.mode)}</li>`).join('')}</ol>
+  <p>Start with the controls you have. Check ownership and access first, enforce tool permissions before enabling sensitive actions, and practice stopping the pilot early.</p>
+  <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
+  <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
 }
 function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
  const product=productById(need.pilot.evidence);
@@ -3531,7 +3538,7 @@ function showIntro(){
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],
-   ['BAR maturity guide','Find what to put in place for your first agent pilot.',()=>showMaturity()]
+   ['Raise the BAR','Find your maturity stage and what to test next.',()=>showMaturity()]
   ])}</div><div class="actions">${button('How to play',showGuide,'quiet')}</div>
   <p class="small-print">The stories are fictional. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'POINT-AND-CLICK ADVENTURE');
@@ -4344,7 +4351,7 @@ function showEnding(){
   ${comparison}
   <details class="debrief"><summary>Build, authorize and resist</summary>
    ${novaDebrief(s)}<details><summary>Revocation protocols</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
-   <div class="actions">${button('Open the BAR maturity guide',()=>showMaturity(showEnding),'secondary')}</div>
+   <div class="actions">${button('Raise the BAR',()=>showMaturity(showEnding),'secondary')}</div>
   </details>
   <div class="actions">
    ${practice}${otherStory}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}

@@ -461,24 +461,26 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
    ['The agent can open the app but can see or do too much','Check what the app allows after the agent connects.',()=>showBuyerActionScope(reopen)]
   ])}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
-  <div class="actions">${button('Open the maturity guide',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
+  <div class="actions">${button('Raise the BAR',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
 function showMaturity(back=showIntro,selected=null){
  const reopen=()=>showMaturity(back,selected);
- if(selected)return showReference(`${selected.name} · first pilot`,
-  `<ul class="route-list">
+ const title=stage=>`${stage.label} (${stage.name.toUpperCase()})`;
+ if(selected)return showReference(title(selected),
+  `<p>${esc(selected.mode)}</p><ul class="route-list">
   <li><b>Start here</b><br>${esc(selected.first)}</li>
   <li><b>Evidence to save</b><br>${esc(selected.evidence)}</li>
+  <li><b>${esc(selected.value[0])} to measure</b><br>${esc(selected.value[1])}</li>
   <li><b>Where products fit</b><br>${esc(selected.next)}</li>
   <li><b>In Nova’s story</b><br>${esc(selected.example)}</li></ul>
-  <div class="actions">${button('Match a work problem to a control',()=>showBuyerGuide(reopen,'Back to the maturity guide'))}
-  ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'BAR MATURITY GUIDE');
- showReference('Where should we start?',`<p>Build, Authorize and Resist is a maturity guide. Start with one agent and one workflow. Reuse controls you already have and add coverage where the pilot reveals a gap.</p>
-  <p>Begin with Build when ownership or inventory is missing. Before enabling sensitive tool actions, put an Authorize check in place. Practice stopping the pilot early, then deepen Resist as autonomy and impact grow.</p>
-  ${choices(BAR_STAGES.map(stage=>[stage.name,stage.question,()=>showMaturity(back,stage)]))}
-  <details class="debrief"><summary>Framework basis</summary><p>This is the game’s adaptation of the supplied BAR model. It uses governance and inventory, testing controls, and response and recovery as prompts for a pilot. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
-  <div class="actions">${button('Go back',back,'secondary')}</div>`,'BAR MATURITY GUIDE');
+  <div class="actions">${button('Match a work problem to a control',()=>showBuyerGuide(reopen,'Back to Raise the BAR'))}
+  ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
+ showReference('Raise the BAR',`<p>Choose the stage that best describes one workflow. If the work is still manual, start with one assisted task.</p>
+  <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.mode)}</li>`).join('')}</ol>
+  <p>Start with the controls you have. Check ownership and access first, enforce tool permissions before enabling sensitive actions, and practice stopping the pilot early.</p>
+  <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
+  <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
 }
 function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
  const product=productById(need.pilot.evidence);
@@ -693,7 +695,7 @@ function showIntro(){
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],
-   ['BAR maturity guide','Find what to put in place for your first agent pilot.',()=>showMaturity()]
+   ['Raise the BAR','Find your maturity stage and what to test next.',()=>showMaturity()]
   ])}</div><div class="actions">${button('How to play',showGuide,'quiet')}</div>
   <p class="small-print">The stories are fictional. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'POINT-AND-CLICK ADVENTURE');
@@ -1506,7 +1508,7 @@ function showEnding(){
   ${comparison}
   <details class="debrief"><summary>Build, authorize and resist</summary>
    ${novaDebrief(s)}<details><summary>Revocation protocols</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
-   <div class="actions">${button('Open the BAR maturity guide',()=>showMaturity(showEnding),'secondary')}</div>
+   <div class="actions">${button('Raise the BAR',()=>showMaturity(showEnding),'secondary')}</div>
   </details>
   <div class="actions">
    ${practice}${otherStory}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}

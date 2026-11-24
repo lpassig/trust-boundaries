@@ -147,17 +147,20 @@ const STORY_COMPARISON = [
 ];
 
 const BAR_STAGES = [
-  {name:'Build',question:'We need to know which agents are running and who owns them',
+  {name:'Build',label:'Agent AI Assistant',mode:'A person asks the assistant for help and reviews its output.',
+   value:['Security value','Track whether the pilot has a named owner, an inventory of what it can reach, and a recorded result when you try an unapproved data path.'],
    first:'Pick one workflow with test data. Record the agent, owner, purpose, model, tools and data it can reach. Use a named identity, keep keys outside the agent, and log one run.',
    evidence:'An owner can identify the agent and draw its data path from one run record. Check that an unapproved model or data path is refused before widening the pilot.',
    next:'Use your existing inventory and identity controls where they cover the workflow. Consider IBM Agent Identity for agent registration and Verify Identity Protection for discovery from connected activity sources.',
    example:'Nova and Pip have separate identities. Their registry entries make ownership visible before Priya approves the task.'},
-  {name:'Authorize',question:'We know the agents and need to limit what a tool can do',
+  {name:'Authorize',label:'Semi-Autonomous',mode:'The agent calls tools at defined steps, within limits you can test.',
+   value:['Operational value','Compare how long the same approved task takes before and after the pilot. Track manual handoffs and confirm that the out-of-scope request still fails.'],
    first:'Choose one tool and one allowed operation on test data. Give the agent only that scope and a short-lived credential where the target supports it. Have the target enforce the operation outside the agent. Add exact approval before sensitive writes or sends.',
    evidence:'Run a permitted and a refused request over the same connection. Save the observed operation, scope, decision and actual result.',
    next:'Use your application’s enforcement first. Evaluate a broker such as Vault for short-lived credentials, IBM Verify for separate-device approval, or an MCP gateway when you need a shared tool boundary.',
    example:'Nova can reach CRM. CRM returns an approved account and refuses Alder Books until the scope changes.'},
-  {name:'Resist',question:'Access is scoped and we need to detect trouble and prove it stopped',
+  {name:'Resist',label:'Governed Autonomy',mode:'The agent chooses tools or adapts its plan within an approved scope. The team can detect, stop, and verify risky activity.',
+   value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
    first:'Start with one alert and a named response owner. Practice stopping the workload, revoking its credential and closing the app session separately. Check waiting work and retest what previously worked.',
    evidence:'Keep the alert, each controller’s outcome and a fresh check of the old route. An unreachable controller leaves its part unverified.',
    next:'Add containment automation and more signal sources as autonomy increases. Verify Identity Protection can help surface risky activity. Verify Antenna can carry configured signals to systems that apply their own controls.',
