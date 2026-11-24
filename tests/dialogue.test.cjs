@@ -58,7 +58,7 @@ test('thoughts, independent resource responses and conversations stay attributab
 
 test('permission and service replies point to the responsible control even when narrated by the hero',()=>{
  assert.equal(I.eventSource('teen','Alex','ask-pass'),'parent');
- assert.equal(I.nextObject('teen','open','phone'),'laptop');
+ assert.equal(I.nextObject('teen','open','phone'),'schoolApp');
  assert.equal(I.eventSource('teen','Alex','open'),'laptop');
  assert.equal(I.eventSource('agent','Nova','open'),'phone');
  assert.equal(I.eventSource('agent','Nova','read-brief'),'workOrder');
@@ -74,18 +74,30 @@ test('permission and service replies point to the responsible control even when 
 for(const mode of ['teen','agent']){
  test(`${mode}: shared scene beats distinguish a reviewer's message, the outside source and the resource denial`,()=>{
   const s=helperReview(mode),teen=mode==='teen';
-  assert.deepEqual(Array.from(I.availableTools(R.fresh(),mode)),[]);
-  const tools=teen?[]:['workOrder','sponsorMessage','policyConsole','registries','aiGateway','mcpGateway','riskMonitor'];
-  const opening=R.act(R.fresh(),mode,'begin').state;
-  assert.deepEqual(Array.from(I.availableTools(opening,mode)),teen?[]:['workOrder','sponsorMessage','policyConsole','registries']);
-  assert.deepEqual(Array.from(I.availableTools(s,mode)),[...tools,'source','reviewer']);
+  const room=new Map(I.roomGroups(s,mode));
   const approved=teen?s:R.act(s,mode,'approve-draft').state;
   const replied=R.act(approved,mode,'send-draft').state;
-  assert.deepEqual(Array.from(I.availableTools(replied,mode)),[...tools,'source','reviewer','outside']);
+  const withFeedback=new Map(I.roomGroups(replied,mode));
+  if(teen){
+   assert.deepEqual(room.get('Alex’s phone'),['phone','schoolInbox','homework']);
+   assert.deepEqual(room.get('Family laptop'),['laptop','schoolApp','source']);
+   assert(withFeedback.get('Alex’s phone').includes('extra'));
+   assert.deepEqual(withFeedback.get('Parent’s phone'),['parentSchool']);
+   assert.equal(I.findTarget(mode,['schoolApp'],'laptop',true),'schoolApp');
+   assert.equal(I.findTarget(mode,['schoolApp'],'laptop',false),undefined);
+  }else{
+   assert(room.get('People and agents').includes('sponsorMessage'));
+   assert(room.get('Agent workspace').includes('vaultControl'));
+   assert(withFeedback.get('People and agents').includes('outside'));
+   assert(withFeedback.get('Customer records').includes('crmAttachment'));
+  }
+  for(const groups of [room,withFeedback]){
+   for(const keys of groups.values())for(const key of keys)assert(I.objectDescription(mode,key));
+  }
   const compared=R.act(replied,mode,'inspect-request-source');
   const denied=R.act(compared.state,mode,'try-private');
   const source=event=>I.speechSource(mode,I.eventSource(mode,event.speaker,event.action,event.kind));
-  assert.equal(source(compared.event).tool,'outside');
+  assert.equal(source(compared.event).tool,teen?'outside':'crmAttachment');
   assert.equal(source(compared.event).object,teen?'phone':'laptop');
   const message=R.act(replied,mode,'decline-private').event;
   assert.equal(source(message).key,teen?'sentToJamie':'hero');

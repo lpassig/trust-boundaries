@@ -104,11 +104,24 @@ dialog.is-reference .speech-source{display:none}
 .object-tray.has-conversation button.relevant b{background:none;color:inherit}
 .object-tray button.is-speaking{border-color:var(--accent)}
 .object-tray.has-conversation button.is-speaking b{background:var(--accent);color:#20172d;border-radius:50%;width:32px;height:32px;align-items:center;margin:-5px auto 5px}
-.object-tray .scene-tool{grid-column:span 2;background:#ffffff07}
-.tool-tray-label{grid-column:1/-1;color:var(--muted);font-size:13px;margin:8px 0 2px}
+#objects.object-tray{display:block;margin-top:16px}
+#room-directory{margin-inline-start:auto}
+.object-group+.object-group{margin-top:16px}
+.object-group h3{color:var(--muted);font-size:14px;line-height:1.4;margin:0 0 7px}
+.object-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:6px}
+#objects .object-grid button{display:flex;flex-wrap:nowrap;align-items:center;justify-content:start;gap:8px;text-align:left;padding:9px;min-height:60px}
+#objects .object-grid button b{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;margin:0}
+#objects .object-grid .object-copy{min-width:0;overflow-wrap:anywhere}
+#objects .object-grid .object-detail{margin-top:2px}
+.object-grid button::after{content:attr(data-tip);position:absolute;inset-inline:0;bottom:calc(100% + 5px);padding:9px;border:1px solid var(--line);border-radius:8px;background:#171824;color:var(--ink);font-size:12px;line-height:1.45;visibility:hidden;pointer-events:none;box-shadow:0 5px 18px #0007}
+.object-grid button:focus-visible{z-index:3}
+.object-grid button:focus-visible::after{visibility:visible}
+@media(hover:hover){
+ .object-grid button:hover{z-index:3}
+ .object-grid button:hover::after{visibility:visible}
+}
 .bar-stages{display:grid;gap:10px;padding-inline-start:24px;margin:18px 0}
 .bar-stages li::marker{color:var(--accent);font-weight:750}
-@media(max-width:1100px){.object-tray .scene-tool{grid-column:span 1}}
 .hero-thinking [data-character="alex"],.hero-thinking [data-character="nova"]{filter:drop-shadow(0 0 6px var(--accent))}
 dialog #dialog-scroll{font-size:12px;color:var(--muted);margin:0 0 4px}
 .tool-route{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;padding:0 0 0 22px;margin:12px 0}

@@ -18,14 +18,14 @@ for(const mode of ['teen','agent']){
  });
  test(`${mode}: contact verification belongs to the incoming requests, then becomes reference only`,()=>{
   let s=feedback(mode);const use=I.itemUse(s,mode,'contact');
-  assert.deepEqual(use.targets,[mode==='teen'?'phone':'brief']);
+  assert.deepEqual(use.targets,[mode==='teen'?'schoolInbox':'brief']);
   s=run(s,use.action);assert(s.evidence.includes('contact'));
   assert.deepEqual(I.itemUse(s,mode,'contact').targets,[]);
-  assert.deepEqual(I.itemUse(s,mode,'clue').targets,[mode==='teen'?'phone':'brief']);
+  assert.deepEqual(I.itemUse(s,mode,'clue').targets,[mode==='teen'?'schoolInbox':'brief']);
  });
  test(`${mode}: a source can be applied once without inventing extra permission`,()=>{
   let s=draft(mode);const mission=structuredClone(s.mission),use=I.itemUse(s,mode,'source');
-  assert.deepEqual(use.targets,['laptop']);s=run(s,use.action,{source:'original'});
+  assert.deepEqual(use.targets,[mode==='teen'?'schoolApp':'laptop']);s=run(s,use.action,{source:'original'});
   assert.deepEqual(s.mission,mission);assert.deepEqual(I.itemUse(s,mode,'source').targets,[]);
  });
  test(`${mode}: delivery receipt can be saved only after delivery and before closure`,()=>{
@@ -47,7 +47,7 @@ test('Nova sends changing work to the request panel and exact approval to Morgan
  assert.equal(I.nextObject('agent','approval','laptop'),'reviewer');
  assert.equal(I.nextObject('agent','draft-approval','laptop'),'reviewer');
  assert.equal(I.nextObject('agent','open','phone'),'phone');
- assert.equal(I.nextObject('teen','changes','phone'),'phone');
+ assert.equal(I.nextObject('teen','changes','phone'),'schoolInbox');
 });
 test('The room reveals the old CRM session status after the probe',()=>{
  let s=run(run(ready('agent'),'send'),'close-pass');
@@ -64,7 +64,7 @@ test('The room reveals the old CRM session status after the probe',()=>{
 });
 test('Nova credential receipt has one inspection destination and creates no authority',()=>{
  const s=ready('agent'),before=structuredClone(s),use=I.itemUse(s,'agent','vault');
- assert.deepEqual(use.targets,['phone']);assert.equal(use.route,'credential');assert.equal(use.action,undefined);
+ assert.deepEqual(use.targets,['vaultControl']);assert.equal(I.findTarget('agent',use.targets,'phone',true),'vaultControl');assert.equal(use.route,'credential');assert.equal(use.action,undefined);
  assert.deepEqual(s,before);assert.deepEqual(I.itemUse(s,'teen','vault').targets,[]);
 });
 

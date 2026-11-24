@@ -17,7 +17,7 @@ Both journeys give the player a source to open, a reviewer to hear from, and an 
 
 Nova’s work order names Priya as task sponsor. The work inbox carries replies, and the mission service records the approved scope. The Policy console shows the policy information point (PIP), policy decision point (PDP) and policy enforcement point (PEP) and links to the current trace when a decision exists.
 
-The room shows a **Next** action above the scene. Players can use that button or the highlighted hotspot to advance. Other objects describe their role. Optional task choices appear within the relevant dialogue, and selected items still show their supported **Use here** targets.
+The room shows a **Next** action above the scene. Players can use that button or the highlighted hotspot to advance. **People and apps** groups Alex’s actors and apps by device. **People and systems** groups Nova’s actors, work desk, agent workspace, and customer records. Hover, focus, or tap a card to learn its role. Optional task choices appear within the relevant dialogue, and selected items still show their supported **Use here** targets.
 
 Nova’s CRM read results show the observed operation, mission version, policy decision and CRM outcome in the story. The Alder Books result compares the old and new mission versions when the player tried both reads. Expandable product notes appear at reads, approval, the helper handoff and closure. Alex’s proofread and sign-out results offer optional comparisons with the corresponding Nova scenes.
 

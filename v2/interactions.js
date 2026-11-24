@@ -1,7 +1,8 @@
 /* UI destinations describe available interactions; StoryRules still enforces every action. */
 const StoryInteractions = (() => {
  function nextObject(mode,stage,fallback){
-  if(mode==='teen'&&stage==='open')return 'laptop';
+  if(mode==='teen'&&stage==='changes')return 'schoolInbox';
+  if(mode==='teen'&&(stage==='open'||fallback==='laptop'))return 'schoolApp';
   if(mode==='agent'&&['intro','request'].includes(stage))return 'workOrder';
   if(mode==='agent'&&stage==='changes')return 'brief';
   if(mode==='agent'&&['draft-approval','approval'].includes(stage))return 'reviewer';
@@ -12,17 +13,25 @@ const StoryInteractions = (() => {
  }
  const objects={
   teen:{
+   hero:'You play Alex. Draft the railway timeline, read the replies on your phone, and submit your own work through the school app on the laptop.',
    parent:'Your parent agrees on which apps you can use and when homework time ends.',
-   phone:'Your phone carries school and class-chat messages. Homework mode controls which extra apps and links open.',
-   laptop:'The family laptop holds your timeline in the school app. The school app checks which files you can share and where they go.',
+   phone:'Read Ms Patel’s school messages and Jamie’s class chat here. Homework settings check which links and apps can open.',
+   laptop:'Use the school app here to work on your timeline. Open the museum website in the browser to check your dates.',
+   schoolInbox:'On your phone, read Ms Patel’s feedback in the school app after you send her a draft.',
+   schoolApp:'On the family laptop, open your project and submit it. The school app checks the file and the teacher’s address.',
+   homework:'Your parent decides which apps and links to allow. The phone’s homework settings apply that rule when you open an app or link.',
+   classChat:'Jamie’s group-chat message appears on your phone. Check teacher requests in the school app.',
+   extra:'The linked museum source opens on your phone once your parent allows it. Homework settings check the specific link.',
+   parentSchool:'Your parent uses the school app on their own phone with an account linked to yours. They compare Ms Patel’s original link with the one you showed them.',
    brief:'Ms Patel’s assignment card says what to make and which source to credit.',
    notebook:'Your notebook holds dates, reminders and notes about the work you did.',
    helper:'Sam can proofread the timeline you share with him.',
    source:'The Riverside Museum website has the dates for your railway timeline.',
    reviewer:'Ms Patel sets the history assignment and responds in the school inbox after receiving your draft.',
-   outside:'Jamie’s forwarded message is in the class group chat. The school assignment is the place to check what Ms Patel asked for.'
+   outside:'Jamie is a classmate. Their forwarded message arrives in the class group chat on your phone.'
   },
   agent:{
+   hero:'You play Nova, the agent preparing the handover. Priya approves the task, the workspace controls where you can connect, and CRM checks the action you try.',
    parent:'The customer mission service checks Priya’s authority and records the approved scope. That record supplies policy context when CRM requests are evaluated.',
    phone:'NVIDIA OpenShell runs Nova’s workspace and governs which files and network destinations it can reach.',
    laptop:'The CRM is the resource policy enforcement point (PEP). It checks the requested operation and controls whether data leaves.',
@@ -30,25 +39,38 @@ const StoryInteractions = (() => {
    notebook:'The task notebook keeps ordinary context and the source of delivery receipts.',
    helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
-   sponsorMessage:'Priya sponsors Nova’s handover. She can propose a change and approve its exact scope within policy. The mission service records the approval. Morgan approves the copy that will be shared.',
-   policyConsole:'The policy information point supplies trusted facts. The policy decision point evaluates the request. The policy enforcement point applies the decision.',
+   sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
+   policyConsole:'The mission record and identity systems supply trusted facts. The customer policy decision point evaluates the request, and CRM applies the decision.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
    aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
    mcpGateway:'The configured MCP gateway validates the request at its own endpoint and forwards the allowed tool call. CRM separately enforces which records come back.',
+   vaultControl:'HashiCorp Vault can issue a short-lived read credential to the connector. The CRM checks which customer records the connector may read and closes its own task session.',
+   crmAttachment:'Luca’s upload arrived through the customer portal. Nova reads it as source material. The mission record and CRM policy govern what Nova can send.',
    riskMonitor:'IBM Verify Identity Protection (AuthMind) can observe identity activity from connected systems and flag unusual access for investigation.',
    source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
-   reviewer:'Morgan reviews a specific revision and recipient before each share. The work order stays in the work inbox.',
-   outside:'Luca is a contact at Harbor Bikes. His customer portal upload reached Nova through CRM as source material. The approved mission and CRM policy control what Nova can share.'
+   reviewer:'Morgan reviews and approves the exact file revision and destination before each send.',
+   outside:'Luca is a customer contact at Harbor Bikes. He uploads a document through the customer portal, where Nova receives it as CRM source material.'
   }
  };
  function objectDescription(mode,key){return objects[mode][key];}
- function availableTools(s,mode){
-  return [
-   ...(mode==='agent'&&s.started?['workOrder','sponsorMessage','policyConsole','registries']:[]),
-   ...(mode==='agent'&&s.opened?['aiGateway','mcpGateway','riskMonitor']:[]),
-   ...(s.draft?['source','reviewer']:[]),
-   ...(s.message?['outside']:[])
+ function roomGroups(s,mode){
+  if(mode==='teen')return [
+   ['People',['hero','parent','reviewer',...(s.draft?['helper']:[]),...(s.message?['outside']:[])]],
+   ['Alex’s phone',['phone','schoolInbox','homework',...(s.message?['classChat','extra']:[])]],
+   ['Family laptop',['laptop','schoolApp','source']],
+   ...(s.message?[['Parent’s phone',['parentSchool']]]:[]),
+   ['Project desk',['brief','notebook']]
   ];
+  return [
+   ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
+   ['Work desk',['brief','workOrder','parent','policyConsole','registries','notebook']],
+   ['Agent workspace',['phone','aiGateway','mcpGateway','vaultControl','riskMonitor']],
+   ['Customer records',['laptop','source',...(s.message?['crmAttachment']:[])]]
+  ];
+ }
+ function findTarget(mode,targets,key,pin){
+  if(targets.includes(key))return key;
+  return pin?targets.find(target=>speechSource(mode,target).object===key):undefined;
  }
  function closureSource(s,mode){
   const c=s.containment,checks=s.checks;
@@ -59,21 +81,21 @@ const StoryInteractions = (() => {
   return checks.includes('signin')?'outbox':'laptop';
  }
  function itemUse(s,mode,id){
-  const teen=mode==='teen',inbox=teen?'phone':'brief';
+  const teen=mode==='teen',inbox=teen?'schoolInbox':'brief',draft=teen?'schoolApp':'laptop';
   const unavailable=instruction=>({targets:[],instruction:instruction||'This is a reference item at this step. Look closer, or put it away to continue.'});
   const use=(target,label,instruction,route,action)=>({targets:[target],label,instruction,route,action});
   if(!s.started||s.finished)return unavailable('This task has no remaining item actions. You can still look closer at your records.');
   if(id==='brief'||id==='pass')return use('parent',s.ended?'Discuss the closing checks':teen?'Discuss the homework plan':'Check the mission',teen?'Choose Parent to discuss the current homework plan.':'Choose Mission service to inspect the task and its current scope.','parent');
   if(id==='checklist'&&s.ended&&s.checks.length===4)return use('parent',teen?'Show the closing evidence':'Present the closure evidence',teen?'Choose Parent to review the finished homework and closing checks.':'Choose Mission service to present this task’s closure evidence.','parent');
   if(s.paused)return unavailable(teen?'Put this item away and talk to your parent while the phone is paused.':'Put this item away and request sponsor review while the mission is paused.');
-  if(id==='vault'&&!teen&&s.opened)return use('phone','Inspect the credential receipt','Choose Workspace controls to inspect the recorded Vault credential path. This does not test live credential or service status.','credential');
+  if(id==='vault'&&!teen&&s.opened)return use('vaultControl','Inspect the credential receipt','Choose HashiCorp Vault to inspect the recorded credential path.','credential');
   const active=s.pass?.status==='active'&&s.mission?.status==='active'&&!s.ended;
   if(!active)return unavailable(s.ended?'Task access has ended. Put this item away to continue the independent closing checks.':id==='contact'?'Keep this contact for later requests. Put it away to read the new assignment and agree on the task.':'Agree on this task before using its working items. You can look closer or put this item away.');
-  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose Phone to check the new messages with your saved teacher contact.':'Choose Work inbox to verify the new requests with the known sponsor.','action','verify-contact');
-  if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use('laptop','Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
-  if(id==='draft'&&s.draft&&!s.delivered)return {...use('laptop',teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:['laptop','helper'],routes:{laptop:'draft',helper:'helper'}};
+  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose School inbox on your phone to check with your saved teacher contact.':'Choose Work inbox to verify the new requests with the known sponsor.','action','verify-contact');
+  if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use(draft,'Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
+  if(id==='draft'&&s.draft&&!s.delivered)return {...use(draft,teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:[draft,'helper'],routes:{[draft]:'draft',helper:'helper'}};
   if(id==='approval'&&s.approval&&!s.approval.used&&!s.delivered)return use('laptop','Review the approved share','Choose Customer records to review the current share. The resource still checks the exact operation before delivery.',s.approval.purpose==='draft-review'?'draftReview':'send');
-  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose Phone to revisit the teacher’s clarification.':'Choose Work inbox to revisit the verified requests.','changes');
+  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose School inbox to revisit the teacher’s clarification.':'Choose Work inbox to revisit the verified requests.','changes');
   if(id==='delivery'&&s.delivered&&!s.notes.length)return use('notebook','Keep the receipt with a note',teen?'Choose Notebook to save the submission receipt with a note.':'Choose Task notebook to save the delivery receipt with its source.','action','write-note');
   if(id==='contact')return unavailable(s.evidence.includes('contact')?'These requests have already been independently checked. Look closer at the contact, or put it away.':'Keep this contact for later requests. There is no new request to verify yet.');
   if(id==='source'&&s.caption)return unavailable('This source is already credited in the draft. Look closer, or put it away.');
@@ -101,18 +123,24 @@ const StoryInteractions = (() => {
    mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
    riskMonitor:{name:'Identity monitoring',kind:'On screen',point:[524,401],object:'phone',tool:'riskMonitor'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
-   outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
-   sentToJamie:{name:'Alex → Jamie',kind:'Sent message',channel:'Class group chat · phone',point:[526,404],object:'phone'},
-   extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop'},
-   homework:{name:'Homework mode',kind:'On screen',channel:'Phone',point:[526,404],object:'phone'},
-   stop:{name:teen?'Homework controls':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone'},
+   outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:teen?'outside':'crmAttachment'},
+   schoolInbox:{name:'School inbox',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'schoolInbox'},
+   schoolApp:{name:'School app',kind:'On screen',channel:'Family laptop',point:[716,259],object:'laptop',tool:'schoolApp'},
+   classChat:{name:'Class group chat',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'classChat'},
+   parentSchool:{name:'School app · parent account',kind:'On screen',channel:'Parent’s phone',point:[298,291],object:'parent',tool:'parentSchool'},
+   crmAttachment:{name:'Imported CRM attachment',kind:'Reading',channel:'Customer portal · Luca’s upload',point:[716,254],object:'laptop',tool:'crmAttachment'},
+   customerContact:{name:'Luca',kind:'Customer contact',channel:'Customer portal · Harbor Bikes',point:[716,254],object:'laptop',tool:'outside'},
+   sentToJamie:{name:'Alex → Jamie',kind:'Sent message',channel:'Class group chat · phone',point:[526,404],object:'phone',tool:'classChat'},
+   extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:teen?'extra':'source'},
+   homework:{name:'Homework settings',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'homework'},
+   stop:{name:teen?'Homework settings':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone',tool:teen?'homework':'phone'},
    missionControl:{name:'Mission service',kind:'On screen',point:[250,230],object:'parent'},
-   vaultControl:{name:'Task credential · Vault',kind:'On screen',point:[524,401],object:'phone'},
+   vaultControl:{name:'Task credential · Vault',kind:'On screen',point:[524,401],object:'phone',tool:'vaultControl'},
    outbox:{name:teen?'School outbox':'Task queue',kind:'On screen',point:teen?[716,259]:[349,441],object:teen?'laptop':'notebook'},
    hero:{name:teen?'Alex':'Nova',kind:'Thought',point:teen?[636,329]:[516,214]},
    parent:{name:teen?'Parent':'Priya · task sponsor',kind:'Conversation',point:teen?[298,291]:[250,230]},
    phone:{name:teen?'Phone · messages':'Workspace controls · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
-   laptop:{name:teen?'School app':'Customer records · CRM',kind:'On screen',point:teen?[716,259]:[716,254]},
+   laptop:{name:teen?'School app':'Customer records · CRM',kind:'On screen',point:teen?[716,259]:[716,254],tool:teen?'schoolApp':'laptop'},
    brief:{name:teen?'Assignment card':'Work inbox',kind:'Reading',point:teen?[449,167]:[449,173]},
    notebook:{name:teen?'Notebook':'Task notebook',kind:'Reading',point:teen?[471,424]:[349,441]},
    helper:{name:teen?'Sam':'Pip',kind:'Speaking',point:teen?[747,329]:[839,385]},
@@ -178,6 +206,6 @@ const StoryInteractions = (() => {
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,isStoryObject,objectDescription,availableTools,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
+ return {nextObject,isStoryObject,objectDescription,roomGroups,findTarget,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;

@@ -106,7 +106,7 @@ test('Sam’s mobile marker is offset far enough to leave his face visible',()=>
 
 test('only the current story target and its artwork pin open story choices',()=>{
  for(const mode of ['teen','agent']){
-  const inbox=mode==='teen'?'phone':'brief';
+  const inbox=mode==='teen'?'schoolInbox':'brief';
   const next=I.nextObject(mode,'changes','phone');
   assert.equal(I.isStoryObject(mode,inbox,next),true);
   assert.equal(I.isStoryObject(mode,'helper',next),false);

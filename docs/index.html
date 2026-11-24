@@ -106,11 +106,24 @@ dialog.is-reference .speech-source{display:none}
 .object-tray.has-conversation button.relevant b{background:none;color:inherit}
 .object-tray button.is-speaking{border-color:var(--accent)}
 .object-tray.has-conversation button.is-speaking b{background:var(--accent);color:#20172d;border-radius:50%;width:32px;height:32px;align-items:center;margin:-5px auto 5px}
-.object-tray .scene-tool{grid-column:span 2;background:#ffffff07}
-.tool-tray-label{grid-column:1/-1;color:var(--muted);font-size:13px;margin:8px 0 2px}
+#objects.object-tray{display:block;margin-top:16px}
+#room-directory{margin-inline-start:auto}
+.object-group+.object-group{margin-top:16px}
+.object-group h3{color:var(--muted);font-size:14px;line-height:1.4;margin:0 0 7px}
+.object-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:6px}
+#objects .object-grid button{display:flex;flex-wrap:nowrap;align-items:center;justify-content:start;gap:8px;text-align:left;padding:9px;min-height:60px}
+#objects .object-grid button b{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;margin:0}
+#objects .object-grid .object-copy{min-width:0;overflow-wrap:anywhere}
+#objects .object-grid .object-detail{margin-top:2px}
+.object-grid button::after{content:attr(data-tip);position:absolute;inset-inline:0;bottom:calc(100% + 5px);padding:9px;border:1px solid var(--line);border-radius:8px;background:#171824;color:var(--ink);font-size:12px;line-height:1.45;visibility:hidden;pointer-events:none;box-shadow:0 5px 18px #0007}
+.object-grid button:focus-visible{z-index:3}
+.object-grid button:focus-visible::after{visibility:visible}
+@media(hover:hover){
+ .object-grid button:hover{z-index:3}
+ .object-grid button:hover::after{visibility:visible}
+}
 .bar-stages{display:grid;gap:10px;padding-inline-start:24px;margin:18px 0}
 .bar-stages li::marker{color:var(--accent);font-weight:750}
-@media(max-width:1100px){.object-tray .scene-tool{grid-column:span 1}}
 .hero-thinking [data-character="alex"],.hero-thinking [data-character="nova"]{filter:drop-shadow(0 0 6px var(--accent))}
 dialog #dialog-scroll{font-size:12px;color:var(--muted);margin:0 0 4px}
 .tool-route{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;padding:0 0 0 22px;margin:12px 0}
@@ -442,7 +455,7 @@ dialog.is-reference:has(.sequence-controls) {
 <header class="topbar"><a class="brand" href="#"><span class="brand-mark">◇</span><span>TRUST BOUNDARIES<small>STORY EDITION</small></span></a><nav class="episodes" aria-label="Explore Trust Boundaries"><button data-mode="teen" aria-pressed="true">Alex <span>The Last Upload</span></button><button data-mode="agent" aria-pressed="false">Nova <span>The Customer Handover</span></button><button id="architecture" aria-haspopup="dialog">Architecture <span>Products &amp; controls</span></button></nav><button class="quiet" id="guide">How to play</button></header>
 <main><section class="chapter-heading"><div><p class="eyebrow" id="episode-label"></p><h1 id="episode-title"></h1><p id="episode-tag"></p></div><div class="utility"><button class="quiet" id="sound" aria-pressed="false">Sound off</button></div></section>
 <div class="chapter-track" id="chapter-track" aria-label="Story progress"></div>
-<div class="sequence-entry"><button class="quiet" id="journey-sequence">Journey sequence</button><span id="sequence-position"></span></div>
+<div class="sequence-entry"><button class="quiet" id="journey-sequence">Journey sequence</button><span id="sequence-position"></span><a class="quiet" id="room-directory" href="#objects">People and apps</a></div>
 <div class="game-layout"><section class="world" aria-label="Adventure scene"><div class="scene-frame"><div class="scene-caption"><span id="place"></span><span id="scene-condition"></span></div><div id="scene-guide"><button id="next" class="scene-next" type="button"><span class="eyebrow">Next</span><span><strong id="next-title"></strong><small id="next-text"></small></span><span aria-hidden="true">›</span></button></div><div class="scene-canvas"><div id="art" aria-hidden="true"></div><div id="pins"></div></div><div class="dialogue scene-speech" id="scene-dialogue" aria-live="polite"><div class="portrait" id="speaker-portrait" aria-hidden="true"></div><div><p class="speaker" id="speaker"></p><h2 id="dialogue-title"></h2><p id="dialogue-text"></p></div></div><dialog id="dialog" aria-labelledby="dialog-title"><div class="speech-source" id="speech-source-row"><span class="speech-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-5l-5 3v-3a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4Z"/><path d="M7 9h10M7 13h6"/></svg></span><span><b id="speech-source"></b><small id="speech-kind"></small></span></div><button id="close-dialog" aria-label="Close dialogue">×</button><p id="dialog-scroll" hidden>Scroll for the rest of this note</p><div id="dialog-body"></div><div id="dialog-actions"></div><details id="dialog-lesson" hidden><summary><span id="lesson-title"></span><span id="lesson-effect" hidden></span></summary><div id="lesson-body"><p id="lesson-text"></p><div id="lesson-sources"></div><button class="quiet" id="lesson-trace">Inspect the request trace</button></div></details></dialog><p class="scene-footnote" id="scene-footnote">Explore the room and open its apps and objects.</p></div><nav class="object-tray" id="objects" aria-label="Objects in the room"></nav><div class="scene-tools"><button class="quiet" id="hint">A little nudge</button><button class="quiet" id="cluebook">Open the casebook</button><button class="quiet" id="request-trace">Follow this request</button><span id="save-status">Saved on this device</span></div></section>
 <aside class="journal"><div id="selected" hidden></div><section class="pocket"><div class="section-title"><h3>IN YOUR POCKET</h3><span id="pocket-count"></span></div><p class="small">Choose an item, then a place to use it.</p><div id="inventory"></div></section><section class="route-note"><p class="eyebrow">THE STORY REMEMBERS</p><p id="route-note"></p></section><section class="product-panel" id="product-panel" hidden><p class="eyebrow">IN NOVA’S EXAMPLE DEPLOYMENT</p><p id="product-context"></p><div id="product-names" class="product-names"></div><button class="secondary full" id="product-map">Who does what?</button><button class="quiet full" id="product-guide">Compare product roles</button></section><details class="behind" id="behind"><summary id="behind-heading">Behind the story</summary><div id="behind-content"></div></details></aside></div>
 <footer><span id="footer-world">A little freedom. A few good questions.</span><button class="quiet" id="restart">Start this story again</button><span>Made-up people. Real ideas.</span></footer></main>
@@ -1097,13 +1110,14 @@ const OBJECT_KEYS = [
   "laptop",
   "brief",
   "notebook",
-  "helper"
+  "helper",
+  "hero"
 ];
 
 // [marker x, marker y, object x, object y] in the fixed illustration canvas.
 const STORY_PINS = {
- teen:[[245,350,298,350],[565,382,526,404],[716,259,716,259],[449,167,449,167],[435,448,471,424],[865,380,747,383]],
- agent:[[250,230,250,230],[565,382,524,401],[716,254,716,254],[449,173,449,173],[349,441,349,441],[922,462,839,411]]
+ teen:[[245,350,298,350],[565,382,526,404],[716,259,716,259],[449,167,449,167],[435,448,471,424],[865,380,747,383],[720,465,636,409]],
+ agent:[[250,230,250,230],[565,382,524,401],[716,254,716,254],[449,173,449,173],[349,441,349,441],[922,462,839,411],[598,130,516,209]]
 };
 
 const MOVES = {
@@ -1678,7 +1692,8 @@ if(typeof module!=='undefined')module.exports=StoryRules;
 /* UI destinations describe available interactions; StoryRules still enforces every action. */
 const StoryInteractions = (() => {
  function nextObject(mode,stage,fallback){
-  if(mode==='teen'&&stage==='open')return 'laptop';
+  if(mode==='teen'&&stage==='changes')return 'schoolInbox';
+  if(mode==='teen'&&(stage==='open'||fallback==='laptop'))return 'schoolApp';
   if(mode==='agent'&&['intro','request'].includes(stage))return 'workOrder';
   if(mode==='agent'&&stage==='changes')return 'brief';
   if(mode==='agent'&&['draft-approval','approval'].includes(stage))return 'reviewer';
@@ -1689,17 +1704,25 @@ const StoryInteractions = (() => {
  }
  const objects={
   teen:{
+   hero:'You play Alex. Draft the railway timeline, read the replies on your phone, and submit your own work through the school app on the laptop.',
    parent:'Your parent agrees on which apps you can use and when homework time ends.',
-   phone:'Your phone carries school and class-chat messages. Homework mode controls which extra apps and links open.',
-   laptop:'The family laptop holds your timeline in the school app. The school app checks which files you can share and where they go.',
+   phone:'Read Ms Patel’s school messages and Jamie’s class chat here. Homework settings check which links and apps can open.',
+   laptop:'Use the school app here to work on your timeline. Open the museum website in the browser to check your dates.',
+   schoolInbox:'On your phone, read Ms Patel’s feedback in the school app after you send her a draft.',
+   schoolApp:'On the family laptop, open your project and submit it. The school app checks the file and the teacher’s address.',
+   homework:'Your parent decides which apps and links to allow. The phone’s homework settings apply that rule when you open an app or link.',
+   classChat:'Jamie’s group-chat message appears on your phone. Check teacher requests in the school app.',
+   extra:'The linked museum source opens on your phone once your parent allows it. Homework settings check the specific link.',
+   parentSchool:'Your parent uses the school app on their own phone with an account linked to yours. They compare Ms Patel’s original link with the one you showed them.',
    brief:'Ms Patel’s assignment card says what to make and which source to credit.',
    notebook:'Your notebook holds dates, reminders and notes about the work you did.',
    helper:'Sam can proofread the timeline you share with him.',
    source:'The Riverside Museum website has the dates for your railway timeline.',
    reviewer:'Ms Patel sets the history assignment and responds in the school inbox after receiving your draft.',
-   outside:'Jamie’s forwarded message is in the class group chat. The school assignment is the place to check what Ms Patel asked for.'
+   outside:'Jamie is a classmate. Their forwarded message arrives in the class group chat on your phone.'
   },
   agent:{
+   hero:'You play Nova, the agent preparing the handover. Priya approves the task, the workspace controls where you can connect, and CRM checks the action you try.',
    parent:'The customer mission service checks Priya’s authority and records the approved scope. That record supplies policy context when CRM requests are evaluated.',
    phone:'NVIDIA OpenShell runs Nova’s workspace and governs which files and network destinations it can reach.',
    laptop:'The CRM is the resource policy enforcement point (PEP). It checks the requested operation and controls whether data leaves.',
@@ -1707,25 +1730,38 @@ const StoryInteractions = (() => {
    notebook:'The task notebook keeps ordinary context and the source of delivery receipts.',
    helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
-   sponsorMessage:'Priya sponsors Nova’s handover. She can propose a change and approve its exact scope within policy. The mission service records the approval. Morgan approves the copy that will be shared.',
-   policyConsole:'The policy information point supplies trusted facts. The policy decision point evaluates the request. The policy enforcement point applies the decision.',
+   sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
+   policyConsole:'The mission record and identity systems supply trusted facts. The customer policy decision point evaluates the request, and CRM applies the decision.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
    aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
    mcpGateway:'The configured MCP gateway validates the request at its own endpoint and forwards the allowed tool call. CRM separately enforces which records come back.',
+   vaultControl:'HashiCorp Vault can issue a short-lived read credential to the connector. The CRM checks which customer records the connector may read and closes its own task session.',
+   crmAttachment:'Luca’s upload arrived through the customer portal. Nova reads it as source material. The mission record and CRM policy govern what Nova can send.',
    riskMonitor:'IBM Verify Identity Protection (AuthMind) can observe identity activity from connected systems and flag unusual access for investigation.',
    source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
-   reviewer:'Morgan reviews a specific revision and recipient before each share. The work order stays in the work inbox.',
-   outside:'Luca is a contact at Harbor Bikes. His customer portal upload reached Nova through CRM as source material. The approved mission and CRM policy control what Nova can share.'
+   reviewer:'Morgan reviews and approves the exact file revision and destination before each send.',
+   outside:'Luca is a customer contact at Harbor Bikes. He uploads a document through the customer portal, where Nova receives it as CRM source material.'
   }
  };
  function objectDescription(mode,key){return objects[mode][key];}
- function availableTools(s,mode){
-  return [
-   ...(mode==='agent'&&s.started?['workOrder','sponsorMessage','policyConsole','registries']:[]),
-   ...(mode==='agent'&&s.opened?['aiGateway','mcpGateway','riskMonitor']:[]),
-   ...(s.draft?['source','reviewer']:[]),
-   ...(s.message?['outside']:[])
+ function roomGroups(s,mode){
+  if(mode==='teen')return [
+   ['People',['hero','parent','reviewer',...(s.draft?['helper']:[]),...(s.message?['outside']:[])]],
+   ['Alex’s phone',['phone','schoolInbox','homework',...(s.message?['classChat','extra']:[])]],
+   ['Family laptop',['laptop','schoolApp','source']],
+   ...(s.message?[['Parent’s phone',['parentSchool']]]:[]),
+   ['Project desk',['brief','notebook']]
   ];
+  return [
+   ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
+   ['Work desk',['brief','workOrder','parent','policyConsole','registries','notebook']],
+   ['Agent workspace',['phone','aiGateway','mcpGateway','vaultControl','riskMonitor']],
+   ['Customer records',['laptop','source',...(s.message?['crmAttachment']:[])]]
+  ];
+ }
+ function findTarget(mode,targets,key,pin){
+  if(targets.includes(key))return key;
+  return pin?targets.find(target=>speechSource(mode,target).object===key):undefined;
  }
  function closureSource(s,mode){
   const c=s.containment,checks=s.checks;
@@ -1736,21 +1772,21 @@ const StoryInteractions = (() => {
   return checks.includes('signin')?'outbox':'laptop';
  }
  function itemUse(s,mode,id){
-  const teen=mode==='teen',inbox=teen?'phone':'brief';
+  const teen=mode==='teen',inbox=teen?'schoolInbox':'brief',draft=teen?'schoolApp':'laptop';
   const unavailable=instruction=>({targets:[],instruction:instruction||'This is a reference item at this step. Look closer, or put it away to continue.'});
   const use=(target,label,instruction,route,action)=>({targets:[target],label,instruction,route,action});
   if(!s.started||s.finished)return unavailable('This task has no remaining item actions. You can still look closer at your records.');
   if(id==='brief'||id==='pass')return use('parent',s.ended?'Discuss the closing checks':teen?'Discuss the homework plan':'Check the mission',teen?'Choose Parent to discuss the current homework plan.':'Choose Mission service to inspect the task and its current scope.','parent');
   if(id==='checklist'&&s.ended&&s.checks.length===4)return use('parent',teen?'Show the closing evidence':'Present the closure evidence',teen?'Choose Parent to review the finished homework and closing checks.':'Choose Mission service to present this task’s closure evidence.','parent');
   if(s.paused)return unavailable(teen?'Put this item away and talk to your parent while the phone is paused.':'Put this item away and request sponsor review while the mission is paused.');
-  if(id==='vault'&&!teen&&s.opened)return use('phone','Inspect the credential receipt','Choose Workspace controls to inspect the recorded Vault credential path. This does not test live credential or service status.','credential');
+  if(id==='vault'&&!teen&&s.opened)return use('vaultControl','Inspect the credential receipt','Choose HashiCorp Vault to inspect the recorded credential path.','credential');
   const active=s.pass?.status==='active'&&s.mission?.status==='active'&&!s.ended;
   if(!active)return unavailable(s.ended?'Task access has ended. Put this item away to continue the independent closing checks.':id==='contact'?'Keep this contact for later requests. Put it away to read the new assignment and agree on the task.':'Agree on this task before using its working items. You can look closer or put this item away.');
-  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose Phone to check the new messages with your saved teacher contact.':'Choose Work inbox to verify the new requests with the known sponsor.','action','verify-contact');
-  if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use('laptop','Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
-  if(id==='draft'&&s.draft&&!s.delivered)return {...use('laptop',teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:['laptop','helper'],routes:{laptop:'draft',helper:'helper'}};
+  if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose School inbox on your phone to check with your saved teacher contact.':'Choose Work inbox to verify the new requests with the known sponsor.','action','verify-contact');
+  if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use(draft,'Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
+  if(id==='draft'&&s.draft&&!s.delivered)return {...use(draft,teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:[draft,'helper'],routes:{[draft]:'draft',helper:'helper'}};
   if(id==='approval'&&s.approval&&!s.approval.used&&!s.delivered)return use('laptop','Review the approved share','Choose Customer records to review the current share. The resource still checks the exact operation before delivery.',s.approval.purpose==='draft-review'?'draftReview':'send');
-  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose Phone to revisit the teacher’s clarification.':'Choose Work inbox to revisit the verified requests.','changes');
+  if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose School inbox to revisit the teacher’s clarification.':'Choose Work inbox to revisit the verified requests.','changes');
   if(id==='delivery'&&s.delivered&&!s.notes.length)return use('notebook','Keep the receipt with a note',teen?'Choose Notebook to save the submission receipt with a note.':'Choose Task notebook to save the delivery receipt with its source.','action','write-note');
   if(id==='contact')return unavailable(s.evidence.includes('contact')?'These requests have already been independently checked. Look closer at the contact, or put it away.':'Keep this contact for later requests. There is no new request to verify yet.');
   if(id==='source'&&s.caption)return unavailable('This source is already credited in the draft. Look closer, or put it away.');
@@ -1778,18 +1814,24 @@ const StoryInteractions = (() => {
    mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
    riskMonitor:{name:'Identity monitoring',kind:'On screen',point:[524,401],object:'phone',tool:'riskMonitor'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
-   outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
-   sentToJamie:{name:'Alex → Jamie',kind:'Sent message',channel:'Class group chat · phone',point:[526,404],object:'phone'},
-   extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop'},
-   homework:{name:'Homework mode',kind:'On screen',channel:'Phone',point:[526,404],object:'phone'},
-   stop:{name:teen?'Homework controls':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone'},
+   outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:teen?'outside':'crmAttachment'},
+   schoolInbox:{name:'School inbox',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'schoolInbox'},
+   schoolApp:{name:'School app',kind:'On screen',channel:'Family laptop',point:[716,259],object:'laptop',tool:'schoolApp'},
+   classChat:{name:'Class group chat',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'classChat'},
+   parentSchool:{name:'School app · parent account',kind:'On screen',channel:'Parent’s phone',point:[298,291],object:'parent',tool:'parentSchool'},
+   crmAttachment:{name:'Imported CRM attachment',kind:'Reading',channel:'Customer portal · Luca’s upload',point:[716,254],object:'laptop',tool:'crmAttachment'},
+   customerContact:{name:'Luca',kind:'Customer contact',channel:'Customer portal · Harbor Bikes',point:[716,254],object:'laptop',tool:'outside'},
+   sentToJamie:{name:'Alex → Jamie',kind:'Sent message',channel:'Class group chat · phone',point:[526,404],object:'phone',tool:'classChat'},
+   extra:{name:teen?'Riverside Museum · linked source':'Alder Books · CRM tool',kind:'On screen',channel:teen?'Phone':'Customer records · MCP',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:teen?'extra':'source'},
+   homework:{name:'Homework settings',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'homework'},
+   stop:{name:teen?'Homework settings':'Workspace controller',kind:'On screen',point:teen?[526,404]:[524,401],object:'phone',tool:teen?'homework':'phone'},
    missionControl:{name:'Mission service',kind:'On screen',point:[250,230],object:'parent'},
-   vaultControl:{name:'Task credential · Vault',kind:'On screen',point:[524,401],object:'phone'},
+   vaultControl:{name:'Task credential · Vault',kind:'On screen',point:[524,401],object:'phone',tool:'vaultControl'},
    outbox:{name:teen?'School outbox':'Task queue',kind:'On screen',point:teen?[716,259]:[349,441],object:teen?'laptop':'notebook'},
    hero:{name:teen?'Alex':'Nova',kind:'Thought',point:teen?[636,329]:[516,214]},
    parent:{name:teen?'Parent':'Priya · task sponsor',kind:'Conversation',point:teen?[298,291]:[250,230]},
    phone:{name:teen?'Phone · messages':'Workspace controls · OpenShell',kind:'On screen',point:teen?[526,404]:[524,401]},
-   laptop:{name:teen?'School app':'Customer records · CRM',kind:'On screen',point:teen?[716,259]:[716,254]},
+   laptop:{name:teen?'School app':'Customer records · CRM',kind:'On screen',point:teen?[716,259]:[716,254],tool:teen?'schoolApp':'laptop'},
    brief:{name:teen?'Assignment card':'Work inbox',kind:'Reading',point:teen?[449,167]:[449,173]},
    notebook:{name:teen?'Notebook':'Task notebook',kind:'Reading',point:teen?[471,424]:[349,441]},
    helper:{name:teen?'Sam':'Pip',kind:'Speaking',point:teen?[747,329]:[839,385]},
@@ -1855,7 +1897,7 @@ const StoryInteractions = (() => {
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,isStoryObject,objectDescription,availableTools,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
+ return {nextObject,isStoryObject,objectDescription,roomGroups,findTarget,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;
 
@@ -3180,17 +3222,17 @@ const move=()=>{
   ?['Hear my parent’s answer','Your parent has heard what happened.','parent']
   :['Hear from Priya','Nova’s access is paused while Priya reviews what happened.','parent'];
  if(key==='source'){
-  if(s.source)return ['Add this source',teen()?'Credit the museum page below your timeline.':'Credit the customer records in the handover.','laptop'];
+  if(s.source)return ['Add this source',teen()?'Credit the museum page below your timeline.':'Credit the customer records in the handover.',teen()?'schoolApp':'laptop'];
   return teen()?['Open the museum website','Check the dates on the Riverside Museum page.','source']:[...NOVA_MOVES.source,'source'];
  }
  if(key==='send'&&s.outgoing==='changed')return teen()
-  ?['Restore Ms Patel’s address','The school submission uses her address from the assignment.','laptop']
+  ?['Restore Ms Patel’s address','The school submission uses her address from the assignment.','schoolApp']
   :['Restore the reviewer','The CRM send must use the designated reviewer.','laptop'];
  if(key==='send'&&!teen()&&!StoryRules.approvalMatches(s.approval,StoryRules.reportShare(s)))return ['Review the current copy','Ask Morgan for an approval that matches the current send.','laptop'];
  if(key==='checks'){
   const {next}=closingStep(s,teen());
   const source=StoryInteractions.speechSource(mode,StoryInteractions.closureSource(s,mode));
-  return [next[0],next[1]||source.name,source.object];
+  return [next[0],next[1]||source.name,teen()&&source.object==='laptop'?'schoolApp':source.object];
  }
  return [...(teen()?base.slice(0,2):NOVA_MOVES[key]),StoryInteractions.nextObject(mode,key,base[2])];
 };
@@ -3403,25 +3445,50 @@ function inventory(){
  if(s.checks.length===4)items.push(['checklist','☷',teen()?'Ready for dinner':'Closing evidence',teen()?'Project sent · laptop signed out':'Four task outcomes checked',teen()?'Tell your parent you’re done.':'Bring the evidence to finish this task.']);
  return items;
 }
-const novaToolLabels={sponsorMessage:['Priya','Task sponsor'],registries:['Agent registries','IBM Agent Identity · Vault'],aiGateway:['AI Gateway','Model requests'],
- mcpGateway:['MCP gateway','CRM tool requests'],riskMonitor:['Identity monitoring','Verify Identity Protection']};
+const alexRoomLabels={
+ hero:['Alex','You · write the timeline'],parent:['Parent','Decides app access'],reviewer:['Ms Patel','Assigns and reviews your work'],
+ outside:['Jamie','Classmate · group chat'],schoolInbox:['School inbox','Teacher messages'],schoolApp:['School app','Checks what you can submit'],
+ homework:['Homework settings','Applies the phone rules'],classChat:['Class group chat','Classmate messages'],
+ parentSchool:['School app · parent account','Checks the original teacher reply'],source:['Museum website','Browser · railway dates']
+};
+const novaRoomLabels={
+ hero:['Nova','You · run the handover'],sponsorMessage:['Priya','Approves task scope'],reviewer:['Morgan','Approves the exact copy'],
+ outside:['Luca','Harbor Bikes · customer contact'],workOrder:['Work order','Priya’s original request'],
+ parent:['Mission service','Records the approved scope'],policyConsole:['Policy console','Facts, decision and enforcement'],
+ registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
+ aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
+ vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['Identity monitoring','Verify Identity Protection · alerts'],
+ laptop:['Customer records · CRM','Enforces record and send rules'],source:['CRM tool','MCP server · exposes the read'],
+ crmAttachment:['Imported attachment','Luca’s upload · customer portal']
+};
+const roomCardIcons={
+ hero:'person',sponsorMessage:'person',reviewer:'person',outside:'person',schoolInbox:'reviewer',schoolApp:'console',
+ homework:'shield',parentSchool:'phone',extra:'source',classChat:'reviewer',crmAttachment:'outside',
+ policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield'
+};
+function roomCard(key){
+ if(teen()&&key==='extra'){
+  const s=state();
+  return [episode().extraApp,s.ended?'Homework access ended':s.extensionStatus==='approved'?'Linked museum source allowed':'Optional museum link'];
+ }
+ return (teen()?alexRoomLabels:novaRoomLabels)[key];
+}
 function objectName(key){
- const tools=teen()?{source:'Museum website',reviewer:'Ms Patel',outside:'Class group chat'}:{workOrder:'Work order',policyConsole:'Policy console',source:'CRM tool',reviewer:'Morgan’s review',outside:'Imported attachment'};
- return tools[key]||novaToolLabels[key]?.[0]||episode().objects[OBJECT_KEYS.indexOf(key)];
+ return roomCard(key)?.[0]||episode().objects[OBJECT_KEYS.indexOf(key)];
 }
 function objectDetail(key){
- const tools=teen()?{source:'Check the dates',reviewer:'School inbox',outside:'Jamie’s forwarded message'}:{workOrder:'Priya’s original request',policyConsole:'PIP, PDP and PEP',source:'Read account records · MCP',reviewer:'Exact-copy approval and feedback',outside:'Luca · customer portal upload'};
- return tools[key]||novaToolLabels[key]?.[1]||StoryInteractions.objectStatus(state(),mode,key)||episode().objectDetails?.[OBJECT_KEYS.indexOf(key)]||'';
+ const status=teen()&&key==='laptop'?'':StoryInteractions.objectStatus(state(),mode,key==='schoolApp'?'laptop':key);
+ return (state().ended&&status)||roomCard(key)?.[1]||status||episode().objectDetails?.[OBJECT_KEYS.indexOf(key)]||'';
 }
 function heldUse(){return selected?StoryInteractions.itemUse(state(),mode,selected):null;}
 function targetState(key,pin=false){
  const use=heldUse(),next=move()[2];
- return use?(use.targets.includes(key)?'use-target':''):StoryInteractions.isStoryObject(mode,key,next,pin)?'relevant':'';
+ return use?(StoryInteractions.findTarget(mode,use.targets,key,pin)?'use-target':''):StoryInteractions.isStoryObject(mode,key,next,pin)?'relevant':'';
 }
 function targetTag(key,pin=false){return targetState(key,pin)==='use-target'?'Use here':targetState(key,pin)==='relevant'?'Next':'';}
 function objectLabel(key,pin=false){
  const guide=targetTag(key,pin),next=move()[2];
- if(pin&&guide==='Next'&&key!==next)return teen()?[objectName(next),guide].join(' · '):`${objectName(key)} · Next: ${objectName(next)}`;
+ if(pin&&guide==='Next'&&key!==next)return [objectName(key),guide,objectName(next)].join(' · ');
  return [objectName(key),objectDetail(key),guide].filter(Boolean).join(' · ');
 }
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
@@ -3432,20 +3499,23 @@ function render(){
  $('#episode-label').textContent=e.eyebrow;$('#episode-title').textContent=e.title;$('#episode-tag').textContent=e.tag;
  $('#chapter-track').innerHTML=e.steps.map((text,i)=>`<span class="${i===c?'current':i<c?'complete':''}"><small>${i<c?'✓':String(i+1).padStart(2,'0')}</small>${esc(text)}</span>`).join('');
  $('#sequence-position').textContent=JOURNEY_SEQUENCE[currentSequencePhase()].title;
+ $('#room-directory').textContent=teen()?'People and apps':'People and systems';
  $('#scene-footnote').textContent=use?use.instruction:StoryInteractions.sceneSummary(s,mode);
  $('#place').textContent=e.place;$('#scene-condition').textContent=s.finished?(teen()?'READY FOR DINNER':'CHAPTER COMPLETE'):s.paused?(teen()?'LET’S TALK':'MISSION PAUSED'):s.ended?(teen()?'DINNER TIME':'MISSION REVOKED'):s.delivered?(teen()?'SENT TO MS PATEL':'DELIVERED'):s.message&&!s.verified?'NEW MESSAGE':'';
  const artStep=s.draft?7:0;
  const helperReady=!teen()||s.draft;
  $('#art').innerHTML=roomArt(mode,Math.min(c,2),{step:artStep,hasIncoming:s.message,helperVisible:s.draft,verified:s.verified,delivered:s.delivered,revoked:s.ended,paused:s.paused,hasNote:s.notes.length>0,hasSourceCredit:s.caption,signInRequired:teen()&&s.checks.includes('signin')&&s.containment?.controllerReachable,serviceStillOpen:s.ended&&s.containment&&!s.containment.sessionClosed});
- $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>OBJECT_KEYS[i]==='helper'&&!helperReady?'':`<button class="pin ${targetState(OBJECT_KEYS[i],true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc(objectLabel(OBJECT_KEYS[i],true))}" aria-label="${esc(objectLabel(OBJECT_KEYS[i],true))}">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</button>`).join('');
+ $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>{
+  const key=OBJECT_KEYS[i],label=esc(objectLabel(key,true));
+  return key==='helper'&&!helperReady?'':`<button class="pin ${targetState(key,true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${key}" data-tip="${label}" aria-label="${label}">${sceneObjectIcon(key==='hero'?'person':key,mode)}</button>`;
+ }).join('');
  const links=STORY_PINS[mode].map(([x,y,tx,ty],i)=>OBJECT_KEYS[i]==='helper'&&!helperReady?'':`<path d="M${x} ${y}L${tx} ${ty}"/>`).join('');
  $('#pins').insertAdjacentHTML('afterbegin',`<svg class="pin-links" viewBox="0 0 1000 580" aria-hidden="true">${links}</svg>`);
- const tools=StoryInteractions.availableTools(s,mode);
  const renderObject=key=>{
   const detail=objectDetail(key),tag=targetTag(key);
-  return `<button data-object="${key}" class="${targetState(key)}${tools.includes(key)?' scene-tool':''}" aria-label="${esc(objectLabel(key))}" ${key==='helper'&&!helperReady?'disabled':''}><b aria-hidden="true">${sceneObjectIcon(({sponsorMessage:'person',policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',riskMonitor:'shield'})[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
+  return `<button data-object="${key}" class="${targetState(key)}" data-tip="${esc(StoryInteractions.objectDescription(mode,key))}" aria-label="${esc(objectLabel(key))}"><b aria-hidden="true">${sceneObjectIcon(roomCardIcons[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
  };
- $('#objects').innerHTML=OBJECT_KEYS.map(renderObject).join('')+(!teen()&&tools.length?'<span class="tool-tray-label">People, systems and records</span>':'')+tools.map(renderObject).join('');
+ $('#objects').innerHTML=StoryInteractions.roomGroups(s,mode).map(([name,keys])=>`<section class="object-group"><h3>${esc(name)}</h3><div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A new request is waiting.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
@@ -3940,17 +4010,18 @@ function showCredential(back=null){
 
 function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
 function interact(key,pin){
- if(!state().started&&(teen()||key!=='helper'))return showIntro();
- if(selected&&heldUse().targets.includes(key))return useItem(key);
+ const target=selected&&StoryInteractions.findTarget(mode,heldUse().targets,key,pin);
+ if(target)return useItem(target);
  if(!selected&&StoryInteractions.isStoryObject(mode,key,move()[2],pin))return nextMove();
- speakingObject=!teen()&&key==='parent'?'missionControl':key;
+ speakingObject=!teen()&&key==='parent'?'missionControl':!teen()&&key==='outside'?'customerContact':key;
  const details={
   workOrder:`<p>${esc(episode().brief)}</p>`,registries:agentRegistryDetails,
   aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
+  vaultControl:()=>protocolSourceLinks(['leases']),
   riskMonitor:()=>`<p>The game illustrates a configured alert and response. The response policy and controllers apply any pause, credential revocation or session closure.</p>${protocolSourceLinks(['identityRisk'])}`
  };
  const extra=!teen()&&details[key];
- show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${typeof extra==='function'?extra():extra||''}`,'About this object');
+ show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${extra?`<details class="debrief"><summary>Details and sources</summary>${typeof extra==='function'?extra():extra}</details>`:''}`,StoryInteractions.speechSource(mode,speakingObject).name);
  dialog.dataset.inspect='true';
  syncSpeech();
 }
@@ -4071,8 +4142,7 @@ function showWorkspace(){
   `<p>The school app opens your timeline on this laptop. It remembers the laptop for quick sign-in. When you’re done, you’ll turn that off and sign out.</p>${choices([
    ['Sign in and open my project','Open the school app on the laptop.',()=>perform('open'),'good']
   ])}`,'FAMILY LAPTOP','open');
- show('Launch Nova’s task workspace',`<p>The account team’s configured workflow checks the approved mission and asks the OpenShell Gateway to start Nova’s sandbox.</p>
-  <p>This step also opens a separate CRM task session. Nova requests account data later, through the tools below.</p>
+ show('Launch Nova’s task workspace',`<p>The account team’s workflow checks Priya’s grant and asks OpenShell to start Nova’s sandbox. CRM opens a separate session for the task.</p>
   <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}</details>
   <details class="debrief"><summary>Which tools handle the first CRM read?</summary>${crmToolRoute()}
    <p>Model access has its own route. A configured watsonx Orchestrate AI Gateway can route model requests. The MCP gateway handles the CRM tool call shown here.</p>${protocolSourceLinks(['mcp'])}</details>
@@ -4454,14 +4524,14 @@ function extensionDescription(){const s=state(),e=episode();if(teen()){
 function showParentSourceCheck(){
  const s=state();
  if(!teen()||s.extensionStatus!=='pending')return showExtension();
- speakingObject='parent';
+ speakingObject='parentSchool';
  const video=s.extraSource!=='museum-photo';
  show('Your parent checks on their own phone.',`<p>They open the school app directly and use their linked parent account to find Ms Patel’s reply to your draft. Its museum link matches yours, and she says it’s optional.</p>
  <div class="message-card">
   <p class="eyebrow">PARENT ACCOUNT · MS PATEL’S REPLY</p>
   <p>${video?'“The museum’s <i>Our station’s story</i> video is optional. You can use it for one more detail.”':'“A station photo from the museum’s collection could make the timeline clearer. It’s optional.”'}</p>
  </div>
- <div class="actions">${button('Hear my parent’s answer',()=>perform('resolve-extension'))}${button('See what happened',()=>showRequestTrace(s.last,showParentSourceCheck),'secondary')}${button('Back to the request',showExtension,'secondary')}</div>`,'Parent');
+ <div class="actions">${button('Hear my parent’s answer',()=>perform('resolve-extension'))}${button('See what happened',()=>showRequestTrace(s.last,showParentSourceCheck),'secondary')}${button('Back to the request',showExtension,'secondary')}</div>`,'School app · parent account');
 }
 
 function novaAmendmentPreview(mission){
@@ -4870,6 +4940,7 @@ function showGuide(){
   <p>Read the request, agree on access, and send a first draft. Handle replies, send the finished work, then check that the access you opened has closed.</p>
   <ul class="route-list">
    <li><b>Keep going</b><br>Choose Next or the matching highlighted object. Open other objects to see what they do.</li>
+   <li><b>Find a person or tool</b><br>Use ${teen()?'People and apps':'People and systems'} above the scene. Hover or focus a card for its role, or tap it to inspect.</li>
    <li><b>Explore your pocket</b><br>Select an item to inspect it or try a highlighted Use here target. Choose Put away to return to the next step.</li>
    <li><b>Read the outcome</b><br>Choices sit below the conversation. Expand the note for a short explanation and, when available, a request trace.</li>
    <li><b>Use a keyboard</b><br>Tab moves between controls, Enter activates them, and Escape closes dialogue. There’s no countdown.</li>
