@@ -881,7 +881,7 @@ function showBrief(){
  const agreement=s.mission
   ?'Your current app agreement · version '+s.mission.version+'. '+(s.extensionStatus==='approved'?'Your parent also agreed to '+e.extraAgreement+'.':'')
   :'You have not agreed on phone apps for this homework yet.';
- show(e.briefTitle,`<div class="paper"><p class="eyebrow">${s.pass?'THE TASK YOU AGREED':'A NEW REQUEST'}</p><h3>${esc(e.briefTitle)}</h3><p>${esc(e.brief)}</p></div>
+ show(e.briefTitle,`<div class="paper"><p class="eyebrow">${s.pass?'THE TASK YOU AGREED':'A NEW REQUEST'}</p><p>${esc(e.brief)}</p></div>
   <p>${esc(agreement)}</p><div class="actions">${button(s.pass?'Back to my next step':'Ask about the apps I need',s.pass?nextMove:showParent)}${button('Back to the room',close,'secondary')}</div>`,
   'TEACHER’S ASSIGNMENT','read-brief');
  if(s.last?.action==='read-brief')showLesson(s.last);
