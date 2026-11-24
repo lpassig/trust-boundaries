@@ -80,11 +80,11 @@ const DecisionLab = (() => {
  function startRuntime(route='blocked'){
   return {route,proposal:'none',missionVersion:1,reads:[]};
  }
- function tryRuntimeRead(trial,recordId='789'){
+ function runtimeAttempt(trial,recordId,reachable){
   const id='runtime-'+(trial.reads.length+1);
   const evidence={networkEventId:'lab-'+id+'-network',sandboxId:workload,networkPolicyId:'lab-crm-route-'+trial.route};
   const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[],evidence};
-  if(trial.route==='allowed'){
+  if(reachable){
    const check=commit(begin(trial.missionVersion===1?'scope':'approved',id,recordId));
    const {requestId,decisionId,receipt}=check.outcome;
    Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,
@@ -92,6 +92,12 @@ const DecisionLab = (() => {
    Object.assign(evidence,{leaseId:check.credential.lease,requestId,decisionId,receipt});
   }
   return {...trial,reads:[...trial.reads,attempt]};
+ }
+ function tryRuntimeRead(trial,recordId='789'){
+  return runtimeAttempt(trial,recordId,trial.route==='allowed');
+ }
+ function tryExcludedDestination(trial){
+  return runtimeAttempt(trial,null,false);
  }
  function openNetworkProposal(trial){
   if(trial.route!=='blocked'||trial.reads.at(-1)?.runtime!=='deny')return trial;
@@ -143,7 +149,7 @@ const DecisionLab = (() => {
   return {...test,probe:test.receiver==='closed'?'refused':'unknown'};
  }
 
- return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, openNetworkProposal,
+ return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, tryExcludedDestination, openNetworkProposal,
   decideNetworkProposal, approveRuntimeMission, incidentStatus, startCloseoutCheck, attemptCloseout, probeCloseout,
   startSignalTest, deliverSignal, applySignal, retestSignal};
 })();

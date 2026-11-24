@@ -3230,11 +3230,11 @@ const DecisionLab = (() => {
  function startRuntime(route='blocked'){
   return {route,proposal:'none',missionVersion:1,reads:[]};
  }
- function tryRuntimeRead(trial,recordId='789'){
+ function runtimeAttempt(trial,recordId,reachable){
   const id='runtime-'+(trial.reads.length+1);
   const evidence={networkEventId:'lab-'+id+'-network',sandboxId:workload,networkPolicyId:'lab-crm-route-'+trial.route};
   const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[],evidence};
-  if(trial.route==='allowed'){
+  if(reachable){
    const check=commit(begin(trial.missionVersion===1?'scope':'approved',id,recordId));
    const {requestId,decisionId,receipt}=check.outcome;
    Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,
@@ -3242,6 +3242,12 @@ const DecisionLab = (() => {
    Object.assign(evidence,{leaseId:check.credential.lease,requestId,decisionId,receipt});
   }
   return {...trial,reads:[...trial.reads,attempt]};
+ }
+ function tryRuntimeRead(trial,recordId='789'){
+  return runtimeAttempt(trial,recordId,trial.route==='allowed');
+ }
+ function tryExcludedDestination(trial){
+  return runtimeAttempt(trial,null,false);
  }
  function openNetworkProposal(trial){
   if(trial.route!=='blocked'||trial.reads.at(-1)?.runtime!=='deny')return trial;
@@ -3293,7 +3299,7 @@ const DecisionLab = (() => {
   return {...test,probe:test.receiver==='closed'?'refused':'unknown'};
  }
 
- return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, openNetworkProposal,
+ return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, tryExcludedDestination, openNetworkProposal,
   decideNetworkProposal, approveRuntimeMission, incidentStatus, startCloseoutCheck, attemptCloseout, probeCloseout,
   startSignalTest, deliverSignal, applySignal, retestSignal};
 })();
@@ -4001,7 +4007,7 @@ function showBuyerActionScope(back){
   <div class="actions">${button('Test the record permission',()=>showRuntimeExercise(reopen,{scopeOnly:true}))}${button('Back to the buyer guide',back,'secondary')}</div>`,'BUYER GUIDE');
 }
 function showBuyerEvidence(product,back,backLabel){
- if(product==='openshell')return showRuntimeExercise(back);
+ if(product==='openshell')return showOpenShellPilot(back);
  if(product==='risk')return showBuyerRisk(back,backLabel);
  if(product==='antenna')return showBuyerSignal(back);
  if(product==='verify')return showBuyerApprovalEvidence(back);
@@ -4397,6 +4403,30 @@ function runtimeReadEvidence({evidence,runtime},index){
  </details>`;
 }
 
+function runtimeOutcome(attempt){
+ if(attempt.runtime==='deny')return 'OpenShell denied the network request. Neither Vault nor CRM was reached.';
+ if(attempt.crm==='rejected')return 'OpenShell permitted the route. Vault issued a connector lease. CRM refused the record because the mission still excludes it.';
+ return `OpenShell permitted the route. Vault issued a connector lease. CRM checked the ${attempt.missionVersion===1?'current':'amended'} mission and returned the requested summary.`;
+}
+
+function showOpenShellPilot(back,trial=DecisionLab.startRuntime('allowed')){
+ const replay=()=>showOpenShellPilot(back,trial);
+ const steps=[
+  ['Read Harbor Bikes','Harbor Bikes · approved CRM route',()=>DecisionLab.tryRuntimeRead(trial,'123')],
+  ['Try the excluded destination','Unapproved test service · network check',()=>DecisionLab.tryExcludedDestination(trial)],
+  ['Read Alder Books on the same CRM route','Alder Books · same approved CRM route',()=>DecisionLab.tryRuntimeRead(trial,'789')]
+ ];
+ const next=steps[trial.reads.length];
+ const records=trial.reads.map((attempt,index)=>`<li><b>${esc(steps[index][1])}</b><br>${esc(runtimeOutcome(attempt))}${runtimeReadEvidence(attempt,index)}</li>`).join('');
+ showReference('Test one OpenShell policy',`<p>The sandbox can reach the CRM tool, and the mission covers Harbor Bikes. Use the same sandbox, network policy and mission for all three attempts.</p>
+  ${records?`<ol class="route-list" aria-label="OpenShell pilot attempts">${records}</ol>`:''}
+  <div class="actions">${next?button(next[0],()=>showOpenShellPilot(back,next[2]())):button('Replay the three tests',()=>showOpenShellPilot(back),'secondary')}
+   ${button('Back to the buyer card',back,'secondary')}</div>
+  <details class="debrief"><summary>What if network policy needs to change?</summary><p>In that exercise an operator reviews a network rule, then the sponsor considers a separate change to the mission.</p>
+   <div class="actions">${button('Explore the policy change',()=>showRuntimeExercise(replay,{backLabel:'Back to the OpenShell pilot'}),'secondary')}</div></details>`,
+  'OPENSHELL PILOT');
+}
+
 function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntime(scopeOnly?'allowed':'blocked'),backLabel=scopeOnly?'Back to the buyer card':'Go back'}={}){
  const read=trial.reads.at(-1);
  const show=next=>showRuntimeExercise(back,{scopeOnly,trial:next,backLabel});
@@ -4414,9 +4444,7 @@ function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntim
  else next='';
  const summary=read?`<ol class="route-list" aria-label="Read attempts">${trial.reads.map((attempt,index)=>`<li>
   <b>G-042 v${attempt.missionVersion} · ${attempt.recordId==='123'?'Harbor Bikes':'Alder Books'} read</b><br>
-  ${attempt.runtime==='deny'?'OpenShell denied the network request. Neither Vault nor CRM was reached.'
-   :attempt.crm==='rejected'?'OpenShell permitted the route. Vault issued a connector lease. CRM refused the record because the mission still excludes it.'
-   :`OpenShell permitted the route. Vault issued a connector lease. CRM checked the ${attempt.missionVersion===1?'current':'amended'} mission and returned the requested summary.`}
+  ${esc(runtimeOutcome(attempt))}
   ${runtimeReadEvidence(attempt,index)}</li>`).join('')}</ol>`:'';
  const review=trial.proposal==='review'?`<div class="receipt"><b>OpenShell Policy Advisor · proposed rule</b>
   <p>Allow Nova’s approved MCP client to reach the configured CRM tool endpoint over HTTPS.</p>

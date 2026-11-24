@@ -99,6 +99,25 @@ test('one open CRM route permits the approved account and denies the other until
  assert.deepEqual(inScope.reads.at(-1).records,['789']);
 });
 
+test('the OpenShell pilot separates a destination block from a CRM policy refusal under one configuration',()=>{
+ const baseline=Lab.tryRuntimeRead(Lab.startRuntime('allowed'),'123');
+ const excluded=Lab.tryExcludedDestination(baseline);
+ const pilot=Lab.tryRuntimeRead(excluded,'789');
+ const [allowed,networkDenied,crmDenied]=pilot.reads;
+ assert(pilot.reads.every(read=>read.missionVersion===1&&read.evidence.networkPolicyId===allowed.evidence.networkPolicyId&&read.evidence.sandboxId===allowed.evidence.sandboxId));
+ assert.equal(new Set(pilot.reads.map(read=>read.evidence.networkEventId)).size,3);
+ assert.equal(allowed.crm,'committed');
+ assert(allowed.evidence.receipt);
+ assert.equal(networkDenied.runtime,'deny');
+ assert.equal(networkDenied.crm,'not-reached');
+ assert.equal(networkDenied.vault,'not-reached');
+ assert.equal(networkDenied.evidence.requestId,undefined);
+ assert.equal(crmDenied.runtime,'permit');
+ assert.equal(crmDenied.crm,'rejected');
+ assert(crmDenied.evidence.decisionId);
+ assert.equal(crmDenied.evidence.receipt,null);
+});
+
 test('a stopped sandbox leaves containment partial when the CRM controller cannot answer',()=>{
  const partial=Lab.incidentStatus(false);
  assert.equal(partial.runtimeStopped,true);
