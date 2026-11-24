@@ -598,7 +598,7 @@ function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
 }
 
 const accessChecks={
- credential:{symptom:'The old password or key still lets me sign in',question:'Can the connector sign in again?',
+ credential:{label:'Vault credential',symptom:'The old password or key still lets me sign in',question:'Can the connector sign in again?',
   hint:'Try a fresh connection with the old password or key after the job ends.',owner:'Credential issuer · HashiCorp Vault in this example',
   check:'Confirm a fresh sign-in works with a test credential, revoke its lease, then try a fresh sign-in with the same credential. Look for a refusal.',
   evidence:'Save the lease ID, the revocation result and the target’s before-and-after sign-in results. Keep the credential value out of the record.',pilot:'vault',
@@ -606,14 +606,14 @@ const accessChecks={
    confirmed:'Vault confirmed revocation of this lease.',unverified:'Vault did not respond to the revocation request.',
    active:'The target accepted a fresh connection with this credential.',closed:'The target refused a fresh connection using the same credential.',
    verifiedTitle:'Credential revocation verified'}},
- session:{symptom:'An app that was already open still responds',question:'Does the app that was already open still respond?',
+ session:{label:'CRM session',symptom:'An app that was already open still responds',question:'Does the app that was already open still respond?',
   hint:'Try a status check in the existing session without signing in again.',owner:'App session owner · CRM in this example',
   check:'Confirm the existing test session responds. Ask the app to close that exact session, then verify that the same status request is refused.',
   evidence:'Save the session reference, the app’s closure response and the result of the retest. If you cannot reach the app, record the check as unverified.',
   replay:{reference:'CRM task session CRM-04',probe:'Check the existing session',close:'Close the CRM session',retry:'Restore CRM contact and close the session',retest:'Retest the old session',
    confirmed:'CRM acknowledged closure. Retest the same session to verify it.',unverified:'The CRM controller did not respond.',
    active:'CRM still responds in the existing session.',closed:'CRM refused the status read from the old session.'}},
- workspace:{symptom:'The agent is still running',question:'Is the agent’s workspace still running?',
+ workspace:{label:'OpenShell workspace',symptom:'The agent is still running',question:'Is the agent’s workspace still running?',
   hint:'Ask the runtime operator to check the exact workspace used for the job.',owner:'Runtime operator · NVIDIA OpenShell in this example',
   check:'Confirm the named test workspace is running, stop it and verify that it reports stopped. Check pending work and open app sessions separately.',
   evidence:'Save the workspace generation, the operator’s stop result and a fresh status check for that generation. A missing status response leaves the stop unverified.',pilot:'openshell',
@@ -621,26 +621,38 @@ const accessChecks={
    confirmed:'OpenShell acknowledged the stop. Check the named workspace again to verify it.',unverified:'The runtime controller did not respond.',
    active:'OpenShell reports that sandbox generation S-04 is still running.',closed:'The runtime status check confirmed that sandbox generation S-04 stopped.'}}
 };
-function showBuyerAccess(back,help=false){
+function showBuyerAccess(back,help=false,trials={}){
  const options=Object.entries(accessChecks).map(([key,check])=>[
-  help?check.question:check.symptom,help?check.hint:'',()=>showBuyerAccessCheck(back,key)
+  help?check.question:check.symptom,help?check.hint:'',()=>showBuyerAccessCheck(back,key,{trials})
  ]);
- if(!help)options.push(['Help me tell which','See how to check each possibility.',()=>showBuyerAccess(back,true)]);
+ if(!help)options.push(['Help me tell which','See how to check each possibility.',()=>showBuyerAccess(back,true,trials)]);
  showReference(help?'How to tell what stayed open':'What still works?',`${help?'<p>Try these checks separately. More than one can find a problem.</p>':''}
-  ${choices(options)}<div class="actions">${help?button('Back to symptoms',()=>showBuyerAccess(back),'secondary'):button('Back to the buyer guide',back,'secondary')}</div>`,
+  ${choices(options)}<div class="actions">${help?button('Back to symptoms',()=>showBuyerAccess(back,false,trials),'secondary'):button('Back to the buyer guide',back,'secondary')}</div>`,
   'ACCESS AFTER THE JOB');
 }
-function showBuyerAccessCheck(back,key,{closeout=DecisionLab.startCloseoutCheck(),backLabel=null}={}){
+function closeoutStatus(trial){
+ if(trial?.probe==='closed')return 'Verified';
+ if(trial?.closure==='unverified')return 'Unverified';
+ if(trial?.closure==='confirmed')return 'Retest pending';
+ return trial?.probe==='active'?'Still active':'Not checked';
+}
+function showBuyerAccessCheck(back,key,{trials={},backLabel=null}={}){
  const {symptom,owner,check,evidence,pilot,replay}=accessChecks[key];
- const reopen=()=>showBuyerAccessCheck(back,key,{closeout,backLabel});
+ const reopen=()=>showBuyerAccessCheck(back,key,{trials,backLabel});
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
  const reference=replay.reference||'Vault lease '+StoryRules.buyerExample().sourceLease.id;
- const exercise=buyerCloseoutReplay(replay,reference,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next,backLabel}));
+ const trial=trials[key]||DecisionLab.startCloseoutCheck();
+ const exercise=buyerCloseoutReplay(replay,reference,trial,next=>showBuyerAccessCheck(back,key,{trials:{...trials,[key]:next},backLabel}));
+ const checkButtons=Object.entries(accessChecks).map(([id,item])=>button(item.label,
+  ()=>showBuyerAccessCheck(back,id,{trials,backLabel}),`choice${id===key?' good':''}`,closeoutStatus(trials[id]))).join('');
  showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li>
   <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
   <h3>Try it in the simulation</h3>${exercise}
-  <div class="actions">${backLabel?button(backLabel,back,'secondary'):button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
+  <section class="debrief"><h3>Three separate checks</h3><p>Choose a control to test. Each result applies to that control.</p>
+   <nav class="closeout-checks" aria-label="Choose a closeout check">${checkButtons}</nav></section>
+  <div class="actions">${backLabel?button(backLabel,back,'secondary'):button('Back to symptoms',()=>showBuyerAccess(back,false,trials),'secondary')}
   ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
+ $('.closeout-checks .good').setAttribute('aria-current','true');
 }
 function buyerCloseoutReplay(replay,reference,trial,advance){
  const probe=()=>advance(DecisionLab.probeCloseout(trial));

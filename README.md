@@ -45,7 +45,7 @@ Choose **Architecture** alongside Alex and Nova or open the [reference directly]
 
 ### Technical journey
 
-Each buyer card opens its product’s technical setup and pilot checklist. **Access still works after the job ends** guides buyers to separate credential, app session and workspace simulations. **The agent can open the app but can see or do too much** compares an allowed read with a denied one on the same route. The IBM Verify worked example lets players test an edited send, approve the current copy, and retry using the story’s CRM decision.
+Each buyer card opens its product’s technical setup and pilot checklist. **Access still works after the job ends** guides buyers to a simulation with separate credential, app session and workspace checks. Move between them to see which controls are still active, unverified or confirmed by a fresh retest. **The agent can open the app but can see or do too much** compares an allowed read with a denied one on the same route. The IBM Verify worked example lets players test an edited send, approve the current copy, and retry using the story’s CRM decision.
 
 The **Raise the BAR** guide compares three example deployments of the same customer handover. Build drafts from a supplied file. Authorize adds customer records through a scope-checked CRM tool. Resist adds scheduled execution and verified containment. Each stage includes a first pilot, the evidence and value to measure, and expandable technical setup and sources. Open it from the first screen, from **Explore Architecture → Deployment options**, or from the [direct BAR guide link](https://lpassig.github.io/trust-boundaries/#bar).
 
