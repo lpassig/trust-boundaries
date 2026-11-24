@@ -3751,11 +3751,11 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
  }
 }
 
-function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='Back to the story',selected=null){
- const reopen=()=>showBuyerGuide(exit,exitLabel,selected);
+function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='Back to the story',{selected=null,context=null}={}){
+ const reopen=()=>showBuyerGuide(exit,exitLabel,{selected,context});
  const productMap=()=>showProductMap('',reopen);
  const candidates=NOVA_BUYER_NEEDS.filter(need=>need.pilot&&!need.pilot.secondary);
- const choose=need=>showBuyerGuide(exit,exitLabel,need);
+ const choose=need=>showBuyerGuide(exit,exitLabel,{selected:need,context});
  const sources=need=>`<p class="sources">${need.sources.map(([name,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p>`;
  if(selected){
   const {pilot,product,fit}=selected;
@@ -3763,16 +3763,28 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
    <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}
    ${button('Open technical setup',()=>showBuyerSetup(selected,reopen),'secondary')}</div>
    <h3>Plan a first pilot</h3>${buyerPilotChecklist(pilot)}
-   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}</div>`,
+   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel,{context}),'secondary')}</div>`,
    'BUYER GUIDE');
  }
  const secondary=choices(NOVA_BUYER_NEEDS.filter(need=>need.pilot?.secondary).map(need=>[need.product,need.pilot.label,()=>choose(need)]));
  const other=NOVA_BUYER_NEEDS.filter(need=>!need.pilot).map(need=>`<details class="product-card"><summary><b>${esc(need.question)}</b><span>${esc(need.product)}</span></summary><p>${esc(need.fit)}</p><p>${esc(need.example)}</p>${sources(need)}</details>`).join('');
- showReference('What problem do you have today?',`${choices([
-   ...candidates.map(need=>[need.pilot.label,'',()=>choose(need)]),
-   ['Access still works after the job ends','Find which control to check first.',()=>showBuyerAccess(reopen)],
-   ['The agent can open the app but can see or do too much','Check what the app allows after the agent connects.',()=>showBuyerActionScope(reopen)]
-  ])}
+ const appPermission=()=>showBuyerActionScope(reopen);
+ const oldSession=()=>showBuyerAccessCheck(reopen,'session',{backLabel:'Back to Apply this at work'});
+ const approval=candidates.find(need=>need.pilot.evidence==='verify');
+ const related=context==='alex'?[
+  ['Can your app protect records outside the task?','The school app checked what Alex could send. Test what a work app will let an agent read.',appPermission,'good'],
+  ['Does the old app session still work?','Putting the phone away left the laptop tab open. Retest an existing work session.',oldSession,'good']
+ ]:context==='staffing'?[
+  ['Would an edited file still go out?','Version 4 needed a new approval. Use the IBM Verify pilot to see what CRM blocks after an edit.',()=>choose(approval),'good'],
+  ['Can you prove the session closed?','The scheduling service owned the session. Try the same check with the CRM team’s evidence.',oldSession,'good']
+ ]:[];
+ const problems=[
+  ...candidates.filter(need=>context!=='staffing'||need!==approval).map(need=>[need.pilot.label,'',()=>choose(need)]),
+  ['Access still works after the job ends','Find which control to check first.',()=>showBuyerAccess(reopen)],
+  ...(context==='alex'?[]:[['The agent can open the app but can see or do too much','Check what the app allows after the agent connects.',appPermission]])
+ ];
+ showReference(context?'Apply this at work':'What problem do you have today?',`
+  ${context?`${choices(related)}<details class="debrief"><summary>Browse other work problems</summary>${choices(problems)}</details>`:choices(problems)}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
   <div class="actions">${button('Raise the BAR',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
@@ -4912,7 +4924,7 @@ function showPractice(answers=[],selected=null){
   }).join('');
   showReference('Staffing brief complete',`<p>Pick a decision you can explain. Who set the rule, what applied it, and what evidence would you save?</p>
    <details class="debrief"><summary>Review your decisions</summary><ul class="route-list">${review}</ul></details>
-   <div class="actions">${button('Apply this at work',()=>showBuyerGuide(()=>showPractice(answers),'Back to the staffing recap'))}${button('Back to the ending',showEnding,'secondary')}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
+   <div class="actions">${button('Apply this at work',()=>showBuyerGuide(()=>showPractice(answers),'Back to the staffing recap',{context:'staffing'}))}${button('Back to the ending',showEnding,'secondary')}${button('Try the case again',()=>showPractice(),'secondary')}</div>`,
    'PRACTICE CASE');
   return;
  }
@@ -4962,7 +4974,7 @@ function showEnding(){
    ${comparison}
    <details class="debrief"><summary>Technical notes on sign-out</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
    <div class="actions">
-    ${button('Apply this at work',()=>showBuyerGuide(showEnding,'Back to Alex’s ending'))}${practice}${otherStory}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}
+    ${button('Apply this at work',()=>showBuyerGuide(showEnding,'Back to Alex’s ending',{context:'alex'}))}${practice}${otherStory}${button('Try the before-dinner checks again',()=>perform('replay-containment'),'secondary')}
     ${button('Start Alex’s evening again',restart,'secondary')}${button('Look around the room',close,'secondary')}
    </div>
    <p class="small-print">A fictional story with simulated messages, videos and school accounts.</p>`,'ALEX’S EVENING');
