@@ -17,6 +17,26 @@ function ready({mode='teen',route='contact',expanded=false,helper=false,minor=tr
 function deliver(s){if(s.journey==='agent')s=run(s,'approve');return run(s,'send');}
 function closeTask(s,queued=false){s=deliver(s);if(queued)s=run(s,'schedule-followup');s=run(s,'write-note');return run(s,'close-pass');}
 function solve(s){for(const [a,p]of [['check',{layer:'pass'}],['check',{layer:'device'}],['check',{layer:'signin'}],['remediate',{control:'credential'}],['probe-session'],['remediate',{control:'session'}],['probe-session'],['check',{layer:'queue'}]])s=run(s,a,p);if(s.queueScheduled){s=run(s,'remediate',{control:'queue'});s=run(s,'check',{layer:'queue'});}return s;}
+test('Alex can ask for all apps and recover with the assignment’s app plan',()=>{
+ const brief=run(R.act(R.fresh(),'teen','begin').state,'read-brief');
+ const {state,event}=act(brief,'request-all-apps');
+ assert.equal(event.kind,'refused');
+ assert.equal(event.speaker,'Parent');
+ assert.equal(state.pass,null);
+ assert.equal(state.mission,null);
+ assert.equal(state.paused,false);
+ assert.deepEqual(state.attempts,[]);
+ assert.equal(act(state,'open').event.kind,'blocked');
+ const trace=T.build(state,'teen',event);
+ assert.deepEqual(trace.nodes.map(({role,status})=>[role,status]),[
+  ['Alex','checked'],['Parent','blocked'],['Phone homework settings','not-reached']
+ ]);
+ const restored=R.hydrate(JSON.parse(JSON.stringify(state)),'teen');
+ assert.equal(R.stage(restored),'permission');
+ const agreed=run(restored,'ask-pass',{scope:'task'});
+ assert.deepEqual(agreed.mission.allowedApps,['school','museum-source']);
+ assert.equal(run(agreed,'open').opened,true);
+});
 for(const mode of ['teen','agent'])for(const route of ['contact','portal'])for(const expanded of [false,true])for(const helper of [false,true])for(const queued of [false,true]){
  test(`${mode}: ${route}, ${expanded?'expanded':'smaller'}, ${helper?'helper':'self'}, ${queued?'chosen follow-up':'no queue'}`,()=>{
   let s=ready({mode,route,expanded,helper});assert.equal(s.extensionAdded,expanded);assert.deepEqual(s.evidence,[route]);

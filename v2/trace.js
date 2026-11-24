@@ -244,6 +244,9 @@ const RequestTrace = (() => {
  }
  function note(key,mode,event){
   const teen=mode==='teen',index=teen?0:1;
+  if(teen&&key==='request-all-apps'&&event?.kind==='refused')return {
+   title:'Your parent kept the existing limits.',text:'Your parent decides which apps the assignment calls for. Once you agree, homework settings apply the limits on your phone. The school app on the family laptop still uses its own sign-in.',sources:['familyControls']
+  };
   const card=cards[key==='shortcut'?'bypass-notes':key]?.[index];
   const explanation=event&&lesson(event,mode);
   if(explanation&&event.kind==='blocked'&&!['bypass-notes','shortcut'].includes(key))return {title:'The request stopped before the action ran.',text:explanation,sources:[]};
@@ -292,6 +295,11 @@ const RequestTrace = (() => {
   const model=(title,summary,nodes,request=r)=>({title,summary,nodes,request,recorded:Boolean(recorded)});
   if(!recorded)return model('The route a task can take','Reference path: this older saved event does not have the current operation-evidence record. No observed exchange is invented.',[...context(),node('Operation evidence','Trusted resource PEP','reference','A real resource integration must observe the actual operation and independently enforce policy.')],null);
   if(e.kind==='blocked'&&!e.decision&&r.operation!=='boundary.bypass')return model('This step did not run.','An application prerequisite stopped this attempt. No downstream execution is implied.',[...context(),node('Application prerequisite','Story application','blocked',e.text),node('Downstream resource operation','Execution','not-reached','No resource operation was performed by this stopped attempt.')]);
+  if(teen&&a==='request-all-apps')return model('Alex asks for every app','The parent compares the request with the assignment and proposes a smaller plan.',[
+   node('Ask for every app on both devices','Alex','checked','Alex asks for all apps on the phone and family laptop.'),
+   node('Check what the project needs','Parent','blocked','The parent declines the broad request. Ms Patel’s assignment calls for the school app and museum website.'),
+   node('Apply the homework plan','Phone homework settings','not-reached','The phone keeps its existing settings while the parent and Alex agree on a plan.',['familyControls'])
+  ]);
   if(!teen&&a==='prepare')return model('Route the outline to a model','Nova prepares the headings before retrieving customer data.',[
    ...context(),node('Route the model request','watsonx Orchestrate AI Gateway','reference','The configured model route uses the two headings from the work order.',['aiGateway']),
    node('Read customer records','Configured MCP gateway','not-reached','The next step handles the account read through the separate tool route.',['mcp'])
