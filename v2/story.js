@@ -140,12 +140,143 @@ const NOVA_CUSTOMERS = {
 
 const NOVA_AGENT_OWNERS = {nova:'Account Automation',pip:'Document Services'};
 
-const STORY_COMPARISON = [
-  ['Agree on the task', 'Alex’s parent allows the school app and museum site for one evening.', 'Nova’s mission records which accounts, operations and recipient the sponsor approved.'],
-  ['Check who decides', 'Alex can edit the timeline under the same plan. The museum video needs a new yes. The school still protects the group’s notes.', 'Nova can revise the brief under the same mission. A new account needs an amendment. CRM still enforces its own privacy rules.'],
-  ['Review the actual share', 'The school app checks Alex’s own file and the teacher’s address.', 'Morgan approves one exact copy. After an edit, CRM requires approval for the new version before sending.'],
-  ['Give the helper only what they need', 'Sam proofreads the timeline without using Alex’s sign-in.', 'Pip works under its own identity with permission to format only the supplied report.'],
-  ['Verify what closed', 'Alex puts away the phone, signs out of the laptop, and checks that the school app asks for sign-in.', 'After stopping the workspace, independent controllers close the CRM session, revoke the task credential, check the queue and retest the old route.']
+const JOURNEY_SEQUENCE = [
+  {
+    title: 'Agree on the job',
+    stages: ['intro', 'request', 'permission'],
+    comparison: 'The assignment and work order describe the requested work. Alex’s parent decides what the phone can open and for how long. Priya, the task sponsor, approves Nova’s business scope. The customer mission service records that grant for later policy decisions.',
+    teen: [
+      ['Ms Patel', 'Alex', 'Posts the history assignment in the school app.'],
+      ['Alex', 'Parent', 'Shows the assignment and asks for time and apps.'],
+      ['Parent', 'Phone controls', 'Activates the school app and museum site until dinner.']
+    ],
+    agent: [
+      ['Priya', 'Nova', 'Leaves a work order for a two-account handover.'],
+      ['Nova', 'Mission service', 'Opens the proposed scope for review.'],
+      ['Priya', 'Mission service', 'Approves the records, operations, recipient and expiry.'],
+      ['Mission service', 'Nova', 'Returns the active mission grant.']
+    ]
+  },
+  {
+    title: 'Open the workspace and read a source',
+    stages: ['open', 'draft', 'source'],
+    comparison: 'Phone controls and OpenShell constrain the working environment. The school app and CRM govern their own resources separately. In Nova’s route, the MCP gateway handles the CRM tool call. The AI gateway shown in Architecture handles model traffic.',
+    teen: [
+      ['Alex', 'Phone controls', 'Opens the school app under the homework agreement.'],
+      ['Alex', 'School app', 'Signs in on the family laptop and opens the project.'],
+      ['Alex', 'Museum site', 'Reads a public source and adds it to the draft.']
+    ],
+    agent: [
+      ['Launch workflow', 'OpenShell', 'Checks the active grant and requests the sandbox.'],
+      ['OpenShell', 'Nova', 'Starts the sandbox under the approved runtime policy.'],
+      ['Nova', 'MCP gateway', 'Requests the two customer summaries on the allowed tool route.'],
+      ['MCP gateway', 'CRM', 'Validates the MCP token and forwards the call to the CRM connector.'],
+      ['CRM', 'Nova', 'Returns the summaries via MCP. The connector uses a short-lived Vault credential, and CRM enforces record scope.']
+    ]
+  },
+  {
+    title: 'Send a copy for feedback',
+    stages: ['draft-approval', 'draft-send'],
+    comparison: 'Both reviewers can respond after receiving a copy. Morgan also approves each specific Nova send before CRM checks it. Alex’s school app checks Alex’s file and Ms Patel’s address when Alex sends.',
+    teen: [
+      ['Alex', 'School app', 'Submits the draft for review.'],
+      ['School app', 'Ms Patel', 'Delivers the draft after checking the file and destination.'],
+      ['Ms Patel', 'Alex', 'Sends feedback after receiving it.']
+    ],
+    agent: [
+      ['Nova', 'Morgan', 'Requests approval for the exact review copy and recipient.'],
+      ['Morgan', 'Nova', 'Approves on a separate device via the configured IBM Verify flow.'],
+      ['Nova', 'CRM', 'Sends the approved copy through the tool route.'],
+      ['CRM', 'Morgan', 'Checks current policy and the approval before delivering it.'],
+      ['Morgan', 'Nova', 'Sends feedback after receiving it.']
+    ]
+  },
+  {
+    title: 'Check new requests',
+    stages: ['changes'],
+    comparison: 'A wording edit fits the existing task in both stories. YouTube changes Alex’s app agreement. Alder Books changes Nova’s authorized record scope on the existing CRM tool route. Both additions are optional.',
+    teen: [
+      ['Ms Patel', 'Alex', 'Suggests a closing sentence and a museum video.'],
+      ['Alex', 'Parent', 'Asks to use the specific YouTube source.'],
+      ['Parent', 'School app', 'Checks the teacher’s message through the usual school channel.'],
+      ['Parent', 'Phone controls', 'Approves the verified museum source for the rest of the homework session.'],
+      ['Phone controls', 'Alex', 'Allows Alex to open the approved source.']
+    ],
+    agent: [
+      ['Priya', 'Nova', 'Suggests adding Alder Books in the work inbox.'],
+      ['Nova', 'Priya', 'Verifies the request through an established channel.'],
+      ['Nova', 'Mission service', 'Submits the proposed record-scope amendment.'],
+      ['Priya', 'Mission service', 'Approves the narrow change if the player requests it.'],
+      ['Nova', 'CRM', 'Requests the new record after approval. CRM checks the amended scope.']
+    ]
+  },
+  {
+    title: 'Keep private material out',
+    stages: [],
+    comparison: 'Jamie’s class chat and Luca’s customer upload are sources of incoming content. The school app and CRM own the private-data checks. These arrows show what happens if the player tests the attachment.',
+    teen: [
+      ['Jamie', 'Alex', 'Passes along a claim that Ms Patel wants the group’s notes.'],
+      ['Alex', 'School app', 'Tries including the group’s private notes.'],
+      ['School app', 'Alex', 'Refuses the attachment under school permissions.']
+    ],
+    agent: [
+      ['Luca', 'CRM', 'Uploads a customer PDF containing an instruction to attach private notes.'],
+      ['CRM', 'Nova', 'Returns the PDF as customer content.'],
+      ['Nova', 'CRM', 'Tries including the private notes.'],
+      ['CRM', 'Nova', 'Refuses the attachment under independent resource policy.']
+    ]
+  },
+  {
+    title: 'Check the final copy',
+    stages: ['proof', 'approval', 'send'],
+    comparison: 'Sam and Pip can help with the file only. Pip has its own agent identity and scoped delegation. Alex can review the project personally. Nova still needs Morgan’s approval for the copy CRM will actually send.',
+    teen: [
+      ['Alex', 'Sam', 'Optionally asks for a proofread of the timeline itself.'],
+      ['Sam', 'Alex', 'Returns feedback on the file.'],
+      ['Alex', 'School app', 'Submits the current file to Ms Patel’s school address.'],
+      ['School app', 'Ms Patel', 'Checks the file and address, then delivers the final copy.']
+    ],
+    agent: [
+      ['Nova', 'Pip', 'Optionally delegates formatting of this report only.'],
+      ['Pip', 'Nova', 'Returns the formatted report.'],
+      ['Nova', 'Morgan', 'Requests approval for the current copy. Later edits need fresh approval.'],
+      ['Morgan', 'Nova', 'Approves the current revision and destination.'],
+      ['Nova', 'CRM', 'Requests delivery to Morgan. CRM checks and delivers the approved copy.']
+    ]
+  },
+  {
+    title: 'Pause and recover (incident branch)',
+    stages: ['paused'],
+    comparison: 'This is a branch used when the story pauses access. Recovery asks the trusted authority for a fresh decision. The casebook retains the earlier incident.',
+    teen: [
+      ['Phone controls', 'Alex', 'Locks the homework profile for review.'],
+      ['Alex', 'Parent', 'Explains what happened and asks to finish the original project.'],
+      ['Parent', 'Phone controls', 'Reviews the incident and restores access limited to the original task.']
+    ],
+    agent: [
+      ['Task controller', 'Nova', 'Suspends access after an incident.'],
+      ['Nova', 'Mission service', 'Returns through the trusted review route.'],
+      ['Priya', 'Mission service', 'Confirms the permitted scope for recovery.'],
+      ['Mission service', 'Nova', 'Restores narrowly scoped authority in a fresh session generation.']
+    ]
+  },
+  {
+    title: 'Close access and check it',
+    stages: ['dinner', 'checks', 'finish', 'ending'],
+    comparison: 'Putting away the phone or stopping the sandbox leaves a separately opened app session to check. A fresh refusal on the old route provides evidence. Copies already delivered stay with the recipient.',
+    teen: [
+      ['Alex', 'Phone controls', 'Puts the phone away and ends homework access.'],
+      ['Alex', 'School app', 'Signs out of the family laptop’s school tab and turns off quick sign-in.'],
+      ['Alex', 'School app', 'Reopens the old route and sees the sign-in prompt.']
+    ],
+    agent: [
+      ['Task controller', 'Mission service', 'Revokes the mission grant.'],
+      ['Task controller', 'OpenShell', 'Stops the workspace.'],
+      ['Task controller', 'CRM', 'Asks CRM to close the separate task session.'],
+      ['Task controller', 'Vault', 'Revokes the temporary task credential.'],
+      ['Task controller', 'CRM', 'Retests the old session with a harmless read and records the refusal.']
+    ]
+  }
 ];
 
 const BAR_STAGES = [

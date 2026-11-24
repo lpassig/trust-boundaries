@@ -151,3 +151,31 @@ test('the school app displays sign-in only after the old route is checked',()=>{
  s=run(s,'controller-offline');
  assert.notEqual(I.objectStatus(s,'teen','laptop'),'Sign in');
 });
+
+test('both journeys map their changing story state to the same sequence guide',()=>{
+ const phases=vm.runInNewContext(fs.readFileSync(require.resolve('../v2/story.js'),'utf8')+'\nJOURNEY_SEQUENCE');
+ for(const mode of ['teen','agent']){
+  let s=R.fresh();
+  const stages=new Set();
+  const play=(action,payload)=>{s=run(s,action,payload);stages.add(R.stage(s));};
+  stages.add(R.stage(s));
+  s=R.act(s,mode,'begin').state;
+  stages.add(R.stage(s));
+  play('read-brief');
+  play('ask-pass',{scope:'task'});
+  for(const action of ['open','prepare','collect-source','attach-source'])play(action);
+  if(mode==='agent')play('approve-draft');
+  for(const action of ['send-draft','keep-minor','decline-extension','decline-private','proof-self'])play(action);
+  if(mode==='agent')play('approve');
+  play('send');
+  play('close-pass');
+  stages.add(R.stage({...s,checks:['pass','device','signin','queue']}));
+  stages.add(R.stage({...s,finished:true}));
+  stages.add(R.stage({...s,paused:true}));
+  for(const stage of stages){
+   const matches=phases.filter(phase=>phase.stages.includes(stage));
+   assert.equal(matches.length,1,mode+': '+stage);
+   assert(matches[0][mode].length>0);
+  }
+ }
+});

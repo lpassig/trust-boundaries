@@ -23,6 +23,9 @@ The sequence is consistent with the reference architecture after the corrections
 | End task | Homework profile ends; school tab may remain | Mission withdrawn, runtime stopped; credential/session/queue checked separately | Revocation controls future access and cannot recall delivered copies |
 | Verify closure | School controls test the old access route | Independent controllers revoke/check/retest | Unknown is not denied; evidence covers only the tested route |
 
+
+The **Journey sequence** guide pairs the two stories by control boundary. It distinguishes Ms Patel’s assignment and review from Priya’s sponsorship and Morgan’s separate copy approval. It also shows that Alex’s optional YouTube permission changes the device agreement, while Nova’s optional Alder Books amendment changes the allowed CRM record set on the existing tool route. **Follow this request** remains the trace of the player’s recorded action and outcome.
+
 ## Educational review
 
 The most useful choices teach a cause and a consequence: the app checks a link, the CRM withholds a private attachment, or the controller verifies the old route. The dialogue includes a short expandable note tied to the current step, with a brief explanation, relevant documentation and a manually stepped trace for completed actions. Alex uses a fictional managed homework app profile that evaluates the specific museum link. Commercial parental-control products vary in what they can enforce. In the helper conversation, Sam declines to share his sign-in and Pip declines broader access. No authentication or delegation request occurs. The player can proceed with the file-only handoff.

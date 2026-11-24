@@ -247,6 +247,7 @@ function render(){
  document.title='Trust Boundaries · '+e.title;
  $('#episode-label').textContent=e.eyebrow;$('#episode-title').textContent=e.title;$('#episode-tag').textContent=e.tag;
  $('#chapter-track').innerHTML=e.steps.map((text,i)=>`<span class="${i===c?'current':i<c?'complete':''}"><small>${i<c?'✓':String(i+1).padStart(2,'0')}</small>${esc(text)}</span>`).join('');
+ $('#sequence-position').textContent=JOURNEY_SEQUENCE[currentSequencePhase()].title;
  $('#scene-footnote').textContent=use?use.instruction:StoryInteractions.sceneSummary(s,mode);
  $('#place').textContent=e.place;$('#scene-condition').textContent=s.finished?(teen()?'READY FOR DINNER':'CHAPTER COMPLETE'):s.paused?(teen()?'LET’S TALK':'MISSION PAUSED'):s.ended?(teen()?'DINNER TIME':'MISSION REVOKED'):s.delivered?(teen()?'SENT TO MS PATEL':'DELIVERED'):s.message&&!s.verified?'NEW MESSAGE':'';
  const artStep=s.draft?7:0;
@@ -1445,12 +1446,58 @@ function novaDebrief(s){
   +'<li><b>Resist</b><br>The mission and runtime stopped. The credential, CRM session and queue were checked separately. The delivered copy stayed with the reviewer.</li>'
   +'</ul><p class="sources"><a href="https://blog.iamidentity.ai/blog/ai-agent-not-a-secret-manager/" target="_blank" rel="noopener noreferrer">Credential custody</a> · <a href="https://blog.iamidentity.ai/blog/litellm-breach-standing-credentials/" target="_blank" rel="noopener noreferrer">Credential lifetime case study</a> · <a href="https://blog.iamidentity.ai/blog/agent-policy-lifecycle/" target="_blank" rel="noopener noreferrer">Policy review and drift</a></p>';
 }
-function storyComparison(){
- return `<details class="debrief"><summary>Compare Alex and Nova</summary>
-  <ul class="route-list">${STORY_COMPARISON.map(([title,alex,nova])=>`<li>
-   <b>${esc(title)}</b><br><strong>Alex</strong> · ${esc(alex)}<br><strong>Nova</strong> · ${esc(nova)}
-  </li>`).join('')}</ul>
- </details>`;
+function currentSequencePhase(){
+ const current=stage();
+ const index=JOURNEY_SEQUENCE.findIndex(phase=>phase.stages.includes(current));
+ return Math.max(0,index);
+}
+function sequenceDiagram(name,messages){
+ const participants=[...new Set(messages.flatMap(([from,to])=>[from,to]))];
+ const guides=participants.map((_,i)=>`<i style="--lane:${i+1}"></i>`).join('');
+ return `<section class="sequence-diagram" style="--lanes:${participants.length}" aria-label="${name} sequence">
+  <h3>${name}</h3>
+  <div class="sequence-participants" aria-hidden="true">${participants.map(person=>`<b>${esc(person)}</b>`).join('')}</div>
+  <ol>${messages.map(([from,to,action])=>{
+   const start=participants.indexOf(from)+1,end=participants.indexOf(to)+1;
+   const left=(Math.min(start,end)-.5)/participants.length*100;
+   const right=(participants.length-Math.max(start,end)+.5)/participants.length*100;
+   return `<li>
+    <div class="sequence-lines" aria-hidden="true">${guides}<span class="sequence-arrow ${start>end?'points-left':''}" style="--from:${left}%;--to:${right}%"></span></div>
+    <p><strong>${esc(from)} <span aria-hidden="true">→</span><span class="visually-hidden"> to </span> ${esc(to)}</strong><span>${esc(action)}</span></p>
+   </li>`;
+  }).join('')}</ol>
+ </section>`;
+}
+function showJourneySequence(back=close,view=mode){
+ const current=currentSequencePhase();
+ showReference('Journey sequence',`
+  <p>Follow each handoff from top to bottom. Compare both stories to see who asks, decides and enforces each step.</p>
+  <div class="sequence-controls">
+   <label for="sequence-phase">Part of the story</label>
+   <select id="sequence-phase">${JOURNEY_SEQUENCE.map(({title},i)=>`<option value="${i}"${i===current?' selected':''}>${esc(title)}${i===current?' · current':''}</option>`).join('')}</select>
+   <div class="architecture-nav" role="group" aria-label="Journeys to show">
+    ${[['teen','Alex'],['agent','Nova'],['both','Compare both']].map(([key,label])=>`<button type="button" class="secondary" data-sequence-view="${key}" aria-pressed="${key===view}">${label}</button>`).join('')}
+   </div>
+  </div>
+  <div id="sequence-content"></div>
+  <div class="actions">${button('Back to the story',back)}</div>`, 'STORY GUIDE');
+ dialog.classList.add('is-architecture');
+ const phaseSelect=$('#sequence-phase');
+ const update=()=>{
+  const phase=JOURNEY_SEQUENCE[Number(phaseSelect.value)];
+  $('#sequence-content').innerHTML=`${view==='both'?`<p class="sequence-comparison"><strong>How the controls line up</strong> ${esc(phase.comparison)}</p>`:''}
+   <div class="sequence-pair${view==='both'?' compare':''}">
+    ${view==='agent'?'':sequenceDiagram('Alex',phase.teen)}
+    ${view==='teen'?'':sequenceDiagram('Nova',phase.agent)}
+   </div>`;
+ };
+ phaseSelect.onchange=update;
+ $$('[data-sequence-view]').forEach(option=>option.onclick=()=>{
+  view=option.dataset.sequenceView;
+  $$('[data-sequence-view]').forEach(control=>control.setAttribute('aria-pressed',String(control===option)));
+  update();
+ });
+ update();
 }
 
 function showPractice(answers=[],selected=null){
@@ -1488,7 +1535,7 @@ function showPractice(answers=[],selected=null){
 function showEnding(){
  if(!state().finished)return nextMove();
  const s=state(),e=episode(),alex=teen();
- const comparison=storyComparison();
+ const comparison=`<div class="actions">${button('Compare the journey sequences',()=>showJourneySequence(showEnding,'both'),'secondary')}</div>`;
  const practice=button('Try a new case',()=>showPractice());
  const otherMode=alex?'agent':'teen';
  const otherName=EPISODES[otherMode].name;
@@ -1611,6 +1658,7 @@ function showRequestTrace(event,back,backLabel='Back to the result'){
 }
 
 $('#request-trace').onclick=openTrace;
+$('#journey-sequence').onclick=()=>showJourneySequence();
 $('#product-map').onclick=showProductMap;
 $('#product-guide').onclick=()=>showBuyerGuide();
 $('#architecture').onclick=()=>showArchitecture();
