@@ -381,3 +381,20 @@ test('the identity pilot refuses and permits the same handoff with separate evid
  assert.equal(completion.request.delegation.outputRevision,start.fileRevision+1);
  assert.deepEqual(start.authority.resource.helpers,['pip-01']);
 });
+
+test('a verified CRM session retest survives a separate Vault revocation',()=>{
+ const finished=run(R.buyerExample(),'finish');
+ const closing=run(finished,'replay-containment');
+ const sessionOnly=run(run(closing,'remediate',{control:'session'}),'probe-session');
+ assert.equal(sessionOnly.containment.probeResult,'denied');
+ assert.equal(sessionOnly.containment.credentialRevoked,false);
+ assert(!R.secure(sessionOnly));
+ const steps=T.build(sessionOnly,'agent').nodes;
+ assert.equal(steps.find(node=>node.label==='Repeat the same status read').status,'checked');
+ assert.equal(steps.find(node=>node.label==='Task credential').status,'warning');
+ const restored=R.hydrate(sessionOnly,'agent');
+ const revoked=run(restored,'remediate',{control:'credential'});
+ assert.equal(revoked.containment.retests,sessionOnly.containment.retests);
+ assert(R.secure(revoked));
+ assert(run(revoked,'finish').finished);
+});

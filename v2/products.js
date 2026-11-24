@@ -286,13 +286,13 @@ const NOVA_BUYER_NEEDS = [
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
     pilot:{label:'Our connector uses a long-lived password',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
       outcome:'Give the data connector a short-lived credential for the job. Vault issues it and can revoke it when the work ends.',
-      integration:'Check support for your connector, target, and selected Vault secrets engine. Configure credential access in Vault and verify that CRM can close its existing session separately.',
+      integration:'Check support for your connector, target and Vault secrets engine. Wait for confirmed backend revocation before testing the old credential. CRM handles closure of its existing session separately.',
       checklist:{prerequisite:'A supported staging target and secrets engine with a read-only role. The Agentic IAM path also needs appropriately licensed Vault Enterprise 2.1.0 or later or an eligible HCP Vault Dedicated cluster.',
         owner:'The Vault team configures the role and lease. The connector owner holds the credential outside the agent context. The app owner handles its sessions.',
         success:'The connector opens a fresh connection with the short-lived credential and reads one allowed test record.',
         failure:'Revoke the lease, then verify a new connection using that same credential is refused. Check an already-open session separately.',
         evidence:'Save the lease ID, revocation outcome and target-side connection results. Omit credential values from the records.'}},
-    sources:[['Vault dynamic secret leases','https://developer.hashicorp.com/vault/docs/concepts/lease'],['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
+    sources:[['Vault dynamic secret leases','https://developer.hashicorp.com/vault/docs/concepts/lease'],['Vault lease revocation and confirmation','https://developer.hashicorp.com/vault/api-docs/system/leases#revoke-lease'],['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
     question:'Limit what the running agent can reach',
