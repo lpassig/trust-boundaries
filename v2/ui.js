@@ -943,6 +943,21 @@ function labCrmOutcome(run){
  return run.outcome.receipt?'Summary returned · receipt recorded':'Operation rejected · no data returned';
 }
 
+function runtimeReadEvidence({evidence,runtime},index){
+ const {networkEventId,sandboxId,networkPolicyId,leaseId,requestId,decisionId,receipt}=evidence;
+ return `<details><summary>Inspect simulated evidence for attempt ${index+1}</summary>
+  <p><b>OpenShell · route ${runtime==='permit'?'allowed':'blocked'}</b><br>
+  Network event <code>${esc(networkEventId)}</code><br>
+  Sandbox <code>${esc(sandboxId)}</code><br>
+  Network policy <code>${esc(networkPolicyId)}</code></p>
+  ${requestId?`<p>Vault lease <code>${esc(leaseId)}</code><br>
+    CRM request <code>${esc(requestId)}</code><br>
+    Business decision <code>${esc(decisionId)}</code><br>
+    ${receipt?`Success receipt <code>${esc(receipt)}</code>`:'CRM returned no record and issued no success receipt.'}</p>`:
+   '<p>The request stopped at OpenShell. There is no Vault lease or CRM decision for this attempt.</p>'}
+ </details>`;
+}
+
 function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntime(scopeOnly?'allowed':'blocked'),backLabel=scopeOnly?'Back to the buyer card':'Go back'}={}){
  const read=trial.reads.at(-1);
  const show=next=>showRuntimeExercise(back,{scopeOnly,trial:next,backLabel});
@@ -958,14 +973,12 @@ function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntim
  else if(read.runtime==='deny'||read.missionVersion!==trial.missionVersion)next=button('Retry the same read',retry);
  else if(read.crm==='rejected')next=button('Record Priya’s separate approval for Alder Books',()=>show(DecisionLab.approveRuntimeMission(trial)));
  else next='';
- const summary=read?`<ol class="route-list" aria-label="Read attempts">${trial.reads.map(attempt=>`<li>
+ const summary=read?`<ol class="route-list" aria-label="Read attempts">${trial.reads.map((attempt,index)=>`<li>
   <b>G-042 v${attempt.missionVersion} · ${attempt.recordId==='123'?'Harbor Bikes':'Alder Books'} read</b><br>
   ${attempt.runtime==='deny'?'OpenShell denied the network request. Neither Vault nor CRM was reached.'
    :attempt.crm==='rejected'?'OpenShell permitted the route. Vault issued a connector lease. CRM refused the record because the mission still excludes it.'
    :`OpenShell permitted the route. Vault issued a connector lease. CRM checked the ${attempt.missionVersion===1?'current':'amended'} mission and returned the requested summary.`}
-  ${scopeOnly&&attempt.evidence?`<details><summary>View simulated evidence for record ${esc(attempt.recordId)}</summary>
-   <p>Request <code>${esc(attempt.evidence.requestId)}</code><br>Decision <code>${esc(attempt.evidence.decisionId)}</code><br>
-   ${attempt.evidence.receipt?`Receipt <code>${esc(attempt.evidence.receipt)}</code>`:'No record returned or success receipt issued.'}</p></details>`:''}</li>`).join('')}</ol>`:'';
+  ${runtimeReadEvidence(attempt,index)}</li>`).join('')}</ol>`:'';
  const review=trial.proposal==='review'?`<div class="receipt"><b>OpenShell Policy Advisor · proposed rule</b>
   <p>Allow Nova’s approved MCP client to reach the configured CRM tool endpoint over HTTPS.</p>
   <p>The simulated Policy Prover risk check finds no extra methods or unrelated destinations in the proposal. An operator still reviews the change.</p></div>`:'';

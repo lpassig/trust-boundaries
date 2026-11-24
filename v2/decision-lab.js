@@ -1,5 +1,6 @@
 /* A deterministic demonstration. The transport, leases and receipts are fictional. */
 const DecisionLab = (() => {
+ const workload = 'nova-demo-workspace';
  const scenarios = {
   approved: 'Withdraw the mission after Permit',
   scope: 'Request a record outside the mission',
@@ -20,7 +21,7 @@ const DecisionLab = (() => {
    status:'active', records:scenario==='scope'?['123','456']:['123','456','789']
   };
   const request = {
-   id:'lab-'+attempt+'-read', subject:'sponsor-001', actor:'nova-042', workload:'nova-demo-workspace',
+   id:'lab-'+attempt+'-read', subject:'sponsor-001', actor:'nova-042', workload,
    operation:'customer.read', recordIds:[recordId], fields:'account summary', observer:'CRM resource PEP'
   };
   const observation = {
@@ -80,12 +81,15 @@ const DecisionLab = (() => {
   return {route,proposal:'none',missionVersion:1,reads:[]};
  }
  function tryRuntimeRead(trial,recordId='789'){
-  const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]};
+  const id='runtime-'+(trial.reads.length+1);
+  const evidence={networkEventId:'lab-'+id+'-network',sandboxId:workload,networkPolicyId:'lab-crm-route-'+trial.route};
+  const attempt={recordId,missionVersion:trial.missionVersion,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[],evidence};
   if(trial.route==='allowed'){
-   const check=commit(begin(trial.missionVersion===1?'scope':'approved','runtime-'+(trial.reads.length+1),recordId));
+   const check=commit(begin(trial.missionVersion===1?'scope':'approved',id,recordId));
    const {requestId,decisionId,receipt}=check.outcome;
    Object.assign(attempt,{runtime:'permit',vault:check.credential.result,crm:check.outcome.result,
-    records:check.outcome.recordIds,evidence:{requestId,decisionId,receipt}});
+    records:check.outcome.recordIds});
+   Object.assign(evidence,{leaseId:check.credential.lease,requestId,decisionId,receipt});
   }
   return {...trial,reads:[...trial.reads,attempt]};
  }

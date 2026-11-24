@@ -59,7 +59,8 @@ test('a Permit for one observation does not authorize a changed record or reques
 test('a new network rule opens the route while the same read still needs a separate mission amendment',()=>{
  const initial=Lab.startRuntime();
  const blocked=Lab.tryRuntimeRead(initial);
- assert.deepEqual(blocked.reads[0],{recordId:'789',missionVersion:1,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[]});
+ assert.deepEqual(blocked.reads[0],{recordId:'789',missionVersion:1,runtime:'deny',vault:'not-reached',crm:'not-reached',records:[],
+  evidence:{networkEventId:'lab-runtime-1-network',sandboxId:'nova-demo-workspace',networkPolicyId:'lab-crm-route-blocked'}});
  assert.equal(Lab.approveRuntimeMission(blocked),blocked);
  const proposal=Lab.openNetworkProposal(blocked);
  const rejected=Lab.decideNetworkProposal(proposal,false);
@@ -68,10 +69,12 @@ test('a new network rule opens the route while the same read still needs a separ
  assert.equal(allowed.missionVersion,1);
  const retried=Lab.tryRuntimeRead(allowed);
  assert.deepEqual(retried.reads.at(-1),{recordId:'789',missionVersion:1,runtime:'permit',vault:'permit',crm:'rejected',records:[],
-  evidence:{requestId:'lab-runtime-2-read',decisionId:'lab-runtime-2-decision',receipt:null}});
+  evidence:{networkEventId:'lab-runtime-2-network',sandboxId:'nova-demo-workspace',networkPolicyId:'lab-crm-route-allowed',
+   leaseId:'lab-runtime-2-lease',requestId:'lab-runtime-2-read',decisionId:'lab-runtime-2-decision',receipt:null}});
  const amended=Lab.approveRuntimeMission(retried);
  assert.deepEqual(Lab.tryRuntimeRead(amended).reads.at(-1),{recordId:'789',missionVersion:2,runtime:'permit',vault:'permit',crm:'committed',records:['789'],
-  evidence:{requestId:'lab-runtime-3-read',decisionId:'lab-runtime-3-decision',receipt:'receipt-lab-runtime-3-read'}});
+  evidence:{networkEventId:'lab-runtime-3-network',sandboxId:'nova-demo-workspace',networkPolicyId:'lab-crm-route-allowed',
+   leaseId:'lab-runtime-3-lease',requestId:'lab-runtime-3-read',decisionId:'lab-runtime-3-decision',receipt:'receipt-lab-runtime-3-read'}});
 });
 
 test('one open CRM route permits the approved account and denies the other until the mission changes',()=>{
