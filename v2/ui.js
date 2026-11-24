@@ -467,6 +467,12 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
 function showMaturity(back=showIntro,selected=null){
  const reopen=()=>showMaturity(back,selected);
  const title=stage=>`${stage.label} (${stage.name.toUpperCase()})`;
+ const backLabel='Back to Raise the BAR';
+ const stageExercises={
+  Build:['Compare the agent activity records',()=>showBuyerEvidence('iai',reopen,backLabel)],
+  Authorize:['Test what Nova can read',()=>showRuntimeExercise(reopen,{scopeOnly:true,backLabel})],
+  Resist:['Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel})]
+ };
  if(selected)return showReference(title(selected),
   `<p>${esc(selected.mode)}</p><ul class="route-list">
   <li><b>Start here</b><br>${esc(selected.first)}</li>
@@ -474,7 +480,7 @@ function showMaturity(back=showIntro,selected=null){
   <li><b>${esc(selected.value[0])} to measure</b><br>${esc(selected.value[1])}</li>
   <li><b>Where products fit</b><br>${esc(selected.next)}</li>
   <li><b>In Nova’s story</b><br>${esc(selected.example)}</li></ul>
-  <div class="actions">${button('Match a work problem to a control',()=>showBuyerGuide(reopen,'Back to Raise the BAR'))}
+  <div class="actions">${button(...stageExercises[selected.name])}${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
   ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
  showReference('Raise the BAR',`<p>Choose the stage that best describes one workflow. If the work is still manual, start with one assisted task.</p>
   <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.mode)}</li>`).join('')}</ol>
@@ -526,16 +532,16 @@ function showBuyerAccess(back,help=false){
   ${choices(options)}<div class="actions">${help?button('Back to symptoms',()=>showBuyerAccess(back),'secondary'):button('Back to the buyer guide',back,'secondary')}</div>`,
   'ACCESS AFTER THE JOB');
 }
-function showBuyerAccessCheck(back,key,{credential='',closeout=DecisionLab.startCloseoutCheck()}={}){
+function showBuyerAccessCheck(back,key,{credential='',closeout=DecisionLab.startCloseoutCheck(),backLabel=null}={}){
  const {symptom,owner,check,evidence,pilot,replay}=accessChecks[key];
- const reopen=()=>showBuyerAccessCheck(back,key,{credential,closeout});
+ const reopen=()=>showBuyerAccessCheck(back,key,{credential,closeout,backLabel});
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
- const exercise=replay?buyerCloseoutReplay(replay,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next})):
-  credentialComparison(StoryRules.buyerExample().sourceLease,credential,next=>showBuyerAccessCheck(back,key,{credential:next}));
+ const exercise=replay?buyerCloseoutReplay(replay,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next,backLabel})):
+  credentialComparison(StoryRules.buyerExample().sourceLease,credential,next=>showBuyerAccessCheck(back,key,{credential:next,backLabel}));
  showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li></ul>
   <h3>Try it in the simulation</h3>${exercise}
   <details class="debrief"><summary>Evidence to save</summary><p>${esc(evidence)}</p></details>
-  <div class="actions">${button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
+  <div class="actions">${backLabel?button(backLabel,back,'secondary'):button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
   ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
 }
 function buyerCloseoutReplay(replay,trial,advance){
@@ -562,7 +568,7 @@ function showBuyerActionScope(back){
   <details class="debrief"><summary>Technical details</summary><p>The CRM policy enforcement point (PEP) observes the actual operation and record. The customer policy decision point (PDP) checks them against the active mission. CRM enforces that decision at execution.</p></details>
   <div class="actions">${button('Test the record permission',()=>showRuntimeExercise(reopen,{scopeOnly:true}))}${button('Back to the buyer guide',back,'secondary')}</div>`,'BUYER GUIDE');
 }
-function showBuyerEvidence(product,back){
+function showBuyerEvidence(product,back,backLabel){
  if(product==='openshell')return showRuntimeExercise(back);
  if(product==='antenna')return showBuyerSignal(back);
  if(product==='verify')return showBuyerApprovalEvidence(back);
@@ -570,7 +576,7 @@ function showBuyerEvidence(product,back){
  const recorded=read(states.agent);
  const evidence=recorded||read(StoryRules.buyerExample());
  const origin=recorded?'Recorded in your Nova playthrough.':'Worked example from Nova’s story.';
- if(product==='iai')return showHelperAudit(evidence,null,back,origin);
+ if(product==='iai')return showHelperAudit(evidence,null,back,origin,backLabel);
  if(product==='orchestrate')return showBuyerHandoff(evidence,origin,back);
  return showBuyerVault(evidence,origin,back);
 }
@@ -749,7 +755,7 @@ function showPolicyConsole(back){
 }
 function agentRegistryDetails(){
  return `<ul class="route-list">
-  <li><b>IBM Agent Identity inventory</b><br>Nova and Pip each have an agent identity and accountable owner. Nova acts for Priya. Pip receives a separate file-formatting grant.</li>
+  <li><b>IBM Agent Identity inventory</b><br>${esc(NOVA_AGENT_OWNERS.nova)} owns Nova, and ${esc(NOVA_AGENT_OWNERS.pip)} owns Pip. Nova acts for Priya on this task. Pip receives a separate file-formatting grant.</li>
   <li><b>Vault Agent Registry</b><br>For the brokered read in this deployment, the team configures a Vault registration for Nova’s identity and a ceiling on what it can inherit when acting on behalf of a user.</li>
   <li><b>Customer mission record</b><br>Priya’s grant supplies the business scope for this job. CRM checks the actual request against it.</li></ul>${protocolSourceLinks(['agentInventory','vaultRegistry'])}`;
 }
@@ -898,9 +904,9 @@ function labCrmOutcome(run){
  return run.outcome.receipt?'Summary returned · receipt recorded':'Operation rejected · no data returned';
 }
 
-function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntime(scopeOnly?'allowed':'blocked')}={}){
+function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntime(scopeOnly?'allowed':'blocked'),backLabel=scopeOnly?'Back to the buyer card':'Go back'}={}){
  const read=trial.reads.at(-1);
- const show=next=>showRuntimeExercise(back,{scopeOnly,trial:next});
+ const show=next=>showRuntimeExercise(back,{scopeOnly,trial:next,backLabel});
  const readHarbor=()=>show(DecisionLab.tryRuntimeRead(trial,'123'));
  const retry=()=>show(DecisionLab.tryRuntimeRead(trial));
  let next;
@@ -928,7 +934,7 @@ function showRuntimeExercise(back,{scopeOnly=false,trial=DecisionLab.startRuntim
   <div class="receipt"><b>Current permissions</b><p>OpenShell route ${trial.route==='allowed'?'allowed':'blocked'} · G-042 v${trial.missionVersion} ${trial.missionVersion===2?'includes Alder Books':'excludes Alder Books'}.</p></div>
   ${review}${trial.proposal==='rejected'?'<p>The operator rejected the network change. The current route stays blocked.</p>':''}
   <div class="actions">${next}</div>${summary}
-  <div class="actions">${button('Reset the exercise',()=>showRuntimeExercise(back,{scopeOnly}),'secondary')}${button(scopeOnly?'Back to the buyer card':'Go back',back,'secondary')}</div>`,
+  <div class="actions">${button('Reset the exercise',()=>showRuntimeExercise(back,{scopeOnly,backLabel}),'secondary')}${button(backLabel,back,'secondary')}</div>`,
   scopeOnly?'APP PERMISSION EVIDENCE':'REFERENCE ARCHITECTURE');
 }
 
@@ -1125,8 +1131,8 @@ function showHelperResult(){
   `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${!teen()?button('Explore deployment options for Pip',showPipDeployment,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
   teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');
 }
-function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recorded in your Nova playthrough.'){
- const review=choice=>showHelperAudit(receipt,choice,back,origin);
+function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recorded in your Nova playthrough.',backLabel=back===showHelperResult?'Back to Pip’s result':'Back to the buyer card'){
+ const review=choice=>showHelperAudit(receipt,choice,back,origin,backLabel);
  const activities=[
   ['Delegated human',['Unclear','Priya · '+receipt.originalSubject],true],
   ['Requested the work',['shared-report-account','Nova · '+receipt.requestedBy],true],
@@ -1135,12 +1141,13 @@ function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recor
  ];
  showReference('Who did what in Pip’s handoff?',`<p>${esc(origin)} Compare the shared account with the record of who acted.</p>
   ${decisionComparison(['Shared-account example','This handoff'],activities)}
+  <details class="debrief"><summary>Check the agent owners</summary><p>The example inventory lists ${esc(NOVA_AGENT_OWNERS.nova)} as Nova’s owner and ${esc(NOVA_AGENT_OWNERS.pip)} as Pip’s owner. Priya sponsors this particular job.</p></details>
   ${answer===null?choices([
    ['Priya delegated, Nova requested, Pip formatted','',()=>review(true)],
    ['Priya delegated, Pip requested, Nova formatted','',()=>review(false)],
    ['Morgan delegated, Nova requested, Pip formatted','',()=>review(false)]
   ]):`<div class="receipt" role="status"><b>${answer?'That matches the record.':'Check who delegated and who executed.'}</b><p>IBM Agent Identity supplies the delegated identity context. The workflow record ties that context to Pip’s file-only action. Pip used its own identity and received no parent credential or CRM access.</p></div>`}
-  <div class="actions">${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(back===showHelperResult?'Back to Pip’s result':'Back to the buyer card',back,'secondary')}</div>`,
+  <div class="actions">${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(backLabel,back,'secondary')}</div>`,
   'DELEGATED IDENTITY');
 }
 

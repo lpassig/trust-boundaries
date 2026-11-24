@@ -138,6 +138,8 @@ const NOVA_CUSTOMERS = {
   '789':'Alder Books'
 };
 
+const NOVA_AGENT_OWNERS = {nova:'Account Automation',pip:'Document Services'};
+
 const STORY_COMPARISON = [
   ['Agree on the task', 'Alex’s parent allows the school app and museum site for one evening.', 'Nova’s mission records which accounts, operations and recipient the sponsor approved.'],
   ['Check who decides', 'Alex can edit the timeline under the same plan. The museum video needs a new yes. The school still protects the group’s notes.', 'Nova can revise the brief under the same mission. A new account needs an amendment. CRM still enforces its own privacy rules.'],
@@ -156,10 +158,10 @@ const BAR_STAGES = [
   {name:'Authorize',label:'Semi-Autonomous',mode:'The agent calls tools at defined steps, within limits you can test.',
    value:['Operational value','Compare how long the same approved task takes before and after the pilot. Track manual handoffs and confirm that the out-of-scope request still fails.'],
    first:'Choose one tool and one allowed operation on test data. Give the agent only that scope and a short-lived credential where the target supports it. Have the target enforce the operation outside the agent. Add exact approval before sensitive writes or sends.',
-   evidence:'Run a permitted and a refused request over the same connection. Save the observed operation, scope, decision and actual result.',
-   next:'Use your application’s enforcement first. Evaluate a broker such as Vault for short-lived credentials, IBM Verify for separate-device approval, or an MCP gateway when you need a shared tool boundary.',
+   evidence:'Run a permitted and a refused request over the same allowed route. Save the observed operation, scope, decision and actual result.',
+   next:'Have the business owner set scope and the app team enforce each action. Evaluate Vault for short-lived credentials, IBM Verify for separate-device approval, or an MCP gateway for a shared tool boundary.',
    example:'Nova can reach CRM. CRM returns an approved account and refuses Alder Books until the scope changes.'},
-  {name:'Resist',label:'Governed Autonomy',mode:'The agent chooses tools or adapts its plan within an approved scope. The team can detect, stop, and verify risky activity.',
+  {name:'Resist',label:'Governed Autonomy',mode:'The agent chooses tools or adapts its plan within an approved scope. The team can detect risky activity and verify that containment worked.',
    value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
    first:'Start with one alert and a named response owner. Practice stopping the workload, revoking its credential and closing the app session separately. Check waiting work and retest what previously worked.',
    evidence:'Keep the alert, each controller’s outcome and a fresh check of the old route. An unreachable controller leaves its part unverified.',
