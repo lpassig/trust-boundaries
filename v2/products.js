@@ -337,6 +337,22 @@ const NOVA_BUYER_NEEDS = [
     sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools'],['MCP HTTP authorization','https://modelcontextprotocol.io/specification/latest/basic/authorization']]
   },
   {
+    question:'Spot unusual agent activity and decide when to intervene',
+    product:'IBM Verify Identity Protection (AuthMind)',
+    fit:'Evaluate it when security teams need to connect observed identity activity to agents, resources and potential policy violations.',
+    example:'CRM refuses a private attachment. A later event in the story raises an identity alert, and a configured response policy pauses Nova’s task session.',
+    pilot:{secondary:true,label:'We need to spot unusual agent access',evidence:'risk',evidenceLabel:'Compare a routine refusal and a risk alert',
+      outcome:'Connect identity activity to the agent and the resource so the security team can investigate unusual access.',
+      integration:'Connect supported activity sources in a test environment. Define which event the security team would investigate and which response owner can pause the affected session.',
+      test:'Compare one routine application refusal with one controlled risk event. Check the alert’s actor and resource, then verify the configured response separately.',
+      checklist:{prerequisite:'One named test agent, a test resource, a supported activity source and a documented alert and response policy.',
+        owner:'The identity monitoring team verifies coverage and alert context. The workload or session owner verifies the pause.',
+        success:'The risky activity is attributed to the expected agent and target. The response owner can show the result for that task session.',
+        failure:'A missing activity source leaves detection coverage unverified. An alert with a missing controller result leaves the response unverified.',
+        evidence:'Save the agent and resource references, source event and alert IDs, and the separate response result.'}},
+    sources:[['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
+  },
+  {
     question:'Share a risk or session alert with other systems',
     product:'IBM Verify Antenna',
     fit:'Evaluate it when connected systems need to exchange security events. Check that each receiver can take the action your workflow requires.',

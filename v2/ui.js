@@ -480,7 +480,9 @@ function showMaturity(back=showIntro,selected=null){
   <li><b>${esc(selected.value[0])} to measure</b><br>${esc(selected.value[1])}</li>
   <li><b>Where products fit</b><br>${esc(selected.next)}</li>
   <li><b>In Nova’s story</b><br>${esc(selected.example)}</li></ul>
-  <div class="actions">${button(...stageExercises[selected.name])}${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
+  <div class="actions">${button(...stageExercises[selected.name])}
+  ${selected.name==='Resist'?button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
+  ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
   ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
  showReference('Raise the BAR',`<p>Choose the stage that best describes one workflow. If the work is still manual, start with one assisted task.</p>
   <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.mode)}</li>`).join('')}</ol>
@@ -570,6 +572,7 @@ function showBuyerActionScope(back){
 }
 function showBuyerEvidence(product,back,backLabel){
  if(product==='openshell')return showRuntimeExercise(back);
+ if(product==='risk')return showBuyerRisk(back,backLabel);
  if(product==='antenna')return showBuyerSignal(back);
  if(product==='verify')return showBuyerApprovalEvidence(back);
  const read=s=>product==='vault'?s.sourceLease&&{lease:s.sourceLease,containment:s.containment}:s.helperReceipts.at(-1);
@@ -656,6 +659,21 @@ function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
    <li><b>Independent retest</b><span>${probe}</span></li>
   </ol>
   <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'SECURITY SIGNAL EVIDENCE');
+}
+function showBuyerRisk(back,backLabel='Back to the buyer card',trial=StoryRules.buyerExample({stopAtEdit:true})){
+ const advance=action=>showBuyerRisk(back,backLabel,StoryRules.act(trial,'agent',action).state);
+ const refusal=trial.history.findLast(entry=>entry.action==='try-private');
+ const alert=trial.paused;
+ const next=alert?button('Replay from the start',()=>showBuyerRisk(back,backLabel),'secondary'):
+  refusal?button('Replay the later risk alert',()=>advance('bypass-notes')):button('Replay a routine CRM refusal',()=>advance('try-private'));
+ showReference('What caused the task to pause?',`<p>Compare a normal refusal in Nova’s customer app with a later alert from identity monitoring. The activity and response are simulated.</p>
+  <ol class="lab-summary" aria-label="Application, alert and response">
+   <li><b>CRM enforcement</b><span>${refusal?'CRM refused the private attachment before delivery.':'Awaiting the test request.'}</span></li>
+   <li><b>Verify Identity Protection (AuthMind)</b><span>${alert?'The simulated alert identifies Nova’s unusual access activity involving CRM.':refusal?'This routine refusal produces no alert in the example.':'Awaiting activity.'}</span></li>
+   <li><b>Configured response policy</b><span>${alert?'The task session was paused. Priya’s review is required before bounded access resumes.':'The approved task remains active.'}</span></li>
+  </ol>
+  ${alert?`<p class="small-print">Save the alert and the controller’s pause result as separate evidence. The test verifies a task pause. Credential revocation and app-session closure each need their own checks.</p>`:''}
+  <div class="actions">${next}${button(backLabel,back,'secondary')}</div>`,'IDENTITY RISK EVIDENCE');
 }
 function showProductMap(selectedProduct='',back=null,backLabel='Back to the buyer guide'){
  const s=states.agent;
