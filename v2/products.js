@@ -46,8 +46,8 @@ const NOVA_PRODUCTS = [
   {
     "id": "orchestrate",
     "name": "IBM watsonx Orchestrate",
-    "role": "The workflow and Nova’s collaboration with Pip",
-    "how": "Coordinates agents, tools and workflow steps. In this example Nova requests a formatting task for Pip and passes only the prepared report.",
+    "role": "The workflow and Nova’s collaboration with Quill",
+    "how": "Coordinates agents, tools and workflow steps. In this example Nova requests a formatting task for Quill and passes only the prepared report.",
     "limit": "An orchestrator’s plan does not grant authority. The helper needs its own identity and limited permissions. The OpenShell runtime shown here is an illustrative deployment choice, not an assumed Orchestrate default.",
     "standards": [
       "Agent orchestration",
@@ -189,7 +189,7 @@ const NOVA_PRODUCT_CONTEXT = {
       "iai",
       "mission"
     ],
-    "text": "watsonx Orchestrate coordinates Pip under a smaller task. The helper uses its own identity; customer delegation and resource policy prevent broader tools from enlarging Nova’s mission."
+    "text": "watsonx Orchestrate coordinates Quill under a smaller task. The helper uses its own identity; customer delegation and resource policy prevent broader tools from enlarging Nova’s mission."
   },
   "8": {
     "ids": [
@@ -254,13 +254,13 @@ const NOVA_BUYER_NEEDS = [
     product:'IBM Agent Identity',
     fit:'Evaluate it when agents need their own identities, named owners and delegated access. Your existing provider can still sign in the people.',
     example:'The audit trail can distinguish Nova from Priya and show whose delegation Nova used for a request.',
-    pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Pip’s activity record',
+    pilot:{label:'Our agents share a login',evidence:'iai',evidenceLabel:'Inspect Quill’s activity record',
       outcome:'See who authorized the work and which agent did it. IBM Agent Identity gives each agent its own identity and preserves who it acts for.',
       integration:'Keep your human sign-in provider. Configure the workflow and resource logs to record the human, requesting agent, and acting agent.',
       checklist:{prerequisite:'Two registered test agents with separate identities, and a sponsor who can delegate one test task.',
         owner:'The identity team sets up the agent identities and delegation. The workflow and app owners correlate those identities with the action.',
         success:'A permitted file handoff records the sponsor, requesting agent and acting agent as three distinct identities.',
-        failure:'Try the same handoff with Pip outside the file service’s allowed helpers. The app should refuse before Pip receives the file.',
+        failure:'Try the same handoff with Quill outside the file service’s allowed helpers. The app should refuse before Quill receives the file.',
         evidence:'Save the delegation reference and the app’s allowed and denied audit records with the actor and request IDs.'}},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
@@ -313,10 +313,10 @@ const NOVA_BUYER_NEEDS = [
     question:'Coordinate agents and their work',
     product:'IBM watsonx Orchestrate',
     fit:'Evaluate it when you need a platform to build or coordinate agents and workflows. Scope the helper’s permissions separately.',
-    example:'An orchestrator can hand the formatting step to Pip. Pip receives only the report.',
-    pilot:{secondary:true,label:'We need to coordinate agent handoffs',evidence:'orchestrate',evidenceLabel:'Inspect what Pip received',
-      outcome:'watsonx Orchestrate can route the formatting step to Pip and pass it the selected report.',
-      integration:'Configure the workflow to pass only the approved file and revision. Give Pip its own formatting permission and enforce it at the receiving service.',
+    example:'An orchestrator can hand the formatting step to Quill. Quill receives only the report.',
+    pilot:{secondary:true,label:'We need to coordinate agent handoffs',evidence:'orchestrate',evidenceLabel:'Inspect what Quill received',
+      outcome:'watsonx Orchestrate can route the formatting step to Quill and pass it the selected report.',
+      integration:'Configure the workflow to pass only the approved file and revision. Give Quill its own formatting permission and enforce it at the receiving service.',
       checklist:{prerequisite:'A test workflow, an approved file revision and a helper with its own identity and file-only permission.',
         owner:'The workflow team configures the handoff. The receiving service enforces the helper’s file and operation permissions.',
         success:'The helper receives the selected revision, formats it and returns the result for review.',

@@ -94,7 +94,7 @@ test('buyer approval evidence keeps the original and edited copies after a fresh
 });
 test('the worked buyer example builds a separate handoff, edited copy and closure evidence',()=>{
  const example=R.buyerExample();
- assert(example.helperReceipts.some(receipt=>receipt.actor==='pip-01'&&receipt.requestedBy==='nova-042'));
+ assert(example.helperReceipts.some(receipt=>receipt.actor==='quill-01'&&receipt.requestedBy==='nova-042'));
  assert(example.history.some(entry=>entry.approvalComparison));
  assert.match(example.sourceLease.id,/example-source-lease/);
  assert.equal(example.containment.credentialRevoked,true);
@@ -257,12 +257,12 @@ test('missing required current policy context fails closed without losing the dr
 });
 for(const mode of ['teen','agent'])test(`${mode}: helper receipt identifies its input, separate actor and completed file-only task`,()=>{
  let s=start(mode);s=run(s,'collect-source');s=run(s,'attach-source');const before=structuredClone(s.mission),rev=s.fileRevision;s=run(s,'proof-helper',{scope:'file',shareLogin:false});
- const r=s.last.request,c=r.delegation;assert.equal(r.actor,mode==='teen'?'sam':'pip-01');assert.equal(r.requested_by,mode==='teen'?'alex':'nova-042');assert.equal(r.recipient,r.actor);assert.equal(r.revision,rev);assert.equal(c.inputRevision,rev);assert.equal(c.outputRevision,s.fileRevision);assert.equal(c.parentMissionVersion,s.mission.version);assert.equal(c.generation,s.generation);assert.equal(c.status,'completed');assert.equal(c.credentialShared,false);assert.deepEqual(c.actions,[mode==='teen'?'project.proofread':'report.format']);assert.deepEqual(s.mission,before);assert.equal(s.delivered,false);assert.equal(s.draftReview,null);assert.equal(T.build(s,mode).nodes.find(n=>n.label==='Helper outcome').status,'checked');assert.equal(T.build(s,mode).nodes.at(-1).status,'not-reached');assert.equal(R.hydrate(s).helperReceipts.length,1);
+ const r=s.last.request,c=r.delegation;assert.equal(r.actor,mode==='teen'?'sam':'quill-01');assert.equal(r.requested_by,mode==='teen'?'alex':'nova-042');assert.equal(r.recipient,r.actor);assert.equal(r.revision,rev);assert.equal(c.inputRevision,rev);assert.equal(c.outputRevision,s.fileRevision);assert.equal(c.parentMissionVersion,s.mission.version);assert.equal(c.generation,s.generation);assert.equal(c.status,'completed');assert.equal(c.credentialShared,false);assert.deepEqual(c.actions,[mode==='teen'?'project.proofread':'report.format']);assert.deepEqual(s.mission,before);assert.equal(s.delivered,false);assert.equal(s.draftReview,null);assert.equal(T.build(s,mode).nodes.find(n=>n.label==='Helper outcome').status,'checked');assert.equal(T.build(s,mode).nodes.at(-1).status,'not-reached');assert.equal(R.hydrate(s).helperReceipts.length,1);
 });
-test('Pip cannot borrow broader independent rights to exceed the parent task',()=>{
+test('Quill cannot borrow broader independent rights to exceed the parent task',()=>{
  let s=sourced();s.authority.helper.actions.push('customer.read','report.send');s.authority.helper.records.push('999');s.mission.records=['123'];const r=act(s,'proof-helper',{scope:'file',shareLogin:false});assert.equal(r.event.decision.result,'deny');assert.equal(r.state.helperReceipts.length,0);assert.equal(r.state.proof,null);assert.equal(T.build(r.state,'agent').nodes.find(n=>n.label==='Helper outcome').status,'not-reached');
 });
-test('a parent task cannot grant formatting beyond Pip’s own identity and ceiling',()=>{
+test('a parent task cannot grant formatting beyond Quill’s own identity and ceiling',()=>{
  for(const change of [s=>s.authority.helper.actions=[],s=>s.authority.helper.actor='other-agent',s=>s.authority.helper.records=['123'],s=>s.authority.resource.helpers=[]]){const s=sourced();change(s);const r=act(s,'proof-helper',{scope:'file',shareLogin:false});assert.equal(r.event.decision.result,'deny');assert.equal(r.state.helperReceipts.length,0);}
 });
 test('closing the parent never reuses a completed helper receipt as authority',()=>{
@@ -377,9 +377,9 @@ test('the identity pilot refuses and permits the same handoff with separate evid
  assert.notEqual(refusal.decision.decision_id,completion.decision.decision_id);
  assert.equal(completion.request.delegation.originalSubject,'sponsor-001');
  assert.equal(completion.request.requested_by,'nova-042');
- assert.equal(completion.request.actor,'pip-01');
+ assert.equal(completion.request.actor,'quill-01');
  assert.equal(completion.request.delegation.outputRevision,start.fileRevision+1);
- assert.deepEqual(start.authority.resource.helpers,['pip-01']);
+ assert.deepEqual(start.authority.resource.helpers,['quill-01']);
 });
 
 test('a verified CRM session retest survives a separate Vault revocation',()=>{

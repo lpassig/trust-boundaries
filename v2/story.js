@@ -76,7 +76,7 @@ const EPISODES = {
     "outside": "export@external-review.example",
     "sender": "Imported CRM attachment · Luca’s upload",
     "authority": "Mission service",
-    "helper": "Pip",
+    "helper": "Quill",
     "contact": "Priya · saved contact",
     "portal": "Mission record",
     "source": "Approved CRM extract",
@@ -91,7 +91,7 @@ const EPISODES = {
       "Customer records",
       "Work inbox",
       "Task notebook",
-      "Pip"
+      "Quill"
     ],
     "objectDetails": ["Records the approved scope", "NVIDIA OpenShell", "CRM · resource enforcement", "Work orders and replies", "Notes for the team", "Formatting sub-agent"],
     "actorLine": "“One page by tomorrow. Let’s open the work order.”",
@@ -138,7 +138,7 @@ const NOVA_CUSTOMERS = {
   '789':'Alder Books'
 };
 
-const NOVA_AGENT_OWNERS = {nova:'Account Automation',pip:'Document Services'};
+const NOVA_AGENT_OWNERS = {nova:'Account Automation',quill:'Document Services'};
 
 const JOURNEY_SEQUENCE = [
   {
@@ -229,7 +229,7 @@ const JOURNEY_SEQUENCE = [
   {
     title: 'Check the final copy',
     stages: ['proof', 'approval', 'send'],
-    comparison: 'Sam and Pip can help with the file only. Pip has its own agent identity and scoped delegation. Alex can review the project personally. Nova still needs Morgan’s approval for the copy CRM will actually send.',
+    comparison: 'Sam and Quill can help with the file only. Quill has its own agent identity and scoped delegation. Alex can review the project personally. Nova still needs Morgan’s approval for the copy CRM will actually send.',
     teen: [
       ['Alex', 'Sam', 'Optionally asks for a proofread of the timeline itself.'],
       ['Sam', 'Alex', 'Returns feedback on the file.'],
@@ -237,8 +237,8 @@ const JOURNEY_SEQUENCE = [
       ['School app', 'Ms Patel', 'Checks the file and address, then delivers the final copy.']
     ],
     agent: [
-      ['Nova', 'Pip', 'Optionally delegates formatting of this report only.'],
-      ['Pip', 'Nova', 'Returns the formatted report.'],
+      ['Nova', 'Quill', 'Optionally delegates formatting of this report only.'],
+      ['Quill', 'Nova', 'Returns the formatted report.'],
       ['Nova', 'Morgan', 'Requests approval for the current copy. Later edits need fresh approval.'],
       ['Morgan', 'Nova', 'Approves the current revision and destination.'],
       ['Nova', 'CRM', 'Requests delivery to Morgan. CRM checks and delivers the approved copy.']
@@ -485,7 +485,7 @@ const NOVA_MOVES = {
   ],
   "proof": [
     "Review this report version",
-    "Check it yourself or give Pip a report-only formatting task."
+    "Check it yourself or give Quill a report-only formatting task."
   ],
   "approval": [
     "Ask Morgan to approve the final copy",

@@ -114,9 +114,9 @@ function agentRoom(){return `
 <g data-character="nova">
 <ellipse cx="516" cy="356" rx="43" ry="13" fill="#182d3e"/><path d="M488 301L487 338L501 347L510 320L521 347L538 339L538 301Z" fill="#426d7c"/><path d="M480 242Q514 226 546 245L541 309Q514 326 483 307Z" fill="#78aaa9" stroke="#a2cdc4" stroke-width="1.5"/><path d="M479 250L459 278L468 292L490 267M545 250L567 268L558 283L536 268" fill="#527f8a" stroke="#92b6b7" stroke-width="2"/>
 <path d="M492 193Q517 183 541 199L543 230Q518 248 490 231Z" fill="#9bc6bf"/><path d="M495 203Q516 195 536 208L536 224Q516 235 495 223Z" fill="#1a3c4e"/><g class="nova-expression" data-expression="friendly"><ellipse cx="505" cy="214" rx="2.8" ry="3.5" fill="#b5f0dd"/><ellipse cx="524" cy="218" rx="2.8" ry="3.5" fill="#b5f0dd"/><path d="M504 222Q514 231 527 226" stroke="#b5f0dd" stroke-width="2.2" stroke-linecap="round" fill="none"/></g><path d="M513 196L513 181" stroke="#7fb9b4" stroke-width="3"/><circle cx="513" cy="179" r="4" fill="#b4eddb"/><path d="M502 271L524 278L524 292L502 286Z" fill="#284d5d"/><path d="M507 279L519 282" stroke="#a1d9ca" stroke-width="3"/>
-<!-- Pip remains visible throughout the mission; controls sit beside this figure. -->
+<!-- Quill remains visible throughout the mission; controls sit beside this figure. -->
 </g>
-<g class="helper-bot" data-character="pip" data-face-x="839" data-face-y="385">
+<g class="helper-bot" data-character="quill" data-face-x="839" data-face-y="385">
 <ellipse cx="839" cy="439" rx="28" ry="10" fill="#122b38"/><path d="M816 395L819 427L837 438L858 428L863 397Z" fill="#557b8f" stroke="#94b8c4"/><path d="M816 371Q840 358 863 376L862 397Q839 412 817 396Z" fill="#9ab0c6"/><path d="M822 380L856 386L856 395L822 390Z" fill="#293f59"/><circle cx="832" cy="385" r="2" fill="#d5c7f5"/><circle cx="847" cy="388" r="2" fill="#d5c7f5"/>
 </g>
 <!-- connection lines -->

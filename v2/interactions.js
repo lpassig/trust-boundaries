@@ -37,17 +37,22 @@ const StoryInteractions = (() => {
    laptop:'The CRM is the resource policy enforcement point (PEP). It checks the requested operation and controls whether data leaves.',
    brief:'The work inbox holds Priya’s original order and later messages. Morgan’s review is a separate action for the copy Nova is about to share.',
    notebook:'The task notebook keeps ordinary context and the source of delivery receipts.',
-   helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
+   helper:'Quill formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
    launchWorkflow:'The account team’s launch workflow checks the active mission and requests a sandbox as an authorized OpenShell operator. OpenShell starts Nova once the isolation boundary is verified.',
-   policyConsole:'The mission record and identity systems supply trusted facts. The customer policy decision point evaluates the request, and CRM applies the decision.',
+   policyInfo:'The policy information point supplies trusted facts from the agent identity, current mission and CRM. Several services can supply those facts.',
+   policyDecision:'The customer policy decision point evaluates the exact operation observed by CRM against current task and resource rules. This service is a proposed integration.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
+   verify:'IBM Verify can authenticate a reviewer and collect their response on a separate device. The application records which copy Morgan approved, and CRM checks it at send time.',
+   orchestrate:'IBM watsonx Orchestrate can coordinate the handoff from Nova to Quill. The configured file service checks whether Quill can receive and format the document.',
    aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
    mcpGateway:'The configured MCP gateway validates the request at its own endpoint and forwards the allowed tool call. CRM separately enforces which records come back.',
    vaultControl:'HashiCorp Vault can issue a short-lived read credential to the connector. The CRM checks which customer records the connector may read and closes its own task session.',
    crmAttachment:'Luca’s upload arrived through the customer portal. Nova reads it as source material. The mission record and CRM policy govern what Nova can send.',
    riskMonitor:'IBM Verify Identity Protection (AuthMind) can observe identity activity from connected systems and flag unusual access for investigation.',
+   antenna:'IBM Verify Antenna can exchange security events using the OpenID Shared Signals Framework. A configured receiver handles the event and calls the appropriate control.',
+   controllers:'Configured controllers stop the OpenShell workspace, revoke the Vault lease, close the CRM session and check queued work. Each control supplies its own evidence.',
    source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
    reviewer:'Morgan reviews and approves the exact file revision and destination before each send.',
    outside:'Luca is a customer contact at Harbor Bikes. He uploads a document through the customer portal, where Nova receives it as CRM source material.'
@@ -64,10 +69,17 @@ const StoryInteractions = (() => {
   ];
   return [
    ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
-   ['Work desk',['brief','workOrder','parent','launchWorkflow','policyConsole','registries','notebook']],
-   ['Agent workspace',['phone','aiGateway','mcpGateway','vaultControl','riskMonitor']],
-   ['Customer records',['laptop','source',...(s.message?['crmAttachment']:[])]]
+   ['Work desk',['brief','workOrder','parent','launchWorkflow','registries','verify','notebook']],
+   ['Agent workspace',['phone','orchestrate','aiGateway','mcpGateway','vaultControl']],
+   ['Policy checks',['policyInfo','policyDecision','laptop']],
+   ['Customer records',['source',...(s.message?['crmAttachment']:[])]],
+   ['Signals and response',['riskMonitor','antenna','controllers']]
   ];
+ }
+ function stationForPin(mode,key){
+  const stations=mode==='teen'?{phone:'Alex’s phone',laptop:'Family laptop',brief:'Project desk'}:
+   {phone:'Agent workspace',laptop:'Policy checks',parent:'Work desk',brief:'Work desk',notebook:'Work desk'};
+  return stations[key];
  }
  function findTarget(mode,targets,key,pin){
   if(targets.includes(key))return key;
@@ -94,7 +106,7 @@ const StoryInteractions = (() => {
   if(!active)return unavailable(s.ended?'Task access has ended. Put this item away to continue the independent closing checks.':id==='contact'?'Keep this contact for later requests. Put it away to read the new assignment and agree on the task.':'Agree on this task before using its working items. You can look closer or put this item away.');
   if(id==='contact'&&s.message&&!s.evidence.includes('contact')&&!s.delivered)return use(inbox,teen?'Check with my teacher':'Verify the sponsor’s request',teen?'Choose School inbox on your phone to check with your saved teacher contact.':'Choose Work inbox to verify the new requests with the known sponsor.','action','verify-contact');
   if(id==='source'&&s.draft&&!s.caption&&!s.delivered)return use(draft,'Add the source credit',teen?'Choose School app to put the museum page title beneath your timeline.':'Choose Customer records to cite the approved extract in the briefing.','action','attach-source');
-  if(id==='draft'&&s.draft&&!s.delivered)return {...use(draft,teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Pip for report-only formatting.','draft'),targets:[draft,'helper'],routes:{[draft]:'draft',helper:'helper'}};
+  if(id==='draft'&&s.draft&&!s.delivered)return {...use(draft,teen?'Review my project':'Review the report',teen?'Choose School app to read your timeline, or Sam to ask him to proofread it.':'Choose Customer records to review the report, or Quill for report-only formatting.','draft'),targets:[draft,'helper'],routes:{[draft]:'draft',helper:'helper'}};
   if(id==='approval'&&s.approval&&!s.approval.used&&!s.delivered)return use('laptop','Review the approved share','Choose Customer records to review the current share. The resource still checks the exact operation before delivery.',s.approval.purpose==='draft-review'?'draftReview':'send');
   if(id==='clue'&&s.message&&!s.delivered)return use(inbox,'Revisit the clarified requests',teen?'Choose School inbox to revisit the teacher’s clarification.':'Choose Work inbox to revisit the verified requests.','changes');
   if(id==='delivery'&&s.delivered&&!s.notes.length)return use('notebook','Keep the receipt with a note',teen?'Choose Notebook to save the submission receipt with a note.':'Choose Task notebook to save the delivery receipt with its source.','action','write-note');
@@ -119,11 +131,16 @@ const StoryInteractions = (() => {
    sponsorContact:{name:'Priya · task sponsor',kind:'Message',channel:'Saved contact',point:[449,173],object:'brief',tool:'sponsorMessage'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
    launchWorkflow:{name:'Launch workflow',kind:'On screen',channel:'Account team',point:[524,401],object:'phone',tool:'launchWorkflow'},
-   policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
+   policyInfo:{name:'Policy information point',kind:'Policy facts',channel:'CRM policy station',point:[716,254],object:'laptop',tool:'policyInfo'},
+   policyDecision:{name:'Customer policy decision service',kind:'Policy decision',channel:'CRM policy station',point:[716,254],object:'laptop',tool:'policyDecision'},
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
+   verify:{name:'IBM Verify',kind:'Review channel',point:[449,173],object:'brief',tool:'verify'},
+   orchestrate:{name:'IBM watsonx Orchestrate',kind:'Workflow',point:[524,401],object:'phone',tool:'orchestrate'},
    aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
    mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
-   riskMonitor:{name:'Identity monitoring',kind:'On screen',point:[524,401],object:'phone',tool:'riskMonitor'},
+   riskMonitor:{name:'IBM Verify Identity Protection',kind:'Monitoring',point:[812,245],tool:'riskMonitor'},
+   antenna:{name:'IBM Verify Antenna',kind:'Shared signals',point:[812,245],tool:'antenna'},
+   controllers:{name:'Response controllers',kind:'Enforcement',point:[812,245],tool:'controllers'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
    outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:teen?'outside':'crmAttachment'},
    schoolInbox:{name:'School inbox',kind:'On screen',channel:'Alex’s phone',point:[526,404],object:'phone',tool:'schoolInbox'},
@@ -145,7 +162,7 @@ const StoryInteractions = (() => {
    laptop:{name:teen?'School app':'Customer records · CRM',kind:'On screen',point:teen?[716,259]:[716,254],tool:teen?'schoolApp':'laptop'},
    brief:{name:teen?'Assignment card':'Work inbox',kind:'Reading',point:teen?[449,167]:[449,173]},
    notebook:{name:teen?'Notebook':'Task notebook',kind:'Reading',point:teen?[471,424]:[349,441]},
-   helper:{name:teen?'Sam':'Pip',kind:'Speaking',point:teen?[747,329]:[839,385]},
+   helper:{name:teen?'Sam':'Quill',kind:'Speaking',point:teen?[747,329]:[839,385]},
    pocket:{name:'Selected item',kind:'Look closer',point:teen?[636,329]:[516,214]}
   };
   return {key:sources[key]?key:'hero',...(sources[key]||sources.hero)};
@@ -165,7 +182,7 @@ const StoryInteractions = (() => {
   if(action==='decline-private')return mode==='teen'?'sentToJamie':'hero';
   if(action==='verify-contact')return mode==='teen'?'reviewer':'sponsorContact';
   if(mode==='agent'&&['request-extension','resolve-extension','review','resolve-review'].includes(action))return 'missionControl';
-  if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
+  if(speaker===(mode==='teen'?'Sam':'Quill'))return 'helper';
   if(mode==='agent'&&/Approver|Morgan/.test(speaker))return 'reviewer';
   if(/Parent|Sponsor|Supervisor|Priya/.test(speaker))return 'parent';
   if(/Teacher|Ms Patel/.test(speaker))return 'reviewer';
@@ -209,6 +226,6 @@ const StoryInteractions = (() => {
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
   return s.feedbackLegacy?'Your earlier requests and choices are preserved. Finish the current version.':'Your first copy was sent. Respond to the replies before final delivery.';
  }
- return {nextObject,isStoryObject,objectDescription,roomGroups,findTarget,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
+ return {nextObject,isStoryObject,objectDescription,roomGroups,stationForPin,findTarget,closureSource,itemUse,feedbackCards,sceneSummary,objectStatus,speechSource,eventSource};
 })();
 if(typeof module!=='undefined')module.exports=StoryInteractions;

@@ -9,9 +9,9 @@ const ArchitectureReference = (() => {
  ];
  const components = {
   people:{
-   name:'Priya, Nova, Morgan and Pip',kind:'Story actors',
-   summary:'Priya sponsors the work. Nova prepares the handover. Morgan approves each exact share. Pip formats only the file it receives.',
-   detail:'The sponsor and reviewer have different responsibilities. Nova and Pip are distinct identities. The CRM owns its data and delivery rules.'
+   name:'Priya, Nova, Morgan and Quill',kind:'Story actors',
+   summary:'Priya sponsors the work. Nova prepares the handover. Morgan approves each exact share. Quill formats only the file it receives.',
+   detail:'The sponsor and reviewer have different responsibilities. Nova and Quill are distinct identities. The CRM owns its data and delivery rules.'
   },
   reviewer:{
    name:'Morgan · reviewer',kind:'Human approver',
@@ -21,7 +21,7 @@ const ArchitectureReference = (() => {
   verify:{product:'verify',kind:'Product',summary:'Confirms who the human is. A configured CIBA flow can collect consent on a separate device.'},
   iai:{product:'iai',kind:'Product',summary:'Identifies the agent and whose authority it is acting under.'},
   mission:{product:'mission',kind:'Customer integration',summary:'Records the task, allowed accounts, destination and current version outside Nova’s instructions.'},
-  orchestrate:{product:'orchestrate',kind:'Product',summary:'Coordinates the work. A configured workflow can assign the formatting step to Pip.'},
+  orchestrate:{product:'orchestrate',kind:'Product',summary:'Coordinates the work. A configured workflow can assign the formatting step to Quill.'},
   launchWorkflow:{
    name:'Account team’s launch workflow',kind:'Customer integration',
    summary:'Checks the approved mission and requests a workspace as an authorized OpenShell operator.',
@@ -79,7 +79,8 @@ const ArchitectureReference = (() => {
   controllers:{
    name:'Runtime, Vault, CRM and queue controllers',kind:'Configured response',
    summary:'Stop the workload, revoke credentials, close service sessions and check waiting work.',
-   detail:'An independent controller retests the old route and records the result. An unreachable service leaves the route unverified. A completed delivery stays delivered.'
+   detail:'An independent controller retests the old route and records the result. An unreachable service leaves the route unverified. A completed delivery stays delivered.',
+   sources:[['NVIDIA Secure Agent Workspace reference design','https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html']]
   }
  };
 
@@ -143,15 +144,15 @@ const ArchitectureReference = (() => {
    result:'The source can influence what Nova attempts. Independent checks prevent the disclosure.'
   },
   delegate:{
-   title:'Give Pip a file-only task',
-   premise:'Nova wants Pip to tidy the handover’s headings.',
+   title:'Give Quill a file-only task',
+   premise:'Nova wants Quill to tidy the handover’s headings.',
    steps:[
     ['orchestrate','Coordinate the formatting step using a separate helper identity.'],
-    ['authorization','Check the parent task, Pip’s ceiling and the resource rules.'],
-    ['people','Give Pip only the specific report revision and formatting rights.'],
+    ['authorization','Check the parent task, Quill’s ceiling and the resource rules.'],
+    ['people','Give Quill only the specific report revision and formatting rights.'],
     ['crm','Require a fresh exact approval before sharing the revised report with Morgan.']
    ],
-   result:'Pip formats the file without borrowing Nova’s credentials or obtaining CRM read or send rights.'
+   result:'Quill formats the file without borrowing Nova’s credentials or obtaining CRM read or send rights.'
   },
   recover:{
    title:'Pause and recover bounded access',
@@ -204,7 +205,7 @@ const ArchitectureReference = (() => {
   {
    title:'A helper or alternate route would exceed the scope',
    alex:'Give Sam the file to proofread. Trying another account after the school has refused the notes pauses the story.',
-   nova:'Give Pip one formatting task. An explicit attempt to go around the CRM refusal pauses access for Priya’s review.',
+   nova:'Give Quill one formatting task. An explicit attempt to go around the CRM refusal pauses access for Priya’s review.',
    control:'File-only delegation keeps the original limits. Recovery checks the current task and invalidates the paused session.',
    flow:'delegate'
   },
@@ -299,7 +300,7 @@ const ArchitectureReference = (() => {
    {
     title:'Delegation and isolation',
     paragraphs:[
-     'Pip has its own identity and a child grant for one file version and a formatting operation. Intersect the parent’s current authority with Pip’s ceiling and the file policy. Set independent expiry and depth limits. Keep the parent credential out of the child context.',
+     'Quill has its own identity and a child grant for one file version and a formatting operation. Intersect the parent’s current authority with Quill’s ceiling and the file policy. Set independent expiry and depth limits. Keep the parent credential out of the child context.',
      'For this production pattern, persist parent and child IDs and input/output digests. The CRM reauthorizes sharing of the changed report. OpenShell limits files, processes and network reachability. Hard confidentiality rules remain at the resource PEP.'
     ],
     sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],['RFC 8693 delegation semantics','https://www.rfc-editor.org/rfc/rfc8693']]
@@ -333,7 +334,7 @@ const ArchitectureReference = (() => {
  const deploymentOptions = [
   {id:'scim',title:'SCIM · Identity provisioning',
    when:'Use SCIM to create, update or deactivate identity records between a directory and a registry when both support the chosen representation.',
-   inStory:'Nova and Pip already have registered identities. If a deployment provisions agents via SCIM, it needs an agreed schema or mapping for those records. Provisioning establishes the identity record. The mission and resource policies govern what that identity can do.',
+   inStory:'Nova and Quill already have registered identities. If a deployment provisions agents via SCIM, it needs an agreed schema or mapping for those records. Provisioning establishes the identity record. The mission and resource policies govern what that identity can do.',
    sources:['scimProtocol','scimSchema']},
   {id:'registration',title:'OAuth client onboarding for MCP',
    when:'Use an existing pre-registered client when available. The July 2026 MCP profile recommends support for OAuth Client ID Metadata Documents and retains RFC 7591 Dynamic Client Registration as a deprecated compatibility fallback.',
@@ -345,11 +346,11 @@ const ArchitectureReference = (() => {
    sources:['spiffe','openshell','jwt']},
   {id:'transaction',title:'Transaction Tokens · Transaction context',
    when:'The IETF draft describes carrying short-lived, signed identity and transaction context across calls within a trust domain.',
-   inStory:'Pip’s recorded task already keeps the parent mission and exact file revision. A deployment could carry selected context across services using Transaction Tokens. The receiver still checks current authority and the operation.',
+   inStory:'Quill’s recorded task already keeps the parent mission and exact file revision. A deployment could carry selected context across services using Transaction Tokens. The receiver still checks current authority and the operation.',
    sources:['transactionTokens']},
   {id:'a2a',title:'Agent2Agent (A2A) · Agent messaging',
    when:'Use A2A when independently deployed agents need to exchange messages, tasks or artifacts.',
-   inStory:'Nova’s workflow hands Pip a file-only formatting task. A deployment could carry that same handoff over A2A. The receiver authenticates the caller and enforces Pip’s own grant for the exact file and operation.',
+   inStory:'Nova’s workflow hands Quill a file-only formatting task. A deployment could carry that same handoff over A2A. The receiver authenticates the caller and enforces Quill’s own grant for the exact file and operation.',
    sources:['a2a']}
  ];
 

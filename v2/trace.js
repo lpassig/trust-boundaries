@@ -21,8 +21,8 @@ const RequestTrace = (() => {
   'decline-private':['You kept the group notes private and can still submit your own work.','Nova left the notes in CRM. The approved summary can still be sent.'],
   'bypass-notes':['The first refusal left the rest of your homework open. The separate attempt to use another account triggered a pause.','The resource denied the attachment. A separate deliberate bypass attempt triggered the controller’s pause.'],
   'resolve-review':['Your parent let you finish the same homework. The school app still protects the group notes.','The sponsor reply was matched and policy checked again. A new session generation keeps the same bounded work.'],
-  'proof-helper':['Sam receives the project file so he can proofread it with his own access.','Pip receives file-only formatting rights under its own identity. Its output is a new revision and needs current share approval.'],
-  'ask-helper-account':['Sam chooses to keep his sign-in private. The school app received no sign-in request.','Pip explains why formatting only needs the file. The conversation creates no grant, tool call or policy decision.'],
+  'proof-helper':['Sam receives the project file so he can proofread it with his own access.','Quill receives file-only formatting rights under its own identity. Its output is a new revision and needs current share approval.'],
+  'ask-helper-account':['Sam chooses to keep his sign-in private. The school app received no sign-in request.','Quill explains why formatting only needs the file. The conversation creates no grant, tool call or policy decision.'],
   'approve-draft':['','The approval records the exact review copy and recipient. A separate CRM request actually sends it.'],
   approve:['','Morgan’s approval is bound to this revision, recipient and task. CRM checks the actual send.'],
   send:['The school app submitted your timeline to Ms Patel. Signing out closes the laptop session separately.','CRM checked the actual send against current policy and the one-use approval. The recipient now has the file.'],
@@ -113,11 +113,11 @@ const RequestTrace = (() => {
   ],
   'proof-helper':[
    ['Sam gets one file to proofread.','fileSharing'],
-   ['Pip formats the report under its own identity.','orchestrate']
+   ['Quill formats the report under its own identity.','orchestrate']
   ],
   'ask-helper-account':[
    ['Sam declined to share his sign-in.','fileSharing'],
-   ['Pip declined broader tool access.','orchestrate']
+   ['Quill declined broader tool access.','orchestrate']
   ],
   'approve-draft':[
    null,
@@ -177,7 +177,7 @@ const RequestTrace = (() => {
   ],
   'helper-preview':[
    ['Share the file Sam needs to proofread.','fileSharing','Sam can read the timeline using his own access. Keep your school sign-in to yourself.'],
-   ['IBM watsonx Orchestrate can hand a formatting task to Pip.','orchestrate','In this example Pip gets a separate file-only grant for the current report.']
+   ['IBM watsonx Orchestrate can hand a formatting task to Quill.','orchestrate','In this example Quill gets a separate file-only grant for the current report.']
   ],
   'approval-preview':[
    ['The school app sends the draft to Ms Patel’s school inbox.','fileSharing','The preview shows the file and recipient so you can check them before submitting.'],
@@ -222,8 +222,8 @@ const RequestTrace = (() => {
   'decline-private':['Keep working on your own timeline.','Keep preparing the permitted summary.'],
   'bypass-notes':['Your homework is paused until your parent reviews it.','This task session is paused until Priya reviews it.'],
   'resolve-review':['You can finish the same timeline.','Nova can continue with the same approved accounts in a new session.'],
-  'ask-helper-account':['No login was attempted. You can still ask Sam to proofread the file.','No tool access changed. Pip can still format the file.'],
-  'proof-helper':['Your proofread timeline is ready for the remaining steps.','Pip returned a new revision. Morgan can review that revision for delivery.'],
+  'ask-helper-account':['No login was attempted. You can still ask Sam to proofread the file.','No tool access changed. Quill can still format the file.'],
+  'proof-helper':['Your proofread timeline is ready for the remaining steps.','Quill returned a new revision. Morgan can review that revision for delivery.'],
   'approve-draft':['','The review copy can be sent after CRM checks the actual request.'],
   approve:['','Nova can now try sending the exact copy Morgan approved.'],
   send:['Ms Patel has the file. The laptop tab still needs checking.','Morgan has the file. The mission and service access still need closing.'],
@@ -296,11 +296,11 @@ const RequestTrace = (() => {
    ...context(),node('Route the model request','watsonx Orchestrate AI Gateway','reference','The configured model route uses the two headings from the work order.',['aiGateway']),
    node('Read customer records','Configured MCP gateway','not-reached','The next step handles the account read through the separate tool route.',['mcp'])
   ]);
-  if(a==='ask-helper-account')return model(teen?'Sam keeps his sign-in private.':'Pip keeps the file-only handoff.',
+  if(a==='ask-helper-account')return model(teen?'Sam keeps his sign-in private.':'Quill keeps the file-only handoff.',
    'The exchange was a conversation. The existing work remains available.',[
-    node('The helper declines',teen?'Sam':'Pip','checked',teen?'Sam prefers to see only the timeline.':'Pip needs only the report for formatting.'),
+    node('The helper declines',teen?'Sam':'Quill','checked',teen?'Sam prefers to see only the timeline.':'Quill needs only the report for formatting.'),
     node(teen?'School sign-in':'Grant broader access',teen?'School app':'Customer mission and delegation policy','not-reached',teen?'Alex did not attempt to sign in with another account.':'No permission change or tool call was submitted.'),
-    node('Work on the file',teen?'Sam':'Pip','not-reached','The next choice can hand over the current file for review.')
+    node('Work on the file',teen?'Sam':'Quill','not-reached','The next choice can hand over the current file for review.')
    ]);
   if(s.ended&&['check','check-closing-basics','sign-out-laptop','remediate','probe-session','controller-offline','controller-online','close-pass','finish','replay-containment'].includes(a)){
    const c=s.containment,probe=c.probeResult;
@@ -379,11 +379,11 @@ const RequestTrace = (() => {
    const child=r.delegation,d=e.decision;
    if(!d||!child&&d.result!=='deny')return {...model('Earlier helper review','Reference only: this saved helper event has no current file-only delegation receipt. No helper execution evidence is invented.',context(),null),recorded:false};
    const denied=d.result==='deny';
-   return model(teen?'Sam reviews just your project.':'Pip completes a bounded child task.',teen?'Your own file is shared for proofreading. Your school account stays yours.':'Nova requests formatting; Pip executes under its own identity. This is an internal file task, not a CRM send to the reviewer.',[
+   return model(teen?'Sam reviews just your project.':'Quill completes a bounded child task.',teen?'Your own file is shared for proofreading. Your school account stays yours.':'Nova requests formatting; Quill executes under its own identity. This is an internal file task, not a CRM send to the reviewer.',[
     ...context(),
     node('Observe the helper input','Report helper boundary','checked',`${r.file}, input revision ${r.revision}; requester ${child?.requestedBy||r.actor}; helper ${r.recipient}.`),
     node('Intersect parent authority and helper ceiling','Independent delegation policy',denied?'blocked':'checked',denied?d.reason:`${child.parentMissionId} version ${child.parentMissionVersion}, policy ${child.policyVersion}, generation ${child.generation}; only ${child.actions.join(', ')} on this file revision. Records present: ${child.records.join(', ')||'none'}. No parent credential, CRM read or onward send is delegated.`),
-    node('Helper outcome',teen?'Sam':'Pip · pip-01',denied?'not-reached':'checked',denied?'No file was handed to the helper.':`This file task completed under ${child.actor}; output revision ${child.outputRevision}. This historical receipt is not a reusable helper grant. Earlier share approval is cleared.`),
+    node('Helper outcome',teen?'Sam':'Quill · quill-01',denied?'not-reached':'checked',denied?'No file was handed to the helper.':`This file task completed under ${child.actor}; output revision ${child.outputRevision}. This historical receipt is not a reusable helper grant. Earlier share approval is cleared.`),
     node('Share with the designated reviewer','CRM or school submission endpoint','not-reached','The helper did not submit the report to the reviewer. That separate action still needs current permission and any required human approval.')
    ],{...r,decision:d});
   }

@@ -114,8 +114,8 @@ test('only the current story target and its artwork pin open story choices',()=>
  }
  assert.equal(I.isStoryObject('agent','brief','workOrder',true),true);
  assert.equal(I.isStoryObject('agent','brief','workOrder'),false);
- assert.equal(I.isStoryObject('agent','policyConsole','source'),false);
- assert.match(I.objectDescription('agent','policyConsole'),/policy decision point/);
+ assert.equal(I.isStoryObject('agent','policyDecision','source'),false);
+ assert.match(I.objectDescription('agent','policyDecision'),/policy decision point/);
 });
 
 test('opening the untrusted instruction never supplies amendment authority or changes the report',()=>{

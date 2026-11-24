@@ -117,7 +117,7 @@ test('a helper discussion grants nothing and names the outcome without an accoun
   assert.deepEqual(s.mission,initial.mission);
   assert.deepEqual(s.helperReceipts,initial.helperReceipts);
   assert.equal(s.attempts.length,0);
-  assert.equal(s.last.speaker,mode==='teen'?'Sam':'Pip');
+  assert.equal(s.last.speaker,mode==='teen'?'Sam':'Quill');
   assert.equal(s.last.request.operation,'helper.conversation');
   assert.equal(s.last.decision,undefined);
   const note=T.note('ask-helper-account',mode,s.last);

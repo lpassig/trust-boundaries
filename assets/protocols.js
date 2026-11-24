@@ -87,7 +87,7 @@ const AGENT_PROTOCOLS = [
   title:'Preserve the originating limits across a helper call',tags:['RFC 8693 · optional','Audience binding','Child grant','Distinct identity'],status:'Standards-supported option + customer delegation policy',
   how:'A supporting authorization server can exchange a token for the downstream audience under RFC 8693. Distinct helper identity and an explicit child grant preserve the originating mission and restrict the helper to formatting the report.',
   boundary:'Token exchange alone does not define the child’s business permissions or revoke its input tokens. Do not pass an unrelated bearer token through an MCP server. Child scope and delegation depth need independent limits.',
-  evidence:{parent_mission:'G-042',helper:'pip-01',task:'format',data_scope:'report only',parent_token_shared:false},sources:['exchange','mcp']
+  evidence:{parent_mission:'G-042',helper:'quill-01',task:'format',data_scope:'report only',parent_token_shared:false},sources:['exchange','mcp']
  },
  {
   title:'Distribute the revocation signal, then verify its effect',tags:['SSF','CAEP session-revoked','RFC 7009 · where supported','Runtime stop'],status:'Proposed cross-system integration; four outcomes are checked separately',

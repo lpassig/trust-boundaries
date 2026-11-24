@@ -3,6 +3,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SAVE='trust-boundaries-story-v2-1';
 let mode='teen',states={teen:StoryRules.fresh(),agent:StoryRules.fresh()},selected=null,sound=false,stored=true,focusReturn=null,hintStage='',hintCount=0,audio,speakingObject='hero';
+let roomView='';
 try{const raw=JSON.parse(localStorage.getItem(SAVE));if(raw){if(['teen','agent'].includes(raw.mode))mode=raw.mode;for(const key of ['teen','agent'])states[key]=StoryRules.hydrate(raw.states?.[key],key);sound=raw.sound===true;}}catch{stored=false;}
 const state=()=>states[mode],episode=()=>mode==='teen'?{...EPISODES.teen,...StoryRules.alexExtra(state())}:EPISODES.agent,teen=()=>mode==='teen',stage=()=>StoryRules.stage(state());
 function storyEvent(event){return event;}
@@ -67,13 +68,16 @@ function syncSpeech(){
  $('#scene-dialogue').style.setProperty('--speaker-x',tail(passive.point));
  $$('#pins [data-object]').forEach(b=>b.classList.toggle('is-speaking',inline&&b.dataset.object===(active.object||active.key)));
  $$('#objects [data-object]').forEach(b=>b.classList.toggle('is-speaking',inline&&b.dataset.object===(active.tool||active.object||active.key)));
+ const speakingStation=inline?$$('#objects [data-station-panel]').find(panel=>
+  [...panel.querySelectorAll('[data-object]')].some(b=>b.dataset.object===(active.tool||active.object||active.key)))?.dataset.stationPanel:null;
+ $$('#scene-stations button').forEach(b=>b.classList.toggle('station-speaking',b.dataset.station===speakingStation));
 }
 function close(){
  stopTrace();
  if(dialog.open)dialog.close();
  syncSpeech();
- const canRestore=focusReturn?.isConnected&&focusReturn!==document.body&&!dialog.contains(focusReturn);
- const target=canRestore?focusReturn:document.querySelector(`#pins [data-object="${speakingObject}"]`)||$('#next');
+ const canRestore=focusReturn?.isConnected&&focusReturn!==document.body&&!dialog.contains(focusReturn)&&!focusReturn.closest('[hidden]');
+ const target=canRestore?focusReturn:roomView?$('#scene-stations [aria-pressed="true"]'):document.querySelector(`#pins [data-object="${speakingObject}"]`)||$('#next');
  target?.focus();
 }
 function modal(title,body,label='LOOK CLOSER',reference=false){
@@ -108,7 +112,7 @@ function show(title,body,label,noteKey){
  bind();
  if(noteKey)showNote(noteKey);
  $('.scene-frame').scrollIntoView({block:'start',behavior:'instant'});
- if(window.matchMedia('(min-width: 561px)').matches){
+ if(roomView||window.matchMedia('(min-width: 561px)').matches){
   dialog.scrollIntoView({block:'nearest',behavior:'instant'});
  }
 }
@@ -248,17 +252,21 @@ const novaRoomLabels={
  hero:['Nova','You · run the handover'],sponsorMessage:['Priya','Approves task scope'],reviewer:['Morgan','Approves the exact copy'],
  outside:['Luca','Harbor Bikes · customer contact'],workOrder:['Work order','Priya’s original request'],
  parent:['Mission service','Records the approved scope'],launchWorkflow:['Launch workflow','Requests a workspace for the approved job'],
- policyConsole:['Policy console','Shows who checks the request'],
+ policyInfo:['Policy information point (PIP)','Supplies trusted facts'],
+ policyDecision:['Customer policy decision service (PDP)','Evaluates the exact operation'],
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
+ verify:['IBM Verify','Separate-device review'],orchestrate:['IBM watsonx Orchestrate','Coordinates the handoff'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
- vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['Identity monitoring','Verify Identity Protection · alerts'],
- laptop:['Customer records · CRM','Enforces record and send rules'],source:['CRM tool','MCP server · exposes the read'],
+ vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Verify Identity Protection (AuthMind)','Optional risk detection'],
+ antenna:['IBM Verify Antenna','Optional SSF and CAEP integration'],
+ controllers:['Runtime, Vault, CRM and queue controllers','Configured response and evidence'],
+ laptop:['Customer CRM · resource PEP','Enforces record and send rules'],source:['CRM tool','MCP server · exposes the read'],
  crmAttachment:['Imported attachment','Luca’s upload · customer portal']
 };
 const roomCardIcons={
  hero:'person',sponsorMessage:'person',reviewer:'person',outside:'person',schoolInbox:'reviewer',schoolApp:'console',
  homework:'shield',parentSchool:'phone',extra:'source',classChat:'reviewer',crmAttachment:'outside',
- launchWorkflow:'console',policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield'
+ launchWorkflow:'console',policyInfo:'source',policyDecision:'console',registries:'memory',verify:'shield',orchestrate:'console',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield',antenna:'phone',controllers:'notebook'
 };
 function roomCard(key){
  if(teen()&&key==='extra'){
@@ -285,6 +293,35 @@ function objectLabel(key,pin=false){
  if(pin&&guide==='Next'&&key!==next)return [objectName(key),guide,objectName(next)].join(' · ');
  return [objectName(key),objectDetail(key),guide].filter(Boolean).join(' · ');
 }
+function setRoomView(name){
+ roomView=name;
+ $('.scene-canvas').hidden=Boolean(name);
+ $('#objects').hidden=!name;
+ $('.scene-frame').classList.toggle('station-open',Boolean(name));
+ $$('[data-station-panel]').forEach(panel=>{panel.hidden=panel.dataset.stationPanel!==name;});
+ $$('#scene-stations [data-station]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.station===name)));
+}
+function visitStation(name,fromPin=false){
+ if(dialog.open&&dialog.dataset.inspect==='true')close();
+ setRoomView(name);
+ if(fromPin)$('#scene-stations [aria-pressed="true"]')?.focus({preventScroll:true});
+ syncSpeech();
+}
+function renderStations(s){
+ const groups=StoryInteractions.roomGroups(s,mode);
+ const tabs=[['Room',[],'','scene-art'],...groups.map(([name,keys],index)=>[name,keys,name,`station-panel-${index}`])];
+ $('#scene-stations').innerHTML=tabs.map(([label,keys,name,panel])=>{
+  const tag=keys.some(key=>targetTag(key))?(selected?'Use here':'Next'):'';
+  return `<button type="button" class="station-tab${tag?' station-next':''}" data-station="${esc(name)}" aria-controls="${panel}"><span>${esc(label)}</span>${tag?`<small>${tag}</small>`:''}</button>`;
+ }).join('');
+ const renderObject=key=>{
+  const detail=objectDetail(key),tag=targetTag(key);
+  return `<button data-object="${key}" class="${targetState(key)}" data-tip="${esc(StoryInteractions.objectDescription(mode,key))}" aria-label="${esc(objectLabel(key))}"><b aria-hidden="true">${sceneObjectIcon(roomCardIcons[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
+ };
+ $('#objects').innerHTML=groups.map(([name,keys],index)=>`<section class="object-group" id="station-panel-${index}" data-station-panel="${esc(name)}" aria-labelledby="station-title-${index}"><h3 id="station-title-${index}">${esc(name)}</h3><div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
+ setRoomView(groups.some(([name])=>name===roomView)?roomView:'');
+ $$('#scene-stations [data-station]').forEach(b=>b.onclick=()=>visitStation(b.dataset.station));
+}
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
 function render(){
  const s=state(),e=episode(),m=move(),c=chapter(),use=heldUse();document.body.classList.toggle('agent',!teen());
@@ -293,7 +330,6 @@ function render(){
  $('#episode-label').textContent=e.eyebrow;$('#episode-title').textContent=e.title;$('#episode-tag').textContent=e.tag;
  $('#chapter-track').innerHTML=e.steps.map((text,i)=>`<span class="${i===c?'current':i<c?'complete':''}"><small>${i<c?'✓':String(i+1).padStart(2,'0')}</small>${esc(text)}</span>`).join('');
  $('#sequence-position').textContent=JOURNEY_SEQUENCE[currentSequencePhase()].title;
- $('#room-directory').textContent=teen()?'People and apps':'People and systems';
  $('#scene-footnote').textContent=use?use.instruction:StoryInteractions.sceneSummary(s,mode);
  $('#place').textContent=e.place;$('#scene-condition').textContent=s.finished?(teen()?'READY FOR DINNER':'CHAPTER COMPLETE'):s.paused?(teen()?'LET’S TALK':'MISSION PAUSED'):s.ended?(teen()?'DINNER TIME':'MISSION REVOKED'):s.delivered?(teen()?'SENT TO MS PATEL':'DELIVERED'):s.message&&!s.verified?'NEW MESSAGE':'';
  const artStep=s.draft?7:0;
@@ -301,19 +337,18 @@ function render(){
  $('#art').innerHTML=roomArt(mode,Math.min(c,2),{step:artStep,hasIncoming:s.message,helperVisible:s.draft,verified:s.verified,delivered:s.delivered,revoked:s.ended,paused:s.paused,hasNote:s.notes.length>0,hasSourceCredit:s.caption,signInRequired:teen()&&s.checks.includes('signin')&&s.containment?.controllerReachable,serviceStillOpen:s.ended&&s.containment&&!s.containment.sessionClosed});
  $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>{
   const key=OBJECT_KEYS[i],label=esc(objectLabel(key,true));
-  return key==='helper'&&!helperReady?'':`<button class="pin ${targetState(key,true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${key}" data-tip="${label}" aria-label="${label}">${sceneObjectIcon(key==='hero'?'person':key,mode)}</button>`;
+  const caption=({hero:e.name,helper:teen()?'Sam':'Quill',phone:teen()?'Phone':'Workspace',laptop:teen()?'Laptop':'Policy'})[key];
+  return key==='helper'&&!helperReady?'':`<button class="pin ${targetState(key,true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${key}" data-tip="${label}" aria-label="${label}">${sceneObjectIcon(key==='hero'?'person':key,mode)}${caption?`<span class="pin-caption" aria-hidden="true">${caption}</span>`:''}</button>`;
  }).join('');
  const links=STORY_PINS[mode].map(([x,y,tx,ty],i)=>OBJECT_KEYS[i]==='helper'&&!helperReady?'':`<path d="M${x} ${y}L${tx} ${ty}"/>`).join('');
  $('#pins').insertAdjacentHTML('afterbegin',`<svg class="pin-links" viewBox="0 0 1000 580" aria-hidden="true">${links}</svg>`);
- const renderObject=key=>{
-  const detail=objectDetail(key),tag=targetTag(key);
-  return `<button data-object="${key}" class="${targetState(key)}" data-tip="${esc(StoryInteractions.objectDescription(mode,key))}" aria-label="${esc(objectLabel(key))}"><b aria-hidden="true">${sceneObjectIcon(roomCardIcons[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
- };
- $('#objects').innerHTML=StoryInteractions.roomGroups(s,mode).map(([name,keys])=>`<section class="object-group"><h3>${esc(name)}</h3><div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
+ if(!teen())$('#pins').insertAdjacentHTML('beforeend',`<button class="pin" id="signals-pin" style="left:82%;top:24%" data-tip="Signals and response" aria-label="Open Signals and response">${sceneObjectIcon('shield',mode)}<span class="pin-caption" aria-hidden="true">Signals</span></button>`);
+ renderStations(s);
+ if(!teen())$('#signals-pin').onclick=()=>visitStation('Signals and response',true);
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A new request is waiting.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
- $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Pip'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
+ $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Quill'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
  $('#next-title').textContent=selected?'Put away and continue':s.finished?'See my ending':m[0];
  $('#next-text').textContent=selected?use.instruction:m[1];
  const items=inventory();$('#pocket-count').textContent=String(items.length)+(items.length===1?' ITEM':' ITEMS');
@@ -770,15 +805,15 @@ function showBuyerVault({lease,containment},origin,back){
   'CREDENTIAL EVIDENCE');
 }
 function showBuyerHandoff(receipt,origin,back){
- showReference('What did Pip receive?',`<p>${esc(origin)} The workflow routed one report to Pip for formatting.</p>
+ showReference('What did Quill receive?',`<p>${esc(origin)} The workflow routed one report to Quill for formatting.</p>
   <ul class="route-list">
-   <li><b>Recipient</b><br>Pip · ${esc(receipt.actor)}</li>
+   <li><b>Recipient</b><br>Quill · ${esc(receipt.actor)}</li>
    <li><b>Input</b><br>${esc(receipt.file)} · revision ${esc(receipt.inputRevision)}</li>
    <li><b>Allowed action</b><br>${esc(receipt.actions.join(', '))} · no CRM read or onward share</li>
-   <li><b>Credential passed to Pip</b><br>${receipt.credentialShared?'Shared':'None'}</li>
+   <li><b>Credential passed to Quill</b><br>${receipt.credentialShared?'Shared':'None'}</li>
    <li><b>Output</b><br>${esc(receipt.file)} · revision ${esc(receipt.outputRevision)} returned for review</li>
   </ul>
-  <p>Orchestrate coordinates the handoff. The workflow supplies the selected file, and the receiving service enforces Pip’s file-only permission.</p>
+  <p>Orchestrate coordinates the handoff. The workflow supplies the selected file, and the receiving service enforces Quill’s file-only permission.</p>
   <div class="actions">${button('Back to the buyer card',back,'secondary')}</div>`,'HANDOFF EVIDENCE');
 }
 function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
@@ -837,16 +872,22 @@ function interact(key,pin){
  const target=selected&&StoryInteractions.findTarget(mode,heldUse().targets,key,pin);
  if(target)return useItem(target);
  if(!selected&&StoryInteractions.isStoryObject(mode,key,move()[2],pin))return nextMove();
+ const station=pin&&StoryInteractions.stationForPin(mode,key);
+ if(station)return visitStation(station,true);
  speakingObject=!teen()&&key==='parent'?'missionControl':!teen()&&key==='outside'?'customerContact':key;
  const details={
   workOrder:`<p>${esc(episode().brief)}</p>`,registries:agentRegistryDetails,
   launchWorkflow:()=>`<p>The mission check belongs to the configured customer workflow. The OpenShell Gateway separately authorizes the workspace lifecycle request.</p>${protocolSourceLinks(['openshell'])}`,
   aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
-  vaultControl:()=>protocolSourceLinks(['leases']),
-  riskMonitor:()=>`<p>The game illustrates a configured alert and response. The response policy and controllers apply any pause, credential revocation or session closure.</p>${protocolSourceLinks(['identityRisk'])}`
+  vaultControl:()=>protocolSourceLinks(['leases'])
  };
- const extra=!teen()&&details[key];
- show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${extra?`<details class="debrief"><summary>Details and sources</summary>${typeof extra==='function'?extra():extra}</details>`:''}`,StoryInteractions.speechSource(mode,speakingObject).name);
+ const architecture={policyInfo:['policyContext'],policyDecision:['authorization',['authzen']],laptop:['crm',['authzen']],verify:['verify',['ciba']],orchestrate:['orchestrate'],
+  riskMonitor:['risk',['identityRisk']],antenna:['antenna',['ssf','caep']],controllers:['controllers',['openshell','leases']]};
+ const role=!teen()&&architecture[key]?architectureComponentDetail(...architecture[key]):null;
+ const extra=!teen()&&(role?.body||(typeof details[key]==='function'?details[key]():details[key]));
+ const mission=state().mission;
+ const facts=key==='policyInfo'&&mission?`<div class="receipt"><b>${esc(mission.id)} v${mission.version} · ${esc(mission.status)}</b><p>Account scope · ${esc(customerNames(mission.records))}</p></div>`:'';
+ show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${facts}${extra?`<details class="debrief"><summary>Details and sources</summary>${role?`<p class="eyebrow">${esc(role.kind)}</p>`:''}${extra}</details>`:''}`,StoryInteractions.speechSource(mode,speakingObject).name);
  dialog.dataset.inspect='true';
  syncSpeech();
 }
@@ -921,7 +962,7 @@ function showPolicyConsole(back){
 }
 function agentRegistryDetails(){
  return `<ul class="route-list">
-  <li><b>IBM Agent Identity inventory</b><br>${esc(NOVA_AGENT_OWNERS.nova)} owns Nova, and ${esc(NOVA_AGENT_OWNERS.pip)} owns Pip. Nova acts for Priya on this task. Pip receives a separate file-formatting grant.</li>
+  <li><b>IBM Agent Identity inventory</b><br>${esc(NOVA_AGENT_OWNERS.nova)} owns Nova, and ${esc(NOVA_AGENT_OWNERS.quill)} owns Quill. Nova acts for Priya on this task. Quill receives a separate file-formatting grant.</li>
   <li><b>Vault Agent Registry</b><br>For the brokered read in this deployment, the team configures a Vault registration for Nova’s identity and a ceiling on what it can inherit when acting on behalf of a user.</li>
   <li><b>Customer mission record</b><br>Priya’s grant supplies the business scope for this job. CRM checks the actual request against it.</li></ul>${protocolSourceLinks(['agentInventory','vaultRegistry'])}`;
 }
@@ -1268,10 +1309,10 @@ function showDraft(){speakingObject='laptop';const s=state(),e=episode();if(!s.p
  else if(!s.caption)options=[['Add this source',teen()?'Put the page title beneath the timeline.':'A source credit completes the first sourced draft.',()=>perform('attach-source',{source:'original'}),'good']];
  else if(!s.message)options=[[teen()?'Send this draft for teacher feedback':'Prepare the review-copy share','The first copy goes to the agreed recipient. Final submission follows the feedback.',showDraftReview,'good']];
  else if(!StoryRules.changesResolved(s))options=[['Read the new requests',teen()?'Read Ms Patel’s feedback and Jamie’s message.':'Decide which changes fit, need an amendment, or stay out.',showChanges,'good']];
- else if(!s.proof)options=[[teen()?'Read this version myself':'Check this report myself','Review the content, source and destination.',()=>perform('proof-self'),'good'],[teen()?'Ask Sam to proofread this version':'Ask Pip to format this report',teen()?'Send Sam the timeline, without sharing your login.':'The helper sees only this file.',showHelper]];
+ else if(!s.proof)options=[[teen()?'Read this version myself':'Check this report myself','Review the content, source and destination.',()=>perform('proof-self'),'good'],[teen()?'Ask Sam to proofread this version':'Ask Quill to format this report',teen()?'Send Sam the timeline, without sharing your login.':'The helper sees only this file.',showHelper]];
  else if(!s.delivered)options=[[teen()?'Preview my school submission':s.approval?'Preview the CRM send':'Show the approver this report',teen()?'Submit your own homework through the school app.':'Confidential business sharing needs the designated approval.',showSend,'good']];
  else options=[[teen()?'Finish up for dinner':'Close out the task','The delivered file stays delivered.',showParent,'good']];
- show(teen()?'The project on your desk.':'The briefing in your workspace.',paper+choices(options)+(s.draft&&!s.delivered&&!(s.message&&StoryRules.changesResolved(s)&&!s.proof)?`<div class="actions">${button(teen()?'Talk to Sam about the draft':'Talk to Pip about formatting',showHelper,'secondary')}</div>`:''),teen()?'SCHOOL WORKSPACE':'CRM WORKSPACE','draft-preview');
+ show(teen()?'The project on your desk.':'The briefing in your workspace.',paper+choices(options)+(s.draft&&!s.delivered&&!(s.message&&StoryRules.changesResolved(s)&&!s.proof)?`<div class="actions">${button(teen()?'Talk to Sam about the draft':'Talk to Quill about formatting',showHelper,'secondary')}</div>`:''),teen()?'SCHOOL WORKSPACE':'CRM WORKSPACE','draft-preview');
 }
 function changeStatus(which){const s=state();if(teen())return which==='minor'?(s.minorChoice?s.minorChoice==='added'?'Closing sentence added':'Original wording kept':'New suggestion'):which==='extension'?(s.extensionAdded?(s.extraSource==='museum-photo'?'Photo added':'Video detail added'):s.extensionOmitted?'Allowed, left unopened':s.extensionStatus==='declined'?'Extra source left out':s.extensionStatus==='approved'?'Parent said yes':s.extensionStatus==='pending'?'Waiting for my parent':'New suggestion'):(s.privateResolved?'Group’s private notes left out':'Jamie’s request');return which==='minor'?(s.minorChoice?'Settled':'New request'):which==='extension'?(s.extensionAdded?'Added with permission':s.extensionOmitted?'Approved, left unused':s.extensionStatus==='declined'?'Left out':s.extensionStatus==='approved'?'Approved · collect the addition':s.extensionStatus==='pending'?'Reply pending':'New request'):(s.privateResolved?'Private notes left out':'New request');}
 function showChanges(){speakingObject=teen()?'phone':'brief';
@@ -1326,38 +1367,38 @@ function showDraftReview(){speakingObject='laptop';
  show(title,`<p>${teen()?'Your teacher has not seen this file yet. This sends a draft for feedback; you will submit the final version after responding to the replies.':matched?'Morgan approved this copy for the work inbox. The final copy will get its own approval.':'Send Morgan an approval request for this exact file and destination.'}</p>${!teen()&&!matched?approvalProduct():''}<div class="paper"><p class="eyebrow">REVIEW COPY · ${teen()?'VERSION':'REVISION'} ${s.fileRevision}</p><h3>${esc(teen()&&!s.proof?'Train Stuff':e.draftTitle)}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}<p class="source-line">${esc(e.caption)}</p></div><div class="receipt"><b>${esc(e.file)} · ${s.fileRevision}</b><p class="address">${esc(e.to)}</p><p>${teen()?'Your own timeline, with its museum source.':esc(customerNames(StoryRules.reportRecords(s)))+' · Summary only'}</p>${matched?`<p>Recorded one-use review-copy approval · revision ${a.revision}</p>`:''}</div>${choices([[teen()?'Send draft to my teacher':matched?'Send the approved review copy':'Ask Morgan to approve this draft',teen()?'Send it to Ms Patel in the school app.':matched?'The CRM checks this draft, records, recipient and current authority.':'Morgan sees the exact draft and its destination.',teen()||matched?()=>perform('send-draft'):()=>showMorganApproval('draft-review',showDraftReview),'good'],['Back to the draft','Nothing is sent by opening this preview.',showDraft]])}`,teen()?'FIRST DRAFT · NOT FINAL SUBMISSION':'FIRST CONFIDENTIAL SHARE',matched?'approve-draft':'approval-preview');
 }
 function showDraftReceipt(){speakingObject='laptop';const s=state(),r=s.draftReview;show(teen()?'Your teacher has the draft.':'Morgan has the draft.',`<div class="receipt"><b>${esc(r.file)} · ${teen()?'version':'revision'} ${r.revision} sent for feedback</b><p class="address">${esc(r.to)}</p><p>${teen()?'The school app confirms draft delivery.':'The CRM confirms this exact, approved review copy. The one-use approval is consumed.'}</p></div><p>${teen()?'A little later, Ms Patel reads it and replies in the school inbox. Jamie forwards a message from the class chat. You’ll submit the final copy when you’re ready.':'Morgan asks for a shorter introduction. Priya sends news about one more account. An attachment uploaded by Luca also turns up in Customer records.'}</p><div class="actions">${button(teen()?'Read the replies on my phone':'Read the new messages',showChanges)}${button('Back to the room',close,'secondary')}</div>`,'DRAFT DELIVERY CONFIRMED','send-draft');}
-function showPipDeployment(){
- showReference('Standards for Pip’s handoff',`${architectureDeployment('a2a')}
-  <div class="actions">${button('Back to Pip’s result',showHelperResult,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+function showQuillDeployment(){
+ showReference('Standards for Quill’s handoff',`${architectureDeployment('a2a')}
+  <div class="actions">${button('Back to Quill’s result',showHelperResult,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
 function showHelperResult(){
  speakingObject='helper';
  const receipt=!teen()&&state().last.request?.delegation;
  const comparison=teen()
-  ?'<details class="debrief"><summary>See how Nova handles this</summary><p>Sam can read your timeline with his own account. Nova gives Pip just the handover to format. Pip’s own identity and formatting-only grant let it finish that file without signing in as Nova or reading CRM.</p></details>'
-  :productDetails('Why use IBM watsonx Orchestrate here?',[['orchestrate','In this deployment, it coordinates the handoff. Pip uses its own identity and a separate formatting-only grant for this report. The task gives Pip no CRM access or share permission.']]);
- show(teen()?'Sam has read this version.':'Pip has formatted this version.',
-  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Pip’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Pip’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${!teen()?button('Explore deployment options for Pip',showPipDeployment,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
-  teen()?'SAM · PROOFREADING':'PIP · REPORT-ONLY HELP','proof-helper');
+  ?'<details class="debrief"><summary>See how Nova handles this</summary><p>Sam can read your timeline with his own account. Nova gives Quill just the handover to format. Quill’s own identity and formatting-only grant let it finish that file without signing in as Nova or reading CRM.</p></details>'
+  :productDetails('Why use IBM watsonx Orchestrate here?',[['orchestrate','In this deployment, it coordinates the handoff. Quill uses its own identity and a separate formatting-only grant for this report. The task gives Quill no CRM access or share permission.']]);
+ show(teen()?'Sam has read this version.':'Quill has formatted this version.',
+  `<p>${esc(state().last.text)}</p>${comparison}<p>${teen()?'Sam stays in the room. You can ask about the file again. If you edit it later, check the changed version before sending.':'Quill’s file-only task is complete. Later changes invalidate this review and any older share approval.'}</p><div class="actions">${button(move()[0],nextMove)}${receipt?button('Inspect Quill’s activity record',()=>showHelperAudit(receipt),'secondary'):''}${!teen()?button('Explore deployment options for Quill',showQuillDeployment,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`,
+  teen()?'SAM · PROOFREADING':'QUILL · REPORT-ONLY HELP','proof-helper');
 }
-function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recorded in your Nova playthrough.',backLabel=back===showHelperResult?'Back to Pip’s result':'Back to the buyer card'){
+function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recorded in your Nova playthrough.',backLabel=back===showHelperResult?'Back to Quill’s result':'Back to the buyer card'){
  const review=choice=>showHelperAudit(receipt,choice,back,origin,backLabel);
  const activities=[
   ['Delegated human',['Unclear','Priya · '+receipt.originalSubject],true],
   ['Requested the work',['shared-report-account','Nova · '+receipt.requestedBy],true],
-  ['Formatted the file',['shared-report-account','Pip · '+receipt.actor],true],
+  ['Formatted the file',['shared-report-account','Quill · '+receipt.actor],true],
   ['Operation and file',['Formatting logged',receipt.actions[0]+' · '+receipt.file+' · rev. '+receipt.inputRevision+' → '+receipt.outputRevision]],
   ['Completed delegation',['Unclear',receipt.id]]
  ];
- showReference('Who did what in Pip’s handoff?',`<p>${esc(origin)} Compare the shared account with the record of who acted.</p>
+ showReference('Who did what in Quill’s handoff?',`<p>${esc(origin)} Compare the shared account with the record of who acted.</p>
   ${decisionComparison(['Shared-account example','This handoff'],activities)}
-  <details class="debrief"><summary>Check the agent owners</summary><p>The example inventory lists ${esc(NOVA_AGENT_OWNERS.nova)} as Nova’s owner and ${esc(NOVA_AGENT_OWNERS.pip)} as Pip’s owner. Priya sponsors this particular job.</p></details>
+  <details class="debrief"><summary>Check the agent owners</summary><p>The example inventory lists ${esc(NOVA_AGENT_OWNERS.nova)} as Nova’s owner and ${esc(NOVA_AGENT_OWNERS.quill)} as Quill’s owner. Priya sponsors this particular job.</p></details>
   ${answer===null?choices([
-   ['Priya delegated, Nova requested, Pip formatted','',()=>review(true)],
-   ['Priya delegated, Pip requested, Nova formatted','',()=>review(false)],
-   ['Morgan delegated, Nova requested, Pip formatted','',()=>review(false)]
-  ]):`<div class="receipt" role="status"><b>${answer?'That matches the record.':'Check who delegated and who executed.'}</b><p>IBM Agent Identity supplies the delegated identity context. The workflow record ties that context to Pip’s file-only action. Pip used its own identity and received no parent credential or CRM access.</p></div>`}
+   ['Priya delegated, Nova requested, Quill formatted','',()=>review(true)],
+   ['Priya delegated, Quill requested, Nova formatted','',()=>review(false)],
+   ['Morgan delegated, Nova requested, Quill formatted','',()=>review(false)]
+  ]):`<div class="receipt" role="status"><b>${answer?'That matches the record.':'Check who delegated and who executed.'}</b><p>IBM Agent Identity supplies the delegated identity context. The workflow record ties that context to Quill’s file-only action. Quill used its own identity and received no parent credential or CRM access.</p></div>`}
   <div class="actions">${button('Test the handoff',()=>showBuyerHelperPilot(()=>review(answer)))}${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(backLabel,back,'secondary')}</div>`,
   'DELEGATED IDENTITY');
 }
@@ -1370,7 +1411,7 @@ function showBuyerHelperPilot(back,trial=StoryRules.buyerExample({stopBeforeHelp
  const records=attempts.map(({request,decision})=>{
   const handoff=request.delegation;
   return `<li><b>${handoff?'File service permitted formatting':'File service refused the handoff'}</b>
-   <p>${handoff?`Pip returned revision ${esc(handoff.outputRevision)}.`:'Pip received no file and returned no output.'}</p>
+   <p>${handoff?`Quill returned revision ${esc(handoff.outputRevision)}.`:'Quill received no file and returned no output.'}</p>
    <details><summary>Inspect simulated audit record</summary>
     <p>Requested by <code>${esc(request.requested_by||request.actor)}</code> · intended helper <code>${esc(request.recipient)}</code><br>
     <code>${esc(request.operation)}</code> · ${esc(request.file)} · revision ${esc(request.revision)}<br>
@@ -1378,12 +1419,12 @@ function showBuyerHelperPilot(back,trial=StoryRules.buyerExample({stopBeforeHelp
     ${handoff?`Completed delegation <code>${esc(handoff.id)}</code><br>Sponsor <code>${esc(handoff.originalSubject)}</code> · acting agent <code>${esc(handoff.actor)}</code>`:'No completed delegation or formatting receipt.'}</p>
    </details></li>`;
  }).join('');
- const next=attempts.length===0?button('Try without Pip’s file permission',()=>attempt(false)):
-  attempts.length===1?button('Allow Pip to format this file and retry',()=>attempt(true)):
+ const next=attempts.length===0?button('Try without Quill’s file permission',()=>attempt(false)):
+  attempts.length===1?button('Allow Quill to format this file and retry',()=>attempt(true)):
    button('Replay both attempts',()=>showBuyerHelperPilot(back),'secondary');
- showReference('Will the file service let Pip format the report?',`<p>Nova asks Pip to format the same report for Priya in both attempts. IBM Agent Identity supplies separate identities. The file service checks its own permissions before handing over the file.</p>
+ showReference('Will the file service let Quill format the report?',`<p>Nova asks Quill to format the same report for Priya in both attempts. IBM Agent Identity supplies separate identities. The file service checks its own permissions before handing over the file.</p>
   ${records?`<ol class="route-list" aria-label="Handoff attempts">${records}</ol>`:''}
-  <div class="actions">${next}${button('Back to Pip’s activity record',back,'secondary')}</div>
+  <div class="actions">${next}${button('Back to Quill’s activity record',back,'secondary')}</div>
   <details class="debrief"><summary>What your team sets up</summary><p>Configure the workflow to correlate the requesting agent, intended helper, task and file revision. The resource checks its permitted helpers and owns the allow or refuse audit record. OAuth Token Exchange can represent delegation where the issuer supports it.</p>${protocolSourceLinks(['agentInventory','exchange'])}</details>`,
   'DELEGATED IDENTITY PILOT');
 }
@@ -1392,7 +1433,7 @@ function showHelperAccountReply(event){
  const s=state();
  speakingObject='helper';
  const next=s.caption?()=>perform('proof-helper',{scope:'file',shareLogin:false}):showDraft;
- show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button(s.caption?(teen()?'Ask Sam to proofread my file':'Give Pip just the report'):(teen()?'Add my source first':'Cite the records first'),next)}${button('Back to the room',close,'secondary')}</div>`,episode().helper);
+ show(event.title,`<p>${esc(event.text)}</p><div class="actions">${button(s.caption?(teen()?'Ask Sam to proofread my file':'Give Quill just the report'):(teen()?'Add my source first':'Cite the records first'),next)}${button('Back to the room',close,'secondary')}</div>`,episode().helper);
 }
 
 function showVerification(fromExtension=false){fromExtension=fromExtension===true;speakingObject=teen()?'phone':'brief';show(teen()?'Check what the teacher actually asked.':'Did Priya ask for Alder Books?',`<p>${teen()?'Open your saved conversation with Ms Patel, or check the assignment in the school app. Does she want another source, or is it just a suggestion? Jamie’s message is separate.':'Check whether Priya really asked to add Alder Books. Her saved contact and current work order are separate from the incoming message.'}</p>${choices([[teen()?'Message Ms Patel':'Use Priya’s saved contact',teen()?'Use the teacher conversation already saved on your phone.':'Open the conversation saved before this message arrived.',()=>perform('verify-contact',{fromExtension}),'good'],[teen()?'Open the current school assignment':'Check the change request in Priya’s work order',teen()?'Read Ms Patel’s instructions in the school app.':'Open the sponsor-owned change request linked to this handover.',()=>perform('verify-portal',{fromExtension})]])}`,teen()?'ASK YOUR TEACHER':'TWO INDEPENDENT ROUTES','verify-preview');}
@@ -1481,7 +1522,7 @@ function showRequestSource(){
  show(teen()?'Where did the message come from?':'Where did the instruction come from?',
   `<div class="evidence-pair"><article class="message-card">${origin}</article><article class="paper">${authority}</article></div><p>${outcome}</p>${choices(actions)}`,teen()?'CHECK THE SOURCE':'CHECK THE WORK ORDER','inspect-request-source');
 }
-function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Pip’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Pip cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Pip needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p>${teen()?'':'<p>Pip is a formatting sub-agent. The workflow can give it one revision and permission to format that file under its own identity.</p>'}<p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Pip spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Pip gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Could Pip get CRM access?',teen()?'Ask before sharing any file.':'Ask whether Pip needs customer records for formatting.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
+function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Quill’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Quill cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Quill needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p>${teen()?'':'<p>Quill is a formatting sub-agent. The workflow can give it one revision and permission to format that file under its own identity.</p>'}<p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Quill spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Quill gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Could Quill get CRM access?',teen()?'Ask before sharing any file.':'Ask whether Quill needs customer records for formatting.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
 function shareWording(approval,actual,currentLabel='Current'){
  if(!actual.followUpSentence||approval.followUpSentence===actual.followUpSentence||!approval.followUpSentence&&approval.revision===actual.revision)return '';
  return `<div class="share-wording" aria-label="Follow-up sentence comparison">
@@ -1829,7 +1870,7 @@ function showGuide(){
   <p>Read the request, agree on access, and send a first draft. Handle replies, send the finished work, then check that the access you opened has closed.</p>
   <ul class="route-list">
    <li><b>Keep going</b><br>Choose Next or the matching highlighted object. Open other objects to see what they do.</li>
-   <li><b>Find a person or tool</b><br>Use ${teen()?'People and apps':'People and systems'} above the scene. Hover or focus a card for its role, or tap it to inspect.</li>
+   <li><b>Find a person or tool</b><br>Open a place in the scene to see who or what is there. Hover or focus for a description, or select an object to look closer. Choose Room to return to the illustration.</li>
    <li><b>Explore your pocket</b><br>Select an item to inspect it or try a highlighted Use here target. Choose Put away to return to the next step.</li>
    <li><b>Read the outcome</b><br>Choices sit below the conversation. Expand the note for a short explanation and, when available, a request trace.</li>
    <li><b>Use a keyboard</b><br>Tab moves between controls, Enter activates them, and Escape closes dialogue. There’s no countdown.</li>
@@ -1838,12 +1879,12 @@ function showGuide(){
 }
 function switchMode(next,launch=false){
  close();clearTimeout(toast.timer);$('#toast').classList.remove('visible');$('#toast').textContent='';
- mode=next;selected=null;render();
+ mode=next;selected=null;roomView='';render();
  if(!state().started)return launch?perform('begin'):showIntro();
  if(!state().finished)return showReply();
  if(launch)showEnding();
 }
-function restart(){showReference('Try a different route?',`<p>Start this story again with a fresh notebook. The other journey keeps its progress.</p><div class="actions">${button('Start this story again',()=>{states[mode]=StoryRules.fresh();selected=null;close();render();showIntro();})}${button('Keep my story',close,'secondary')}</div>`,'A FRESH CHAPTER');}
+function restart(){showReference('Try a different route?',`<p>Start this story again with a fresh notebook. The other journey keeps its progress.</p><div class="actions">${button('Start this story again',()=>{states[mode]=StoryRules.fresh();selected=null;roomView='';close();render();showIntro();})}${button('Keep my story',close,'secondary')}</div>`,'A FRESH CHAPTER');}
 let traceTimer=null,tracePlayback=null;
 function stopTrace(){if(traceTimer)clearTimeout(traceTimer);traceTimer=null;tracePlayback=null;}
 function updateTrace(announce=false){

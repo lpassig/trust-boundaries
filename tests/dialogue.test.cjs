@@ -16,7 +16,7 @@ function helperReview(mode){
 for(const mode of ['teen','agent']){
  test(`${mode}: helper replies identify the actual speaker and preserve task authority`,()=>{
   const s=helperReview(mode),key=I.eventSource(mode,s.last.speaker),source=I.speechSource(mode,key);
-  assert.equal(key,'helper');assert.equal(source.name,mode==='teen'?'Sam':'Pip');assert.equal(source.kind,'Speaking');
+  assert.equal(key,'helper');assert.equal(source.name,mode==='teen'?'Sam':'Quill');assert.equal(source.kind,'Speaking');
   assert.equal(s.mission.version,1);assert.equal(s.mission.privateNotesAllowed,false);assert.equal(s.delivered,false);
  });
  test(`${mode}: every room control has a distinct speech source without pretending to be a person`,()=>{
@@ -34,18 +34,27 @@ for(const mode of ['teen','agent']){
   assert(x/1000*358+22<=358);
  });
 }
-test('Pip remains drawn once, across messages, review, stopped runtime and task closure',()=>{
+test('Quill remains drawn once, across messages, review, stopped runtime and task closure',()=>{
  for(const state of [{},{step:7,helperVisible:true},{step:3,helperVisible:true,hasIncoming:true},{step:7,verified:true},{step:7,paused:true},{step:7,revoked:true}]){
   const svg=vm.runInContext(`roomArt('agent',1,${JSON.stringify(state)})`,context);
-  assert.equal((svg.match(/data-character="pip"/g)||[]).length,1);
+  assert.equal((svg.match(/data-character="quill"/g)||[]).length,1);
   assert.match(svg,/data-face-x="839" data-face-y="385"/);
  }
 });
-test('an earlier Nova discovery resumes with Pip’s offer to format the draft',()=>{
+test('Quill’s new name preserves old identity and handoff records on load',()=>{
+ const current=helperReview('agent');
+ const old=JSON.parse(JSON.stringify(current).replaceAll('quill-01','pip-01').replaceAll('Quill','Pip'));
+ const restored=R.hydrate(old,'agent');
+ assert.equal(restored.last.speaker,'Quill');
+ assert.deepEqual(restored.last.request.delegation,current.last.request.delegation);
+ assert.deepEqual(restored.helperReceipts,current.helperReceipts);
+ assert.deepEqual(restored.authority,current.authority);
+});
+test('an earlier Nova discovery resumes with Quill’s offer to format the draft',()=>{
  const original=R.act(R.fresh(),'agent','begin').state;
  const saved={...original,last:{title:'A resilient little plant.',speaker:'Nova',action:'discover',kind:'story'}};
  const restored=R.hydrate(saved,'agent');
- assert.equal(restored.last.speaker,'Pip');
+ assert.equal(restored.last.speaker,'Quill');
  assert.match(restored.last.text,/tidy the headings/);
  assert.equal(restored.started,true);
 });
@@ -79,6 +88,8 @@ for(const mode of ['teen','agent']){
   const replied=R.act(approved,mode,'send-draft').state;
   const withFeedback=new Map(I.roomGroups(replied,mode));
   if(teen){
+   assert.equal(I.stationForPin(mode,'phone'),'Alex’s phone');
+   assert.equal(I.stationForPin(mode,'laptop'),'Family laptop');
    assert.deepEqual(room.get('Alex’s phone'),['phone','schoolInbox','homework']);
    assert.deepEqual(room.get('Family laptop'),['laptop','schoolApp','source']);
    assert(withFeedback.get('Alex’s phone').includes('extra'));
@@ -86,6 +97,9 @@ for(const mode of ['teen','agent']){
    assert.equal(I.findTarget(mode,['schoolApp'],'laptop',true),'schoolApp');
    assert.equal(I.findTarget(mode,['schoolApp'],'laptop',false),undefined);
   }else{
+   assert.equal(I.stationForPin(mode,'laptop'),'Policy checks');
+   assert.deepEqual(room.get('Policy checks'),['policyInfo','policyDecision','laptop']);
+   assert.deepEqual(room.get('Signals and response'),['riskMonitor','antenna','controllers']);
    assert(room.get('People and agents').includes('sponsorMessage'));
    assert(room.get('Agent workspace').includes('vaultControl'));
    assert(withFeedback.get('People and agents').includes('outside'));
