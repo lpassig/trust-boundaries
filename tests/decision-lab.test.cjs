@@ -117,14 +117,20 @@ test('an individual closeout check needs a confirmed change and a retest, indepe
  const runtime=Lab.startCloseoutCheck();
  const active=Lab.probeCloseout(session);
  assert.equal(active.probe,'active');
+ assert.equal(active.baseline,'active');
  const unavailable=Lab.attemptCloseout(active,false);
  assert.equal(unavailable.closure,'unverified');
- assert.equal(Lab.probeCloseout(unavailable).probe,'unknown');
- const confirmed=Lab.attemptCloseout(unavailable,true);
+ const unverified=Lab.probeCloseout(unavailable);
+ assert.equal(unverified.probe,'unknown');
+ assert.equal(unverified.baseline,'active');
+ const confirmed=Lab.attemptCloseout(unverified,true);
  assert.equal(confirmed.closure,'confirmed');
  assert.equal(confirmed.probe,null);
- assert.equal(Lab.probeCloseout(confirmed).probe,'closed');
+ const verified=Lab.probeCloseout(confirmed);
+ assert.equal(verified.probe,'closed');
+ assert.equal(verified.baseline,'active');
  assert.equal(runtime.closure,'open');
+ assert.equal(runtime.baseline,null);
  assert.equal(Lab.probeCloseout(runtime).probe,'active');
 });
 

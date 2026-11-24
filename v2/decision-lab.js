@@ -115,16 +115,17 @@ const DecisionLab = (() => {
  }
 
  function startCloseoutCheck(){
-  return {closure:'open',probe:null};
+  return {closure:'open',baseline:null,probe:null};
  }
  function attemptCloseout(check,reachable){
   if(check.closure==='confirmed')return check;
-  return {closure:reachable?'confirmed':'unverified',probe:null};
+  return {...check,closure:reachable?'confirmed':'unverified',probe:null};
  }
  function probeCloseout(check){
   if(check.probe)return check;
   const results={open:'active',confirmed:'closed',unverified:'unknown'};
-  return {...check,probe:results[check.closure]};
+  const probe=results[check.closure];
+  return {...check,baseline:check.closure==='open'?probe:check.baseline,probe};
  }
 
  function startSignalTest(){

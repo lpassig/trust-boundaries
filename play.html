@@ -3061,16 +3061,17 @@ const DecisionLab = (() => {
  }
 
  function startCloseoutCheck(){
-  return {closure:'open',probe:null};
+  return {closure:'open',baseline:null,probe:null};
  }
  function attemptCloseout(check,reachable){
   if(check.closure==='confirmed')return check;
-  return {closure:reachable?'confirmed':'unverified',probe:null};
+  return {...check,closure:reachable?'confirmed':'unverified',probe:null};
  }
  function probeCloseout(check){
   if(check.probe)return check;
   const results={open:'active',confirmed:'closed',unverified:'unknown'};
-  return {...check,probe:results[check.closure]};
+  const probe=results[check.closure];
+  return {...check,baseline:check.closure==='open'?probe:check.baseline,probe};
  }
 
  function startSignalTest(){
@@ -3628,19 +3629,23 @@ const accessChecks={
  credential:{symptom:'The old password or key still lets me sign in',question:'Can the connector sign in again?',
   hint:'Try a fresh connection with the old password or key after the job ends.',owner:'Credential issuer · HashiCorp Vault in this example',
   check:'Confirm a fresh sign-in works with a test credential, revoke its lease, then try a fresh sign-in with the same credential. Look for a refusal.',
-  evidence:'Save the lease ID, the revocation result and the target’s before-and-after sign-in results. Keep the credential value out of the record.',pilot:'vault'},
+  evidence:'Save the lease ID, the revocation result and the target’s before-and-after sign-in results. Keep the credential value out of the record.',pilot:'vault',
+  replay:{probe:'Try a fresh connection',close:'Revoke the Vault lease',retry:'Restore Vault contact and revoke the lease',retest:'Retry a fresh connection',
+   confirmed:'Vault confirmed revocation of this lease.',unverified:'Vault did not respond to the revocation request.',
+   active:'The target accepted a fresh connection with this credential.',closed:'The target refused a fresh connection using the same credential.',
+   verifiedTitle:'Credential revocation verified'}},
  session:{symptom:'An app that was already open still responds',question:'Does the app that was already open still respond?',
   hint:'Try a status check in the existing session without signing in again.',owner:'App session owner · CRM in this example',
   check:'Confirm the existing test session responds. Ask the app to close that exact session, then verify that the same status request is refused.',
   evidence:'Save the session reference, the app’s closure response and the result of the retest. If you cannot reach the app, record the check as unverified.',
-  replay:{probe:'Check the existing session',close:'Close the CRM session',retry:'Restore CRM contact and close the session',retest:'Retest the old session',
+  replay:{reference:'CRM task session CRM-04',probe:'Check the existing session',close:'Close the CRM session',retry:'Restore CRM contact and close the session',retest:'Retest the old session',
    confirmed:'CRM acknowledged closure. Retest the same session to verify it.',unverified:'The CRM controller did not respond.',
    active:'CRM still responds in the existing session.',closed:'CRM refused the status read from the old session.'}},
  workspace:{symptom:'The agent is still running',question:'Is the agent’s workspace still running?',
   hint:'Ask the runtime operator to check the exact workspace used for the job.',owner:'Runtime operator · NVIDIA OpenShell in this example',
   check:'Confirm the named test workspace is running, stop it and verify that it reports stopped. Check pending work and open app sessions separately.',
   evidence:'Save the workspace generation, the operator’s stop result and a fresh status check for that generation. A missing status response leaves the stop unverified.',pilot:'openshell',
-  replay:{probe:'Check workspace S-04',close:'Stop workspace S-04',retry:'Restore runtime contact and stop S-04',retest:'Verify workspace S-04 stopped',
+  replay:{reference:'Sandbox S-04 · generation 10',probe:'Check workspace S-04',close:'Stop workspace S-04',retry:'Restore runtime contact and stop S-04',retest:'Verify workspace S-04 stopped',
    confirmed:'OpenShell acknowledged the stop. Check the named workspace again to verify it.',unverified:'The runtime controller did not respond.',
    active:'OpenShell reports that sandbox generation S-04 is still running.',closed:'The runtime status check confirmed that sandbox generation S-04 stopped.'}}
 };
@@ -3653,31 +3658,35 @@ function showBuyerAccess(back,help=false){
   ${choices(options)}<div class="actions">${help?button('Back to symptoms',()=>showBuyerAccess(back),'secondary'):button('Back to the buyer guide',back,'secondary')}</div>`,
   'ACCESS AFTER THE JOB');
 }
-function showBuyerAccessCheck(back,key,{credential='',closeout=DecisionLab.startCloseoutCheck(),backLabel=null}={}){
+function showBuyerAccessCheck(back,key,{closeout=DecisionLab.startCloseoutCheck(),backLabel=null}={}){
  const {symptom,owner,check,evidence,pilot,replay}=accessChecks[key];
- const reopen=()=>showBuyerAccessCheck(back,key,{credential,closeout,backLabel});
+ const reopen=()=>showBuyerAccessCheck(back,key,{closeout,backLabel});
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
- const exercise=replay?buyerCloseoutReplay(replay,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next,backLabel})):
-  credentialComparison(StoryRules.buyerExample().sourceLease,credential,next=>showBuyerAccessCheck(back,key,{credential:next,backLabel}));
+ const reference=replay.reference||'Vault lease '+StoryRules.buyerExample().sourceLease.id;
+ const exercise=buyerCloseoutReplay(replay,reference,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next,backLabel}));
  showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li>
   <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
   <h3>Try it in the simulation</h3>${exercise}
   <div class="actions">${backLabel?button(backLabel,back,'secondary'):button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
   ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
 }
-function buyerCloseoutReplay(replay,trial,advance){
+function buyerCloseoutReplay(replay,reference,trial,advance){
  const probe=()=>advance(DecisionLab.probeCloseout(trial));
  const close=reachable=>advance(DecisionLab.attemptCloseout(trial,reachable));
  const closure={confirmed:replay.confirmed,unverified:replay.unverified}[trial.closure];
- const result={active:['Access still active',replay.active],closed:['Closure verified',replay.closed],
+ const result={active:['Access still active',replay.active],closed:[replay.verifiedTitle||'Closure verified',replay.closed],
   unknown:['Closure unverified','The status check could not confirm closure.']}[trial.probe];
  let next;
  if(!trial.probe)next=button(trial.closure==='open'?replay.probe:replay.retest,probe);
  else if(trial.probe==='closed')next=button('Replay this check',()=>advance(DecisionLab.startCloseoutCheck()),'secondary');
  else if(trial.probe==='unknown')next=button(replay.retry,()=>close(true));
  else next=button(replay.close,()=>close(true))+button('Simulate the controller being unreachable',()=>close(false),'secondary');
- return `${closure&&!result?`<p role="status">${esc(closure)}</p>`:''}
-  ${result?`<div class="receipt" role="status"><b>${esc(result[0])}</b><p>${esc(result[1])}</p></div>`:''}
+ return `<ol class="lab-summary" aria-label="Evidence for this check">
+   <li><b>Tested reference</b><span>${esc(reference)}</span></li>
+   ${trial.baseline?`<li><b>Before the change</b><span>${esc(replay.active)}</span></li>`:''}
+   ${closure?`<li><b>Controller response</b><span>${esc(closure)}</span></li>`:''}
+   ${closure?`<li><b>${result?esc(result[0]):'Fresh retest'}</b><span>${result?esc(result[1]):'Retest pending'}</span></li>`:''}
+  </ol>
   <div class="actions">${next}</div>`;
 }
 function showBuyerActionScope(back){
@@ -3745,7 +3754,8 @@ function showBuyerVault({lease,containment},origin,back){
  showReference('The Vault lease and CRM retest',`<p>${origin}</p>
   <div class="receipt"><b>Lease issued · <code>${esc(lease.id)}</code></b><p>Read-only connector role · ${esc(lease.lifetimeSeconds)} seconds in the simulation. The connector holds the credential outside Nova’s context.</p></div>
   <div class="access-evidence"><div><span>HashiCorp Vault</span><b>${vault}</b></div><div><span>CRM session</span><b>${crm}</b></div></div>
-  <div class="actions">${button('Replay the credential comparison',()=>showCredentialComparison(lease,'',replay))}${button('Back to the buyer card',back,'secondary')}</div>`,
+  <div class="actions">${button('Test revocation and reconnection',()=>showBuyerAccessCheck(replay,'credential',{backLabel:'Back to the Vault evidence'}))}
+  ${button('Compare with a shared password',()=>showCredentialComparison(lease,'',replay),'secondary')}${button('Back to the buyer card',back,'secondary')}</div>`,
   'CREDENTIAL EVIDENCE');
 }
 function showBuyerHandoff(receipt,origin,back){
