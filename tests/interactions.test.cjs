@@ -49,6 +49,26 @@ test('Nova sends changing work to the request panel and exact approval to Morgan
  assert.equal(I.nextObject('agent','open','phone'),'phone');
  assert.equal(I.nextObject('teen','changes','phone'),'schoolInbox');
 });
+test('Approval and launch give each story distinct room cues before the first draft',()=>{
+ for(const mode of ['teen','agent']){
+  const opening=R.act(R.fresh(),mode,'begin').state;
+  const agreed=run(run(opening,'read-brief'),'ask-pass',{scope:'task'});
+  assert.equal(agreed.opened,false);
+  const opened=run(agreed,'open');
+  assert.equal(opened.opened,true);
+  if(mode==='teen'){
+   assert.match(I.sceneSummary(agreed,mode),/Open the school app on the family laptop/);
+   assert.match(I.sceneSummary(opened,mode),/school app is open/);
+  }else{
+   assert(new Map(I.roomGroups(agreed,mode)).get('Work desk').includes('launchWorkflow'));
+   assert.match(agreed.last.text,/launch workflow can now request/);
+   assert.match(I.sceneSummary(agreed,mode),/workflow can now request/);
+   assert.match(I.sceneSummary(opened,mode),/OpenShell is running Nova/);
+   const oldSave={...agreed,last:{...agreed.last,text:'Nova can now launch its workspace.'}};
+   assert.match(R.hydrate(oldSave,mode).last.text,/launch workflow can now request/);
+  }
+ }
+});
 test('The room reveals the old CRM session status after the probe',()=>{
  let s=run(run(ready('agent'),'send'),'close-pass');
  const label=()=>I.objectStatus(s,'agent','laptop');

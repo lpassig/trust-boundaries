@@ -40,6 +40,7 @@ const StoryInteractions = (() => {
    helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
+   launchWorkflow:'The account team’s launch workflow checks the active mission and requests a sandbox as an authorized OpenShell operator. OpenShell starts Nova once the isolation boundary is verified.',
    policyConsole:'The mission record and identity systems supply trusted facts. The customer policy decision point evaluates the request, and CRM applies the decision.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
    aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
@@ -63,7 +64,7 @@ const StoryInteractions = (() => {
   ];
   return [
    ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
-   ['Work desk',['brief','workOrder','parent','policyConsole','registries','notebook']],
+   ['Work desk',['brief','workOrder','parent','launchWorkflow','policyConsole','registries','notebook']],
    ['Agent workspace',['phone','aiGateway','mcpGateway','vaultControl','riskMonitor']],
    ['Customer records',['laptop','source',...(s.message?['crmAttachment']:[])]]
   ];
@@ -117,6 +118,7 @@ const StoryInteractions = (() => {
    sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief',tool:'sponsorMessage'},
    sponsorContact:{name:'Priya · task sponsor',kind:'Message',channel:'Saved contact',point:[449,173],object:'brief',tool:'sponsorMessage'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
+   launchWorkflow:{name:'Launch workflow',kind:'On screen',channel:'Account team',point:[524,401],object:'phone',tool:'launchWorkflow'},
    policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
    aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
@@ -200,7 +202,8 @@ const StoryInteractions = (() => {
   if(s.ended)return s.checks.length===4?teen?'Laptop signed out. Phone put away. Tell your parent you’re ready.':'All four closing outcomes are checked. Present the evidence to finish.':teen?'The phone is locked. Finish checking the school tab and any waiting reminder.':'The runtime is stopped. Check the task credential, service session and actual queue.';
   if(s.delivered)return teen?'Ms Patel has your project. Sign out of the family laptop before dinner.':'The final file is delivered. Close this task’s remaining access.';
   if(!s.pass)return 'An empty document waits. Start with the new request.';
-  if(!s.draft)return 'The workspace is ready. Build your first draft.';
+  if(!s.opened)return teen?'Your homework plan is agreed. Open the school app on the family laptop.':'The mission is active. The account team’s workflow can now request a workspace.';
+  if(!s.draft)return teen?'The school app is open on the laptop. Build your timeline.':'OpenShell is running Nova. Build the first outline.';
   if(!s.caption)return teen?'Your three dates are on the page. Check them on the museum website, then add its page title.':'The first draft is local. Open and credit its agreed source.';
   if(!s.message)return teen?'Ms Patel hasn’t seen your draft yet. Send it through the school app for feedback.':'The sourced draft is still local. Ask Morgan to review it.';
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';

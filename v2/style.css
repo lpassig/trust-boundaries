@@ -108,6 +108,10 @@ dialog.is-reference .speech-source{display:none}
 #room-directory{margin-inline-start:auto}
 .object-group+.object-group{margin-top:16px}
 .object-group h3{color:var(--muted);font-size:14px;line-height:1.4;margin:0 0 7px}
+.handoff{list-style:none;padding:0;margin:8px 0 12px}
+.handoff li{display:grid;grid-template-columns:minmax(112px,1fr) 2fr;gap:8px;padding:7px 0;border-block-end:1px solid var(--line);font-size:13px;line-height:1.4}
+.handoff b{color:var(--ink)}
+.handoff span{color:var(--muted)}
 .object-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:6px}
 #objects .object-grid button{display:flex;flex-wrap:nowrap;align-items:center;justify-content:start;gap:8px;text-align:left;padding:9px;min-height:60px}
 #objects .object-grid button b{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;margin:0}

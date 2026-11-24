@@ -110,6 +110,10 @@ dialog.is-reference .speech-source{display:none}
 #room-directory{margin-inline-start:auto}
 .object-group+.object-group{margin-top:16px}
 .object-group h3{color:var(--muted);font-size:14px;line-height:1.4;margin:0 0 7px}
+.handoff{list-style:none;padding:0;margin:8px 0 12px}
+.handoff li{display:grid;grid-template-columns:minmax(112px,1fr) 2fr;gap:8px;padding:7px 0;border-block-end:1px solid var(--line);font-size:13px;line-height:1.4}
+.handoff b{color:var(--ink)}
+.handoff span{color:var(--muted)}
 .object-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:6px}
 #objects .object-grid button{display:flex;flex-wrap:nowrap;align-items:center;justify-content:start;gap:8px;text-align:left;padding:9px;min-height:60px}
 #objects .object-grid button b{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;margin:0}
@@ -1215,7 +1219,7 @@ const NOVA_MOVES = {
   ],
   "open": [
     "Review OpenShell startup",
-    "See what starts for this mission, then launch Nova’s workspace."
+    "See how the account team’s workflow starts Nova’s workspace."
   ],
   "draft": [
     "Build the first outline",
@@ -1477,7 +1481,7 @@ const StoryRules = (() => {
   else switch(action){
    case 'begin':s.started=true;say(teen?'Can I finish before dinner?':'Two accounts. One page.',teen?'Dinner is in half an hour. Your railway-history project still needs a timeline and a source. Ms Patel’s assignment is waiting in the school app.':'Priya sent a work order. Open it to see what she wants, then check the task’s approval in the mission service.');break;
    case 'read-brief':if(!need(s.started,'Enter the room first.'))break;s.brief=true;say(teen?'“Make a timeline of our railway.”':'A work order for tomorrow’s handover.',teen?'Ms Patel asks for a timeline of the town’s railway, using your notes and the Riverside Museum website. You can send her a draft through the school app for feedback. You’d like to finish before dinner.':'Priya requests a summary for Harbor Bikes and Pine Studio. The mission service records the permission for that work separately.');break;
-   case 'ask-pass':if(!need(s.brief,'Read the new request before agreeing on access.'))break;if(s.pass){say('The agreement is recorded.',teen?'Your homework plan is ready.':'The mission is recorded in the customer service.');break;}if(p.scope!=='task'){say(teen?'“What do you need it for?”':'“Let’s name the work first.”',teen?'Explain which apps the project needs. Your parent can agree to that plan.':'Describe the records, report and destination before authority is issued.');break;}s.mission=missionFor(mode);s.authority=teen?null:authorityFor();s.missionLog.push(JSON.parse(JSON.stringify(s.mission)));s.pass={scope:s.mission.scope,missionId:s.mission.id,duration:30,generation:s.generation,status:'active'};say(teen?'“School app and museum website until dinner. Deal.”':'The two-account mission is active.',teen?'“School app and the museum website,” you say. Your parent nods over the chopping board. “Until dinner. Come and ask if you need anything else.”':'The mission service records Priya’s approval for Harbor Bikes and Pine Studio and names Morgan as the recipient. Nova can now launch its workspace.');break;
+   case 'ask-pass':if(!need(s.brief,'Read the new request before agreeing on access.'))break;if(s.pass){say('The agreement is recorded.',teen?'Your homework plan is ready.':'The mission is recorded in the customer mission service.');break;}if(p.scope!=='task'){say(teen?'“What do you need it for?”':'“Let’s name the work first.”',teen?'Explain which apps the project needs. Your parent can agree to that plan.':'Describe the records, report and destination before authority is issued.');break;}s.mission=missionFor(mode);s.authority=teen?null:authorityFor();s.missionLog.push(JSON.parse(JSON.stringify(s.mission)));s.pass={scope:s.mission.scope,missionId:s.mission.id,duration:30,generation:s.generation,status:'active'};say(teen?'“School app and museum website until dinner. Deal.”':'The two-account mission is active.',teen?'Your parent agrees until dinner. The phone’s homework settings apply the rule. Open your project in the school app on the family laptop.':'The mission service records Priya’s approval for Harbor Bikes and Pine Studio, with Morgan as the recipient. The account team’s launch workflow can now request the workspace.');break;
    case 'open':if(!need(active(),'Agree on the task before opening tools.'))break;s.opened=true;s.sessionOpened=true;say(teen?'Your homework tab opens.':'The workspace starts.',teen?'You sign in to the school app on the family laptop. It remembers this laptop for quick sign-in and leaves your project open in a tab. Time to turn those notes into a timeline.':'OpenShell started the sandbox, and the CRM task session is open. Build the outline first. Nova will request the account records and the connector will obtain its Vault credential at the read step.',1);break;
    case 'prepare':if(!need(active()&&s.opened&&!s.delivered,'Open the agreed workspace first.'))break;if(s.draft){say('A first draft is already here.','Continue with its source and the new requests.',4);break;}s.draft=true;revise();say(teen?'Three dates. A real beginning.':'The first outline is ready.',teen?'You turn your notes into a railway timeline. Three dates appear on the page. Now check the dates on the museum website. Sam drops by and offers to proofread when you are ready.':'Nova starts with two headings. Pip, a formatting sub-agent with its own identity, can tidy the report later. First, request the approved account updates.',4);break;
    case 'collect-source':if(!need(editable(),'Make the first draft in the agreed workspace.'))break;operation=teen?'archive.read':'customer.read';requestRecords=teen?[]:['123','456'];if(!resourceAllowed())break;decide('permit','The source read fits the active task and resource rules.');if(!teen&&!s.source)s.sourceLease={id:'example-source-lease-'+(s.history.length+1),lifetimeSeconds:120};s.source=true;revise();say(teen?'The museum website has the dates.':'CRM returned the two approved records.',teen?'The railway page on the Riverside Museum website confirms your dates. You save the page title so you can credit it beneath the timeline.':'The CRM returns the two records Priya approved. Nova uses the renewal and follow-up notes to fill the outline.',2);break;
@@ -1660,6 +1664,9 @@ const StoryRules = (() => {
   if(raw.version<6){s.authority=mode==='agent'&&s.mission?authorityFor():null;s.helperReceipts=[];}
   if(!Array.isArray(s.helperReceipts)||s.helperReceipts.some(r=>!r||r.status!=='completed'||r.credentialShared!==false||!Array.isArray(r.actions)||r.actions.length!==1||r.actions[0]!==(mode==='teen'?'project.proofread':'report.format')||r.actor!==(mode==='teen'?'sam':'pip-01')||!Array.isArray(r.records)||!Number.isInteger(r.inputRevision)||r.outputRevision!==r.inputRevision+1))return d;
   if(mode==='agent'&&s.last?.decision)s.last.decision.pdp='Customer policy decision service';
+  if(mode==='agent'&&s.last?.action==='ask-pass'&&typeof s.last.text==='string'&&s.last.text.endsWith('Nova can now launch its workspace.')){
+   s.last.text=s.last.text.replace('Nova can now launch its workspace.','The account team’s launch workflow can now request the workspace.');
+  }
   if(mode==='agent'&&s.last?.title==='A resilient little plant.')Object.assign(s.last,pipOffer);
   s.verified=changesResolved(s);
   if(typeof s.feedbackLegacy!=='boolean'||s.message&&!s.draftReview&&!s.feedbackLegacy)return d;
@@ -1731,6 +1738,7 @@ const StoryInteractions = (() => {
    helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
+   launchWorkflow:'The account team’s launch workflow checks the active mission and requests a sandbox as an authorized OpenShell operator. OpenShell starts Nova once the isolation boundary is verified.',
    policyConsole:'The mission record and identity systems supply trusted facts. The customer policy decision point evaluates the request, and CRM applies the decision.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
    aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
@@ -1754,7 +1762,7 @@ const StoryInteractions = (() => {
   ];
   return [
    ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
-   ['Work desk',['brief','workOrder','parent','policyConsole','registries','notebook']],
+   ['Work desk',['brief','workOrder','parent','launchWorkflow','policyConsole','registries','notebook']],
    ['Agent workspace',['phone','aiGateway','mcpGateway','vaultControl','riskMonitor']],
    ['Customer records',['laptop','source',...(s.message?['crmAttachment']:[])]]
   ];
@@ -1808,6 +1816,7 @@ const StoryInteractions = (() => {
    sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief',tool:'sponsorMessage'},
    sponsorContact:{name:'Priya · task sponsor',kind:'Message',channel:'Saved contact',point:[449,173],object:'brief',tool:'sponsorMessage'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
+   launchWorkflow:{name:'Launch workflow',kind:'On screen',channel:'Account team',point:[524,401],object:'phone',tool:'launchWorkflow'},
    policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
    aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
@@ -1891,7 +1900,8 @@ const StoryInteractions = (() => {
   if(s.ended)return s.checks.length===4?teen?'Laptop signed out. Phone put away. Tell your parent you’re ready.':'All four closing outcomes are checked. Present the evidence to finish.':teen?'The phone is locked. Finish checking the school tab and any waiting reminder.':'The runtime is stopped. Check the task credential, service session and actual queue.';
   if(s.delivered)return teen?'Ms Patel has your project. Sign out of the family laptop before dinner.':'The final file is delivered. Close this task’s remaining access.';
   if(!s.pass)return 'An empty document waits. Start with the new request.';
-  if(!s.draft)return 'The workspace is ready. Build your first draft.';
+  if(!s.opened)return teen?'Your homework plan is agreed. Open the school app on the family laptop.':'The mission is active. The account team’s workflow can now request a workspace.';
+  if(!s.draft)return teen?'The school app is open on the laptop. Build your timeline.':'OpenShell is running Nova. Build the first outline.';
   if(!s.caption)return teen?'Your three dates are on the page. Check them on the museum website, then add its page title.':'The first draft is local. Open and credit its agreed source.';
   if(!s.message)return teen?'Ms Patel hasn’t seen your draft yet. Send it through the school app for feedback.':'The sourced draft is still local. Ask Morgan to review it.';
   if(s.extensionAdded)return teen?'Your timeline includes the extra museum source. Give it a final look before sending.':'Alder Books is in the handover. Review the new copy with Morgan.';
@@ -3454,7 +3464,8 @@ const alexRoomLabels={
 const novaRoomLabels={
  hero:['Nova','You · run the handover'],sponsorMessage:['Priya','Approves task scope'],reviewer:['Morgan','Approves the exact copy'],
  outside:['Luca','Harbor Bikes · customer contact'],workOrder:['Work order','Priya’s original request'],
- parent:['Mission service','Records the approved scope'],policyConsole:['Policy console','Facts, decision and enforcement'],
+ parent:['Mission service','Records the approved scope'],launchWorkflow:['Launch workflow','Requests a workspace for the approved job'],
+ policyConsole:['Policy console','Shows who checks the request'],
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
  vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['Identity monitoring','Verify Identity Protection · alerts'],
@@ -3464,7 +3475,7 @@ const novaRoomLabels={
 const roomCardIcons={
  hero:'person',sponsorMessage:'person',reviewer:'person',outside:'person',schoolInbox:'reviewer',schoolApp:'console',
  homework:'shield',parentSchool:'phone',extra:'source',classChat:'reviewer',crmAttachment:'outside',
- policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield'
+ launchWorkflow:'console',policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield'
 };
 function roomCard(key){
  if(teen()&&key==='extra'){
@@ -4016,6 +4027,7 @@ function interact(key,pin){
  speakingObject=!teen()&&key==='parent'?'missionControl':!teen()&&key==='outside'?'customerContact':key;
  const details={
   workOrder:`<p>${esc(episode().brief)}</p>`,registries:agentRegistryDetails,
+  launchWorkflow:()=>`<p>The mission check belongs to the configured customer workflow. The OpenShell Gateway separately authorizes the workspace lifecycle request.</p>${protocolSourceLinks(['openshell'])}`,
   aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
   vaultControl:()=>protocolSourceLinks(['leases']),
   riskMonitor:()=>`<p>The game illustrates a configured alert and response. The response policy and controllers apply any pause, credential revocation or session closure.</p>${protocolSourceLinks(['identityRisk'])}`
@@ -4100,15 +4112,19 @@ function agentRegistryDetails(){
   <li><b>Vault Agent Registry</b><br>For the brokered read in this deployment, the team configures a Vault registration for Nova’s identity and a ceiling on what it can inherit when acting on behalf of a user.</li>
   <li><b>Customer mission record</b><br>Priya’s grant supplies the business scope for this job. CRM checks the actual request against it.</li></ul>${protocolSourceLinks(['agentInventory','vaultRegistry'])}`;
 }
+function handoff(items){
+ return `<ul class="handoff" aria-label="Who does what">${items.map(([actor,action])=>`<li><b>${esc(actor)}</b><span>${esc(action)}</span></li>`).join('')}</ul>`;
+}
 function showParent(){speakingObject=teen()?'parent':'missionControl';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
  if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Hear from Priya'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW','review-preview');
  if(!s.pass){
-  const roles=teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':
-   `Priya submitted the request and is authorized to approve this task. The mission service checks her authority and records a grant for two accounts and one recipient. Morgan reviews each copy later.`;
+  const roles=teen()?
+   handoff([['Parent','Agrees on the school app and museum website until dinner.'],['Phone homework settings','Allow the agreed apps and links on your phone.']]):
+   handoff([['Priya · task sponsor','Approves which accounts Nova can read.'],['Mission service','Verifies Priya’s authority and records the permitted accounts and recipient.'],['Morgan · reviewer','Approves each copy separately before CRM sends it.']]);
   const policy=teen()?'':`<details class="debrief"><summary>Which agent registries are involved?</summary>${agentRegistryDetails()}</details>
    <details class="debrief"><summary>Where do PIP, PDP and PEP fit?</summary><p>The mission service supplies approved scope as a trusted source of policy information (the PIP role). The customer policy decision point (PDP) evaluates each actual CRM request. CRM is the policy enforcement point (PEP) that allows or blocks it.</p></details>`;
-  return show(teen()?'“Which apps does the project need?”':'Approve the two-account mission',`<p>${roles}</p>${policy}${choices([[teen()?'School app and museum website until dinner':'Record Priya’s approval',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
+  return show(teen()?'“Which apps does the project need?”':'Approve the two-account mission',`${roles}${policy}${choices([[teen()?'School app and museum website until dinner':'Record Priya’s approval',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
  }
  if(s.ended){if(s.checks.length<4)return showChecks();return show(teen()?'“What’s finished?”':'Review this task’s outcome.',`<p>${teen()?'“Sent to Ms Patel, signed out of the laptop, and phone put away,” you say. “Can I set the table?”':'The approved report arrived. This task’s authority, credential, session, workload and queue have their own evidence.'}</p>${choices([[teen()?'Finish the evening':'Finish this mission',teen()?'Put the laptop away and head to the table.':'No future task is authorized by closing this one.',()=>perform('finish'),'good']])}`,e.authority,'closure-preview');}
  if(s.delivered)return show(teen()?'“Dinner is ready.”':'Final delivery confirmed. Close the mission.',`<p>${teen()?'You can jot down that the project is sent. Then sign out of the school tab and join your parent for dinner.':'You can keep a sourced note or queue a receipt-only follow-up. Then close the mission and the service session opened at the start.'}</p>${s.queueScheduled?'<div class="receipt"><b>One chosen follow-up is waiting</b><p>It has no attachment. Check or cancel it when closing the task.</p></div>':''}${choices([[teen()?'Put my phone away and finish up':'Close this mission',teen()?'Check the family laptop before heading to dinner.':'Check which connections still work after the job stops.',()=>perform('close-pass'),'good'],...(!s.queueScheduled&&!teen()?[[teen()?'Schedule a reminder for my teacher':'Queue one receipt follow-up','Optional, same recipient, no attachment. It will be visible in the closing checks.',()=>perform('schedule-followup')]]:[]),...(!s.notes.length?[[teen()?'Keep a note for tomorrow':'Save sourced task context',teen()?'Keep the submission receipt with a short note.':'Optional. Keep delivery provenance with the task note.',()=>perform('write-note')]]:[])])}${teen()&&!s.queueScheduled?`<details class="debrief"><summary>Optional: what if a message is still waiting?</summary><p>This extra example queues a receipt-only follow-up, so you can see why a waiting send needs its own closing check.</p><div class="actions">${button('Try a waiting-message example',()=>perform('schedule-followup'),'secondary')}</div></details>`:''}`,e.authority,'closure-preview');
@@ -4139,14 +4155,18 @@ function showWorkspace(){
  if(!s.pass)return showParent();
  if(s.opened)return showDraft();
  if(teen())return show('Sign in on the family laptop.',
-  `<p>The school app opens your timeline on this laptop. It remembers the laptop for quick sign-in. When you’re done, you’ll turn that off and sign out.</p>${choices([
+  `${handoff([['School app · family laptop','Signs you in and opens your timeline. It remembers this laptop for quick sign-in.'],['School inbox · your phone','Shows your teacher’s messages. You’ll read her feedback here later.']])}${choices([
    ['Sign in and open my project','Open the school app on the laptop.',()=>perform('open'),'good']
   ])}`,'FAMILY LAPTOP','open');
- show('Launch Nova’s task workspace',`<p>The account team’s workflow checks Priya’s grant and asks OpenShell to start Nova’s sandbox. CRM opens a separate session for the task.</p>
+ show('Launch Nova’s task workspace',`${handoff([
+  ['Account team’s launch workflow','Checks the active mission and requests a sandbox.'],
+  ['NVIDIA OpenShell','Verifies the isolation boundary, then starts Nova with runtime restrictions.'],
+  ['CRM','Opens its own task session. It will check each record or send request separately.']
+ ])}
   <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}</details>
   <details class="debrief"><summary>Which tools handle the first CRM read?</summary>${crmToolRoute()}
    <p>Model access has its own route. A configured watsonx Orchestrate AI Gateway can route model requests. The MCP gateway handles the CRM tool call shown here.</p>${protocolSourceLinks(['mcp'])}</details>
-  ${choices([['Launch the workspace','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
+  ${choices([['Run the launch workflow','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
 }
 function crmToolRoute(){
  const steps=[

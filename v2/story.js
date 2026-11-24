@@ -467,7 +467,7 @@ const NOVA_MOVES = {
   ],
   "open": [
     "Review OpenShell startup",
-    "See what starts for this mission, then launch Nova’s workspace."
+    "See how the account team’s workflow starts Nova’s workspace."
   ],
   "draft": [
     "Build the first outline",

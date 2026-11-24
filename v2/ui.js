@@ -244,7 +244,8 @@ const alexRoomLabels={
 const novaRoomLabels={
  hero:['Nova','You · run the handover'],sponsorMessage:['Priya','Approves task scope'],reviewer:['Morgan','Approves the exact copy'],
  outside:['Luca','Harbor Bikes · customer contact'],workOrder:['Work order','Priya’s original request'],
- parent:['Mission service','Records the approved scope'],policyConsole:['Policy console','Facts, decision and enforcement'],
+ parent:['Mission service','Records the approved scope'],launchWorkflow:['Launch workflow','Requests a workspace for the approved job'],
+ policyConsole:['Policy console','Shows who checks the request'],
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
  vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['Identity monitoring','Verify Identity Protection · alerts'],
@@ -254,7 +255,7 @@ const novaRoomLabels={
 const roomCardIcons={
  hero:'person',sponsorMessage:'person',reviewer:'person',outside:'person',schoolInbox:'reviewer',schoolApp:'console',
  homework:'shield',parentSchool:'phone',extra:'source',classChat:'reviewer',crmAttachment:'outside',
- policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield'
+ launchWorkflow:'console',policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield'
 };
 function roomCard(key){
  if(teen()&&key==='extra'){
@@ -806,6 +807,7 @@ function interact(key,pin){
  speakingObject=!teen()&&key==='parent'?'missionControl':!teen()&&key==='outside'?'customerContact':key;
  const details={
   workOrder:`<p>${esc(episode().brief)}</p>`,registries:agentRegistryDetails,
+  launchWorkflow:()=>`<p>The mission check belongs to the configured customer workflow. The OpenShell Gateway separately authorizes the workspace lifecycle request.</p>${protocolSourceLinks(['openshell'])}`,
   aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
   vaultControl:()=>protocolSourceLinks(['leases']),
   riskMonitor:()=>`<p>The game illustrates a configured alert and response. The response policy and controllers apply any pause, credential revocation or session closure.</p>${protocolSourceLinks(['identityRisk'])}`
@@ -890,15 +892,19 @@ function agentRegistryDetails(){
   <li><b>Vault Agent Registry</b><br>For the brokered read in this deployment, the team configures a Vault registration for Nova’s identity and a ceiling on what it can inherit when acting on behalf of a user.</li>
   <li><b>Customer mission record</b><br>Priya’s grant supplies the business scope for this job. CRM checks the actual request against it.</li></ul>${protocolSourceLinks(['agentInventory','vaultRegistry'])}`;
 }
+function handoff(items){
+ return `<ul class="handoff" aria-label="Who does what">${items.map(([actor,action])=>`<li><b>${esc(actor)}</b><span>${esc(action)}</span></li>`).join('')}</ul>`;
+}
 function showParent(){speakingObject=teen()?'parent':'missionControl';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
  if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Hear from Priya'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW','review-preview');
  if(!s.pass){
-  const roles=teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':
-   `Priya submitted the request and is authorized to approve this task. The mission service checks her authority and records a grant for two accounts and one recipient. Morgan reviews each copy later.`;
+  const roles=teen()?
+   handoff([['Parent','Agrees on the school app and museum website until dinner.'],['Phone homework settings','Allow the agreed apps and links on your phone.']]):
+   handoff([['Priya · task sponsor','Approves which accounts Nova can read.'],['Mission service','Verifies Priya’s authority and records the permitted accounts and recipient.'],['Morgan · reviewer','Approves each copy separately before CRM sends it.']]);
   const policy=teen()?'':`<details class="debrief"><summary>Which agent registries are involved?</summary>${agentRegistryDetails()}</details>
    <details class="debrief"><summary>Where do PIP, PDP and PEP fit?</summary><p>The mission service supplies approved scope as a trusted source of policy information (the PIP role). The customer policy decision point (PDP) evaluates each actual CRM request. CRM is the policy enforcement point (PEP) that allows or blocks it.</p></details>`;
-  return show(teen()?'“Which apps does the project need?”':'Approve the two-account mission',`<p>${roles}</p>${policy}${choices([[teen()?'School app and museum website until dinner':'Record Priya’s approval',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
+  return show(teen()?'“Which apps does the project need?”':'Approve the two-account mission',`${roles}${policy}${choices([[teen()?'School app and museum website until dinner':'Record Priya’s approval',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
  }
  if(s.ended){if(s.checks.length<4)return showChecks();return show(teen()?'“What’s finished?”':'Review this task’s outcome.',`<p>${teen()?'“Sent to Ms Patel, signed out of the laptop, and phone put away,” you say. “Can I set the table?”':'The approved report arrived. This task’s authority, credential, session, workload and queue have their own evidence.'}</p>${choices([[teen()?'Finish the evening':'Finish this mission',teen()?'Put the laptop away and head to the table.':'No future task is authorized by closing this one.',()=>perform('finish'),'good']])}`,e.authority,'closure-preview');}
  if(s.delivered)return show(teen()?'“Dinner is ready.”':'Final delivery confirmed. Close the mission.',`<p>${teen()?'You can jot down that the project is sent. Then sign out of the school tab and join your parent for dinner.':'You can keep a sourced note or queue a receipt-only follow-up. Then close the mission and the service session opened at the start.'}</p>${s.queueScheduled?'<div class="receipt"><b>One chosen follow-up is waiting</b><p>It has no attachment. Check or cancel it when closing the task.</p></div>':''}${choices([[teen()?'Put my phone away and finish up':'Close this mission',teen()?'Check the family laptop before heading to dinner.':'Check which connections still work after the job stops.',()=>perform('close-pass'),'good'],...(!s.queueScheduled&&!teen()?[[teen()?'Schedule a reminder for my teacher':'Queue one receipt follow-up','Optional, same recipient, no attachment. It will be visible in the closing checks.',()=>perform('schedule-followup')]]:[]),...(!s.notes.length?[[teen()?'Keep a note for tomorrow':'Save sourced task context',teen()?'Keep the submission receipt with a short note.':'Optional. Keep delivery provenance with the task note.',()=>perform('write-note')]]:[])])}${teen()&&!s.queueScheduled?`<details class="debrief"><summary>Optional: what if a message is still waiting?</summary><p>This extra example queues a receipt-only follow-up, so you can see why a waiting send needs its own closing check.</p><div class="actions">${button('Try a waiting-message example',()=>perform('schedule-followup'),'secondary')}</div></details>`:''}`,e.authority,'closure-preview');
@@ -929,14 +935,18 @@ function showWorkspace(){
  if(!s.pass)return showParent();
  if(s.opened)return showDraft();
  if(teen())return show('Sign in on the family laptop.',
-  `<p>The school app opens your timeline on this laptop. It remembers the laptop for quick sign-in. When you’re done, you’ll turn that off and sign out.</p>${choices([
+  `${handoff([['School app · family laptop','Signs you in and opens your timeline. It remembers this laptop for quick sign-in.'],['School inbox · your phone','Shows your teacher’s messages. You’ll read her feedback here later.']])}${choices([
    ['Sign in and open my project','Open the school app on the laptop.',()=>perform('open'),'good']
   ])}`,'FAMILY LAPTOP','open');
- show('Launch Nova’s task workspace',`<p>The account team’s workflow checks Priya’s grant and asks OpenShell to start Nova’s sandbox. CRM opens a separate session for the task.</p>
+ show('Launch Nova’s task workspace',`${handoff([
+  ['Account team’s launch workflow','Checks the active mission and requests a sandbox.'],
+  ['NVIDIA OpenShell','Verifies the isolation boundary, then starts Nova with runtime restrictions.'],
+  ['CRM','Opens its own task session. It will check each record or send request separately.']
+ ])}
   <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}</details>
   <details class="debrief"><summary>Which tools handle the first CRM read?</summary>${crmToolRoute()}
    <p>Model access has its own route. A configured watsonx Orchestrate AI Gateway can route model requests. The MCP gateway handles the CRM tool call shown here.</p>${protocolSourceLinks(['mcp'])}</details>
-  ${choices([['Launch the workspace','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
+  ${choices([['Run the launch workflow','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
 }
 function crmToolRoute(){
  const steps=[
