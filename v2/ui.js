@@ -444,7 +444,10 @@ function architectureBoundaries(selected){
   <div class="actions">${button('Try the authorization lab',()=>{
    const selectedId=$('[data-boundary][aria-pressed="true"]').dataset.boundary;
    showDecisionLab(()=>showArchitecture('boundaries',selectedId));
-  })}</div>`;
+  })}${button('Test delegation and credentials',()=>{
+   const selectedId=$('[data-boundary][aria-pressed="true"]').dataset.boundary;
+   showDelegationLab(()=>showArchitecture('boundaries',selectedId),'Back to architecture');
+  },'secondary')}</div>`;
 }
 
 function architectureDesign(){
@@ -581,9 +584,11 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
  const appPermission=()=>showBuyerActionScope(reopen);
  const oldSession=()=>showBuyerAccessCheck(reopen,'session',{backLabel:'Back to Apply this at work'});
  const approval=candidates.find(need=>need.pilot.evidence==='verify');
+ const identity=candidates.find(need=>need.pilot.evidence==='iai');
  const related=context==='alex'?[
   ['Can your app protect records outside the task?','The school app checked what Alex could send. Test what a work app will let an agent read.',appPermission,'good'],
-  ['Does the old app session still work?','Putting the phone away left the laptop tab open. Retest an existing work session.',oldSession,'good']
+  ['Does the old app session still work?','Putting the phone away left the laptop tab open. Retest an existing work session.',oldSession,'good'],
+  ['Can you tell who did the work?','Sam uses his own account. See how an agent keeps the same distinction when it acts for a person.',()=>choose(identity)]
  ]:context==='staffing'?[
   ['Would an edited file still go out?','Version 4 needed a new approval. Use the IBM Verify pilot to see what CRM blocks after an edit.',()=>choose(approval),'good'],
   ['Can you prove the session closed?','The scheduling service owned the session. Try the same check with the CRM team’s evidence.',oldSession,'good']
@@ -595,7 +600,8 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
  ];
  showReference(context?'Apply this at work':'What problem do you have today?',`
   ${context?`${choices(related)}<details class="debrief"><summary>Browse other work problems</summary>${choices(problems)}</details>`:choices(problems)}
-  <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
+  <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div>
+  <div class="actions">${button('Test delegation and credentials',()=>showDelegationLab(reopen,'Back to the buyer guide'),'secondary')}</div></details>
   <div class="actions">${button('Raise the BAR',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
 }
@@ -834,8 +840,132 @@ function showBuyerVault({lease,containment},origin,back){
   <div class="receipt"><b>Lease issued · <code>${esc(lease.id)}</code></b><p>Read-only connector role · ${esc(lease.lifetimeSeconds)} seconds in the simulation. The connector holds the credential outside Nova’s context.</p></div>
   <div class="access-evidence"><div><span>HashiCorp Vault</span><b>${vault}</b></div><div><span>CRM session</span><b>${crm}</b></div></div>
   <div class="actions">${button('Test revocation and reconnection',()=>showBuyerAccessCheck(replay,'credential',{backLabel:'Back to the Vault evidence'}))}
+  ${button('Test delegation and credentials',()=>showDelegationLab(replay,'Back to the Vault evidence'),'secondary')}
   ${button('Compare with a shared password',()=>showCredentialComparison(lease,'',replay),'secondary')}${button('Back to the buyer card',back,'secondary')}</div>`,
   'CREDENTIAL EVIDENCE');
+}
+
+function showDelegationLab(back,backLabel){
+ const menu=()=>showDelegationLab(back,backLabel);
+ showReference('Test delegation and credentials',`<p>Priya signs in with the company’s identity provider. IBM Agent Identity checks whether Nova can act for her. Vault checks access to credentials. CRM owns the data it returns.</p>
+  ${choices([
+   ['Choose who receives the token','Use the same human and agent on a Vault route and on a direct MCP route.',()=>showDelegationRoute(menu),'good'],
+   ['Compare a fixed grant with a grant for this request','Find which Vault rule stops the request for a second credential.',()=>showVaultGrantComparison(menu)],
+   ['Disable Nova and retest the old credential','Check new token issuance, delivery of the signal and the old lease separately.',()=>showAgentStop(menu)],
+   ['Approve a supplier payment','Check what the payments app does if the amount changes after approval.',()=>showPaymentDemo(menu)]
+  ])}
+  <p class="small-print">These examples are simulations. They leave your story progress as it was.</p>
+  <div class="actions">${button(backLabel,back,'secondary')}</div>`,'IBM AGENT IDENTITY AND HASHICORP VAULT');
+}
+
+function showDelegationRoute(menu,token=null,attempt=null){
+ const sendTo=receiver=>showDelegationRoute(menu,token,DecisionLab.presentDelegatedExample(token,receiver));
+ const receiver=attempt?.receiver==='vault'?'Vault':'CRM MCP server';
+ const outcomes={
+  'wrong-audience':[`${receiver} refused the token`,'The token names a different audience. The request stopped before a lease or CRM record was returned.'],
+  lease:['Vault issued a read-only lease',`The connector receives simulated lease ${attempt?.lease}. CRM applies its own record policy when the connector reads. The Vault-audience token stays at Vault.`],
+  'tool-request':['The CRM MCP server accepted the token','This server was configured to validate the token and use the CRM-specific grant. The downstream CRM still checks the records. Any downstream call needs authorization for that hop.']
+ };
+ const outcome=attempt&&outcomes[attempt.result];
+ const claimRows=token?`<ul class="lab-summary" aria-label="Delegated access token fields">
+  <li><b>Human subject</b><span>Priya · ${esc(token.sub)}</span></li>
+  <li><b>Agent actor</b><span>Nova · ${esc(token.act.sub)}</span></li>
+  <li><b>Audience</b><span>${esc(token.aud)}</span></li></ul>`:'';
+ showReference('Which service can use this token?',`<p>Choose where IBM Agent Identity issues a delegated token. One configured route uses Vault to broker a credential. The other starts at an OAuth-capable CRM MCP server.</p>
+  ${outcome?`<div class="receipt" role="status"><b>${esc(outcome[0])}</b><p>${esc(outcome[1])}</p></div>`:''}
+  ${claimRows}
+  ${token?`<div class="actions">${button('Present it to Vault',()=>sendTo('vault'))}${button('Present it to the CRM MCP server',()=>sendTo('mcp'),'secondary')}${button('Choose a new audience',()=>showDelegationRoute(menu),'secondary')}</div>`:
+   choices([['Issue a token for Vault','The connector needs a short-lived credential for the backend.',()=>showDelegationRoute(menu,DecisionLab.issueDelegatedExample('vault')),'good'],
+    ['Issue a token for the CRM MCP server','The server accepts OAuth access tokens issued for its own endpoint.',()=>showDelegationRoute(menu,DecisionLab.issueDelegatedExample('mcp'))]])}
+  <details class="debrief"><summary>Follow the exchange and inspect the claims</summary>
+   ${handoff([['Company identity provider','Authenticates Priya. The example exchange uses a user access token as subject evidence.'],
+    ['IBM Agent Identity','Recognizes Nova’s own enrolled identity and evaluates delegation. The exchange uses a subject token and a separate actor token.'],
+    ['Token exchange · RFC 8693','Issues a JWT access token for one audience with sub, act.sub and a grant for that receiver. The two input tokens stay at the exchange boundary.'],
+    ['Receiving service','Validates issuer, signature, expiry and audience. A client-credentials app token in this comparison identifies the app alone and supplies no human delegation.']])}
+   ${token?`<p>Decoded example fields</p><pre class="product-example">${esc(JSON.stringify(token,null,2))}</pre>`:''}
+   <p>The CRM authorization details are application-defined. The MCP server checks that the access token is intended for it and uses separate credentials or a correctly scoped token for the next hop. A configured workflow can ask the human for step-up consent through CIBA.</p>
+   <p>A team can keep Entra for human sign-in in this example. In an Entra Agent ID deployment, Microsoft identifies the calling agent through <code>azp</code> or <code>appid</code> and recommends using the parent blueprint claim for audit or tracing.</p>
+   ${protocolSourceLinks(['oidc','exchange','verifyExchange','rar','resource','mcp','ciba','entraAgentClaims'])}
+  </details>
+  <details class="debrief"><summary>Compare the Vault connection and credential options</summary>
+   <ul class="route-list">
+    <li><b>Vault JWT/OIDC login</b><br>A JWT can authenticate to a configured role at <code>/auth/jwt/login</code>. Vault returns a Vault client token for later requests.</li>
+    <li><b>Vault OAuth resource server</b><br>In the Vault Enterprise 2.1+ Agentic IAM example, Vault validates the OAuth access JWT directly on the request to the protected path. The agent registry and RAR apply on this path.</li>
+    <li><b>Dynamic credential</b><br>A configured secrets engine issues a credential with a lease. The connector holds it outside Nova’s context.</li>
+    <li><b>Response wrapping</b><br>Vault can deliver a response through a short-lived, single-use wrapping token when an authorized recipient needs to unwrap it.</li>
+    <li><b>Vault identity token</b><br>A configured Vault role can issue a separate signed identity JWT with its own audience and claims. A target that uses it must explicitly trust and validate that token for the intended purpose.</li>
+   </ul>${protocolSourceLinks(['vaultJwtLogin','vaultOAuth','vaultVerify','leases','vaultWrapping','vaultIdentityToken'])}
+  </details>
+  <div class="actions">${button('Back to delegation exercises',menu,'secondary')}</div>`,'TOKEN EXCHANGE AND AUDIENCE');
+}
+
+function showVaultGrantComparison(menu,role=null){
+ const compare=key=>showVaultGrantComparison(menu,key);
+ const attempt=role&&DecisionLab.compareVaultGrants(role);
+ const rows=attempt&&[
+  ['Priya’s Vault access',[attempt.fixed.human,attempt.specific.human].map(value=>value?'Allows the role':'Blocks the role')],
+  ['Nova’s Vault ceiling',[attempt.fixed.agent,attempt.specific.agent].map(value=>value?'Allows the role':'Blocks the role')],
+  ['Token’s authorization details',[attempt.fixed.rar,attempt.specific.rar].map(value=>value?'Includes this path':'Leaves out this path'),true],
+  ['Vault result',[attempt.fixed.issued,attempt.specific.issued].map(value=>value?'Lease issued':'Refused · no lease'),true]
+ ];
+ showReference('Which Vault rule stops the request?',`<p>Hold the same human and agent policies constant. Compare a grant fixed in an example client’s configuration with one restricted to this CRM job. All three Vault layers must allow the credential path.</p>
+  ${attempt?`<h3>Requested role</h3><p><code>${esc(attempt.path)}</code></p>${decisionComparison(['Fixed grant','Grant for this request'],rows)}`:''}
+  ${choices([['Read the CRM credential for this job','Both grants include the approved CRM read role.',()=>compare('crm'),'good'],
+    ['Try the billing credential','Priya and Nova can use the role in another job. Test it with each grant.',()=>compare('billing')]])}
+  <details class="debrief"><summary>Test the human and agent limits</summary>
+   ${choices([['Try payroll','Priya’s access includes payroll. Nova’s ceiling excludes it.',()=>compare('payroll')],
+    ['Try inventory','Nova’s ceiling includes inventory. Priya’s baseline excludes it.',()=>compare('inventory')]])}
+  </details>
+  <details class="debrief"><summary>Inspect the grant and setup</summary>
+   <p>The issuer and application decide how narrowly to construct <code>authorization_details</code>. The Vault example uses the documented <code>vault:path_access</code> fields. The CRM’s business authorization is independent of this credential decision.</p>
+   ${attempt?`<p>Grant for this request</p><pre class="product-example">${esc(JSON.stringify(attempt.specific.grant,null,2))}</pre>`:''}
+   <p>Vault normally requires RAR for this agent registry path. Its documented migration setting can allow a profile to accept missing RAR while the configured user and agent policies still apply.</p>
+   ${protocolSourceLinks(['rar','vaultVerify','vaultRegistry','vaultOptionalRar'])}
+  </details><div class="actions">${button('Back to delegation exercises',menu,'secondary')}</div>`,'VAULT AGENTIC IAM');
+}
+
+function showAgentStop(menu,test=DecisionLab.startAgentStop()){
+ const steps=[['Disable Nova in Agent Identity','disable'],['Try another token exchange','exchange'],
+  ['Try a new connection with the old credential','old-credential'],['Deliver the agent-state signal','deliver'],
+  ['Run the configured Vault receiver action','revoke'],['Retest a fresh connection','retest']];
+ const next=steps[test.step];
+ const results=['','Nova is disabled.','Agent Identity refused to issue a new delegated token.',
+  'The existing Vault credential still opened a fresh connection.','The receiver acknowledged the signal. The lease is still active.',
+  'Vault confirmed lease revocation. A fresh connection test is next.','The target refused a fresh connection with the old credential.'];
+ showReference('Does disabling Nova end the old access?',`<p>Nova already has an issued connector lease. Test what happens to new delegation and to the old credential independently.</p>
+  ${test.step?`<div class="receipt" role="status"><b>${results[test.step]}</b></div>`:''}
+  <div class="actions">${next?button(next[0],()=>showAgentStop(menu,DecisionLab.advanceAgentStop(test,next[1]))):button('Replay the exercise',()=>showAgentStop(menu),'secondary')}
+  ${button('Back to delegation exercises',menu,'secondary')}</div>
+  <ol class="lab-summary" aria-label="Agent disable and Vault evidence">
+   <li><b>Agent Identity</b><span>${test.enabled?'Enabled':test.exchange?'Disabled · new exchange refused':'Disabled · exchange untested'}</span></li>
+   <li><b>Old credential</b><span>${test.baseline?'Target accepted a fresh connection with the existing credential.':'Baseline untested'}</span></li>
+   <li><b>Verify Antenna</b><span>${test.signal?'Configured receiver acknowledged the SSF event.':'Signal pending'}</span></li>
+   <li><b>Vault lease</b><span>${test.lease==='revoked'?'Receiver confirmed revocation of demo-crm-read-042.':'Lease still active'}</span></li>
+   <li><b>Target retest</b><span>${test.probe?'Target refused a fresh connection with the revoked credential.':'Retest pending'}</span></li>
+  </ol>
+  ${test.probe?'<p>Save the exchange refusal, signal acknowledgement, lease result and fresh retest. Check an already-open application session separately.</p>':''}
+  <details class="debrief"><summary>What the response team configures</summary><p>This example uses a configured agent-state event over SSF. CAEP defines events for security changes such as session revocation. Map events to the affected identities and leases, configure the receiver’s action and collect the downstream result. A Vault audit or lease event can also feed an identity workflow if an integration is configured.</p>
+  ${protocolSourceLinks(['agentInventory','antenna','ssf','caep','leases'])}</details>`,'IDENTITY STATE AND CREDENTIAL REVOCATION');
+}
+
+function showPaymentDemo(menu,test=DecisionLab.startPaymentDemo()){
+ const {order,approval,attempts}=test;
+ const submit=amount=>showPaymentDemo(menu,DecisionLab.tryPaymentDemo(test,{...order,amount}));
+ const amountLabel=order=>`${order.currency} ${order.amount.toLocaleString('en-US')}`;
+ const attemptLabels={'approval-mismatch':'Refused · the amount differs from the approval','approval-used':'Refused · this approval was already used'};
+ const last=attempts.at(-1);
+ showReference('Would the payments app accept this approval?',`<p>Nova prepares a payment for ${esc(order.payee)}. The finance reviewer can approve this exact amount in a configured CIBA flow. The payments app records the approval and checks what Nova actually submits.</p>
+  <div class="receipt"><b>${esc(order.id)} · ${esc(amountLabel(order))}</b><p>${approval?`Finance approved this amount · ${esc(approval.id)}`:'Finance review pending'}</p></div>
+  ${last?`<div class="receipt" role="status"><b>${esc(attemptLabels[last.reason]||'Payment recorded in the simulation')}</b><p>${esc(amountLabel(last.actual))} · ${last.receipt?esc(last.receipt):'No receipt'}</p></div>`:''}
+  <div class="actions">${approval?button(approval.used?'Try using the approval again':'Submit the approved amount',()=>submit(order.amount)):
+   button('Approve as the finance reviewer',()=>showPaymentDemo(menu,DecisionLab.approvePaymentDemo(test)))}
+   ${approval&&!approval.used?button('Try submitting EUR 12,900 instead',()=>submit(12900),'secondary'):''}
+   ${button('Back to delegation exercises',menu,'secondary')}</div>
+  ${attempts.length?`<details class="debrief"><summary>Inspect payment attempts</summary><ol class="route-list">
+   ${attempts.map(attempt=>`<li><b>${esc(amountLabel(attempt.actual))}</b> · ${esc(attemptLabels[attempt.reason]||attempt.receipt)}</li>`).join('')}</ol></details>`:''}
+  <details class="debrief"><summary>What Finance and Vault each check</summary><p>Finance approves the order ID, payee, currency and amount. The payments application binds that response to the order and consumes it once. A Vault credential could let a connector read supporting data. The payments application owns payout authorization and the final receipt.</p>
+   <p>Payment authorization details are application-defined. Vault’s documented grant checks its own credential path and capability.</p>
+   ${protocolSourceLinks(['ciba','rar','vaultVerify'])}</details>`,'SIMULATED PAYMENT APPROVAL');
 }
 function showBuyerHandoff(receipt,origin,back){
  showReference('What did Quill receive?',`<p>${esc(origin)} The workflow routed one report to Quill for formatting.</p>
@@ -1072,7 +1202,8 @@ function crmReadPath(event,back){
   ${event.request?.mcp_authorization?'<p>The MCP client discovers its authorization server, then obtains a token for the MCP gateway. That token, the Vault connector lease and the CRM record decision are separate checks.</p>':''}
   ${crmDecisionSummary(event)}
   ${crmToolRoute()}
-  <div class="actions">${button('Inspect policy roles',()=>showPolicyConsole(back),'secondary')}</div>
+  <div class="actions">${button('Inspect policy roles',()=>showPolicyConsole(back),'secondary')}
+   ${button('Test delegation and credentials',()=>showDelegationLab(back,'Back to the CRM result'),'secondary')}</div>
  </details>`;
 }
 
@@ -1433,7 +1564,9 @@ function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recor
    ['Priya delegated, Quill requested, Nova formatted','',()=>review(false)],
    ['Morgan delegated, Nova requested, Quill formatted','',()=>review(false)]
   ]):`<div class="receipt" role="status"><b>${answer?'That matches the record.':'Check who delegated and who executed.'}</b><p>IBM Agent Identity supplies the delegated identity context. The workflow record ties that context to Quill’s file-only action. Quill used its own identity and received no parent credential or CRM access.</p></div>`}
-  <div class="actions">${button('Test the handoff',()=>showBuyerHelperPilot(()=>review(answer)))}${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(backLabel,back,'secondary')}</div>`,
+  <div class="actions">${button('Test the handoff',()=>showBuyerHelperPilot(()=>review(answer)))}
+  ${button('Test delegation and credentials',()=>showDelegationLab(()=>review(answer),'Back to Quill’s activity record'),'secondary')}
+  ${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(backLabel,back,'secondary')}</div>`,
   'DELEGATED IDENTITY');
 }
 

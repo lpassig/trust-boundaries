@@ -168,3 +168,62 @@ test('a revocation signal needs a receiver action and independent retest',()=>{
  assert.equal(closed.probe,null);
  assert.equal(Lab.retestSignal(closed).probe,'refused');
 });
+
+test('Vault and MCP receive separate delegated tokens for the same human and agent',()=>{
+ const vault=Lab.issueDelegatedExample('vault'),mcp=Lab.issueDelegatedExample('mcp');
+ assert.equal(vault.sub,mcp.sub);
+ assert.deepEqual(vault.act,mcp.act);
+ assert.notEqual(vault.aud,mcp.aud);
+ assert.equal(vault.authorization_details[0].type,'vault:path_access');
+ assert.equal(Lab.presentDelegatedExample(vault,'vault').result,'lease');
+ assert.equal(Lab.presentDelegatedExample(mcp,'mcp').result,'tool-request');
+ for(const [token,receiver]of [[vault,'mcp'],[mcp,'vault']]){
+  assert.deepEqual(Lab.presentDelegatedExample(token,receiver),{receiver,result:'wrong-audience'});
+ }
+});
+
+test('Vault requires the human, agent and token grant to allow the same path',()=>{
+ const {fixed,specific}=Lab.compareVaultGrants('billing');
+ assert(fixed.human&&fixed.agent&&fixed.issued);
+ assert(specific.human&&specific.agent&&!specific.rar&&!specific.issued);
+ assert(Lab.compareVaultGrants('crm').specific.issued);
+ const payroll=Lab.compareVaultGrants('payroll').fixed;
+ assert(payroll.human&&payroll.rar&&!payroll.agent&&!payroll.issued);
+ const inventory=Lab.compareVaultGrants('inventory').fixed;
+ assert(inventory.agent&&inventory.rar&&!inventory.human&&!inventory.issued);
+});
+
+test('Agent Identity stops new exchanges before a separate receiver revokes an existing lease',()=>{
+ const start=Lab.startAgentStop();
+ assert.equal(Lab.advanceAgentStop(start,'revoke'),start);
+ const disabled=Lab.advanceAgentStop(start,'disable');
+ const refused=Lab.advanceAgentStop(disabled,'exchange');
+ assert.equal(refused.exchange,'refused');
+ assert.equal(refused.lease,'active');
+ const baseline=Lab.advanceAgentStop(refused,'old-credential');
+ assert.equal(baseline.baseline,'accepted');
+ const delivered=Lab.advanceAgentStop(baseline,'deliver');
+ assert.equal(delivered.signal,'acknowledged');
+ assert.equal(delivered.lease,'active');
+ const revoked=Lab.advanceAgentStop(delivered,'revoke');
+ assert.equal(revoked.lease,'revoked');
+ assert.equal(revoked.probe,null);
+ assert.equal(Lab.advanceAgentStop(revoked,'retest').probe,'refused');
+});
+
+test('a payment approval binds the actual order and can produce only one receipt',()=>{
+ const start=Lab.startPaymentDemo();
+ assert.equal(Lab.tryPaymentDemo(start,start.order).attempts[0].receipt,null);
+ const approved=Lab.approvePaymentDemo(start);
+ for(const [key,value]of [['id','OTHER'],['payee','Other supplier'],['currency','USD'],['amount',12900]]){
+  const refused=Lab.tryPaymentDemo(approved,{...start.order,[key]:value});
+  assert.equal(refused.attempts[0].receipt,null);
+  assert.equal(refused.attempts[0].reason,'approval-mismatch');
+  assert.equal(refused.approval.used,false);
+ }
+ const recorded=Lab.tryPaymentDemo(approved,start.order);
+ assert(recorded.attempts[0].receipt);
+ const repeated=Lab.tryPaymentDemo(recorded,start.order);
+ assert.equal(repeated.attempts[1].reason,'approval-used');
+ assert.equal(repeated.attempts[1].receipt,null);
+});

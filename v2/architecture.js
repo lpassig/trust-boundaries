@@ -98,7 +98,7 @@ const ArchitectureReference = (() => {
     ['mcpIssuer','Issue the access token for the client-facing MCP resource.',['mcp','oauth21','resource']],
     ['mcpGateway','The configured gateway validates the client’s access token and forwards the tool call using separate authorization for the MCP server hop.',['mcp']],
     ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.',['mcp']],
-    ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.',['leases']],
+    ['vault','In the brokered read, the connector obtains or reuses a short-lived CRM read credential. Vault checks its own audience and intersects the human baseline, agent ceiling and the token’s request grant. The Vault-audience token stays at Vault.',['exchange','vaultVerify','vaultOAuth','leases']],
     ['crm','The CRM enforcement point (PEP) verifies the caller and observes the actual record IDs and read operation.'],
     ['policyContext','Supply current identity, mission and resource attributes from authoritative systems.'],
     ['authorization','Evaluate whether the current policy and mission permit the observed read.',['authzen']],

@@ -53,6 +53,8 @@ Nova’s room groups inspectable systems and records below the scene. The outlin
 
 **Start with a work problem** opens the buyer guide from the first screen. Each pilot card explains the outcome, what the buyer’s team owns, and the first test. The secondary cards include a worked watsonx Orchestrate file handoff and a Verify Antenna exercise that tracks signal delivery, receiver action, and the independent CRM retest.
 
+**Test delegation and credentials** opens four worked examples from Nova’s CRM read, the buyer guide, or Explore Architecture. Compare a token issued for Vault with one issued directly for an MCP server. Test a fixed grant against a request-specific grant. Disable Nova, deliver a signal and retest the old credential after lease revocation. In the supplier-payment example, the payments app refuses a changed amount and a repeat use of the original approval. All four exercises preserve story progress.
+
 **Apply this at work** links Alex’s ending to app permissions and session retesting. From the staffing recap it leads to exact-copy approval and session retesting. **Browse other work problems** opens the rest of the buyer guide. The recap keeps each choice and its explanation available for review. The four main product options link to Quill’s activity record, Morgan’s revision comparison, the Vault lease and CRM retest, and the OpenShell boundary exercise. The guide uses recorded Nova evidence when available and labels independent worked examples for the other paths.
 
 Nova’s first CRM trace shows discovery through protected resource metadata (RFC 9728), the resource-specific access token (RFC 8707), and the separate Vault and CRM checks. **Deployment options** in Explore Architecture links SCIM, MCP client onboarding, SPIFFE/SVID, Transaction Tokens and A2A to the configured example. The same reference opens from Quill’s result.
@@ -82,7 +84,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **208**.
+- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **212**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

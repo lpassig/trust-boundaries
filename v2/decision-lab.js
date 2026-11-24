@@ -149,9 +149,73 @@ const DecisionLab = (() => {
   return {...test,probe:test.receiver==='closed'?'refused':'unknown'};
  }
 
+ const delegationResources=Object.freeze({
+  vault:'https://vault.example',mcp:'https://crm-tools.example/mcp'
+ });
+ const vaultRoles=Object.freeze({
+  crm:'database/creds/crm-report-read',billing:'database/creds/billing-read',
+  payroll:'database/creds/payroll-read',inventory:'database/creds/inventory-read'
+ });
+ const vaultPathGrant=path=>({type:'vault:path_access',path,capabilities:['read']});
+
+ function issueDelegatedExample(receiver){
+  return {
+   iss:'https://example.verify.ibm.com/oauth2',sub:'sponsor-001',act:{sub:'nova-042'},
+   aud:delegationResources[receiver],
+   authorization_details:receiver==='vault'?[vaultPathGrant(vaultRoles.crm)]:[
+    {type:'example:crm_summary',actions:['read'],records:['123']}
+   ]
+  };
+ }
+
+ function presentDelegatedExample(token,receiver){
+  if(token.aud!==delegationResources[receiver])return {receiver,result:'wrong-audience'};
+  if(receiver==='vault')return {receiver,result:'lease',lease:'demo-crm-read-042'};
+  return {receiver,result:'tool-request'};
+ }
+
+ function compareVaultGrants(role){
+  const path=vaultRoles[role];
+  const human=['crm','billing','payroll'].includes(role);
+  const agent=['crm','billing','inventory'].includes(role);
+  const evaluate=roles=>{
+   const rar=roles.includes(role);
+   return {human,agent,rar,issued:human&&agent&&rar,grant:roles.map(key=>vaultPathGrant(vaultRoles[key]))};
+  };
+  return {path,fixed:evaluate(Object.keys(vaultRoles)),specific:evaluate(['crm'])};
+ }
+
+ const agentStopSteps=[
+  ['disable',{enabled:false}],['exchange',{exchange:'refused'}],['old-credential',{baseline:'accepted'}],
+  ['deliver',{signal:'acknowledged'}],['revoke',{lease:'revoked'}],['retest',{probe:'refused'}]
+ ];
+ function startAgentStop(){
+  return {step:0,enabled:true,exchange:null,signal:null,lease:'active',baseline:null,probe:null};
+ }
+ function advanceAgentStop(test,action){
+  const step=agentStopSteps[test.step];
+  if(step?.[0]!==action)return test;
+  return {...test,...step[1],step:test.step+1};
+ }
+
+ function startPaymentDemo(){
+  return {order:{id:'PAY-DEMO-042',payee:'Riverside Supply',currency:'EUR',amount:12400},approval:null,attempts:[]};
+ }
+ function approvePaymentDemo(test){
+  return test.approval?test:{...test,approval:{id:'demo-finance-approval-042',order:{...test.order},used:false}};
+ }
+ function tryPaymentDemo(test,actual){
+  const {approval}=test;
+  const matches=approval&&Object.keys(approval.order).every(key=>approval.order[key]===actual[key]);
+  const reason=!matches?'approval-mismatch':approval.used?'approval-used':null;
+  const attempt={actual:{...actual},reason,receipt:reason?null:'demo-payment-receipt-042'};
+  return {...test,approval:reason?approval:{...approval,used:true},attempts:[...test.attempts,attempt]};
+ }
+
  return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, tryExcludedDestination, openNetworkProposal,
   decideNetworkProposal, approveRuntimeMission, incidentStatus, startCloseoutCheck, attemptCloseout, probeCloseout,
-  startSignalTest, deliverSignal, applySignal, retestSignal};
+  startSignalTest, deliverSignal, applySignal, retestSignal, issueDelegatedExample,presentDelegatedExample,
+  compareVaultGrants,startAgentStop,advanceAgentStop,startPaymentDemo,approvePaymentDemo,tryPaymentDemo};
 })();
 
 if(typeof module!=='undefined')module.exports=DecisionLab;
