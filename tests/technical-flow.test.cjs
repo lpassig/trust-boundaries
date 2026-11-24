@@ -107,6 +107,8 @@ test('the buyer approval exercise refuses the old approval and sends the same ed
  assert.equal(denied.event.decision.result,'deny');
  assert.equal(denied.state.delivered,false);
  assert.equal(denied.event.request.approval_at_attempt.revision,example.fileRevision-1);
+ assert.equal(denied.event.request.approval_at_attempt.id,example.approval.id);
+ assert.equal(denied.event.deliveryReceipt,undefined);
  const preview=R.approvalPreview(denied.state,'final');
  const approved=run(denied.state,'approve',{preview});
  assert.equal(approved.delivered,false);
@@ -115,6 +117,11 @@ test('the buyer approval exercise refuses the old approval and sends the same ed
  assert.equal(sent.state.delivered,true);
  assert.equal(sent.event.request.revision,denied.event.request.revision);
  assert.equal(sent.event.request.recipient,preview.to);
+ assert.notEqual(sent.event.request.approval_at_attempt.id,denied.event.request.approval_at_attempt.id);
+ assert.equal(sent.event.request.approval_at_attempt.id,approved.approval.id);
+ assert.notEqual(sent.event.decision.decision_id,denied.event.decision.decision_id);
+ assert.match(sent.event.deliveryReceipt.id,/^example-delivery-/);
+ assert.equal(sent.event.deliveryReceipt.requestId,sent.event.request.request_id);
  assert.equal(example.delivered,false);
 });
 test('under-the-hood notes describe the observed outcome without claiming execution after a denial',()=>{

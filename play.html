@@ -1416,6 +1416,8 @@ const StoryRules = (() => {
   const s=JSON.parse(JSON.stringify(current)),teen=mode==='teen',extra=alexExtra(s),name=teen?'history.pdf':'summary.pdf',to=teen?'teacher@school.example':'reviewer@company.example';
   s.journey=mode;
   let e,decision=null,operation=action,requestRecords=[],requestFile=null,requestRevision=null,requestResource=null,attachments=[],recipient=null,delegation=null;
+  const step=s.history.length+1;
+  const grantApproval=purpose=>({...approvalPreview(s,purpose),id:'example-approval-'+step,used:false});
   const say=(title,text,topic=0,speaker=s.ended?(teen?'Parent and school controls':'Independent task controller'):(teen?'Alex':'Nova'),kind='story')=>{e={title,text,topic,speaker,kind};};
   const block=(title,text,topic=0)=>say(title,text,topic,teen?'Alex':'Nova','blocked');
   const need=(test,text)=>{if(test)return true;block(teen?'One thing first.':'A step is still needed.',text);return false;};
@@ -1464,7 +1466,7 @@ const StoryRules = (() => {
    case 'prepare':if(!need(active()&&s.opened&&!s.delivered,'Open the agreed workspace first.'))break;if(s.draft){say('A first draft is already here.','Continue with its source and the new requests.',4);break;}s.draft=true;revise();say(teen?'Three dates. A real beginning.':'The first outline is ready.',teen?'You turn your notes into a railway timeline. Three dates appear on the page. Now check the dates on the museum website. Sam drops by and offers to proofread when you are ready.':'Nova starts with two headings. Pip, a formatting sub-agent with its own identity, can tidy the report later. First, request the approved account updates.',4);break;
    case 'collect-source':if(!need(editable(),'Make the first draft in the agreed workspace.'))break;operation=teen?'archive.read':'customer.read';requestRecords=teen?[]:['123','456'];if(!resourceAllowed())break;decide('permit','The source read fits the active task and resource rules.');if(!teen&&!s.source)s.sourceLease={id:'example-source-lease-'+(s.history.length+1),lifetimeSeconds:120};s.source=true;revise();say(teen?'The museum website has the dates.':'CRM returned the two approved records.',teen?'The railway page on the Riverside Museum website confirms your dates. You save the page title so you can credit it beneath the timeline.':'The CRM returns the two records Priya approved. Nova uses the renewal and follow-up notes to fill the outline.',2);break;
    case 'attach-source':if(!need(editable()&&s.source,'Collect the agreed source before citing it.'))break;if(p.source&&p.source!=='original'){block('That source does not support this draft.','Use the museum archive or approved CRM extract.',6);break;}s.caption=true;revise();say(teen?'Your first draft has its source.':'The sourced first draft is ready.',teen?'The timeline is still on your desk. Send this draft through the school app if you want your teacher to give feedback.':'The briefing now credits its source. Morgan needs to approve the draft share before CRM sends the file.',4);break;
-   case 'approve-draft':if(!need(!teen&&editable()&&s.caption&&!s.message&&!s.draftReview,'Prepare the sourced first draft before requesting review-copy approval.'))break;if(p.preview&&!need(approvalMatches(p.preview,approvalPreview(s,'draft-review')),'The review copy changed. Show the current copy to Morgan again.'))break;s.outgoing='approved';s.approval={...approvalPreview(s,'draft-review'),used:false};say('One review copy is approved.','The human approver authorizes this exact sourced draft for the named reviewer. The CRM must still check and execute the share. This approval cannot authorize the later final copy.',5,'Approver');break;
+   case 'approve-draft':if(!need(!teen&&editable()&&s.caption&&!s.message&&!s.draftReview,'Prepare the sourced first draft before requesting review-copy approval.'))break;if(p.preview&&!need(approvalMatches(p.preview,approvalPreview(s,'draft-review')),'The review copy changed. Show the current copy to Morgan again.'))break;s.outgoing='approved';s.approval=grantApproval('draft-review');say('One review copy is approved.','The human approver authorizes this exact sourced draft for the named reviewer. The CRM must still check and execute the share. This approval cannot authorize the later final copy.',5,'Approver');break;
    case 'send-draft':if(!need(editable()&&s.caption&&!s.message&&!s.draftReview&&(teen||s.approval&&!s.approval.used),'Prepare the sourced draft and obtain any required review-copy approval first.'))break;operation='report.send';requestFile=name;attachments=[name];requestRecords=reportRecords(s);recipient=s.outgoing==='changed'?(teen?'friend@outside.example':'export@external-review.example'):to;
     if(s.outgoing!=='approved'||s.mission.allowedFile!==name||s.mission.recipient!==to||reportRecords(s).some(id=>!s.mission.records.includes(id))){decide('deny','The actual draft share is outside the current task or permitted recipient.');s.approval=null;say('The draft was not sent.','Restore the agreed route and request any required approval for the current copy.',5,teen?'School app':'CRM resource PEP','refused');break;}
     if(!resourceAllowed())break;
@@ -1498,7 +1500,7 @@ const StoryRules = (() => {
     say(teen?'Sam keeps his account private.':'Pip declines the extra access.',
      teen?'“I keep my school account to myself,” Sam says. “Send your timeline and I’ll proofread that.”':'“I only need the report to fix the headings,” Pip says. “I can do that with my own formatting access.”',7,teen?'Sam':'Pip');
     break;
-   case 'approve':if(!need(!teen&&editable()&&changesResolved(s)&&s.proof,'Complete the current report and resolve the new requests before human share approval.'))break;if(p.preview&&!need(approvalMatches(p.preview,approvalPreview(s,'final')),'The report changed. Show the current copy to Morgan again.'))break;s.outgoing='approved';s.approval={...approvalPreview(s,'final'),used:false};say('One exact share is approved.','Morgan approves this version for delivery to their company inbox. CRM checks the send before handing over the file.',5,'Approver');break;
+   case 'approve':if(!need(!teen&&editable()&&changesResolved(s)&&s.proof,'Complete the current report and resolve the new requests before human share approval.'))break;if(p.preview&&!need(approvalMatches(p.preview,approvalPreview(s,'final')),'The report changed. Show the current copy to Morgan again.'))break;s.outgoing='approved';s.approval=grantApproval('final');say('One exact share is approved.','Morgan approves this version for delivery to their company inbox. CRM checks the send before handing over the file.',5,'Approver');break;
    case 'change-recipient':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the file before changing its send preview.'))break;s.outgoing=s.outgoing==='approved'?'changed':'approved';say(teen?'A different address changes the share.':'The outgoing recipient changed.',teen?'The school submission route has a fixed teacher destination. An outside address is a different operation.':'The recorded approval still names the original reviewer. Editing the preview cannot amend it.',5);break;
    case 'revise-file':if(!need(editable()&&s.proof&&(teen||s.approval),'Review the report first.'))break;s.fileRevision++;if(teen)s.proof=null;else s.followUpEdited=!s.followUpEdited;say(teen?'A final edit needs a final look.':'The follow-up sentence changed.',teen?'You change the project title. Read the edited version before submitting it.':'Compare the current sentence with the one Morgan approved. The updated revision needs a fresh approval before CRM can send it.',5);break;
    case 'wait-approval':if(!need(!teen&&active()&&s.approval&&!s.delivered,'Get a Nova share approval first.'))break;s.approvalWindow++;say('The approval window closes.','The story moves past the action-approval window. The mission remains active, but this share needs a fresh approval. There is no real-time countdown or penalty for waiting.',5);break;
@@ -1573,7 +1575,7 @@ const StoryRules = (() => {
   if(e){
    const controls=['check','check-closing-basics','sign-out-laptop','remediate','probe-session','controller-offline','controller-online','close-pass','finish','replay-containment'].includes(action);
    if(['send','send-draft','approve-draft','approve','change-recipient','revise-file','wait-approval','proof-self','proof-helper'].includes(action)&&!requestFile){requestFile=name;requestRecords=reportRecords(s);recipient=s.outgoing==='changed'?(teen?'friend@outside.example':'export@external-review.example'):to;}
-   const id='example-req-'+(s.history.length+1);
+   const id='example-req-'+step;
    e.action=action;e.request={recordVersion:3,request_id:id,action,operation,observed_by:decision?decision.pep:'Story application',actor:controls?(teen?'homework-session-controller':'independent-task-controller'):delegation?delegation.actor:(teen?'alex':'nova-042'),requested_by:delegation?delegation.requestedBy:null,delegation,tested_actor:controls&&['check','probe-session'].includes(action)?s.mission.actor:null,purpose:['send-draft','approve-draft'].includes(action)?'draft-review':action==='send'||action==='approve'?'final':null,authorization_basis:controls?'independent task-control authority':'current task and resource policy',generation:s.generation,mission_id:s.mission?.id||null,mission_version:s.mission?.version||null,policy_version:s.mission?.policyVersion||null,file:controls?null:requestFile,resource:requestResource,revision:requestFile===name?(requestRevision??s.fileRevision):null,attachments,records:requestRecords,recipient:controls?null:recipient,scope:s.mission?.scope||'not granted',control:p.control||null,layer:p.layer||null};
    if(['inspect-request-source','try-private'].includes(action)&&(decision||s.discoveries.includes('request-source'))){
     e.request.instruction_source=teen?'Forwarded class group chat message':'Outside contact’s document imported into CRM';
@@ -1596,7 +1598,8 @@ const StoryRules = (() => {
    if(!teen&&s.sourceLease&&(action==='collect-source'&&decision?.result==='permit'||action==='remediate'&&p.control==='credential'&&s.containment?.credentialRevoked))e.request.source_lease=s.sourceLease;
    if(!teen&&action==='probe-session'&&['allowed','denied'].includes(p.prediction))e.request.prediction=p.prediction;
    if(!teen&&action==='try-private'&&decision)e.request.runtime_result={boundary:'NVIDIA OpenShell',destination:'CRM',result:'reachable'};
-   if(decision)e.decision={...decision,request_id:id,decision_id:'example-decision-'+(s.history.length+1)};
+   if(decision)e.decision={...decision,request_id:id,decision_id:'example-decision-'+step};
+   if(!teen&&action==='send'&&decision?.result==='permit')e.deliveryReceipt={id:'example-delivery-'+step,requestId:id};
    const entry={action,kind:e.kind,topic:e.topic};
    if(!teen&&action==='try-extension'&&decision?.result==='deny')entry.missionVersion=e.request.mission_version;
    if(!teen&&e.request.tool_route==='crm-mcp-gateway')entry.read={request:e.request,decision:e.decision};
@@ -3788,10 +3791,13 @@ function showBuyerApprovalEvidence(back){
   <p>IBM Verify can authenticate Morgan on a separate device. The application ties the approval to the original copy. CRM needs a matching approval before sending the revised copy.</p>
   <div class="actions">${button('Run the approval test',()=>showBuyerApproval(back))}${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
 }
-function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true})){
+function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true}),attempts=[]){
  const {approved,current}=trial.history.findLast(entry=>entry.approvalComparison).approvalComparison;
  const last=trial.last;
- const advance=(action,payload)=>showBuyerApproval(back,StoryRules.act(trial,'agent',action,payload).state);
+ const advance=(action,payload)=>{
+  const {state,event}=StoryRules.act(trial,'agent',action,payload);
+  showBuyerApproval(back,state,action==='send'&&event.decision?[...attempts,event]:attempts);
+ };
  let title='What changed after Morgan approved?';
  let evidence=shareWording(approved,current,'Edited')+shareComparison(approved,current,'Edited copy');
  let next;
@@ -3807,11 +3813,20 @@ function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true})
   title='CRM refused the edited send';
   evidence=`<div class="receipt"><b>Nothing was delivered</b><p>${esc(last.decision.reason)}</p><p>CRM saw revision ${esc(last.request.revision)}. The approval named revision ${esc(last.request.approval_at_attempt.revision)}.</p></div>`+evidence;
   const preview=StoryRules.approvalPreview(trial,'final');
-  next=button('Reapprove the edited copy',()=>showMorganRequest(preview,()=>advance('approve',{preview}),()=>showBuyerApproval(back,trial)));
+  next=button('Reapprove the edited copy',()=>showMorganRequest(preview,()=>advance('approve',{preview}),()=>showBuyerApproval(back,trial,attempts)));
  }else{
   next=button('Try the edited send',()=>advance('send'));
  }
- showReference(title,`<p>Worked example from Nova’s story.</p>${evidence}
+ const records=attempts.length?`<details class="debrief"><summary>Inspect CRM test records</summary>
+  <ol class="route-list">${attempts.map(({request,decision,deliveryReceipt})=>{
+   const approval=request.approval_at_attempt;
+   return `<li><b>${deliveryReceipt?'Delivered':'Refused'}</b>
+    <p>Application approval <code>${esc(approval.id)}</code><br>Approved revision ${esc(approval.revision)} · ${esc(approval.to)}<br>
+    CRM request <code>${esc(request.request_id)}</code><br>Attempted revision ${esc(request.revision)} · ${esc(request.recipient)}<br>
+    CRM decision <code>${esc(decision.decision_id)}</code> · ${esc(decision.result)}<br>
+    ${deliveryReceipt?`Delivery receipt <code>${esc(deliveryReceipt.id)}</code>`:'No copy delivered.'}</p></li>`;
+  }).join('')}</ol></details>`:'';
+ showReference(title,`<p>Worked example from Nova’s story.</p>${evidence}${records}
   <p>IBM Verify can authenticate Morgan on a separate device. The application records which copy Morgan approved, and CRM checks that approval before sending.</p>
   <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
 }

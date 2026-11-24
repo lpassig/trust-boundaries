@@ -661,10 +661,13 @@ function showBuyerApprovalEvidence(back){
   <p>IBM Verify can authenticate Morgan on a separate device. The application ties the approval to the original copy. CRM needs a matching approval before sending the revised copy.</p>
   <div class="actions">${button('Run the approval test',()=>showBuyerApproval(back))}${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
 }
-function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true})){
+function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true}),attempts=[]){
  const {approved,current}=trial.history.findLast(entry=>entry.approvalComparison).approvalComparison;
  const last=trial.last;
- const advance=(action,payload)=>showBuyerApproval(back,StoryRules.act(trial,'agent',action,payload).state);
+ const advance=(action,payload)=>{
+  const {state,event}=StoryRules.act(trial,'agent',action,payload);
+  showBuyerApproval(back,state,action==='send'&&event.decision?[...attempts,event]:attempts);
+ };
  let title='What changed after Morgan approved?';
  let evidence=shareWording(approved,current,'Edited')+shareComparison(approved,current,'Edited copy');
  let next;
@@ -680,11 +683,20 @@ function showBuyerApproval(back,trial=StoryRules.buyerExample({stopAtEdit:true})
   title='CRM refused the edited send';
   evidence=`<div class="receipt"><b>Nothing was delivered</b><p>${esc(last.decision.reason)}</p><p>CRM saw revision ${esc(last.request.revision)}. The approval named revision ${esc(last.request.approval_at_attempt.revision)}.</p></div>`+evidence;
   const preview=StoryRules.approvalPreview(trial,'final');
-  next=button('Reapprove the edited copy',()=>showMorganRequest(preview,()=>advance('approve',{preview}),()=>showBuyerApproval(back,trial)));
+  next=button('Reapprove the edited copy',()=>showMorganRequest(preview,()=>advance('approve',{preview}),()=>showBuyerApproval(back,trial,attempts)));
  }else{
   next=button('Try the edited send',()=>advance('send'));
  }
- showReference(title,`<p>Worked example from Nova’s story.</p>${evidence}
+ const records=attempts.length?`<details class="debrief"><summary>Inspect CRM test records</summary>
+  <ol class="route-list">${attempts.map(({request,decision,deliveryReceipt})=>{
+   const approval=request.approval_at_attempt;
+   return `<li><b>${deliveryReceipt?'Delivered':'Refused'}</b>
+    <p>Application approval <code>${esc(approval.id)}</code><br>Approved revision ${esc(approval.revision)} · ${esc(approval.to)}<br>
+    CRM request <code>${esc(request.request_id)}</code><br>Attempted revision ${esc(request.revision)} · ${esc(request.recipient)}<br>
+    CRM decision <code>${esc(decision.decision_id)}</code> · ${esc(decision.result)}<br>
+    ${deliveryReceipt?`Delivery receipt <code>${esc(deliveryReceipt.id)}</code>`:'No copy delivered.'}</p></li>`;
+  }).join('')}</ol></details>`:'';
+ showReference(title,`<p>Worked example from Nova’s story.</p>${evidence}${records}
   <p>IBM Verify can authenticate Morgan on a separate device. The application records which copy Morgan approved, and CRM checks that approval before sending.</p>
   <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'APPROVAL EVIDENCE');
 }
