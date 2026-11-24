@@ -2,7 +2,7 @@
 const ArchitectureReference = (() => {
  const groups = [
   ['People and authority', ['people','reviewer','verify','iai','mission']],
-  ['Where Nova works', ['orchestrate','launchWorkflow','openshell','vault']],
+  ['Where Nova works', ['orchestrate','launchWorkflow','openshell','workloadIdentity','vault']],
   ['Model and tool connections', ['aiGateway','mcpClient','mcpIssuer','mcpGateway','mcpTool']],
   ['Decisions and effects', ['approvalWorkflow','policyContext','authorization','crm']],
   ['Signals and response', ['risk','antenna','controllers']]
@@ -28,6 +28,12 @@ const ArchitectureReference = (() => {
    detail:'The team implements the mission check. The OpenShell Gateway separately authorizes the lifecycle operation and provisions the sandbox through the compute driver.'
   },
   openshell:{product:'openshell',kind:'Runtime',summary:'Runs Nova in an isolated workspace and controls contact with files and services.'},
+  workloadIdentity:{name:'Workspace identity',kind:'Proposed mission integration',
+   summary:'Identifies the specific running instance of Nova. Agent registration identifies Nova across instances.',
+   detail:'A configured customer check can match trusted provisioning evidence to the mission and sandbox generation before a provider credential is released. OpenShell still uses its own session credentials for bootstrap. An optional SPIFFE SVID identifies the workload to a relying service. A deployment that requires platform measurements must verify its chosen attestation evidence separately.',
+   sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],
+    ['SPIFFE concepts','https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'],
+    ['Authenticate to Vault using SPIFFE','https://developer.hashicorp.com/vault/docs/auth/spiffe']]},
   vault:{product:'vault',kind:'Product',summary:'Checks access to its own credential paths. Supplies short-lived access for a configured target.'},
   aiGateway:{
    name:'IBM watsonx Orchestrate AI Gateway',kind:'Orchestrate capability',
@@ -226,6 +232,9 @@ const ArchitectureReference = (() => {
    {id:'tool',from:'openshell',to:'mcpTool',label:'Tool call via MCP gateway',
     payload:'Requested operation and tool arguments.',validator:'OpenShell, the configured gateway and the MCP server',
     check:'The route is reachable and the request fits the configured tool interface. CRM still decides whether it can return the record.'},
+   {id:'workload',from:'workloadIdentity',to:'vault',label:'Workspace check before credential release',
+    payload:'Trusted workspace identity and generation matched to the approved mission.',validator:'Configured customer check before broker access',
+    check:'The authorization lab demonstrates this proposed integration. A mismatch stops the attempt before Vault receives a request.'},
    {id:'credential',from:'mcpTool',to:'vault',label:'Credential request and lease',
     payload:'Connector identity, credential path and target role. A permit can return a lease for that configured role.',validator:'Vault',
     check:'The connector may obtain the stated credential. Business access to customer records remains a separate decision.'},
@@ -244,7 +253,7 @@ const ArchitectureReference = (() => {
   ],
   topology:[
    ['Authority plane',['verify','iai','mission','approvalWorkflow','policyContext','authorization'],'Identity, current mission state and exact share approval come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
-   ['Runtime startup',['mission','launchWorkflow','openshell'],'The configured workflow checks the mission. OpenShell handles sandbox lifecycle authorization and starts the agent after confirming the isolation boundary.'],
+   ['Runtime startup',['mission','launchWorkflow','openshell','workloadIdentity'],'The configured workflow checks the mission. OpenShell handles sandbox lifecycle authorization and confirms the isolation boundary. The customer can add a check that binds the approved workspace instance to the mission before credentials are released.'],
    ['MCP HTTP authorization',['mcpClient','mcpIssuer','mcpGateway'],'The client discovers the issuer and requests a token for the MCP resource. The gateway validates the token for its own endpoint.'],
    ['Data plane',['openshell','mcpClient','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
    ['Credential path',['vault','crm'],'The connector or broker obtains a separate credential for the configured backend. CRM owns any service session it establishes.'],
@@ -252,6 +261,7 @@ const ArchitectureReference = (() => {
   ],
   evidence:[
    ['Subject, actor and session','Identity issuer and session controller','Sponsor identity, Nova’s authenticated identity, delegation chain and current session generation.'],
+   ['Running workload and generation','Trusted runtime provisioner','The proposed workspace check uses the provisioner’s evidence and the mission’s expected instance.'],
    ['Purpose and limits','Customer mission service','Tenant, task owner, version, permitted operations, record set, destination, expiry and revocation state.'],
    ['Actual operation and target','CRM policy enforcement point (PEP)','Canonical operation, resolved record IDs, normalized recipient, file digest, record classifications and resource version.'],
    ['Human approval','Approval store','Approver identity, approval ID, canonical action hash, binding versions, expiry and consumption state.'],
@@ -311,9 +321,10 @@ const ArchitectureReference = (() => {
     paragraphs:[
      'Restored access requires correlated review, current policy and a fresh session generation. Deny new governed operations when the current grant or required policy context cannot be validated. Treat an unavailable status endpoint as unknown. Keep previously accepted external effects in the record.',
      'Revoke the grant and invalidate stale decisions. Stop the workload. Revoke the credential and close service-owned sessions separately. Cancel queued work and prevent committing in-flight changes when the authorization generation is stale. Independently retest each covered route and record the verdict with time and owner.',
-     'SSF delivers security events between configured peers. CAEP session-revoked events can prompt receiver-specific action. Correlate delivery, receiver enforcement and a resource probe separately. Measure each interval before claiming a revocation SLO.'
+     'SSF delivers security events between configured peers. CAEP session-revoked events can prompt receiver-specific action. Correlate delivery, receiver enforcement and a resource probe separately. Measure each interval before claiming a revocation SLO.',
+     'For a deployment that brokers supported SSH or RDP sessions through HashiCorp Boundary, the Boundary session has its own lifecycle and evidence. Nova’s example verifies a CRM-owned application session.'
     ],
-    sources:[['OpenID Shared Signals Framework','https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html'],['OpenID CAEP','https://openid.net/specs/openid-caep-1_0-final.html']]
+    sources:[['OpenID Shared Signals Framework','https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html'],['OpenID CAEP','https://openid.net/specs/openid-caep-1_0-final.html'],['HashiCorp Boundary credential management','https://developer.hashicorp.com/boundary/docs/concepts/credential-management']]
    }
   ]
  };
@@ -324,7 +335,7 @@ const ArchitectureReference = (() => {
    ['OpenShell Gateway','Authenticates the operator, checks lifecycle permission, and prepares sandbox- and generation-bound credentials.'],
    ['Compute Driver','Provisions the sandbox and outer network fence. It places the trusted Supervisor outside the workload boundary and supplies its credentials through the runtime’s trusted provisioning path.'],
    ['Trusted Supervisor','Uses the sandbox JWT on the private, server-authenticated TLS channel to the sandbox. A separate gateway JWT authenticates the Supervisor to the Gateway. The Supervisor receives the approved runtime policy and provider configuration.'],
-   ['Sandbox and Nova','The sandbox verifies the Supervisor and holds launch until the enforcement boundary is confirmed. During execution, it mediates network requests with the calling program’s identity.']
+   ['Sandbox and Nova','The sandbox verifies the Supervisor and holds launch until the enforcement boundary is confirmed. During execution, the sandbox relays network requests with the calling program’s identity. The Supervisor applies the runtime policy.']
   ],
   sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],
    ['Network rules and enforcement modes','https://docs.nvidia.com/openshell/latest/how-it-works/policies/network-rules'],

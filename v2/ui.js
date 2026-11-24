@@ -256,6 +256,7 @@ const novaRoomLabels={
  policyInfo:['Policy information point (PIP)','Supplies trusted facts'],
  policyDecision:['Customer policy decision service (PDP)','Evaluates the exact operation'],
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
+ workloadIdentity:['Workspace identity','Identifies this running instance'],
  verify:['IBM Verify','Separate-device review'],orchestrate:['IBM watsonx Orchestrate','Coordinates the handoff'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
  vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Identity Protection (AuthMind)','Optional risk detection'],
@@ -267,7 +268,7 @@ const novaRoomLabels={
 const roomCardIcons={
  hero:'person',sponsorMessage:'person',reviewer:'person',outside:'person',schoolInbox:'reviewer',schoolApp:'console',
  homework:'shield',parentSchool:'phone',extra:'source',classChat:'reviewer',crmAttachment:'outside',
- launchWorkflow:'console',policyInfo:'source',policyDecision:'console',registries:'memory',verify:'shield',orchestrate:'console',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield',antenna:'phone',controllers:'notebook'
+ launchWorkflow:'console',workloadIdentity:'shield',policyInfo:'source',policyDecision:'console',registries:'memory',verify:'shield',orchestrate:'console',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield',antenna:'phone',controllers:'notebook'
 };
 function roomCard(key){
  if(teen()&&key==='extra'){
@@ -327,7 +328,8 @@ function responseStationEvidence(s){
  const status=response?`<b>${response[0]}</b><p>${response[1]}</p>`:
   `<b>Mission revoked · OpenShell stopped</b><p>Vault · ${s.containment.credentialRevoked?'revocation confirmed':'revocation pending'}</p><p>CRM · ${crmSessionResult(s.containment)}</p>`;
  return `<div class="station-evidence"><div>${status}<p>Optional simulation of SSF/CAEP delivery and a separate CRM retest.</p></div>
-  <button type="button" class="secondary" id="station-signal-test">Test signal delivery and closure</button></div>`;
+  <button type="button" class="secondary" id="station-signal-test">Test signal delivery and closure</button>
+  <button type="button" class="secondary" id="station-response-test">Compare response levels</button></div>`;
 }
 function renderStations(s){
  const groups=StoryInteractions.roomGroups(s,mode);
@@ -347,7 +349,10 @@ function renderStations(s){
  $$('#scene-stations [data-station]').forEach(b=>b.onclick=()=>visitStation(b.dataset.station));
  if(crmCheck)$('#station-trace').onclick=()=>showRequestTrace(crmCheck,close,'Back to Policy checks');
  const signalTest=$('#station-signal-test');
- if(signalTest)signalTest.onclick=()=>showBuyerSignal(close,'Back to Signals and response');
+ if(signalTest){
+  signalTest.onclick=()=>showBuyerSignal(close,'Back to Signals and response');
+  $('#station-response-test').onclick=()=>showResponseExercise(close,'Back to Signals and response');
+ }
 }
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
 function render(){
@@ -630,7 +635,7 @@ function showMaturity(back=showIntro,selected=null){
     <ol class="route-list">${deployment.wiring.map(([actor,action])=>`<li><b>${esc(actor)}</b><br>${esc(action)}</li>`).join('')}</ol>
     ${protocolSourceLinks(deployment.sources)}</details>
    <div class="actions">
-    ${selected.name==='Resist'?button('Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel}),'secondary')+button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
+    ${selected.name==='Resist'?button('Compare response levels',()=>showResponseExercise(reopen,backLabel),'secondary')+button('Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel}),'secondary')+button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
     ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
     ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
  }
@@ -1045,7 +1050,7 @@ function interact(key,pin){
   aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
   vaultControl:()=>protocolSourceLinks(['leases'])
  };
- const architecture={policyInfo:['policyContext'],policyDecision:['authorization',['authzen']],laptop:['crm',['authzen']],verify:['verify',['ciba']],orchestrate:['orchestrate'],
+ const architecture={policyInfo:['policyContext'],policyDecision:['authorization',['authzen']],laptop:['crm',['authzen']],verify:['verify',['ciba']],orchestrate:['orchestrate'],workloadIdentity:['workloadIdentity'],
   riskMonitor:['risk',['identityRisk']],antenna:['antenna',['ssf','caep']],controllers:['controllers',['openshell','leases']]};
  const role=!teen()&&architecture[key]?architectureComponentDetail(...architecture[key]):null;
  const extra=!teen()&&(role?.body||(typeof details[key]==='function'?details[key]():details[key]));
@@ -1186,7 +1191,9 @@ function showWorkspace(){
   ['NVIDIA OpenShell','Verifies the isolation boundary, then starts Nova with runtime restrictions.'],
   ['CRM','Opens its own task session. It will check each record or send request separately.']
  ])}
-  <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}</details>
+  <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}
+   <p>IBM Agent Identity names Nova and its owner. OpenShell runs an instance in a particular sandbox. A proposed customer integration can bind that running instance to the approved mission before releasing a credential.</p>
+   <div class="actions">${button('Test the workspace check',()=>showDecisionLab(showWorkspace,DecisionLab.begin('workload')),'secondary')}</div></details>
   <details class="debrief"><summary>Which tools handle the first CRM read?</summary>${crmToolRoute()}
    <p>Model access has its own route. A configured watsonx Orchestrate AI Gateway can route model requests. The MCP gateway handles the CRM tool call shown here.</p>${protocolSourceLinks(['mcp'])}</details>
   ${choices([['Run the launch workflow','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
@@ -1237,32 +1244,36 @@ function showDecisionLab(back=()=>showArchitecture('boundaries'), trial=Decision
  const row=(label,pick,highlight=false)=>[label,runs.map(pick),highlight];
  const rows=[
   row('Observed operation',run=>`${run.request.operation}(${run.request.recordIds.join(', ')})`),
-  row('Actor and workload',run=>`${run.request.actor} · ${run.request.workload}`),
+  row('Delegated subject and agent',run=>`${run.request.subject} · ${run.request.actor}`),
+  row('Workspace in the request',run=>run.request.workload),
+  row('Workspace from the provisioner',run=>`${run.provisioned.workload} · generation ${run.provisioned.generation}`,true),
   row('Observation source',run=>run.decision.preview?'CRM did not receive the read':`${run.observation.issuer} · ${run.decision.observedByCrm?'verified in model':'unverified'}`,true),
   row('Mission at decision',run=>`${run.mission.id} v${run.decision.version}`,true),
   row('Current mission',run=>`${run.mission.id} v${run.mission.version} · ${run.mission.status}`,true),
-  row('Vault credential',run=>run.credential.result==='permit'?`Permit · read-only lease · ${run.credential.lifetimeSeconds}s`:'Deny · no lease',true),
+  row('Credential check',run=>run.credential.result==='permit'?`Vault · read-only lease · ${run.credential.lifetimeSeconds}s`:`${run.credential.owner} · no lease issued`,true),
   row('Customer policy decision service',run=>`${run.decision.result==='permit'?'Permit':'Deny'}${run.decision.preview?' (policy preview)':''} · ${run.decision.reason}`,true),
-  row('CRM outcome',labCrmOutcome,true)
+  row('CRM outcome',labCrmOutcome,true),
+  row('Correlated IDs',run=>[run.request.id,run.decision.preview?'Decision preview':run.decision.id,run.credential.lease,run.outcome?.receipt].filter(Boolean).join(' · '))
  ];
  const brokerStopped=trial.credential.result==='deny';
- const phase=brokerStopped?'Vault denied the credential':trial.outcome?labCrmOutcome(trial):
+ const stoppedBeforeVault=brokerStopped&&trial.credential.owner!=='Vault';
+ const phase=stoppedBeforeVault?'Workspace check refused the request':brokerStopped?'Vault denied the credential':trial.outcome?labCrmOutcome(trial):
   trial.mission.status==='revoked'?'The old Permit is still on record':'The proposed PDP evaluated the read';
  const next=brokerStopped?'See where the read stopped':trial.mission.status==='revoked'?'Try committing with the old Permit':'Check the operation at commit';
- const pending=brokerStopped?'See what the missing lease means for this read.':'CRM still has to check whether this read can take effect.';
+ const pending=stoppedBeforeVault?trial.credential.reason:brokerStopped?'See what the missing lease means for this read.':'CRM still has to check whether this read can take effect.';
  const canWithdraw=trial.scenario==='approved'&&!trial.outcome&&trial.mission.status==='active';
  const choicesHtml=!trial.outcome?`<div class="actions">
   ${canWithdraw?button('Withdraw the mission',()=>showDecisionLab(back,DecisionLab.withdraw(trial))):''}
   ${button(next,()=>showDecisionLab(back,DecisionLab.commit(trial)),canWithdraw?'secondary':'primary')}
  </div>`:'';
- const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['credential','backend','evidence','execution'].includes(edge.id));
+ const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['workload','credential','backend','evidence','execution'].includes(edge.id));
  showReference('Authorization before execution',`
   <p>Nova requests the Alder Books summary. Change one condition and see where the read succeeds or stops. All evidence is simulated.</p>
   <label for="lab-scenario">Change one condition</label>
   <select id="lab-scenario">${Object.entries(DecisionLab.scenarios).map(([id,label])=>`<option value="${id}"${id===trial.scenario?' selected':''}>${esc(label)}</option>`).join('')}</select>
   <section class="receipt"><b>${esc(phase)}</b><p>${esc(trial.outcome?.reason||pending)}</p></section>
   <ol class="lab-summary" aria-label="Your attempt at a glance">
-   <li><b>Vault</b><span>${brokerStopped?'Credential denied':'Read-only lease issued'}</span></li>
+   <li><b>Vault</b><span>${stoppedBeforeVault?'Request stopped before Vault':brokerStopped?'Credential denied':'Read-only lease issued'}</span></li>
    <li><b>Mission and policy</b><span>${trial.mission.status==='revoked'?`Mission withdrawn · Permit from v${trial.decision.version}`:`Mission v${trial.mission.version} · ${trial.decision.result==='permit'?'Permit':'Deny'}${trial.decision.preview?' (preview)':''}`}</span></li>
    <li><b>CRM</b><span>${esc(labCrmOutcome(trial))}</span></li>
   </ol>
@@ -1386,6 +1397,29 @@ function showRuntimeIncident(back,crmReachable=null,backLabel='Back to runtime a
   <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>check(true))}${button('Simulate CRM being unreachable',()=>check(false),'secondary')}`
    :evidence.verified?button('Replay the incident check',()=>check(null),'secondary'):button('Restore CRM contact and verify',()=>check(true))}
   ${button(backLabel,back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+}
+
+function showResponseExercise(back,backLabel,level=null,operation=null){
+ const levels=[
+  ['warn','Warn','Flag the activity for a reviewer. Current permissions stay in force.'],
+  ['limit','Limit to reads','Keep approved reads and remove sharing from the task during review.'],
+  ['suspend','Suspend task access','Pause CRM reads and sends while a reviewer investigates.'],
+  ['stop','Stop the workspace','Terminate the workspace. Check credentials, existing sessions and waiting work separately.']
+ ];
+ const select=()=>showResponseExercise(back,backLabel);
+ const probe=action=>showResponseExercise(back,backLabel,level,action);
+ const active=levels.find(([key])=>key===level);
+ const result=operation&&DecisionLab.probeResponse(level,operation);
+ const outcome=result&&{allowed:'Allowed under the current CRM rules',refused:'Refused by the response rule','workspace-stopped':'This workspace cannot send the request'}[result.effect];
+ showReference('How much access should the response stop?',`<p>Monitoring flags unusual activity. Try a configured response and see what happens to an already-approved read or share.</p>
+  ${active?`<div class="receipt"><b>${active[1]}</b><p>${active[2]}</p></div>
+   ${result?`<div class="request-result" role="status"><b>${operation==='read'?'Read probe':'Share probe'} · ${esc(outcome)}</b><p>${esc(result.owner)} supplied this result.</p></div>`:''}
+   <div class="actions">${button('Test an approved read',()=>probe('read'))}${button('Test an approved share',()=>probe('share'),'secondary')}
+   ${level==='stop'?button('Verify the remaining access routes',()=>showRuntimeIncident(()=>showResponseExercise(back,backLabel,level,operation),null,'Back to response levels'),'secondary'):''}
+   ${button('Choose another response',select,'secondary')}</div>`:
+    choices(levels.map(([key,label,detail])=>[label,detail,()=>showResponseExercise(back,backLabel,key)]))}
+  <details class="debrief"><summary>Which systems apply the response?</summary><p>The response team decides which signal should trigger each level and configures enforcement outside the agent. This example models a customer CRM policy change for limits and suspension, and an OpenShell controller for the workspace stop. The team verifies credential and app-session results separately.</p>${protocolSourceLinks(['responseDesign','identityRisk','openshell','caep'])}</details>
+  <div class="actions">${button(backLabel,back,'secondary')}</div>`,'SIMULATED INCIDENT RESPONSE');
 }
 
 function showReadComparison(pair,back){

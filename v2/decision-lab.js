@@ -4,6 +4,7 @@ const DecisionLab = (() => {
  const scenarios = {
   approved: 'Withdraw the mission after Permit',
   scope: 'Request a record outside the mission',
+  workload: 'Use a different workspace with the same agent identity',
   credential: 'Deny the credential request',
   observer: 'Use an unverified observer'
  };
@@ -18,7 +19,7 @@ const DecisionLab = (() => {
  function begin(scenario='approved', attempt='trial', recordId='789') {
   const mission = {
    id:'G-042', version:scenario==='scope'?1:2, policyVersion:1, generation:10,
-   status:'active', records:scenario==='scope'?['123','456']:['123','456','789']
+   status:'active', workload, records:scenario==='scope'?['123','456']:['123','456','789']
   };
   const request = {
    id:'lab-'+attempt+'-read', subject:'sponsor-001', actor:'nova-042', workload,
@@ -29,12 +30,17 @@ const DecisionLab = (() => {
    transport:'Illustrative service identity and audience',
    requestId:request.id, actionBinding:actionKey(request)
   };
-  const brokered = scenario!=='credential';
+  const provisioned = {
+   source:'Customer provisioner',workload:scenario==='workload'?'other-demo-workspace':workload,generation:10
+  };
+  const workspaceMatches=provisioned.workload===mission.workload&&provisioned.generation===mission.generation;
+  const brokered=workspaceMatches&&scenario!=='credential';
   const credential = {
-   owner:'Vault', path:'crm/creds/summary-reader', target:'CRM summary reader',
+   owner:workspaceMatches?'Vault':'Customer workspace check', path:'crm/creds/summary-reader', target:'CRM summary reader',
    result:brokered?'permit':'deny', lease:brokered?'lab-'+attempt+'-lease':null,
    lifetimeSeconds:brokered?120:null,
-   reason:brokered?'Read-only role is allowed for this connector.':'Connector is outside the role’s allowed identities.'
+   reason:!workspaceMatches?'The provisioner reported a different workspace than the mission allows. The configured check stopped the request before Vault.':
+    brokered?'Read-only role is allowed for this connector.':'Connector is outside the role’s allowed identities.'
   };
   const inScope = request.recordIds.every(id=>mission.records.includes(id));
   const observedByCrm = observation.issuer==='crm-pep.demo'&&observation.audience==='customer-policy.demo';
@@ -42,11 +48,11 @@ const DecisionLab = (() => {
    inScope?`The active mission and CRM summary policy allow record ${recordId}.`:`Record ${recordId} is outside the current mission.`;
   const decision = {
    id:'lab-'+attempt+'-decision', owner:'Customer policy decision service', requestId:request.id,
-   result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm, preview:!brokered,
+   result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm:brokered&&observedByCrm, preview:!brokered,
    missionId:mission.id, version:mission.version, policyVersion:mission.policyVersion,
    generation:mission.generation, actionBinding:observation.actionBinding
   };
-  return {scenario, request, observation, credential, decision, mission, outcome:null};
+  return {scenario, request, observation, provisioned, credential, decision, mission, outcome:null};
  }
 
  function withdraw(lab) {
@@ -58,8 +64,9 @@ const DecisionLab = (() => {
   if(lab.outcome)return lab;
   const {decision, mission, credential}=lab;
   if(credential.result!=='permit'){
-   return {...lab, outcome:{owner:'Vault', requestId:actual.id, decisionId:null, result:'not-reached',
-    recordIds:[], receipt:null, reason:'Vault denied the credential. CRM did not receive the read. The business decision shown here is a policy preview.'}};
+   const reason=credential.owner==='Vault'?'Vault denied the credential.':credential.reason;
+   return {...lab, outcome:{owner:credential.owner, requestId:actual.id, decisionId:null, result:'not-reached',
+    recordIds:[], receipt:null, reason:reason+' CRM did not receive the read. The business decision shown here is a policy preview.'}};
   }
   const bindingMatches=decision.requestId===actual.id&&decision.actionBinding===actionKey(actual);
   const missionCurrent=mission.status==='active'&&decision.missionId===mission.id&&
@@ -118,6 +125,12 @@ const DecisionLab = (() => {
    crmClosed:crmReachable,queueCleared:true,probe:crmReachable?'refused':'unknown'};
   const {probe,...controls}=evidence;
   return {...evidence,verified:probe==='refused'&&Object.values(controls).every(Boolean)};
+ }
+
+ function probeResponse(level,operation){
+  if(level==='stop')return {owner:'OpenShell',effect:'workspace-stopped'};
+  if(level==='suspend'||level==='limit'&&operation==='share')return {owner:'Configured CRM policy',effect:'refused'};
+  return {owner:'CRM resource PEP',effect:'allowed'};
  }
 
  function startCloseoutCheck(){
@@ -213,7 +226,7 @@ const DecisionLab = (() => {
  }
 
  return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, tryExcludedDestination, openNetworkProposal,
-  decideNetworkProposal, approveRuntimeMission, incidentStatus, startCloseoutCheck, attemptCloseout, probeCloseout,
+  decideNetworkProposal, approveRuntimeMission, incidentStatus, probeResponse, startCloseoutCheck, attemptCloseout, probeCloseout,
   startSignalTest, deliverSignal, applySignal, retestSignal, issueDelegatedExample,presentDelegatedExample,
   compareVaultGrants,startAgentStop,advanceAgentStop,startPaymentDemo,approvePaymentDemo,tryPaymentDemo};
 })();

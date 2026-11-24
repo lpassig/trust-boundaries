@@ -49,6 +49,8 @@ Each buyer card opens its product’s technical setup and pilot checklist. **Acc
 
 The **Raise the BAR** guide compares three example deployments of the same customer handover. Build drafts from a supplied file. Authorize adds customer records through a scope-checked CRM tool. Resist adds scheduled execution and verified containment. Each stage includes a first pilot, the evidence and value to measure, and expandable technical setup and sources. Open it from the first screen, from **Explore Architecture → Deployment options**, or from the [direct BAR guide link](https://lpassig.github.io/trust-boundaries/#bar).
 
+**Workspace identity** is inspectable in Nova’s workspace. The authorization lab shows a proposed customer check refusing a request from a different workspace before Vault is reached. **Compare response levels** is available from Signals and response and from Resist. It lets players test a warning, a read-only limit, suspension, and a workspace stop, then check the remaining access routes.
+
 Nova’s room groups inspectable systems and records below the scene. The outline and CRM read distinguish the model gateway from the tool gateway. The optional stopped detour shows a simulated IBM Identity Protection alert and a separate configured response.
 
 **Start with a work problem** opens the buyer guide from the first screen. Each pilot card explains the outcome, what the buyer’s team owns, and the first test. The secondary cards include a worked watsonx Orchestrate file handoff and a Verify Antenna exercise that tracks signal delivery, receiver action, and the independent CRM retest.
@@ -84,7 +86,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **213**.
+- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **215**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

@@ -38,6 +38,7 @@ const PROTOCOL_SOURCES = {
  mcpGateway:{name:'Example DataPower Interact Gateway MCP policies',url:'https://www.ibm.com/docs/en/dp-interact-gateway/12.1.1?topic=servers-mcp-server-policies'},
  identityRisk:{name:'IBM on AuthMind runtime identity observability',url:'https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities'},
  aiRmf:{name:'NIST AI Risk Management Framework',url:'https://nvlpubs.nist.gov/nistpubs/AI/NIST.AI.100-1.pdf'},
+ responseDesign:{name:'OWASP Securing Agentic Applications',url:'https://genai.owasp.org/resource/securing-agentic-applications-v2/'},
  spiffe:{name:'SPIFFE workload identity concepts',url:'https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'},
  owasp:{name:'OWASP AI Agent Security',url:'https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html'},
  mcpTools:{name:'MCP tools specification',url:'https://modelcontextprotocol.io/specification/latest/server/tools'},

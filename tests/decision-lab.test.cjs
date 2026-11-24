@@ -47,6 +47,29 @@ test('an unverified observer cannot supply authority even when data and credenti
  assert.equal(Lab.commit(trial).outcome.receipt,null);
 });
 
+test('an independently observed workspace mismatch stops the attempt before credential issuance',()=>{
+ const allowed=Lab.begin(),mismatch=Lab.begin('workload');
+ assert.equal(mismatch.request.actor,allowed.request.actor);
+ assert.equal(mismatch.request.workload,allowed.request.workload);
+ assert.notEqual(mismatch.provisioned.workload,mismatch.mission.workload);
+ assert.equal(mismatch.credential.owner,'Customer workspace check');
+ assert.equal(mismatch.credential.lease,null);
+ assert.equal(mismatch.decision.observedByCrm,false);
+ const {outcome}=Lab.commit(mismatch);
+ assert.equal(outcome.result,'not-reached');
+ assert.equal(outcome.decisionId,null);
+ assert.equal(outcome.receipt,null);
+});
+
+test('response levels distinguish monitoring, read-only, suspension and stopping the runtime',()=>{
+ const effects=level=>['read','share'].map(operation=>Lab.probeResponse(level,operation).effect);
+ assert.deepEqual(effects('warn'),['allowed','allowed']);
+ assert.deepEqual(effects('limit'),['allowed','refused']);
+ assert.deepEqual(effects('suspend'),['refused','refused']);
+ assert.deepEqual(effects('stop'),['workspace-stopped','workspace-stopped']);
+ assert.equal(Lab.incidentStatus(false).verified,false);
+});
+
 test('a Permit for one observation does not authorize a changed record or request ID',()=>{
  const trial=Lab.begin();
  for(const changed of [{recordIds:['123']},{id:'another-observation'}]){

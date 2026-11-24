@@ -41,6 +41,7 @@ const StoryInteractions = (() => {
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
    launchWorkflow:'The account team’s launch workflow checks the active mission and requests a sandbox as an authorized OpenShell operator. OpenShell starts Nova once the isolation boundary is verified.',
+   workloadIdentity:'Nova’s agent identity names the agent. The workspace identity names the running instance. A configured customer policy can check this instance and its generation before releasing a tool credential.',
    policyInfo:'The policy information point supplies trusted facts from the agent identity, current mission and CRM. Several services can supply those facts.',
    policyDecision:'The customer policy decision point evaluates the exact operation observed by CRM against current task and resource rules. This service is a proposed integration.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
@@ -70,7 +71,7 @@ const StoryInteractions = (() => {
   return [
    ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
    ['Work desk',['brief','workOrder','parent','launchWorkflow','registries','verify','notebook']],
-   ['Agent workspace',['phone','orchestrate','aiGateway','mcpGateway','vaultControl']],
+   ['Agent workspace',['phone','workloadIdentity','orchestrate','aiGateway','mcpGateway','vaultControl']],
    ['Policy checks',['policyInfo','policyDecision','laptop']],
    ['Customer records',['source',...(s.message?['crmAttachment']:[])]],
    ['Signals and response',['riskMonitor','antenna','controllers']]
@@ -131,6 +132,7 @@ const StoryInteractions = (() => {
    sponsorContact:{name:'Priya · task sponsor',kind:'Message',channel:'Saved contact',point:[449,173],object:'brief',tool:'sponsorMessage'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
    launchWorkflow:{name:'Launch workflow',kind:'On screen',channel:'Account team',point:[524,401],object:'phone',tool:'launchWorkflow'},
+   workloadIdentity:{name:'Workspace identity',kind:'Provisioning evidence',point:[524,401],object:'phone',tool:'workloadIdentity'},
    policyInfo:{name:'Policy information point',kind:'Policy facts',channel:'CRM policy station',point:[716,254],object:'laptop',tool:'policyInfo'},
    policyDecision:{name:'Customer policy decision service',kind:'Policy decision',channel:'CRM policy station',point:[716,254],object:'laptop',tool:'policyDecision'},
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},

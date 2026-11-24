@@ -710,6 +710,7 @@ const PROTOCOL_SOURCES = {
  mcpGateway:{name:'Example DataPower Interact Gateway MCP policies',url:'https://www.ibm.com/docs/en/dp-interact-gateway/12.1.1?topic=servers-mcp-server-policies'},
  identityRisk:{name:'IBM on AuthMind runtime identity observability',url:'https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities'},
  aiRmf:{name:'NIST AI Risk Management Framework',url:'https://nvlpubs.nist.gov/nistpubs/AI/NIST.AI.100-1.pdf'},
+ responseDesign:{name:'OWASP Securing Agentic Applications',url:'https://genai.owasp.org/resource/securing-agentic-applications-v2/'},
  spiffe:{name:'SPIFFE workload identity concepts',url:'https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'},
  owasp:{name:'OWASP AI Agent Security',url:'https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html'},
  mcpTools:{name:'MCP tools specification',url:'https://modelcontextprotocol.io/specification/latest/server/tools'},
@@ -953,18 +954,21 @@ const JOURNEY_SEQUENCE = [
   {
     title: 'Open the workspace and read a source',
     stages: ['open', 'draft', 'source'],
-    comparison: 'Phone controls and OpenShell constrain the working environment. The school app and CRM govern their own resources separately. In Nova’s route, the MCP gateway handles the CRM tool call. The AI gateway shown in Architecture handles model traffic.',
+    comparison: 'Alex’s school sign-in identifies Alex. The phone’s homework profile limits the phone. Nova has a persistent agent identity and runs in a specific OpenShell workspace. The AI gateway routes the outline request, and the MCP gateway handles the tool call.',
     teen: [
-      ['Alex', 'Phone controls', 'Opens the school app under the homework agreement.'],
+      ['Phone controls', 'Alex', 'Keep the phone in homework mode under the agreement.'],
       ['Alex', 'School app', 'Signs in on the family laptop and opens the project.'],
       ['Alex', 'Museum site', 'Reads a public source and adds it to the draft.']
     ],
     agent: [
       ['Launch workflow', 'OpenShell', 'Checks the active grant and requests the sandbox.'],
       ['OpenShell', 'Nova', 'Starts the sandbox under the approved runtime policy.'],
+      ['Nova', 'AI Gateway', 'Routes the outline request to an approved model.'],
       ['Nova', 'MCP gateway', 'Requests the two customer summaries on the allowed tool route.'],
-      ['MCP gateway', 'CRM', 'Validates the MCP token and forwards the call to the CRM connector.'],
-      ['CRM', 'Nova', 'Returns the summaries via MCP. The connector uses a short-lived Vault credential, and CRM enforces record scope.']
+      ['MCP gateway', 'CRM MCP server', 'Validates the token for its endpoint and forwards the tool call.'],
+      ['CRM MCP server', 'Vault', 'The connector requests a short-lived read credential for CRM.'],
+      ['CRM MCP server', 'CRM', 'Presents the connector credential. CRM checks the actual record read.'],
+      ['CRM', 'Nova', 'Returns the permitted summaries through the tool route.']
     ]
   },
   {
@@ -1077,8 +1081,8 @@ const BAR_STAGES = [
    deployment:{title:'Draft from a supplied file',
     scenario:'Priya gives Nova a sanitized Harbor Bikes summary and asks for a first draft of the handover. Priya reviews and shares the result herself.',
     boundary:'Nova can use the supplied file and one approved model. The application exposes drafting only. People handle customer-record access and delivery.',
-    wiring:[['Account team','Choose the input and assign an owner to the assistant.'],
-     ['Assistant application','Use an approved model endpoint. Keep its credential in the application and record the assistant identity, input, model and outcome.'],
+    wiring:[['Account team','Record the assistant, its owner, approved model and input sources.'],
+     ['Assistant application','Keep model access in the application. Log the user, assistant, model and outcome.'],
      ['Reviewer','Check the draft before sharing it through the usual process.']],
     sources:['agentInventory']},
    value:['Security value','Track whether the pilot has a named owner, an inventory of what it can reach, and a recorded result when you try an unapproved data path.'],
@@ -1086,12 +1090,13 @@ const BAR_STAGES = [
    next:'Start with your existing identity and inventory. Evaluate IBM Agent Identity if you need a central record of assistants and owners across teams.'},
   {name:'Authorize',label:'Semi-Autonomous',mode:'The agent calls tools at defined steps, within limits you can test.',
    deployment:{title:'Fetch customer records within an approved task',
-    scenario:'Priya starts the handover for Harbor Bikes and Pine Studio. Nova can fetch their summaries, then prepare the draft. Morgan reviews any exact copy sent through the CRM.',
+    scenario:'Priya starts the handover for Harbor Bikes and Pine Studio. Nova builds an outline and fetches their summaries. Morgan approves the exact copy before a confidential send.',
     boundary:'Priya approves the accounts and permitted action. The CRM checks each actual read and limits the returned fields to the summary.',
-    wiring:[['Customer mission service','Record the sponsor-approved records, operation and expiry.'],
+    wiring:[['Identity provider and IBM Agent Identity','Authenticate Priya and preserve her as the subject and Nova as the actor in the configured delegated token.'],
+     ['Customer mission service','Record the sponsor-approved records, operation and expiry.'],
      ['MCP tool route','Expose the CRM summary read. A supported Vault secrets engine can issue the connector’s short-lived read credential.'],
      ['CRM and customer policy service','Evaluate and enforce the observed record request. For a sensitive share, the application binds Morgan’s approval to the exact copy and destination.']],
-    sources:['mcp','leases','ciba']},
+    sources:['oidc','exchange','mcp','leases','ciba']},
    value:['Operational value','Compare how long the same approved task takes before and after the pilot. Track manual handoffs and confirm that the out-of-scope request still fails.'],
    evidence:'Use the same allowed route to read Harbor Bikes and then request Alder Books. Save the requested records, mission version and CRM decisions. Under the original grant, only Harbor Bikes should produce a success receipt.',
    next:'Start with the business owner and CRM team. Evaluate Vault for short-lived connector access and IBM Verify if a sensitive send needs separate-device approval.'},
@@ -1100,7 +1105,7 @@ const BAR_STAGES = [
     scenario:'A team schedule starts Nova’s morning handover under an active, approved grant. Nova chooses the order of approved tools. Morgan still reviews the exact copy for delivery.',
     boundary:'The runtime controls reachable tools and the CRM checks each action. If monitoring flags suspicious activity, a named response owner can withdraw the grant and verify each affected control.',
     wiring:[['Launch workflow and OpenShell','Check the current grant before starting an isolated workspace. Apply the approved runtime routes.'],
-     ['Identity monitoring and response','IBM Identity Protection can supply observations. Your response policy decides when to intervene. Verify Antenna can carry configured security signals to receivers.'],
+     ['Identity monitoring and response','IBM Identity Protection can supply observations. Configure when to warn, limit actions, suspend access or stop the workspace. Verify Antenna can carry security events to configured receivers.'],
      ['Containment controller','Record mission withdrawal, workspace stop, Vault revocation, CRM session closure and queue status. Retest the old route before declaring it closed.']],
     sources:['openshell','identityRisk','leases','ssf','caep']},
    value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
@@ -1829,6 +1834,7 @@ const StoryInteractions = (() => {
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    sponsorMessage:'Priya sponsors the handover and approves which accounts Nova can read. The mission service records her decision.',
    launchWorkflow:'The account team’s launch workflow checks the active mission and requests a sandbox as an authorized OpenShell operator. OpenShell starts Nova once the isolation boundary is verified.',
+   workloadIdentity:'Nova’s agent identity names the agent. The workspace identity names the running instance. A configured customer policy can check this instance and its generation before releasing a tool credential.',
    policyInfo:'The policy information point supplies trusted facts from the agent identity, current mission and CRM. Several services can supply those facts.',
    policyDecision:'The customer policy decision point evaluates the exact operation observed by CRM against current task and resource rules. This service is a proposed integration.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
@@ -1858,7 +1864,7 @@ const StoryInteractions = (() => {
   return [
    ['People and agents',['hero','sponsorMessage','reviewer','helper',...(s.message?['outside']:[])]],
    ['Work desk',['brief','workOrder','parent','launchWorkflow','registries','verify','notebook']],
-   ['Agent workspace',['phone','orchestrate','aiGateway','mcpGateway','vaultControl']],
+   ['Agent workspace',['phone','workloadIdentity','orchestrate','aiGateway','mcpGateway','vaultControl']],
    ['Policy checks',['policyInfo','policyDecision','laptop']],
    ['Customer records',['source',...(s.message?['crmAttachment']:[])]],
    ['Signals and response',['riskMonitor','antenna','controllers']]
@@ -1919,6 +1925,7 @@ const StoryInteractions = (() => {
    sponsorContact:{name:'Priya · task sponsor',kind:'Message',channel:'Saved contact',point:[449,173],object:'brief',tool:'sponsorMessage'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
    launchWorkflow:{name:'Launch workflow',kind:'On screen',channel:'Account team',point:[524,401],object:'phone',tool:'launchWorkflow'},
+   workloadIdentity:{name:'Workspace identity',kind:'Provisioning evidence',point:[524,401],object:'phone',tool:'workloadIdentity'},
    policyInfo:{name:'Policy information point',kind:'Policy facts',channel:'CRM policy station',point:[716,254],object:'laptop',tool:'policyInfo'},
    policyDecision:{name:'Customer policy decision service',kind:'Policy decision',channel:'CRM policy station',point:[716,254],object:'laptop',tool:'policyDecision'},
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
@@ -2869,7 +2876,7 @@ const NOVA_BUYER_NEEDS = [
 const ArchitectureReference = (() => {
  const groups = [
   ['People and authority', ['people','reviewer','verify','iai','mission']],
-  ['Where Nova works', ['orchestrate','launchWorkflow','openshell','vault']],
+  ['Where Nova works', ['orchestrate','launchWorkflow','openshell','workloadIdentity','vault']],
   ['Model and tool connections', ['aiGateway','mcpClient','mcpIssuer','mcpGateway','mcpTool']],
   ['Decisions and effects', ['approvalWorkflow','policyContext','authorization','crm']],
   ['Signals and response', ['risk','antenna','controllers']]
@@ -2895,6 +2902,12 @@ const ArchitectureReference = (() => {
    detail:'The team implements the mission check. The OpenShell Gateway separately authorizes the lifecycle operation and provisions the sandbox through the compute driver.'
   },
   openshell:{product:'openshell',kind:'Runtime',summary:'Runs Nova in an isolated workspace and controls contact with files and services.'},
+  workloadIdentity:{name:'Workspace identity',kind:'Proposed mission integration',
+   summary:'Identifies the specific running instance of Nova. Agent registration identifies Nova across instances.',
+   detail:'A configured customer check can match trusted provisioning evidence to the mission and sandbox generation before a provider credential is released. OpenShell still uses its own session credentials for bootstrap. An optional SPIFFE SVID identifies the workload to a relying service. A deployment that requires platform measurements must verify its chosen attestation evidence separately.',
+   sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],
+    ['SPIFFE concepts','https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/'],
+    ['Authenticate to Vault using SPIFFE','https://developer.hashicorp.com/vault/docs/auth/spiffe']]},
   vault:{product:'vault',kind:'Product',summary:'Checks access to its own credential paths. Supplies short-lived access for a configured target.'},
   aiGateway:{
    name:'IBM watsonx Orchestrate AI Gateway',kind:'Orchestrate capability',
@@ -3093,6 +3106,9 @@ const ArchitectureReference = (() => {
    {id:'tool',from:'openshell',to:'mcpTool',label:'Tool call via MCP gateway',
     payload:'Requested operation and tool arguments.',validator:'OpenShell, the configured gateway and the MCP server',
     check:'The route is reachable and the request fits the configured tool interface. CRM still decides whether it can return the record.'},
+   {id:'workload',from:'workloadIdentity',to:'vault',label:'Workspace check before credential release',
+    payload:'Trusted workspace identity and generation matched to the approved mission.',validator:'Configured customer check before broker access',
+    check:'The authorization lab demonstrates this proposed integration. A mismatch stops the attempt before Vault receives a request.'},
    {id:'credential',from:'mcpTool',to:'vault',label:'Credential request and lease',
     payload:'Connector identity, credential path and target role. A permit can return a lease for that configured role.',validator:'Vault',
     check:'The connector may obtain the stated credential. Business access to customer records remains a separate decision.'},
@@ -3111,7 +3127,7 @@ const ArchitectureReference = (() => {
   ],
   topology:[
    ['Authority plane',['verify','iai','mission','approvalWorkflow','policyContext','authorization'],'Identity, current mission state and exact share approval come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
-   ['Runtime startup',['mission','launchWorkflow','openshell'],'The configured workflow checks the mission. OpenShell handles sandbox lifecycle authorization and starts the agent after confirming the isolation boundary.'],
+   ['Runtime startup',['mission','launchWorkflow','openshell','workloadIdentity'],'The configured workflow checks the mission. OpenShell handles sandbox lifecycle authorization and confirms the isolation boundary. The customer can add a check that binds the approved workspace instance to the mission before credentials are released.'],
    ['MCP HTTP authorization',['mcpClient','mcpIssuer','mcpGateway'],'The client discovers the issuer and requests a token for the MCP resource. The gateway validates the token for its own endpoint.'],
    ['Data plane',['openshell','mcpClient','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
    ['Credential path',['vault','crm'],'The connector or broker obtains a separate credential for the configured backend. CRM owns any service session it establishes.'],
@@ -3119,6 +3135,7 @@ const ArchitectureReference = (() => {
   ],
   evidence:[
    ['Subject, actor and session','Identity issuer and session controller','Sponsor identity, Nova’s authenticated identity, delegation chain and current session generation.'],
+   ['Running workload and generation','Trusted runtime provisioner','The proposed workspace check uses the provisioner’s evidence and the mission’s expected instance.'],
    ['Purpose and limits','Customer mission service','Tenant, task owner, version, permitted operations, record set, destination, expiry and revocation state.'],
    ['Actual operation and target','CRM policy enforcement point (PEP)','Canonical operation, resolved record IDs, normalized recipient, file digest, record classifications and resource version.'],
    ['Human approval','Approval store','Approver identity, approval ID, canonical action hash, binding versions, expiry and consumption state.'],
@@ -3178,9 +3195,10 @@ const ArchitectureReference = (() => {
     paragraphs:[
      'Restored access requires correlated review, current policy and a fresh session generation. Deny new governed operations when the current grant or required policy context cannot be validated. Treat an unavailable status endpoint as unknown. Keep previously accepted external effects in the record.',
      'Revoke the grant and invalidate stale decisions. Stop the workload. Revoke the credential and close service-owned sessions separately. Cancel queued work and prevent committing in-flight changes when the authorization generation is stale. Independently retest each covered route and record the verdict with time and owner.',
-     'SSF delivers security events between configured peers. CAEP session-revoked events can prompt receiver-specific action. Correlate delivery, receiver enforcement and a resource probe separately. Measure each interval before claiming a revocation SLO.'
+     'SSF delivers security events between configured peers. CAEP session-revoked events can prompt receiver-specific action. Correlate delivery, receiver enforcement and a resource probe separately. Measure each interval before claiming a revocation SLO.',
+     'For a deployment that brokers supported SSH or RDP sessions through HashiCorp Boundary, the Boundary session has its own lifecycle and evidence. Nova’s example verifies a CRM-owned application session.'
     ],
-    sources:[['OpenID Shared Signals Framework','https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html'],['OpenID CAEP','https://openid.net/specs/openid-caep-1_0-final.html']]
+    sources:[['OpenID Shared Signals Framework','https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html'],['OpenID CAEP','https://openid.net/specs/openid-caep-1_0-final.html'],['HashiCorp Boundary credential management','https://developer.hashicorp.com/boundary/docs/concepts/credential-management']]
    }
   ]
  };
@@ -3191,7 +3209,7 @@ const ArchitectureReference = (() => {
    ['OpenShell Gateway','Authenticates the operator, checks lifecycle permission, and prepares sandbox- and generation-bound credentials.'],
    ['Compute Driver','Provisions the sandbox and outer network fence. It places the trusted Supervisor outside the workload boundary and supplies its credentials through the runtime’s trusted provisioning path.'],
    ['Trusted Supervisor','Uses the sandbox JWT on the private, server-authenticated TLS channel to the sandbox. A separate gateway JWT authenticates the Supervisor to the Gateway. The Supervisor receives the approved runtime policy and provider configuration.'],
-   ['Sandbox and Nova','The sandbox verifies the Supervisor and holds launch until the enforcement boundary is confirmed. During execution, it mediates network requests with the calling program’s identity.']
+   ['Sandbox and Nova','The sandbox verifies the Supervisor and holds launch until the enforcement boundary is confirmed. During execution, the sandbox relays network requests with the calling program’s identity. The Supervisor applies the runtime policy.']
   ],
   sources:[['OpenShell architecture','https://docs.nvidia.com/openshell/about/architecture'],
    ['Network rules and enforcement modes','https://docs.nvidia.com/openshell/latest/how-it-works/policies/network-rules'],
@@ -3234,6 +3252,7 @@ const DecisionLab = (() => {
  const scenarios = {
   approved: 'Withdraw the mission after Permit',
   scope: 'Request a record outside the mission',
+  workload: 'Use a different workspace with the same agent identity',
   credential: 'Deny the credential request',
   observer: 'Use an unverified observer'
  };
@@ -3248,7 +3267,7 @@ const DecisionLab = (() => {
  function begin(scenario='approved', attempt='trial', recordId='789') {
   const mission = {
    id:'G-042', version:scenario==='scope'?1:2, policyVersion:1, generation:10,
-   status:'active', records:scenario==='scope'?['123','456']:['123','456','789']
+   status:'active', workload, records:scenario==='scope'?['123','456']:['123','456','789']
   };
   const request = {
    id:'lab-'+attempt+'-read', subject:'sponsor-001', actor:'nova-042', workload,
@@ -3259,12 +3278,17 @@ const DecisionLab = (() => {
    transport:'Illustrative service identity and audience',
    requestId:request.id, actionBinding:actionKey(request)
   };
-  const brokered = scenario!=='credential';
+  const provisioned = {
+   source:'Customer provisioner',workload:scenario==='workload'?'other-demo-workspace':workload,generation:10
+  };
+  const workspaceMatches=provisioned.workload===mission.workload&&provisioned.generation===mission.generation;
+  const brokered=workspaceMatches&&scenario!=='credential';
   const credential = {
-   owner:'Vault', path:'crm/creds/summary-reader', target:'CRM summary reader',
+   owner:workspaceMatches?'Vault':'Customer workspace check', path:'crm/creds/summary-reader', target:'CRM summary reader',
    result:brokered?'permit':'deny', lease:brokered?'lab-'+attempt+'-lease':null,
    lifetimeSeconds:brokered?120:null,
-   reason:brokered?'Read-only role is allowed for this connector.':'Connector is outside the role’s allowed identities.'
+   reason:!workspaceMatches?'The provisioner reported a different workspace than the mission allows. The configured check stopped the request before Vault.':
+    brokered?'Read-only role is allowed for this connector.':'Connector is outside the role’s allowed identities.'
   };
   const inScope = request.recordIds.every(id=>mission.records.includes(id));
   const observedByCrm = observation.issuer==='crm-pep.demo'&&observation.audience==='customer-policy.demo';
@@ -3272,11 +3296,11 @@ const DecisionLab = (() => {
    inScope?`The active mission and CRM summary policy allow record ${recordId}.`:`Record ${recordId} is outside the current mission.`;
   const decision = {
    id:'lab-'+attempt+'-decision', owner:'Customer policy decision service', requestId:request.id,
-   result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm, preview:!brokered,
+   result:observedByCrm&&inScope?'permit':'deny', reason, observedByCrm:brokered&&observedByCrm, preview:!brokered,
    missionId:mission.id, version:mission.version, policyVersion:mission.policyVersion,
    generation:mission.generation, actionBinding:observation.actionBinding
   };
-  return {scenario, request, observation, credential, decision, mission, outcome:null};
+  return {scenario, request, observation, provisioned, credential, decision, mission, outcome:null};
  }
 
  function withdraw(lab) {
@@ -3288,8 +3312,9 @@ const DecisionLab = (() => {
   if(lab.outcome)return lab;
   const {decision, mission, credential}=lab;
   if(credential.result!=='permit'){
-   return {...lab, outcome:{owner:'Vault', requestId:actual.id, decisionId:null, result:'not-reached',
-    recordIds:[], receipt:null, reason:'Vault denied the credential. CRM did not receive the read. The business decision shown here is a policy preview.'}};
+   const reason=credential.owner==='Vault'?'Vault denied the credential.':credential.reason;
+   return {...lab, outcome:{owner:credential.owner, requestId:actual.id, decisionId:null, result:'not-reached',
+    recordIds:[], receipt:null, reason:reason+' CRM did not receive the read. The business decision shown here is a policy preview.'}};
   }
   const bindingMatches=decision.requestId===actual.id&&decision.actionBinding===actionKey(actual);
   const missionCurrent=mission.status==='active'&&decision.missionId===mission.id&&
@@ -3348,6 +3373,12 @@ const DecisionLab = (() => {
    crmClosed:crmReachable,queueCleared:true,probe:crmReachable?'refused':'unknown'};
   const {probe,...controls}=evidence;
   return {...evidence,verified:probe==='refused'&&Object.values(controls).every(Boolean)};
+ }
+
+ function probeResponse(level,operation){
+  if(level==='stop')return {owner:'OpenShell',effect:'workspace-stopped'};
+  if(level==='suspend'||level==='limit'&&operation==='share')return {owner:'Configured CRM policy',effect:'refused'};
+  return {owner:'CRM resource PEP',effect:'allowed'};
  }
 
  function startCloseoutCheck(){
@@ -3443,7 +3474,7 @@ const DecisionLab = (() => {
  }
 
  return {scenarios, begin, withdraw, commit, startRuntime, tryRuntimeRead, tryExcludedDestination, openNetworkProposal,
-  decideNetworkProposal, approveRuntimeMission, incidentStatus, startCloseoutCheck, attemptCloseout, probeCloseout,
+  decideNetworkProposal, approveRuntimeMission, incidentStatus, probeResponse, startCloseoutCheck, attemptCloseout, probeCloseout,
   startSignalTest, deliverSignal, applySignal, retestSignal, issueDelegatedExample,presentDelegatedExample,
   compareVaultGrants,startAgentStop,advanceAgentStop,startPaymentDemo,approvePaymentDemo,tryPaymentDemo};
 })();
@@ -3709,6 +3740,7 @@ const novaRoomLabels={
  policyInfo:['Policy information point (PIP)','Supplies trusted facts'],
  policyDecision:['Customer policy decision service (PDP)','Evaluates the exact operation'],
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
+ workloadIdentity:['Workspace identity','Identifies this running instance'],
  verify:['IBM Verify','Separate-device review'],orchestrate:['IBM watsonx Orchestrate','Coordinates the handoff'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
  vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Identity Protection (AuthMind)','Optional risk detection'],
@@ -3720,7 +3752,7 @@ const novaRoomLabels={
 const roomCardIcons={
  hero:'person',sponsorMessage:'person',reviewer:'person',outside:'person',schoolInbox:'reviewer',schoolApp:'console',
  homework:'shield',parentSchool:'phone',extra:'source',classChat:'reviewer',crmAttachment:'outside',
- launchWorkflow:'console',policyInfo:'source',policyDecision:'console',registries:'memory',verify:'shield',orchestrate:'console',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield',antenna:'phone',controllers:'notebook'
+ launchWorkflow:'console',workloadIdentity:'shield',policyInfo:'source',policyDecision:'console',registries:'memory',verify:'shield',orchestrate:'console',aiGateway:'console',mcpGateway:'source',vaultControl:'shield',riskMonitor:'shield',antenna:'phone',controllers:'notebook'
 };
 function roomCard(key){
  if(teen()&&key==='extra'){
@@ -3780,7 +3812,8 @@ function responseStationEvidence(s){
  const status=response?`<b>${response[0]}</b><p>${response[1]}</p>`:
   `<b>Mission revoked · OpenShell stopped</b><p>Vault · ${s.containment.credentialRevoked?'revocation confirmed':'revocation pending'}</p><p>CRM · ${crmSessionResult(s.containment)}</p>`;
  return `<div class="station-evidence"><div>${status}<p>Optional simulation of SSF/CAEP delivery and a separate CRM retest.</p></div>
-  <button type="button" class="secondary" id="station-signal-test">Test signal delivery and closure</button></div>`;
+  <button type="button" class="secondary" id="station-signal-test">Test signal delivery and closure</button>
+  <button type="button" class="secondary" id="station-response-test">Compare response levels</button></div>`;
 }
 function renderStations(s){
  const groups=StoryInteractions.roomGroups(s,mode);
@@ -3800,7 +3833,10 @@ function renderStations(s){
  $$('#scene-stations [data-station]').forEach(b=>b.onclick=()=>visitStation(b.dataset.station));
  if(crmCheck)$('#station-trace').onclick=()=>showRequestTrace(crmCheck,close,'Back to Policy checks');
  const signalTest=$('#station-signal-test');
- if(signalTest)signalTest.onclick=()=>showBuyerSignal(close,'Back to Signals and response');
+ if(signalTest){
+  signalTest.onclick=()=>showBuyerSignal(close,'Back to Signals and response');
+  $('#station-response-test').onclick=()=>showResponseExercise(close,'Back to Signals and response');
+ }
 }
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
 function render(){
@@ -4083,7 +4119,7 @@ function showMaturity(back=showIntro,selected=null){
     <ol class="route-list">${deployment.wiring.map(([actor,action])=>`<li><b>${esc(actor)}</b><br>${esc(action)}</li>`).join('')}</ol>
     ${protocolSourceLinks(deployment.sources)}</details>
    <div class="actions">
-    ${selected.name==='Resist'?button('Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel}),'secondary')+button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
+    ${selected.name==='Resist'?button('Compare response levels',()=>showResponseExercise(reopen,backLabel),'secondary')+button('Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel}),'secondary')+button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
     ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
     ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
  }
@@ -4498,7 +4534,7 @@ function interact(key,pin){
   aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
   vaultControl:()=>protocolSourceLinks(['leases'])
  };
- const architecture={policyInfo:['policyContext'],policyDecision:['authorization',['authzen']],laptop:['crm',['authzen']],verify:['verify',['ciba']],orchestrate:['orchestrate'],
+ const architecture={policyInfo:['policyContext'],policyDecision:['authorization',['authzen']],laptop:['crm',['authzen']],verify:['verify',['ciba']],orchestrate:['orchestrate'],workloadIdentity:['workloadIdentity'],
   riskMonitor:['risk',['identityRisk']],antenna:['antenna',['ssf','caep']],controllers:['controllers',['openshell','leases']]};
  const role=!teen()&&architecture[key]?architectureComponentDetail(...architecture[key]):null;
  const extra=!teen()&&(role?.body||(typeof details[key]==='function'?details[key]():details[key]));
@@ -4639,7 +4675,9 @@ function showWorkspace(){
   ['NVIDIA OpenShell','Verifies the isolation boundary, then starts Nova with runtime restrictions.'],
   ['CRM','Opens its own task session. It will check each record or send request separately.']
  ])}
-  <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}</details>
+  <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}
+   <p>IBM Agent Identity names Nova and its owner. OpenShell runs an instance in a particular sandbox. A proposed customer integration can bind that running instance to the approved mission before releasing a credential.</p>
+   <div class="actions">${button('Test the workspace check',()=>showDecisionLab(showWorkspace,DecisionLab.begin('workload')),'secondary')}</div></details>
   <details class="debrief"><summary>Which tools handle the first CRM read?</summary>${crmToolRoute()}
    <p>Model access has its own route. A configured watsonx Orchestrate AI Gateway can route model requests. The MCP gateway handles the CRM tool call shown here.</p>${protocolSourceLinks(['mcp'])}</details>
   ${choices([['Run the launch workflow','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
@@ -4690,32 +4728,36 @@ function showDecisionLab(back=()=>showArchitecture('boundaries'), trial=Decision
  const row=(label,pick,highlight=false)=>[label,runs.map(pick),highlight];
  const rows=[
   row('Observed operation',run=>`${run.request.operation}(${run.request.recordIds.join(', ')})`),
-  row('Actor and workload',run=>`${run.request.actor} · ${run.request.workload}`),
+  row('Delegated subject and agent',run=>`${run.request.subject} · ${run.request.actor}`),
+  row('Workspace in the request',run=>run.request.workload),
+  row('Workspace from the provisioner',run=>`${run.provisioned.workload} · generation ${run.provisioned.generation}`,true),
   row('Observation source',run=>run.decision.preview?'CRM did not receive the read':`${run.observation.issuer} · ${run.decision.observedByCrm?'verified in model':'unverified'}`,true),
   row('Mission at decision',run=>`${run.mission.id} v${run.decision.version}`,true),
   row('Current mission',run=>`${run.mission.id} v${run.mission.version} · ${run.mission.status}`,true),
-  row('Vault credential',run=>run.credential.result==='permit'?`Permit · read-only lease · ${run.credential.lifetimeSeconds}s`:'Deny · no lease',true),
+  row('Credential check',run=>run.credential.result==='permit'?`Vault · read-only lease · ${run.credential.lifetimeSeconds}s`:`${run.credential.owner} · no lease issued`,true),
   row('Customer policy decision service',run=>`${run.decision.result==='permit'?'Permit':'Deny'}${run.decision.preview?' (policy preview)':''} · ${run.decision.reason}`,true),
-  row('CRM outcome',labCrmOutcome,true)
+  row('CRM outcome',labCrmOutcome,true),
+  row('Correlated IDs',run=>[run.request.id,run.decision.preview?'Decision preview':run.decision.id,run.credential.lease,run.outcome?.receipt].filter(Boolean).join(' · '))
  ];
  const brokerStopped=trial.credential.result==='deny';
- const phase=brokerStopped?'Vault denied the credential':trial.outcome?labCrmOutcome(trial):
+ const stoppedBeforeVault=brokerStopped&&trial.credential.owner!=='Vault';
+ const phase=stoppedBeforeVault?'Workspace check refused the request':brokerStopped?'Vault denied the credential':trial.outcome?labCrmOutcome(trial):
   trial.mission.status==='revoked'?'The old Permit is still on record':'The proposed PDP evaluated the read';
  const next=brokerStopped?'See where the read stopped':trial.mission.status==='revoked'?'Try committing with the old Permit':'Check the operation at commit';
- const pending=brokerStopped?'See what the missing lease means for this read.':'CRM still has to check whether this read can take effect.';
+ const pending=stoppedBeforeVault?trial.credential.reason:brokerStopped?'See what the missing lease means for this read.':'CRM still has to check whether this read can take effect.';
  const canWithdraw=trial.scenario==='approved'&&!trial.outcome&&trial.mission.status==='active';
  const choicesHtml=!trial.outcome?`<div class="actions">
   ${canWithdraw?button('Withdraw the mission',()=>showDecisionLab(back,DecisionLab.withdraw(trial))):''}
   ${button(next,()=>showDecisionLab(back,DecisionLab.commit(trial)),canWithdraw?'secondary':'primary')}
  </div>`:'';
- const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['credential','backend','evidence','execution'].includes(edge.id));
+ const evidence=ArchitectureReference.technical.boundaries.filter(edge=>['workload','credential','backend','evidence','execution'].includes(edge.id));
  showReference('Authorization before execution',`
   <p>Nova requests the Alder Books summary. Change one condition and see where the read succeeds or stops. All evidence is simulated.</p>
   <label for="lab-scenario">Change one condition</label>
   <select id="lab-scenario">${Object.entries(DecisionLab.scenarios).map(([id,label])=>`<option value="${id}"${id===trial.scenario?' selected':''}>${esc(label)}</option>`).join('')}</select>
   <section class="receipt"><b>${esc(phase)}</b><p>${esc(trial.outcome?.reason||pending)}</p></section>
   <ol class="lab-summary" aria-label="Your attempt at a glance">
-   <li><b>Vault</b><span>${brokerStopped?'Credential denied':'Read-only lease issued'}</span></li>
+   <li><b>Vault</b><span>${stoppedBeforeVault?'Request stopped before Vault':brokerStopped?'Credential denied':'Read-only lease issued'}</span></li>
    <li><b>Mission and policy</b><span>${trial.mission.status==='revoked'?`Mission withdrawn · Permit from v${trial.decision.version}`:`Mission v${trial.mission.version} · ${trial.decision.result==='permit'?'Permit':'Deny'}${trial.decision.preview?' (preview)':''}`}</span></li>
    <li><b>CRM</b><span>${esc(labCrmOutcome(trial))}</span></li>
   </ol>
@@ -4839,6 +4881,29 @@ function showRuntimeIncident(back,crmReachable=null,backLabel='Back to runtime a
   <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>check(true))}${button('Simulate CRM being unreachable',()=>check(false),'secondary')}`
    :evidence.verified?button('Replay the incident check',()=>check(null),'secondary'):button('Restore CRM contact and verify',()=>check(true))}
   ${button(backLabel,back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+}
+
+function showResponseExercise(back,backLabel,level=null,operation=null){
+ const levels=[
+  ['warn','Warn','Flag the activity for a reviewer. Current permissions stay in force.'],
+  ['limit','Limit to reads','Keep approved reads and remove sharing from the task during review.'],
+  ['suspend','Suspend task access','Pause CRM reads and sends while a reviewer investigates.'],
+  ['stop','Stop the workspace','Terminate the workspace. Check credentials, existing sessions and waiting work separately.']
+ ];
+ const select=()=>showResponseExercise(back,backLabel);
+ const probe=action=>showResponseExercise(back,backLabel,level,action);
+ const active=levels.find(([key])=>key===level);
+ const result=operation&&DecisionLab.probeResponse(level,operation);
+ const outcome=result&&{allowed:'Allowed under the current CRM rules',refused:'Refused by the response rule','workspace-stopped':'This workspace cannot send the request'}[result.effect];
+ showReference('How much access should the response stop?',`<p>Monitoring flags unusual activity. Try a configured response and see what happens to an already-approved read or share.</p>
+  ${active?`<div class="receipt"><b>${active[1]}</b><p>${active[2]}</p></div>
+   ${result?`<div class="request-result" role="status"><b>${operation==='read'?'Read probe':'Share probe'} · ${esc(outcome)}</b><p>${esc(result.owner)} supplied this result.</p></div>`:''}
+   <div class="actions">${button('Test an approved read',()=>probe('read'))}${button('Test an approved share',()=>probe('share'),'secondary')}
+   ${level==='stop'?button('Verify the remaining access routes',()=>showRuntimeIncident(()=>showResponseExercise(back,backLabel,level,operation),null,'Back to response levels'),'secondary'):''}
+   ${button('Choose another response',select,'secondary')}</div>`:
+    choices(levels.map(([key,label,detail])=>[label,detail,()=>showResponseExercise(back,backLabel,key)]))}
+  <details class="debrief"><summary>Which systems apply the response?</summary><p>The response team decides which signal should trigger each level and configures enforcement outside the agent. This example models a customer CRM policy change for limits and suspension, and an OpenShell controller for the workspace stop. The team verifies credential and app-session results separately.</p>${protocolSourceLinks(['responseDesign','identityRisk','openshell','caep'])}</details>
+  <div class="actions">${button(backLabel,back,'secondary')}</div>`,'SIMULATED INCIDENT RESPONSE');
 }
 
 function showReadComparison(pair,back){

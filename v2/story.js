@@ -160,18 +160,21 @@ const JOURNEY_SEQUENCE = [
   {
     title: 'Open the workspace and read a source',
     stages: ['open', 'draft', 'source'],
-    comparison: 'Phone controls and OpenShell constrain the working environment. The school app and CRM govern their own resources separately. In Nova’s route, the MCP gateway handles the CRM tool call. The AI gateway shown in Architecture handles model traffic.',
+    comparison: 'Alex’s school sign-in identifies Alex. The phone’s homework profile limits the phone. Nova has a persistent agent identity and runs in a specific OpenShell workspace. The AI gateway routes the outline request, and the MCP gateway handles the tool call.',
     teen: [
-      ['Alex', 'Phone controls', 'Opens the school app under the homework agreement.'],
+      ['Phone controls', 'Alex', 'Keep the phone in homework mode under the agreement.'],
       ['Alex', 'School app', 'Signs in on the family laptop and opens the project.'],
       ['Alex', 'Museum site', 'Reads a public source and adds it to the draft.']
     ],
     agent: [
       ['Launch workflow', 'OpenShell', 'Checks the active grant and requests the sandbox.'],
       ['OpenShell', 'Nova', 'Starts the sandbox under the approved runtime policy.'],
+      ['Nova', 'AI Gateway', 'Routes the outline request to an approved model.'],
       ['Nova', 'MCP gateway', 'Requests the two customer summaries on the allowed tool route.'],
-      ['MCP gateway', 'CRM', 'Validates the MCP token and forwards the call to the CRM connector.'],
-      ['CRM', 'Nova', 'Returns the summaries via MCP. The connector uses a short-lived Vault credential, and CRM enforces record scope.']
+      ['MCP gateway', 'CRM MCP server', 'Validates the token for its endpoint and forwards the tool call.'],
+      ['CRM MCP server', 'Vault', 'The connector requests a short-lived read credential for CRM.'],
+      ['CRM MCP server', 'CRM', 'Presents the connector credential. CRM checks the actual record read.'],
+      ['CRM', 'Nova', 'Returns the permitted summaries through the tool route.']
     ]
   },
   {
@@ -284,8 +287,8 @@ const BAR_STAGES = [
    deployment:{title:'Draft from a supplied file',
     scenario:'Priya gives Nova a sanitized Harbor Bikes summary and asks for a first draft of the handover. Priya reviews and shares the result herself.',
     boundary:'Nova can use the supplied file and one approved model. The application exposes drafting only. People handle customer-record access and delivery.',
-    wiring:[['Account team','Choose the input and assign an owner to the assistant.'],
-     ['Assistant application','Use an approved model endpoint. Keep its credential in the application and record the assistant identity, input, model and outcome.'],
+    wiring:[['Account team','Record the assistant, its owner, approved model and input sources.'],
+     ['Assistant application','Keep model access in the application. Log the user, assistant, model and outcome.'],
      ['Reviewer','Check the draft before sharing it through the usual process.']],
     sources:['agentInventory']},
    value:['Security value','Track whether the pilot has a named owner, an inventory of what it can reach, and a recorded result when you try an unapproved data path.'],
@@ -293,12 +296,13 @@ const BAR_STAGES = [
    next:'Start with your existing identity and inventory. Evaluate IBM Agent Identity if you need a central record of assistants and owners across teams.'},
   {name:'Authorize',label:'Semi-Autonomous',mode:'The agent calls tools at defined steps, within limits you can test.',
    deployment:{title:'Fetch customer records within an approved task',
-    scenario:'Priya starts the handover for Harbor Bikes and Pine Studio. Nova can fetch their summaries, then prepare the draft. Morgan reviews any exact copy sent through the CRM.',
+    scenario:'Priya starts the handover for Harbor Bikes and Pine Studio. Nova builds an outline and fetches their summaries. Morgan approves the exact copy before a confidential send.',
     boundary:'Priya approves the accounts and permitted action. The CRM checks each actual read and limits the returned fields to the summary.',
-    wiring:[['Customer mission service','Record the sponsor-approved records, operation and expiry.'],
+    wiring:[['Identity provider and IBM Agent Identity','Authenticate Priya and preserve her as the subject and Nova as the actor in the configured delegated token.'],
+     ['Customer mission service','Record the sponsor-approved records, operation and expiry.'],
      ['MCP tool route','Expose the CRM summary read. A supported Vault secrets engine can issue the connector’s short-lived read credential.'],
      ['CRM and customer policy service','Evaluate and enforce the observed record request. For a sensitive share, the application binds Morgan’s approval to the exact copy and destination.']],
-    sources:['mcp','leases','ciba']},
+    sources:['oidc','exchange','mcp','leases','ciba']},
    value:['Operational value','Compare how long the same approved task takes before and after the pilot. Track manual handoffs and confirm that the out-of-scope request still fails.'],
    evidence:'Use the same allowed route to read Harbor Bikes and then request Alder Books. Save the requested records, mission version and CRM decisions. Under the original grant, only Harbor Bikes should produce a success receipt.',
    next:'Start with the business owner and CRM team. Evaluate Vault for short-lived connector access and IBM Verify if a sensitive send needs separate-device approval.'},
@@ -307,7 +311,7 @@ const BAR_STAGES = [
     scenario:'A team schedule starts Nova’s morning handover under an active, approved grant. Nova chooses the order of approved tools. Morgan still reviews the exact copy for delivery.',
     boundary:'The runtime controls reachable tools and the CRM checks each action. If monitoring flags suspicious activity, a named response owner can withdraw the grant and verify each affected control.',
     wiring:[['Launch workflow and OpenShell','Check the current grant before starting an isolated workspace. Apply the approved runtime routes.'],
-     ['Identity monitoring and response','IBM Identity Protection can supply observations. Your response policy decides when to intervene. Verify Antenna can carry configured security signals to receivers.'],
+     ['Identity monitoring and response','IBM Identity Protection can supply observations. Configure when to warn, limit actions, suspend access or stop the workspace. Verify Antenna can carry security events to configured receivers.'],
      ['Containment controller','Record mission withdrawal, workspace stop, Vault revocation, CRM session closure and queue status. Retest the old route before declaring it closed.']],
     sources:['openshell','identityRisk','leases','ssf','caep']},
    value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
