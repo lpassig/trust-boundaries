@@ -117,6 +117,9 @@ dialog.is-reference .speech-source{display:none}
 .station-open .scene-speech::before,.station-open dialog:not(.is-reference)::before{display:none}
 .object-group+.object-group{margin-top:16px}
 .object-group h3{color:var(--ink);font-size:16px;line-height:1.4;margin:0 0 8px}
+.station-evidence{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px;margin:0 0 8px;border-left:3px solid var(--accent);background:#ffffff08;font-size:14px}
+.station-evidence p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.station-evidence button{font-size:13px;min-height:40px;padding:6px 10px}
 .handoff{list-style:none;padding:0;margin:8px 0 12px}
 .handoff li{display:grid;grid-template-columns:minmax(112px,1fr) 2fr;gap:8px;padding:7px 0;border-block-end:1px solid var(--line);font-size:13px;line-height:1.4}
 .handoff b{color:var(--ink)}

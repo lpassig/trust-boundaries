@@ -307,8 +307,21 @@ function visitStation(name,fromPin=false){
  if(fromPin)$('#scene-stations [aria-pressed="true"]')?.focus({preventScroll:true});
  syncSpeech();
 }
+function currentCrmCheck(s){
+ const event=s.last;
+ return event?.request?.recordVersion===3&&event.decision?.pep==='CRM resource PEP'?event:null;
+}
+function policyStationEvidence(event){
+ const {request,decision}=event;
+ const operation={'customer.read':'Customer record read','attachment.share':'Attachment share','report.send':'Report send'}[request.operation]||request.operation;
+ const detail=request.operation==='customer.read'?customerNames(request.records):[request.file,request.recipient].filter(Boolean).join(' · ');
+ return `<div class="station-evidence"><div><b>${esc(operation)} · ${decision.result==='permit'?'allowed':'refused'}</b>
+  <p>${detail?esc(detail)+' · ':''}${esc(decision.mission_id)} v${decision.mission_version}</p></div>
+  <button type="button" class="secondary" id="station-trace">Follow the CRM decision</button></div>`;
+}
 function renderStations(s){
  const groups=StoryInteractions.roomGroups(s,mode);
+ const crmCheck=!teen()&&currentCrmCheck(s);
  const tabs=[['Room',[],'','scene-art'],...groups.map(([name,keys],index)=>[name,keys,name,`station-panel-${index}`])];
  $('#scene-stations').innerHTML=tabs.map(([label,keys,name,panel])=>{
   const tag=keys.some(key=>targetTag(key))?(selected?'Use here':'Next'):'';
@@ -318,9 +331,10 @@ function renderStations(s){
   const detail=objectDetail(key),tag=targetTag(key);
   return `<button data-object="${key}" class="${targetState(key)}" data-tip="${esc(StoryInteractions.objectDescription(mode,key))}" aria-label="${esc(objectLabel(key))}"><b aria-hidden="true">${sceneObjectIcon(roomCardIcons[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
  };
- $('#objects').innerHTML=groups.map(([name,keys],index)=>`<section class="object-group" id="station-panel-${index}" data-station-panel="${esc(name)}" aria-labelledby="station-title-${index}"><h3 id="station-title-${index}">${esc(name)}</h3><div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
+ $('#objects').innerHTML=groups.map(([name,keys],index)=>`<section class="object-group" id="station-panel-${index}" data-station-panel="${esc(name)}" aria-labelledby="station-title-${index}"><h3 id="station-title-${index}">${esc(name)}</h3>${name==='Policy checks'&&crmCheck?policyStationEvidence(crmCheck):''}<div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
  setRoomView(groups.some(([name])=>name===roomView)?roomView:'');
  $$('#scene-stations [data-station]').forEach(b=>b.onclick=()=>visitStation(b.dataset.station));
+ if(crmCheck)$('#station-trace').onclick=()=>showRequestTrace(crmCheck,close,'Back to Policy checks');
 }
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
 function render(){
