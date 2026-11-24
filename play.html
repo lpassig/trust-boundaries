@@ -3671,6 +3671,15 @@ function policyStationEvidence(event){
   <p>${detail?esc(detail)+' · ':''}${esc(decision.mission_id)} v${decision.mission_version}</p></div>
   <button type="button" class="secondary" id="station-trace">Follow the CRM decision</button></div>`;
 }
+function responseStationEvidence(s){
+ const response=s.ended?null:s.paused?['Mission paused for Priya’s review','The story simulates a Verify Identity Protection alert. The configured workspace controller stopped the bypass and paused the task.']:
+  s.last?.action==='try-private'&&s.last.decision?.result==='deny'?['CRM refused the private attachment','The mission remains active. The CRM refusal did not trigger a pause.']:
+  ['Security response','Monitoring flags risk. Configured controllers apply changes to access.'];
+ const status=response?`<b>${response[0]}</b><p>${response[1]}</p>`:
+  `<b>Mission revoked · OpenShell stopped</b><p>Vault · ${s.containment.credentialRevoked?'revocation confirmed':'revocation pending'}</p><p>CRM · ${crmSessionResult(s.containment)}</p>`;
+ return `<div class="station-evidence"><div>${status}<p>Optional simulation of SSF/CAEP delivery and a separate CRM retest.</p></div>
+  <button type="button" class="secondary" id="station-signal-test">Test signal delivery and closure</button></div>`;
+}
 function renderStations(s){
  const groups=StoryInteractions.roomGroups(s,mode);
  const crmCheck=!teen()&&currentCrmCheck(s);
@@ -3683,10 +3692,13 @@ function renderStations(s){
   const detail=objectDetail(key),tag=targetTag(key);
   return `<button data-object="${key}" class="${targetState(key)}" data-tip="${esc(StoryInteractions.objectDescription(mode,key))}" aria-label="${esc(objectLabel(key))}"><b aria-hidden="true">${sceneObjectIcon(roomCardIcons[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
  };
- $('#objects').innerHTML=groups.map(([name,keys],index)=>`<section class="object-group" id="station-panel-${index}" data-station-panel="${esc(name)}" aria-labelledby="station-title-${index}"><h3 id="station-title-${index}">${esc(name)}</h3>${name==='Policy checks'&&crmCheck?policyStationEvidence(crmCheck):''}<div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
+ const evidence={'Policy checks':crmCheck?policyStationEvidence(crmCheck):'','Signals and response':teen()?'':responseStationEvidence(s)};
+ $('#objects').innerHTML=groups.map(([name,keys],index)=>`<section class="object-group" id="station-panel-${index}" data-station-panel="${esc(name)}" aria-labelledby="station-title-${index}"><h3 id="station-title-${index}">${esc(name)}</h3>${evidence[name]||''}<div class="object-grid">${keys.map(renderObject).join('')}</div></section>`).join('');
  setRoomView(groups.some(([name])=>name===roomView)?roomView:'');
  $$('#scene-stations [data-station]').forEach(b=>b.onclick=()=>visitStation(b.dataset.station));
  if(crmCheck)$('#station-trace').onclick=()=>showRequestTrace(crmCheck,close,'Back to Policy checks');
+ const signalTest=$('#station-signal-test');
+ if(signalTest)signalTest.onclick=()=>showBuyerSignal(close,'Back to Signals and response');
 }
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
 function render(){
@@ -4182,15 +4194,15 @@ function showBuyerHandoff(receipt,origin,back){
   <p>Orchestrate coordinates the handoff. The workflow supplies the selected file, and the receiving service enforces Quill’s file-only permission.</p>
   <div class="actions">${button('Back to the buyer card',back,'secondary')}</div>`,'HANDOFF EVIDENCE');
 }
-function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
- const showStep=next=>showBuyerSignal(back,next);
+function showBuyerSignal(back,backLabel='Back to the buyer card',trial=DecisionLab.startSignalTest()){
+ const showStep=next=>showBuyerSignal(back,backLabel,next);
  const apply=reachable=>showStep(DecisionLab.applySignal(trial,reachable));
  let next;
  if(!trial.delivered)next=button('Deliver the test signal',()=>showStep(DecisionLab.deliverSignal(trial)));
  else if(trial.receiver==='pending')next=button('Run the configured receiver action',()=>apply(true))+button('Simulate CRM being unreachable',()=>apply(false),'secondary');
  else if(!trial.probe)next=button('Retest the old CRM route',()=>showStep(DecisionLab.retestSignal(trial)));
  else if(trial.probe==='unknown')next=button('Restore CRM contact and retry the receiver action',()=>apply(true));
- else next=button('Replay from the start',()=>showBuyerSignal(back),'secondary');
+ else next=button('Replay from the start',()=>showBuyerSignal(back,backLabel),'secondary');
  const receiver={pending:'Action pending',unverified:'CRM unreachable · closure unverified',closed:'CRM confirmed session closure'};
  const probe=trial.probe==='refused'?'Refused · closure verified for this route':trial.probe==='unknown'?'Unknown · closure unverified':'Retest pending';
  showReference('Did the revocation take effect?',`<p>In this simulation a source system revokes its session and sends a CAEP session-revoked signal through Verify Antenna. A configured receiver asks CRM to close the corresponding session.</p>
@@ -4199,7 +4211,7 @@ function showBuyerSignal(back,trial=DecisionLab.startSignalTest()){
    <li><b>Receiver action</b><span>${receiver[trial.receiver]}</span></li>
    <li><b>Independent retest</b><span>${probe}</span></li>
   </ol>
-  <div class="actions">${next}${button('Back to the buyer card',back,'secondary')}</div>`,'SECURITY SIGNAL EVIDENCE');
+  <div class="actions">${next}${button(backLabel,back,'secondary')}</div>`,'SECURITY SIGNAL EVIDENCE');
 }
 function showBuyerRisk(back,backLabel='Back to the buyer card',trial=StoryRules.buyerExample({stopAtEdit:true})){
  const advance=action=>showBuyerRisk(back,backLabel,StoryRules.act(trial,'agent',action).state);
