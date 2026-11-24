@@ -333,7 +333,15 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
 }
 
 .sequence-entry button { background: var(--soft); color: var(--ink); }
-.sequence-controls .architecture-nav { display: grid; grid-template-columns: auto auto minmax(0, 1fr); }
+dialog.is-reference:has(.sequence-controls) {
+  width: calc(100% - 28px);
+  max-width: 850px;
+}
+.sequence-controls .architecture-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 26rem;
+}
 .sequence-controls .architecture-nav button { padding-inline: 9px; }
 .sequence-controls label { display: block; margin-bottom: 6px; font-weight: 700; }
 .sequence-controls select {
@@ -409,6 +417,9 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
 .sequence-diagram li strong, .sequence-diagram li p > span { display: block; }
 .sequence-comparison { margin: 0 0 14px; padding: 12px; border-inline-start: 3px solid var(--accent); }
 .sequence-comparison strong { display: block; margin-bottom: 4px; }
-@media (min-width: 720px) {
+@media (min-width: 740px) {
   .sequence-pair.compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 561px) {
+  dialog[open]:not(.is-reference) { scroll-margin-block: 12px; }
 }

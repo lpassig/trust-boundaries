@@ -335,7 +335,15 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
 }
 
 .sequence-entry button { background: var(--soft); color: var(--ink); }
-.sequence-controls .architecture-nav { display: grid; grid-template-columns: auto auto minmax(0, 1fr); }
+dialog.is-reference:has(.sequence-controls) {
+  width: calc(100% - 28px);
+  max-width: 850px;
+}
+.sequence-controls .architecture-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 26rem;
+}
 .sequence-controls .architecture-nav button { padding-inline: 9px; }
 .sequence-controls label { display: block; margin-bottom: 6px; font-weight: 700; }
 .sequence-controls select {
@@ -411,8 +419,11 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
 .sequence-diagram li strong, .sequence-diagram li p > span { display: block; }
 .sequence-comparison { margin: 0 0 14px; padding: 12px; border-inline-start: 3px solid var(--accent); }
 .sequence-comparison strong { display: block; margin-bottom: 4px; }
-@media (min-width: 720px) {
+@media (min-width: 740px) {
   .sequence-pair.compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 561px) {
+  dialog[open]:not(.is-reference) { scroll-margin-block: 12px; }
 }
 
 </style></head>
@@ -3155,7 +3166,14 @@ function syncSpeech(){
  $$('#pins [data-object]').forEach(b=>b.classList.toggle('is-speaking',inline&&b.dataset.object===(active.object||active.key)));
  $$('#objects [data-object]').forEach(b=>b.classList.toggle('is-speaking',inline&&b.dataset.object===(active.tool||active.object||active.key)));
 }
-function close(){stopTrace();if(dialog.open)dialog.close();syncSpeech();const target=focusReturn?.isConnected&&focusReturn!==document.body&&!dialog.contains(focusReturn)?focusReturn:document.querySelector(`#pins [data-object="${speakingObject}"]`)||$('#next');target?.focus({preventScroll:true});}
+function close(){
+ stopTrace();
+ if(dialog.open)dialog.close();
+ syncSpeech();
+ const canRestore=focusReturn?.isConnected&&focusReturn!==document.body&&!dialog.contains(focusReturn);
+ const target=canRestore?focusReturn:document.querySelector(`#pins [data-object="${speakingObject}"]`)||$('#next');
+ target?.focus();
+}
 function modal(title,body,label='LOOK CLOSER',reference=false){
  stopTrace();
  if(!dialog.open||!dialog.contains(document.activeElement))focusReturn=document.activeElement;
@@ -3175,7 +3193,6 @@ function modal(title,body,label='LOOK CLOSER',reference=false){
  }
  if(!dialog.open)reference?dialog.showModal():dialog.show();
  syncSpeech();$('#dialog-title').focus({preventScroll:true});dialog.scrollTop=0;$('#dialog-body').scrollTop=0;$('#dialog-actions').scrollTop=0;
- if(!reference)$('.scene-frame').scrollIntoView({block:'start',behavior:'instant'});
 }
 function button(label,callback,style='primary',detail=''){
  const id='choice-'+(++button.id);button.bindings.push([id,callback]);
@@ -3184,7 +3201,15 @@ function button(label,callback,style='primary',detail=''){
 button.id=0;button.bindings=[];
 function bind(){for(const[id,callback]of button.bindings){const el=document.getElementById(id);if(el)el.onclick=callback;}button.bindings=[];}
 function choices(items){return `<div class="choices">${items.map(([title,detail,fn,style])=>button(title,fn,'choice '+(style||''),detail)).join('')}</div>`;}
-function show(title,body,label,noteKey){modal(title,body,label);bind();if(noteKey)showNote(noteKey);}
+function show(title,body,label,noteKey){
+ modal(title,body,label);
+ bind();
+ if(noteKey)showNote(noteKey);
+ $('.scene-frame').scrollIntoView({block:'start',behavior:'instant'});
+ if(window.matchMedia('(min-width: 561px)').matches){
+  dialog.scrollIntoView({block:'nearest',behavior:'instant'});
+ }
+}
 function showReference(title,body,label){modal(title,body,label,true);bind();}
 function productDetails(title,entries){
  const items=entries.map(([id,text])=>{
@@ -4571,7 +4596,6 @@ function showJourneySequence(back=close,view=mode){
   </div>
   <div id="sequence-content"></div>
   <div class="actions">${button('Back to the story',back)}</div>`, 'STORY GUIDE');
- dialog.classList.add('is-architecture');
  const phaseSelect=$('#sequence-phase');
  const update=()=>{
   const phase=JOURNEY_SEQUENCE[Number(phaseSelect.value)];

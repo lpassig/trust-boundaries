@@ -65,7 +65,14 @@ function syncSpeech(){
  $$('#pins [data-object]').forEach(b=>b.classList.toggle('is-speaking',inline&&b.dataset.object===(active.object||active.key)));
  $$('#objects [data-object]').forEach(b=>b.classList.toggle('is-speaking',inline&&b.dataset.object===(active.tool||active.object||active.key)));
 }
-function close(){stopTrace();if(dialog.open)dialog.close();syncSpeech();const target=focusReturn?.isConnected&&focusReturn!==document.body&&!dialog.contains(focusReturn)?focusReturn:document.querySelector(`#pins [data-object="${speakingObject}"]`)||$('#next');target?.focus({preventScroll:true});}
+function close(){
+ stopTrace();
+ if(dialog.open)dialog.close();
+ syncSpeech();
+ const canRestore=focusReturn?.isConnected&&focusReturn!==document.body&&!dialog.contains(focusReturn);
+ const target=canRestore?focusReturn:document.querySelector(`#pins [data-object="${speakingObject}"]`)||$('#next');
+ target?.focus();
+}
 function modal(title,body,label='LOOK CLOSER',reference=false){
  stopTrace();
  if(!dialog.open||!dialog.contains(document.activeElement))focusReturn=document.activeElement;
@@ -85,7 +92,6 @@ function modal(title,body,label='LOOK CLOSER',reference=false){
  }
  if(!dialog.open)reference?dialog.showModal():dialog.show();
  syncSpeech();$('#dialog-title').focus({preventScroll:true});dialog.scrollTop=0;$('#dialog-body').scrollTop=0;$('#dialog-actions').scrollTop=0;
- if(!reference)$('.scene-frame').scrollIntoView({block:'start',behavior:'instant'});
 }
 function button(label,callback,style='primary',detail=''){
  const id='choice-'+(++button.id);button.bindings.push([id,callback]);
@@ -94,7 +100,15 @@ function button(label,callback,style='primary',detail=''){
 button.id=0;button.bindings=[];
 function bind(){for(const[id,callback]of button.bindings){const el=document.getElementById(id);if(el)el.onclick=callback;}button.bindings=[];}
 function choices(items){return `<div class="choices">${items.map(([title,detail,fn,style])=>button(title,fn,'choice '+(style||''),detail)).join('')}</div>`;}
-function show(title,body,label,noteKey){modal(title,body,label);bind();if(noteKey)showNote(noteKey);}
+function show(title,body,label,noteKey){
+ modal(title,body,label);
+ bind();
+ if(noteKey)showNote(noteKey);
+ $('.scene-frame').scrollIntoView({block:'start',behavior:'instant'});
+ if(window.matchMedia('(min-width: 561px)').matches){
+  dialog.scrollIntoView({block:'nearest',behavior:'instant'});
+ }
+}
 function showReference(title,body,label){modal(title,body,label,true);bind();}
 function productDetails(title,entries){
  const items=entries.map(([id,text])=>{
@@ -1481,7 +1495,6 @@ function showJourneySequence(back=close,view=mode){
   </div>
   <div id="sequence-content"></div>
   <div class="actions">${button('Back to the story',back)}</div>`, 'STORY GUIDE');
- dialog.classList.add('is-architecture');
  const phaseSelect=$('#sequence-phase');
  const update=()=>{
   const phase=JOURNEY_SEQUENCE[Number(phaseSelect.value)];
