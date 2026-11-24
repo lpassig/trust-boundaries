@@ -1,6 +1,7 @@
 /* Fictional operation replay. This visualizer makes no live authentication or API calls. */
 const RequestTrace = (() => {
  const node=(label,role,status,detail,sources)=>({label,role,status,detail,...(sources?{sources}:{})});
+ const parentSourceCheck='Your parent uses their own school app account on their phone to find Ms Patel’s reply to your draft. They compare the museum link in that reply with the one you showed them and confirm it is optional.';
  const lessons={
   'read-brief':['The assignment tells Alex what to make. Tonight’s app agreement is a separate step.','The work order describes the requested job. The mission service records the limits Nova can act under.'],
   'ask-pass':['Your parent sets which apps you can use tonight. The school still decides whose files you can share.','The mission service records the accounts, deliverable and reviewer. Nova’s identity and the CRM’s own rules still apply.'],
@@ -313,6 +314,10 @@ const RequestTrace = (() => {
     ...(!teen?[node('Signal delivery and enforcement','SSF / CAEP · optional integration','reference','A configured transmitter can send a session-revoked event to registered receivers. Delivery says the event arrived. Receiver actions and the status read above provide separate evidence of what stopped.')]:[])
    ]);
   }
+  if(a==='check-extension-source'&&r.authoritative_source)return model('Follow the check on your parent’s phone.','Your parent confirmed the source. The homework agreement is still the same.',[
+   node('Check the teacher’s message',r.authoritative_source,'checked',parentSourceCheck),
+   node('Decide about the extra source','Parent · homework agreement','not-reached','Your parent still has to decide whether to allow the specific museum link.')
+  ]);
   if(a==='resolve-extension'&&e.decision?.result==='deny')return model('The amendment was refused.','A sponsor reply cannot override independent policy. The current mission and session generation are preserved.',[
    ...context(),node('Evaluate the proposed addition','Customer mission service + independent policy','blocked',e.decision.reason),node('Expanded delegation and additional read','Execution','not-reached','No scope expanded and no additional customer data was read.')
   ],{...r,decision:e.decision});
@@ -320,7 +325,7 @@ const RequestTrace = (() => {
    node('Current agreement','Independent task authority','context',`${m.id}. The starting plan was agreed on screen, before these later requests.`),
    ...(!teen?[node('Propose the permission change','Nova via the configured workflow',r.requested_operation?'checked':'reference',r.requested_operation?`The proposal asks for ${r.requested_operation} on record ${r.records[0]}. The mission service receives it for approval.`:'The story requests one summary read. This earlier record did not store the proposed operation.')]:[]),
    node(teen?s.extraSource==='museum-photo'?'One station photo':'One museum video on YouTube':'One additional customer: 789','Specific requested addition','checked','This request excludes private notes and keeps the agreed recipient.'),
-   ...(teen&&r.authoritative_source?[node('Check the teacher’s message',r.authoritative_source,'checked','Your parent uses their own school app account on their phone to find Ms Patel’s reply to your draft. They compare the museum link in that reply with the one you showed them and confirm it is optional.')]:[]),
+   ...(teen&&r.authoritative_source?[node('Earlier check of the teacher’s message',r.authoritative_source,'context',parentSourceCheck)]:[]),
    node(teen?'Your parent’s app decision':'Customer mission authority',teen?'Parent + school resource rules':'Authorized sponsor + resource constraints',a==='request-extension'?'pending':'checked',a==='request-extension'?'The reply is pending. No permission expanded.':`The authorized reply records version ${m.version}. An ordinary instruction could not make that change.`),
    node(teen?'Updated homework apps':'Refreshed delegated scope',teen?'Phone app agreement':'IBM Agent Identity + configured issuer',a==='request-extension'?'not-reached':'checked',a==='request-extension'?'Existing scope stays in force.':'Old session generation and sharing approvals are retired. The existing task is preserved and scope expands only by the approved addition.'),
    node('Read the additional material','Independent resource PEP','not-reached','Permission itself does not open the extra source or customer record. Use the approved addition next.')

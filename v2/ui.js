@@ -178,6 +178,7 @@ function showSavedReply(event){
  if(event.action==='collect-source'&&stage()==='source'&&state().source)return showSource();
  if(event.action==='add-extension'&&event.kind==='story'&&state().extensionAdded&&!state().delivered)return showExtensionRead(event);
  if(event.action==='inspect-request-source'&&!state().delivered&&!state().paused)return showRequestSource();
+ if(event.action==='check-extension-source'&&state().extensionStatus==='pending'&&!state().paused)return showParentSourceCheck();
  if(event.action==='ask-helper-account'&&event.kind==='story')return showHelperAccountReply(event);
  if(event.action==='proof-helper'&&event.kind==='story'&&state().proof)return showHelperResult();
  if(event.action==='send'&&state().delivered&&!state().ended)return showDelivery();
@@ -197,6 +198,7 @@ function perform(action,payload={}){
  else if(ev?.kind==='blocked'||ev?.kind==='refused')showActionRefusal(ev);
  else if(action==='collect-source')showSource();
  else if(action==='inspect-request-source')showRequestSource();
+ else if(action==='check-extension-source')showParentSourceCheck();
  else if(['verify-contact','verify-portal'].includes(action)&&payload.fromExtension)showExtension(ev);
  else if(action==='attach-source'||action==='approve-draft')showDraftReview();
  else if(action==='send-draft')showDraftReceipt();
@@ -1291,7 +1293,7 @@ function showParentSourceCheck(){
   <p class="eyebrow">PARENT ACCOUNT · MS PATEL’S REPLY</p>
   <p>${video?'“The museum’s <i>Our station’s story</i> video is optional. You can use it for one more detail.”':'“A station photo from the museum’s collection could make the timeline clearer. It’s optional.”'}</p>
  </div>
- <div class="actions">${button('Hear my parent’s answer',()=>perform('resolve-extension'))}${button('Back to the request',showExtension,'secondary')}</div>`,'Parent','verify-contact');
+ <div class="actions">${button('Hear my parent’s answer',()=>perform('resolve-extension'))}${button('See what happened',()=>showRequestTrace(s.last,showParentSourceCheck),'secondary')}${button('Back to the request',showExtension,'secondary')}</div>`,'Parent');
 }
 
 function novaAmendmentPreview(mission){
@@ -1311,7 +1313,7 @@ function showExtension(verification=null){
  if(!teen()&&verification?.action==='verify-contact')speakingObject='sponsorContact';
  let options;
  const watch=teen()?(s.extraSource==='museum-photo'?'Open the museum photo app':'Watch the museum video on YouTube'):'';
- if(s.extensionStatus==='pending')options=[[teen()?'Check it on my parent’s phone':'Read Priya’s reply',teen()?'Compare your link with Ms Patel’s reply in the school app.':'The original two accounts are still the only ones open.',teen()?showParentSourceCheck:()=>perform('resolve-extension'),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'You can leave this optional source out.':'Withdraw this optional request without expanding scope.',()=>perform('decline-extension')]];
+ if(s.extensionStatus==='pending')options=[[teen()?'Check it on my parent’s phone':'Read Priya’s reply',teen()?'Compare your link with Ms Patel’s reply in the school app.':'The original two accounts are still the only ones open.',()=>perform(teen()?'check-extension-source':'resolve-extension'),'good'],[teen()?'Finish without the '+e.extraNoun:'Keep the two-customer briefing',teen()?'You can leave this optional source out.':'Withdraw this optional request without expanding scope.',()=>perform('decline-extension')]];
  else if(s.extensionStatus==='approved'&&!s.extensionAdded)options=s.extensionOmitted?[[teen()?'Keep finishing without it':'Keep finishing the two-customer report',teen()?'Your timeline already has a source.':'The approved addition remains unread.',showChanges,'good'],[teen()?watch+' after all':'Request the Alder Books record after all',teen()?'Open only the source your parent agreed to.':'Request the one account Priya added.',()=>perform('add-extension')]]:[[teen()?watch:'Request the Alder Books record',teen()?'Use the museum’s link, then come back to the draft.':'Request the one account Priya added.',()=>perform('add-extension'),'good'],[teen()?'Finish without opening it':'Leave the approved addition unused',teen()?'Your parent said yes, but you don’t have to use it.':'Permission allows access; it does not require using it.',()=>perform('omit-extension')]];
  else if(s.extensionAdded)options=[['Back to the other requests',teen()?'Your extra detail is in the timeline.':'The approved addition is included.',showChanges,'good']];
  else if(s.extensionStatus==='declined')options=[['Back to the other requests',teen()?'Keep finishing the timeline.':'Keep the smaller agreed task.',showChanges,'good'],[teen()?'Reconsider the '+e.extraNoun:'Reconsider Alder Books',teen()?'You’ll still need to ask before opening it.':'No extra access until a specific amendment is approved.',()=>perform('reconsider-extension')]];
