@@ -1091,12 +1091,12 @@ const BAR_STAGES = [
     scenario:'A team schedule starts Nova’s morning handover under an active, approved grant. Nova chooses the order of approved tools. Morgan still reviews the exact copy for delivery.',
     boundary:'The runtime controls reachable tools and the CRM checks each action. If monitoring flags suspicious activity, a named response owner can withdraw the grant and verify each affected control.',
     wiring:[['Launch workflow and OpenShell','Check the current grant before starting an isolated workspace. Apply the approved runtime routes.'],
-     ['Identity monitoring and response','Verify Identity Protection can supply observations. Your response policy decides when to intervene. Verify Antenna can carry configured security signals to receivers.'],
+     ['Identity monitoring and response','IBM Identity Protection can supply observations. Your response policy decides when to intervene. Verify Antenna can carry configured security signals to receivers.'],
      ['Containment controller','Record mission withdrawal, workspace stop, Vault revocation, CRM session closure and queue status. Retest the old route before declaring it closed.']],
     sources:['openshell','identityRisk','leases','ssf','caep']},
    value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
    evidence:'Run one response drill. Save the alert, the controller results and the fresh CRM retest. Repeat with CRM unreachable and record that part as unverified.',
-   next:'Start with one alert and a response owner. Evaluate OpenShell for the workspace boundary and Verify Identity Protection and Verify Antenna where you need identity observations or signal delivery.'}
+   next:'Start with one alert and a response owner. Evaluate OpenShell for the workspace boundary and IBM Identity Protection and Verify Antenna where you need identity observations or signal delivery.'}
 ];
 
 const PRACTICE_CASE = {
@@ -1824,7 +1824,7 @@ const StoryInteractions = (() => {
    mcpGateway:'The configured MCP gateway validates the request at its own endpoint and forwards the allowed tool call. CRM separately enforces which records come back.',
    vaultControl:'HashiCorp Vault can issue a short-lived read credential to the connector. The CRM checks which customer records the connector may read and closes its own task session.',
    crmAttachment:'Luca’s upload arrived through the customer portal. Nova reads it as source material. The mission record and CRM policy govern what Nova can send.',
-   riskMonitor:'IBM Verify Identity Protection (AuthMind) can observe identity activity from connected systems and flag unusual access for investigation.',
+   riskMonitor:'IBM Identity Protection (AuthMind) can observe identity activity from connected systems and flag unusual access for investigation.',
    antenna:'IBM Verify Antenna can exchange security events using the OpenID Shared Signals Framework. A configured receiver handles the event and calls the appropriate control.',
    controllers:'Configured controllers stop the OpenShell workspace, revoke the Vault lease, close the CRM session and check queued work. Each control supplies its own evidence.',
    source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
@@ -1912,7 +1912,7 @@ const StoryInteractions = (() => {
    orchestrate:{name:'IBM watsonx Orchestrate',kind:'Workflow',point:[524,401],object:'phone',tool:'orchestrate'},
    aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
    mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
-   riskMonitor:{name:'IBM Verify Identity Protection',kind:'Monitoring',point:[812,245],tool:'riskMonitor'},
+   riskMonitor:{name:'IBM Identity Protection',kind:'Monitoring',point:[812,245],tool:'riskMonitor'},
    antenna:{name:'IBM Verify Antenna',kind:'Shared signals',point:[812,245],tool:'antenna'},
    controllers:{name:'Response controllers',kind:'Enforcement',point:[812,245],tool:'controllers'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
@@ -2367,7 +2367,7 @@ const RequestTrace = (() => {
   ]);
   if(a==='bypass-notes'||a==='shortcut')return model('A known boundary was deliberately bypassed.','The ordinary refusal did not suspend the task. This later bypass attempt did.',[
    ...context(),node('Known refusal','Resource policy','context','The private-note request had already been refused.'),
-   ...(!teen?[node('Observe unusual identity activity','Verify Identity Protection (AuthMind)','reference','Simulated alert from connected access activity. The configured response policy uses the alert to pause this task session.',['identityRisk'])]:[]),
+   ...(!teen?[node('Observe unusual identity activity','IBM Identity Protection (AuthMind)','reference','Simulated alert from connected access activity. The configured response policy uses the alert to pause this task session.',['identityRisk'])]:[]),
    node('Alternate access attempt','Trusted enforcement controller','blocked','The deliberate bypass is stopped before a protected effect. Independent review can recover only the current bounded task.'),node('Disclosure','External effect','not-reached','No private notes were sent.')
   ]);
   if(['review','resolve-review'].includes(a)){
@@ -2579,15 +2579,15 @@ const NOVA_PRODUCTS = [
   },
   {
     "id": "risk",
-    "name": "IBM Verify Identity Protection (AuthMind)",
+    "name": "IBM Identity Protection (AuthMind)",
     "role": "Agent discovery and runtime identity observation",
-    "how": "Connected identity activity can help security teams discover agents and investigate unusual access. Nova’s optional detour illustrates a risk observation passed to a configured response policy.",
-    "limit": "The observation and response are simulated. The deployed response policy chooses the action, and the affected controllers apply and verify it.",
+    "how": "IBM previously called this product IBM Verify Identity Protection. Connected identity activity can help security teams discover agents and investigate unusual access. Nova’s optional detour illustrates a risk observation passed to a configured response policy.",
+    "limit": "Nova’s pause uses a simulated workspace controller. In a deployment, the response policy chooses the action and each affected controller reports its own result. IBM lists built-in SSF receivers and remediation playbooks in IBM Verify and IBM Agent Identity as private preview.",
     "standards": [
       "Identity activity",
       "Risk / remediation input"
     ],
-    "url": "https://www.ibm.com/products/verify-identity-protection",
+    "url": "https://www.ibm.com/products/identity-protection",
     "status": "Documented identity observability; the game illustrates a configured response"
   }
 ];
@@ -2810,8 +2810,8 @@ const NOVA_BUYER_NEEDS = [
   },
   {
     question:'Spot unusual agent activity and decide when to intervene',
-    product:'IBM Verify Identity Protection (AuthMind)',
-    fit:'Evaluate it when security teams need to connect observed identity activity to agents, resources and potential policy violations.',
+    product:'IBM Identity Protection (AuthMind)',
+    fit:'Evaluate it when security teams need to connect observed identity activity to agents, resources and potential policy violations. IBM previously called it IBM Verify Identity Protection.',
     example:'CRM refuses a private attachment. A later event in the story raises an identity alert, and a configured response policy pauses Nova’s task session.',
     pilot:{secondary:true,label:'We need to spot unusual agent access',evidence:'risk',evidenceLabel:'Compare a routine refusal and a risk alert',
       outcome:'Connect identity activity to the agent and the resource so the security team can investigate unusual access.',
@@ -2821,7 +2821,7 @@ const NOVA_BUYER_NEEDS = [
         success:'The risky activity is attributed to the expected agent and target. The response owner can show the result for that task session.',
         failure:'A missing activity source leaves detection coverage unverified. An alert with a missing controller result leaves the response unverified.',
         evidence:'Save the agent and resource references, source event and alert IDs, and the separate response result.'}},
-    sources:[['IBM Verify Identity Protection product reference','https://www.ibm.com/products/verify-identity-protection'],['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
+    sources:[['IBM Identity Protection product reference','https://www.ibm.com/products/identity-protection'],['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities'],['IBM’s SSF and playbooks private preview','https://community.ibm.com/community/user/blogs/dinesh-jain/2026/11/24/agent-risk-eap-blog']]
   },
   {
     question:'Share a risk or session alert with other systems',
@@ -2917,7 +2917,8 @@ const ArchitectureReference = (() => {
    summary:'Checks the actual read, attachment or send at the point of use and owns the result.',
    detail:'Its enforcement point observes the operation, records, file revision and recipient. It enforces hard data restrictions and compares each confidential share with a current, single-use approval.'
   },
-  risk:{product:'risk',kind:'Optional product input',summary:'Can supply identity risk observations to a configured response policy.'},
+  risk:{product:'risk',kind:'Optional product input',summary:'Can supply identity risk observations to a configured response policy.',
+   sources:[['IBM’s SSF and playbooks private preview','https://community.ibm.com/community/user/blogs/dinesh-jain/2026/11/24/agent-risk-eap-blog']]},
   antenna:{product:'antenna',kind:'Optional integration',summary:'Exchanges security signals with configured systems. Each receiver applies its own control.'},
   controllers:{
    name:'Runtime, Vault, CRM and queue controllers',kind:'Configured response',
@@ -3532,7 +3533,7 @@ function showActionRefusal(event){
    :'The customer policy service evaluated the attachment. The approved mission covers the summary, and CRM applies the separate rule that protects private notes.'
   :'';
  const risk=!teen()&&paused&&event.request?.operation==='boundary.bypass'
-  ?`<div class="request-result"><b>Identity alert · Verify Identity Protection (AuthMind)</b><p>In this simulation, connected activity shows Nova tried a second access path after the CRM refusal. The configured response policy pauses the task session and sends it for Priya’s review.</p></div>`:'';
+  ?`<div class="request-result"><b>Identity alert · IBM Identity Protection (AuthMind)</b><p>In this simulation, connected activity shows Nova tried a second access path after the CRM refusal. The configured response policy pauses the task session and sends it for Priya’s review.</p></div>`:'';
  show(event.title,`<p>${esc(event.text)}</p>${note?`<div class="request-result"><b>Who applied the rule?</b><p>${esc(note)}</p></div>`:''}${risk}<div class="actions">
   ${button(label,continuation)}
   ${state().last===event?button(teen()?'See what happened':'Follow this request',()=>showRequestTrace(event,()=>showReply(event)),'secondary'):''}
@@ -3621,7 +3622,7 @@ const novaRoomLabels={
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
  verify:['IBM Verify','Separate-device review'],orchestrate:['IBM watsonx Orchestrate','Coordinates the handoff'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
- vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Verify Identity Protection (AuthMind)','Optional risk detection'],
+ vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Identity Protection (AuthMind)','Optional risk detection'],
  antenna:['IBM Verify Antenna','Optional SSF and CAEP integration'],
  controllers:['Runtime, Vault, CRM and queue controllers','Configured response and evidence'],
  laptop:['Customer CRM · resource PEP','Enforces record and send rules'],source:['CRM tool','MCP server · exposes the read'],
@@ -3684,7 +3685,7 @@ function policyStationEvidence(event){
   <button type="button" class="secondary" id="station-trace">Follow the CRM decision</button></div>`;
 }
 function responseStationEvidence(s){
- const response=s.ended?null:s.paused?['Mission paused for Priya’s review','The story simulates a Verify Identity Protection alert. The configured workspace controller stopped the bypass and paused the task.']:
+ const response=s.ended?null:s.paused?['Mission paused for Priya’s review','The story simulates an IBM Identity Protection alert. The configured workspace controller stopped the bypass and paused the task.']:
   s.last?.action==='try-private'&&s.last.decision?.result==='deny'?['CRM refused the private attachment','The mission remains active. The CRM refusal did not trigger a pause.']:
   ['Security response','Monitoring flags risk. Configured controllers apply changes to access.'];
  const status=response?`<b>${response[0]}</b><p>${response[1]}</p>`:
@@ -4234,7 +4235,7 @@ function showBuyerRisk(back,backLabel='Back to the buyer card',trial=StoryRules.
  showReference('What caused the task to pause?',`<p>Compare a normal refusal in Nova’s customer app with a later alert from identity monitoring. The activity and response are simulated.</p>
   <ol class="lab-summary" aria-label="Application, alert and response">
    <li><b>CRM enforcement</b><span>${refusal?'CRM refused the private attachment before delivery.':'Awaiting the test request.'}</span></li>
-   <li><b>Verify Identity Protection (AuthMind)</b><span>${alert?'The simulated alert identifies Nova’s unusual access activity involving CRM.':refusal?'This routine refusal produces no alert in the example.':'Awaiting activity.'}</span></li>
+   <li><b>IBM Identity Protection (AuthMind)</b><span>${alert?'The simulated alert identifies Nova’s unusual access activity involving CRM.':refusal?'This routine refusal produces no alert in the example.':'Awaiting activity.'}</span></li>
    <li><b>Configured response policy</b><span>${alert?'The task session was paused. Priya’s review is required before bounded access resumes.':'The approved task remains active.'}</span></li>
   </ol>
   ${alert?`<p class="small-print">Save the alert and the controller’s pause result as separate evidence. The test verifies a task pause. Credential revocation and app-session closure each need their own checks.</p>`:''}
@@ -4294,7 +4295,7 @@ function showIntro(){
  showReference('Trust Boundaries',
   `<p>Pick a work problem for a quick example, or play a story about who can approve a change, what you can share, and how you know access has ended. Each story takes about 15 minutes.</p>
   <div class="launch-choices">${choices([
-   ['Start with a work problem','See what a product can do and what to test first.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
+   ['Start with a work problem','Find the right product or team, then try a first test.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],

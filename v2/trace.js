@@ -360,7 +360,7 @@ const RequestTrace = (() => {
   ]);
   if(a==='bypass-notes'||a==='shortcut')return model('A known boundary was deliberately bypassed.','The ordinary refusal did not suspend the task. This later bypass attempt did.',[
    ...context(),node('Known refusal','Resource policy','context','The private-note request had already been refused.'),
-   ...(!teen?[node('Observe unusual identity activity','Verify Identity Protection (AuthMind)','reference','Simulated alert from connected access activity. The configured response policy uses the alert to pause this task session.',['identityRisk'])]:[]),
+   ...(!teen?[node('Observe unusual identity activity','IBM Identity Protection (AuthMind)','reference','Simulated alert from connected access activity. The configured response policy uses the alert to pause this task session.',['identityRisk'])]:[]),
    node('Alternate access attempt','Trusted enforcement controller','blocked','The deliberate bypass is stopped before a protected effect. Independent review can recover only the current bounded task.'),node('Disclosure','External effect','not-reached','No private notes were sent.')
   ]);
   if(['review','resolve-review'].includes(a)){

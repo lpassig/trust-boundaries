@@ -307,12 +307,12 @@ const BAR_STAGES = [
     scenario:'A team schedule starts Nova’s morning handover under an active, approved grant. Nova chooses the order of approved tools. Morgan still reviews the exact copy for delivery.',
     boundary:'The runtime controls reachable tools and the CRM checks each action. If monitoring flags suspicious activity, a named response owner can withdraw the grant and verify each affected control.',
     wiring:[['Launch workflow and OpenShell','Check the current grant before starting an isolated workspace. Apply the approved runtime routes.'],
-     ['Identity monitoring and response','Verify Identity Protection can supply observations. Your response policy decides when to intervene. Verify Antenna can carry configured security signals to receivers.'],
+     ['Identity monitoring and response','IBM Identity Protection can supply observations. Your response policy decides when to intervene. Verify Antenna can carry configured security signals to receivers.'],
      ['Containment controller','Record mission withdrawal, workspace stop, Vault revocation, CRM session closure and queue status. Retest the old route before declaring it closed.']],
     sources:['openshell','identityRisk','leases','ssf','caep']},
    value:['Cost and revenue value','Use a business measure such as cost per completed task or downtime. Compare it with the baseline and record how long verified containment takes.'],
    evidence:'Run one response drill. Save the alert, the controller results and the fresh CRM retest. Repeat with CRM unreachable and record that part as unverified.',
-   next:'Start with one alert and a response owner. Evaluate OpenShell for the workspace boundary and Verify Identity Protection and Verify Antenna where you need identity observations or signal delivery.'}
+   next:'Start with one alert and a response owner. Evaluate OpenShell for the workspace boundary and IBM Identity Protection and Verify Antenna where you need identity observations or signal delivery.'}
 ];
 
 const PRACTICE_CASE = {

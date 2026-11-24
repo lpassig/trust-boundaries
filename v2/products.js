@@ -114,15 +114,15 @@ const NOVA_PRODUCTS = [
   },
   {
     "id": "risk",
-    "name": "IBM Verify Identity Protection (AuthMind)",
+    "name": "IBM Identity Protection (AuthMind)",
     "role": "Agent discovery and runtime identity observation",
-    "how": "Connected identity activity can help security teams discover agents and investigate unusual access. Nova’s optional detour illustrates a risk observation passed to a configured response policy.",
-    "limit": "The observation and response are simulated. The deployed response policy chooses the action, and the affected controllers apply and verify it.",
+    "how": "IBM previously called this product IBM Verify Identity Protection. Connected identity activity can help security teams discover agents and investigate unusual access. Nova’s optional detour illustrates a risk observation passed to a configured response policy.",
+    "limit": "Nova’s pause uses a simulated workspace controller. In a deployment, the response policy chooses the action and each affected controller reports its own result. IBM lists built-in SSF receivers and remediation playbooks in IBM Verify and IBM Agent Identity as private preview.",
     "standards": [
       "Identity activity",
       "Risk / remediation input"
     ],
-    "url": "https://www.ibm.com/products/verify-identity-protection",
+    "url": "https://www.ibm.com/products/identity-protection",
     "status": "Documented identity observability; the game illustrates a configured response"
   }
 ];
@@ -345,8 +345,8 @@ const NOVA_BUYER_NEEDS = [
   },
   {
     question:'Spot unusual agent activity and decide when to intervene',
-    product:'IBM Verify Identity Protection (AuthMind)',
-    fit:'Evaluate it when security teams need to connect observed identity activity to agents, resources and potential policy violations.',
+    product:'IBM Identity Protection (AuthMind)',
+    fit:'Evaluate it when security teams need to connect observed identity activity to agents, resources and potential policy violations. IBM previously called it IBM Verify Identity Protection.',
     example:'CRM refuses a private attachment. A later event in the story raises an identity alert, and a configured response policy pauses Nova’s task session.',
     pilot:{secondary:true,label:'We need to spot unusual agent access',evidence:'risk',evidenceLabel:'Compare a routine refusal and a risk alert',
       outcome:'Connect identity activity to the agent and the resource so the security team can investigate unusual access.',
@@ -356,7 +356,7 @@ const NOVA_BUYER_NEEDS = [
         success:'The risky activity is attributed to the expected agent and target. The response owner can show the result for that task session.',
         failure:'A missing activity source leaves detection coverage unverified. An alert with a missing controller result leaves the response unverified.',
         evidence:'Save the agent and resource references, source event and alert IDs, and the separate response result.'}},
-    sources:[['IBM Verify Identity Protection product reference','https://www.ibm.com/products/verify-identity-protection'],['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
+    sources:[['IBM Identity Protection product reference','https://www.ibm.com/products/identity-protection'],['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities'],['IBM’s SSF and playbooks private preview','https://community.ibm.com/community/user/blogs/dinesh-jain/2026/11/24/agent-risk-eap-blog']]
   },
   {
     question:'Share a risk or session alert with other systems',

@@ -74,7 +74,8 @@ const ArchitectureReference = (() => {
    summary:'Checks the actual read, attachment or send at the point of use and owns the result.',
    detail:'Its enforcement point observes the operation, records, file revision and recipient. It enforces hard data restrictions and compares each confidential share with a current, single-use approval.'
   },
-  risk:{product:'risk',kind:'Optional product input',summary:'Can supply identity risk observations to a configured response policy.'},
+  risk:{product:'risk',kind:'Optional product input',summary:'Can supply identity risk observations to a configured response policy.',
+   sources:[['IBM’s SSF and playbooks private preview','https://community.ibm.com/community/user/blogs/dinesh-jain/2026/11/24/agent-risk-eap-blog']]},
   antenna:{product:'antenna',kind:'Optional integration',summary:'Exchanges security signals with configured systems. Each receiver applies its own control.'},
   controllers:{
    name:'Runtime, Vault, CRM and queue controllers',kind:'Configured response',

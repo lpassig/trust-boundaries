@@ -329,7 +329,7 @@ test('Nova’s recovery stays paused when current policy is unavailable or the a
  s=act(s,'try-private').state;
  assert(!T.build(s,'agent').nodes.some(node=>node.sources?.includes('identityRisk')));
  s=act(s,'bypass-notes').state;
- assert(T.build(s,'agent').nodes.some(node=>node.role==='Verify Identity Protection (AuthMind)'&&node.status==='reference'));
+ assert(T.build(s,'agent').nodes.some(node=>node.role==='IBM Identity Protection (AuthMind)'&&node.status==='reference'));
  s=run(s,'review');
  for(const mutate of [x=>x.authority.available=false,x=>x.authority.resource.records=['123']]){
   const before=structuredClone(s);

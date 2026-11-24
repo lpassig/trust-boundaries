@@ -168,7 +168,7 @@ function showActionRefusal(event){
    :'The customer policy service evaluated the attachment. The approved mission covers the summary, and CRM applies the separate rule that protects private notes.'
   :'';
  const risk=!teen()&&paused&&event.request?.operation==='boundary.bypass'
-  ?`<div class="request-result"><b>Identity alert · Verify Identity Protection (AuthMind)</b><p>In this simulation, connected activity shows Nova tried a second access path after the CRM refusal. The configured response policy pauses the task session and sends it for Priya’s review.</p></div>`:'';
+  ?`<div class="request-result"><b>Identity alert · IBM Identity Protection (AuthMind)</b><p>In this simulation, connected activity shows Nova tried a second access path after the CRM refusal. The configured response policy pauses the task session and sends it for Priya’s review.</p></div>`:'';
  show(event.title,`<p>${esc(event.text)}</p>${note?`<div class="request-result"><b>Who applied the rule?</b><p>${esc(note)}</p></div>`:''}${risk}<div class="actions">
   ${button(label,continuation)}
   ${state().last===event?button(teen()?'See what happened':'Follow this request',()=>showRequestTrace(event,()=>showReply(event)),'secondary'):''}
@@ -257,7 +257,7 @@ const novaRoomLabels={
  registries:['Agent registries','IBM Agent Identity · Vault'],phone:['Workspace controls','OpenShell · runs and restricts Nova'],
  verify:['IBM Verify','Separate-device review'],orchestrate:['IBM watsonx Orchestrate','Coordinates the handoff'],
  aiGateway:['AI Gateway','Routes model requests'],mcpGateway:['MCP gateway','Checks and forwards tool calls'],
- vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Verify Identity Protection (AuthMind)','Optional risk detection'],
+ vaultControl:['HashiCorp Vault','Issues and revokes the tool credential'],riskMonitor:['IBM Identity Protection (AuthMind)','Optional risk detection'],
  antenna:['IBM Verify Antenna','Optional SSF and CAEP integration'],
  controllers:['Runtime, Vault, CRM and queue controllers','Configured response and evidence'],
  laptop:['Customer CRM · resource PEP','Enforces record and send rules'],source:['CRM tool','MCP server · exposes the read'],
@@ -320,7 +320,7 @@ function policyStationEvidence(event){
   <button type="button" class="secondary" id="station-trace">Follow the CRM decision</button></div>`;
 }
 function responseStationEvidence(s){
- const response=s.ended?null:s.paused?['Mission paused for Priya’s review','The story simulates a Verify Identity Protection alert. The configured workspace controller stopped the bypass and paused the task.']:
+ const response=s.ended?null:s.paused?['Mission paused for Priya’s review','The story simulates an IBM Identity Protection alert. The configured workspace controller stopped the bypass and paused the task.']:
   s.last?.action==='try-private'&&s.last.decision?.result==='deny'?['CRM refused the private attachment','The mission remains active. The CRM refusal did not trigger a pause.']:
   ['Security response','Monitoring flags risk. Configured controllers apply changes to access.'];
  const status=response?`<b>${response[0]}</b><p>${response[1]}</p>`:
@@ -870,7 +870,7 @@ function showBuyerRisk(back,backLabel='Back to the buyer card',trial=StoryRules.
  showReference('What caused the task to pause?',`<p>Compare a normal refusal in Nova’s customer app with a later alert from identity monitoring. The activity and response are simulated.</p>
   <ol class="lab-summary" aria-label="Application, alert and response">
    <li><b>CRM enforcement</b><span>${refusal?'CRM refused the private attachment before delivery.':'Awaiting the test request.'}</span></li>
-   <li><b>Verify Identity Protection (AuthMind)</b><span>${alert?'The simulated alert identifies Nova’s unusual access activity involving CRM.':refusal?'This routine refusal produces no alert in the example.':'Awaiting activity.'}</span></li>
+   <li><b>IBM Identity Protection (AuthMind)</b><span>${alert?'The simulated alert identifies Nova’s unusual access activity involving CRM.':refusal?'This routine refusal produces no alert in the example.':'Awaiting activity.'}</span></li>
    <li><b>Configured response policy</b><span>${alert?'The task session was paused. Priya’s review is required before bounded access resumes.':'The approved task remains active.'}</span></li>
   </ol>
   ${alert?`<p class="small-print">Save the alert and the controller’s pause result as separate evidence. The test verifies a task pause. Credential revocation and app-session closure each need their own checks.</p>`:''}
@@ -930,7 +930,7 @@ function showIntro(){
  showReference('Trust Boundaries',
   `<p>Pick a work problem for a quick example, or play a story about who can approve a change, what you can share, and how you know access has ended. Each story takes about 15 minutes.</p>
   <div class="launch-choices">${choices([
-   ['Start with a work problem','See what a product can do and what to test first.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
+   ['Start with a work problem','Find the right product or team, then try a first test.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],
