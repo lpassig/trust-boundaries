@@ -272,7 +272,7 @@ const NOVA_BUYER_NEEDS = [
     pilot:{label:'Someone needs to approve sensitive sends',evidence:'verify',evidenceLabel:'Test the old approval',
       outcome:'Morgan can review this send on a separate device. IBM Verify can confirm Morgan’s identity and collect the response.',
       integration:'Connect your application to IBM Verify with CIBA. Your application links the response to the exact document and recipient. CRM checks that link when sending.',
-      checklist:{prerequisite:'A CIBA-enabled Verify client, an enrolled test reviewer, and a staging send endpoint that checks the exact approval.',
+      checklist:{prerequisite:'A CIBA-enabled Verify client configured for poll mode, an enrolled test reviewer, and a staging send endpoint that checks the exact approval.',
         owner:'The identity team configures Verify. The application team binds the response to the revision and recipient. The CRM team enforces the binding.',
         success:'Approve the edited copy on the test reviewer’s device and verify that CRM delivers that revision to the named test recipient.',
         failure:'Approve a test report, edit one sentence, then try to send it using the first approval. The app should refuse, and no copy should be delivered.',

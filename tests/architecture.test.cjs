@@ -39,6 +39,17 @@ test('example decision binds the PEP observation to the approval and live versio
  assert.equal(response.enforcement.expected_session_generation,request.identity.session_generation);
 });
 
+test('technical sequences distinguish the owners of tokens, approvals and operations',()=>{
+ const {read,send}=architecture.flows;
+ const readActors=read.steps.map(([actor])=>actor);
+ const issuer=readActors.indexOf('mcpIssuer');
+ assert.deepEqual(readActors.slice(issuer-3,issuer+3),['launchWorkflow','openshell','mcpClient','mcpIssuer','mcpGateway','mcpTool']);
+ assert(read.steps[issuer-1][2].includes('protectedResource'));
+ assert(read.steps[issuer][2].includes('resource'));
+ assert.deepEqual(send.steps.map(([actor])=>actor),['reviewer','verify','approvalWorkflow','crm','authorization','crm']);
+ assert(send.steps.find(([actor])=>actor==='authorization')[2].includes('authzen'));
+});
+
 test('deployment options refer to published protocol sources',()=>{
  const sources=vm.runInNewContext(fs.readFileSync(require.resolve('../assets/protocols.js'),'utf8')+'\nPROTOCOL_SOURCES');
  assert.deepEqual(architecture.deploymentOptions.map(option=>option.id),['scim','registration','spiffe','transaction','a2a']);

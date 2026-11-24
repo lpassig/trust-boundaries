@@ -406,10 +406,10 @@ const RequestTrace = (() => {
       const status=auth?'checked':'reference';
       const resource=auth?.resource||'the MCP resource';
       nodes.push(
-       node('Discover the authorization server','MCP protected resource metadata · RFC 9728',status,
+       node('Discover the authorization server','Nova’s MCP client · RFC 9728',status,
         auth?`Nova’s MCP client reads protected resource metadata for ${resource}. Its authorization_servers entry points to ${auth.authorization_server} in this example.`
          :'In this example path, a client reads the MCP resource metadata to find its authorization server. This read has no saved discovery evidence.', ['protectedResource','mcp']),
-       node('Request a token for the MCP resource','Authorization server · OAuth 2.1 profile · RFC 8707',status,
+       node('Request a token for the MCP resource','OAuth authorization server · RFC 8707',status,
         auth?`The client requests resource=${resource} in its authorization and token requests. The issuer returns an access token for ${auth.token_audience}.`
          :'The MCP client requests an access token for the intended resource. This read has no saved token-audience evidence.', ['resource','mcp','oauth21'])
       );

@@ -1,10 +1,10 @@
 /* Illustrative roles and request paths. Browsing these examples does not play either story. */
 const ArchitectureReference = (() => {
  const groups = [
-  ['People and authority', ['people','verify','iai','mission']],
-  ['Where Nova works', ['orchestrate','openshell','vault']],
-  ['Model and tool connections', ['aiGateway','mcpGateway','mcpTool']],
-  ['Decisions and effects', ['policyContext','authorization','crm']],
+  ['People and authority', ['people','reviewer','verify','iai','mission']],
+  ['Where Nova works', ['orchestrate','launchWorkflow','openshell','vault']],
+  ['Model and tool connections', ['aiGateway','mcpClient','mcpIssuer','mcpGateway','mcpTool']],
+  ['Decisions and effects', ['approvalWorkflow','policyContext','authorization','crm']],
   ['Signals and response', ['risk','antenna','controllers']]
  ];
  const components = {
@@ -13,10 +13,20 @@ const ArchitectureReference = (() => {
    summary:'Priya sponsors the work. Nova prepares the handover. Morgan approves each exact share. Pip formats only the file it receives.',
    detail:'The sponsor and reviewer have different responsibilities. Nova and Pip are distinct identities. The CRM owns its data and delivery rules.'
   },
+  reviewer:{
+   name:'Morgan · reviewer',kind:'Human approver',
+   summary:'Reviews and approves each exact copy for its intended recipient.',
+   detail:'Priya approves the task scope. Morgan’s decision applies to one share of the displayed report.'
+  },
   verify:{product:'verify',kind:'Product',summary:'Confirms who the human is. A configured CIBA flow can collect consent on a separate device.'},
   iai:{product:'iai',kind:'Product',summary:'Identifies the agent and whose authority it is acting under.'},
   mission:{product:'mission',kind:'Customer integration',summary:'Records the task, allowed accounts, destination and current version outside Nova’s instructions.'},
   orchestrate:{product:'orchestrate',kind:'Product',summary:'Coordinates the work. A configured workflow can assign the formatting step to Pip.'},
+  launchWorkflow:{
+   name:'Account team’s launch workflow',kind:'Customer integration',
+   summary:'Checks the approved mission and requests a workspace as an authorized OpenShell operator.',
+   detail:'The team implements the mission check. The OpenShell Gateway separately authorizes the lifecycle operation and provisions the sandbox through the compute driver.'
+  },
   openshell:{product:'openshell',kind:'Runtime',summary:'Runs Nova in an isolated workspace and controls contact with files and services.'},
   vault:{product:'vault',kind:'Product',summary:'Checks access to its own credential paths. Supplies short-lived access for a configured target.'},
   aiGateway:{
@@ -24,6 +34,16 @@ const ArchitectureReference = (() => {
    summary:'Integrates models from multiple providers and lets operators configure model routing.',
    detail:'It can also discover and import external agents from supported platforms. This is a separate role from checking the records in Nova’s CRM request.',
    sources:[['Model integration and routing','https://www.ibm.com/products/watsonx-orchestrate/developers'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
+  },
+  mcpClient:{
+   name:'Nova’s MCP client',kind:'Client running inside OpenShell',
+   summary:'Discovers the issuer for the protected HTTP resource and requests an access token for that resource.',
+   detail:'The client presents the token to the MCP gateway. The connector uses separate authorization for downstream resources.'
+  },
+  mcpIssuer:{
+   name:'OAuth authorization server',kind:'Configured identity service',
+   summary:'Issues an access token intended for the client-facing MCP resource.',
+   detail:'The issuer and MCP resource are distinct protocol roles. The example leaves the issuer product to the deployment.'
   },
   mcpGateway:{
    name:'MCP gateway',kind:'Configured for Nova’s CRM reads',
@@ -36,6 +56,11 @@ const ArchitectureReference = (() => {
    summary:'The MCP server exposes an operation Nova can call to fetch approved account records.',
    detail:'The tool carries the request to CRM. The current work order and customer data policy determine which records CRM can return.',
    sources:[['MCP tools specification','https://modelcontextprotocol.io/specification/latest/server/tools']]
+  },
+  approvalWorkflow:{
+   name:'Customer approval workflow',kind:'Customer application control',
+   summary:'Records Morgan’s decision for the exact transaction the workflow displayed.',
+   detail:'The application owns the approval record and its bindings, expiry and single-use semantics. A configured Verify flow can authenticate the reviewer and collect consent on a separate device.'
   },
   policyContext:{
    name:'Policy information point (PIP)',kind:'Architecture role',
@@ -64,15 +89,17 @@ const ArchitectureReference = (() => {
    premise:'Priya asks for a handover on Harbor Bikes and Pine Studio.',
    steps:[
     ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
-    ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
-    ['openshell','Run Nova’s MCP client inside the governed workspace.'],
-    ['mcpGateway','The client discovers the authorization server from the protected MCP resource metadata (RFC 9728), then requests a token for that MCP resource (RFC 8707).',['mcp','protectedResource','resource']],
+    ['iai','Use Nova’s registered agent identity and the delegation for this task.'],
+    ['launchWorkflow','Check the active mission and request a sandbox.'],
+    ['openshell','Verify isolation, then run Nova’s MCP client inside the governed workspace.'],
+    ['mcpClient','Discover the issuer from the protected MCP resource metadata. Request an access token with the MCP endpoint as the resource.',['mcp','protectedResource','resource']],
+    ['mcpIssuer','Issue the access token for the client-facing MCP resource.',['mcp','oauth21','resource']],
     ['mcpGateway','The configured gateway validates the client’s access token and forwards the tool call using separate authorization for the MCP server hop.',['mcp']],
     ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.',['mcp']],
     ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.',['leases']],
     ['crm','The CRM enforcement point (PEP) verifies the caller and observes the actual record IDs and read operation.'],
     ['policyContext','Supply current identity, mission and resource attributes from authoritative systems.'],
-    ['authorization','Evaluate whether the current policy and mission permit the observed read.'],
+    ['authorization','Evaluate whether the current policy and mission permit the observed read.',['authzen']],
     ['crm','Enforce the result. Return only permitted fields and record the outcome.']
    ],
    result:'Nova reads the two accounts and can cite them in the handover.'
@@ -94,10 +121,12 @@ const ArchitectureReference = (() => {
    title:'Approve and send a report',
    premise:'Morgan may approve a review copy for feedback and later a separate final copy.',
    steps:[
-    ['people','Morgan sees the file, revision, accounts and intended recipient.'],
+    ['reviewer','Review the file, revision, accounts and intended recipient.'],
     ['verify','A configured CIBA flow authenticates Morgan out of band. The workflow correlates the authentication result with its own immutable transaction preview.',['ciba']],
-    ['authorization','Bind the recorded approval to the actor, file digest, recipient, record set, mission and policy versions, session generation, expiry and one-use ID. The game uses file revision as a proxy for the digest.'],
-    ['crm','Rebuild the action from the actual request. Atomically consume the matching approval with a durable send intent and record the outcome. Make retries idempotent.']
+    ['approvalWorkflow','Bind the recorded approval to the actor, file digest, recipient, record set, mission and policy versions, session generation, expiry and one-use ID. The game uses file revision as a proxy for the digest.'],
+    ['crm','Build the action from the actual send request and submit it for authorization.'],
+    ['authorization','Evaluate the observed send against current authority, resource policy and the matching approval.',['authzen']],
+    ['crm','Enforce the current decision. Consume the matching approval with a durable send intent and record the outcome. Make retries idempotent.']
    ],
    result:'A changed revision, destination or expired approval blocks the send. The application must handle duplicate requests and ambiguous downstream acknowledgements.'
   },
@@ -212,8 +241,10 @@ const ArchitectureReference = (() => {
     check:'CRM returns only the permitted data after checking these conditions. A stale decision leaves no successful execution receipt.'}
   ],
   topology:[
-   ['Authority plane',['verify','iai','mission','policyContext','authorization'],'Identity and current mission state come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
-   ['Data plane',['openshell','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
+   ['Authority plane',['verify','iai','mission','approvalWorkflow','policyContext','authorization'],'Identity, current mission state and exact share approval come from services outside the agent. A PIP supplies authoritative attributes to the PDP.'],
+   ['Runtime startup',['mission','launchWorkflow','openshell'],'The configured workflow checks the mission. OpenShell handles sandbox lifecycle authorization and starts the agent after confirming the isolation boundary.'],
+   ['MCP HTTP authorization',['mcpClient','mcpIssuer','mcpGateway'],'The client discovers the issuer and requests a token for the MCP resource. The gateway validates the token for its own endpoint.'],
+   ['Data plane',['openshell','mcpClient','mcpGateway','mcpTool','crm'],'For reads, Nova’s MCP client runs inside the sandbox. OpenShell mediates egress. The gateway and MCP server mediate tool calls. CRM enforces the business operation.'],
    ['Credential path',['vault','crm'],'The connector or broker obtains a separate credential for the configured backend. CRM owns any service session it establishes.'],
    ['Response plane',['antenna','controllers'],'A configured transmitter sends a signal to receivers. Controllers report and verify resource, credential, workload and queue outcomes.']
   ],
