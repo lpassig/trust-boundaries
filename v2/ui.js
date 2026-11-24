@@ -751,12 +751,12 @@ function buyerCloseoutReplay(replay,reference,trial,advance){
 }
 function showBuyerActionScope(back){
  const reopen=()=>showBuyerActionScope(back);
- showReference('The agent can open the app but can see or do too much',`<p>Check the customer app’s action permissions. Nova can reach the customer records app (CRM). The assignment covers two accounts.</p>
-  <ul class="route-list"><li><b>Who owns it</b><br>The app owner enforces the operation. The business owner sets the permitted task scope.</li>
-  <li><b>What to test first</b><br>On the same allowed route, check that an in-scope record comes back and an unapproved record is refused.</li>
-  <li><b>Evidence to save</b><br>Keep the app’s two decisions and outcomes with the request IDs, requested record IDs and active scope version. Verify that the refused request returned no record.</li></ul>
-  <details class="debrief"><summary>Technical details</summary><p>The CRM policy enforcement point (PEP) observes the actual operation and record. The customer policy decision point (PDP) checks them against the active mission. CRM enforces that decision at execution.</p></details>
-  <div class="actions">${button('Test the record permission',()=>showRuntimeExercise(reopen,{scopeOnly:true}))}${button('Back to the buyer guide',back,'secondary')}</div>`,'BUYER GUIDE');
+ const pilot=CRM_PERMISSION_PILOT;
+ showReference('Check what the app lets the agent do',`<p>Nova can connect to the customer records app (CRM). CRM still has to check whether the job allows each account read.</p>
+  <div class="actions">${button('Test the record permission',()=>showRuntimeExercise(reopen,{scopeOnly:true}))}
+  ${button('Open CRM policy setup',()=>showBuyerSetup({pilot},reopen,'Back to the CRM pilot'),'secondary')}</div>
+  <h3>Plan a first pilot</h3>${buyerPilotChecklist(pilot)}
+  <div class="actions">${button('Back to the buyer guide',back,'secondary')}</div>`,'BUYER GUIDE');
 }
 function showBuyerEvidence(product,back,backLabel){
  if(product==='openshell')return showOpenShellPilot(back);
@@ -1146,7 +1146,7 @@ function labCrmOutcome(run){
  return run.outcome.receipt?'Summary returned · receipt recorded':'Operation rejected · no data returned';
 }
 
-function runtimeReadEvidence({evidence,runtime},index){
+function runtimeReadEvidence({evidence,runtime,recordId},index){
  const {networkEventId,sandboxId,networkPolicyId,leaseId,requestId,decisionId,receipt}=evidence;
  return `<details><summary>Inspect simulated evidence for attempt ${index+1}</summary>
   <p><b>OpenShell · route ${runtime==='permit'?'allowed':'blocked'}</b><br>
@@ -1155,6 +1155,7 @@ function runtimeReadEvidence({evidence,runtime},index){
   Network policy <code>${esc(networkPolicyId)}</code></p>
   ${requestId?`<p>Vault lease <code>${esc(leaseId)}</code><br>
     CRM request <code>${esc(requestId)}</code><br>
+    Requested record <code>${esc(recordId)}</code><br>
     Business decision <code>${esc(decisionId)}</code><br>
     ${receipt?`Success receipt <code>${esc(receipt)}</code>`:'CRM returned no record and issued no success receipt.'}</p>`:
    '<p>The request stopped at OpenShell. There is no Vault lease or CRM decision for this attempt.</p>'}

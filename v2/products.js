@@ -248,6 +248,18 @@ const NOVA_VAULT_EXAMPLE = {
   }
 };
 
+const CRM_PERMISSION_PILOT = {
+  evidence:'authorization',
+  integration:'Have CRM supply the observed operation and record to the policy decision point (PDP). Obtain the active mission and resource attributes from trusted sources (PIP). If you use AuthZEN, its evaluation returns a Boolean decision. CRM enforces the result before returning data. Keep the route and task scope fixed for the two test reads.',
+  checklist:{
+    prerequisite:'A staging CRM read endpoint, one test agent with a bounded task, and two test accounts reachable through the same tool. Include one account in the task and leave the other outside it.',
+    owner:'Start with the CRM application team. Ask the business policy owner to confirm which accounts the task can read. The CRM team checks each requested account before returning data.',
+    success:'Read Harbor Bikes over the approved route. CRM should return the record because it is in the task.',
+    failure:'Request Alder Books on the same route, under the same task scope. CRM should refuse and return no Alder Books data.',
+    evidence:'Keep both CRM request IDs, the requested record IDs, the active mission version, and both decision records. Only the allowed read should have a success receipt.'
+  }
+};
+
 const NOVA_BUYER_NEEDS = [
   {
     question:'Know which agent acted and who authorized it',
