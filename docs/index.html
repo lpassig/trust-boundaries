@@ -3653,19 +3653,22 @@ function showMaturity(back=showIntro,selected=null){
   <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
   <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
 }
-function showBuildPilot(back,attempt=null){
- const draft=attempt==='draft';
- const outcome=draft?'Draft ready for Priya’s review':'The assistant has no CRM tool';
- const result=draft?'The assistant drafts a handover from harbor-bikes-test.txt. Priya chooses what to share.':'The application rejects the request. Priya can supply an approved summary for the draft.';
+function showBuildPilot(back,attempts=[]){
+ const cases={
+  draft:{label:'Draft from the test file',outcome:'Draft ready for Priya’s review',input:'harbor-bikes-test.txt · approved model',
+   result:'“Harbor Bikes is ready to review its renewal.” Priya checks the draft against the supplied file before sharing it.'},
+  crm:{label:'Try fetching a CRM record',outcome:'Direct CRM read refused',input:'Request to fetch a customer record',
+   result:'The assistant application rejected the request because this deployment gives Nova only the drafting tool.'}
+ };
+ const evidence=attempts.map((kind,index)=>{
+  const {outcome,input,result}=cases[kind];
+  return `<li><b>${esc(outcome)}</b><br>BUILD-0${index+1} · Nova · ${esc(NOVA_AGENT_OWNERS.nova)}<br>${esc(input)}<p>${esc(result)}</p></li>`;
+ }).join('');
+ const available=Object.entries(cases).filter(([kind])=>!attempts.includes(kind));
  showReference('Test the drafting assistant',`<p>This example uses a named assistant, an approved model and one sanitized test file.</p>
-  ${attempt?`<div class="receipt"><b>${outcome}</b><p>${result}</p></div>
-   <ul class="route-list" aria-label="Example activity record">
-    <li><b>Run and owner</b><br>${draft?'BUILD-01':'BUILD-02'} · Nova · ${esc(NOVA_AGENT_OWNERS.nova)}</li>
-    <li><b>Input and model</b><br>${draft?'harbor-bikes-test.txt · approved model':'Request to fetch a CRM record · no tool call'}</li>
-    <li><b>Recorded outcome</b><br>${draft?'Draft generated for review':'Direct customer-record read refused'}</li>
-   </ul>`:''}
-  <div class="actions">${button('Draft from the test file',()=>showBuildPilot(back,'draft'))}
-   ${button('Try fetching a CRM record',()=>showBuildPilot(back,'crm'),'secondary')}
+  ${evidence?`<ol class="route-list" aria-label="Pilot activity records">${evidence}</ol>`:''}
+  <div class="actions">${available.map(([kind,test])=>button(test.label,()=>showBuildPilot(back,[...attempts,kind]),kind==='draft'?'primary':'secondary')).join('')}
+   ${available.length?'':button('Replay both tests',()=>showBuildPilot(back),'secondary')}
    ${button('Back to Raise the BAR',back,'secondary')}</div>`, 'BUILD PILOT');
 }
 function buyerPilotChecklist(pilot,technical=false){
@@ -4877,6 +4880,7 @@ dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
 $('.brand').onclick=e=>{e.preventDefault();showIntro();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};
 render();
 if(location.hash==='#architecture')showArchitecture();
+else if(location.hash==='#bar')showMaturity();
 else if(!state().started)showIntro();
 else if(!state().finished)showReply();
 
