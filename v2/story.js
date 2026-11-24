@@ -66,7 +66,7 @@ const EPISODES = {
   },
   "agent": {
     "name": "Nova",
-    "title": "The Growing Brief",
+    "title": "The Customer Handover",
     "eyebrow": "BEFORE THE REVIEW · A NOVA MISSION",
     "tag": "A customer meeting is tomorrow. The account team needs a short handover.",
     "intro": "Priya is the task sponsor. She submits a work order asking Nova for a one-page handover on Harbor Bikes and Pine Studio before tomorrow’s customer meeting. Morgan will review it. Help Nova find the right facts and get the briefing to Morgan.",
@@ -144,6 +144,24 @@ const STORY_COMPARISON = [
   ['Review the actual share', 'The school app checks Alex’s own file and the teacher’s address.', 'Morgan approves one exact copy. After an edit, CRM requires approval for the new version before sending.'],
   ['Give the helper only what they need', 'Sam proofreads the timeline without using Alex’s sign-in.', 'Pip works under its own identity with permission to format only the supplied report.'],
   ['Verify what closed', 'Alex puts away the phone, signs out of the laptop, and checks that the school app asks for sign-in.', 'After stopping the workspace, independent controllers close the CRM session, revoke the task credential, check the queue and retest the old route.']
+];
+
+const BAR_STAGES = [
+  {name:'Build',question:'We need to know which agents are running and who owns them',
+   first:'Pick one workflow with test data. Record the agent, owner, purpose, model, tools and data it can reach. Use a named identity, keep keys outside the agent, and log one run.',
+   evidence:'An owner can identify the agent and draw its data path from one run record. Check that an unapproved model or data path is refused before widening the pilot.',
+   next:'Use your existing inventory and identity controls where they cover the workflow. Consider IBM Agent Identity for agent registration and Verify Identity Protection for discovery from connected activity sources.',
+   example:'Nova and Pip have separate identities. Their registry entries make ownership visible before Priya approves the task.'},
+  {name:'Authorize',question:'We know the agents and need to limit what a tool can do',
+   first:'Choose one tool and one allowed operation on test data. Give the agent only that scope and a short-lived credential where the target supports it. Have the target enforce the operation outside the agent. Add exact approval before sensitive writes or sends.',
+   evidence:'Run a permitted and a refused request over the same connection. Save the observed operation, scope, decision and actual result.',
+   next:'Use your application’s enforcement first. Evaluate a broker such as Vault for short-lived credentials, IBM Verify for separate-device approval, or an MCP gateway when you need a shared tool boundary.',
+   example:'Nova can reach CRM. CRM returns an approved account and refuses Alder Books until the scope changes.'},
+  {name:'Resist',question:'Access is scoped and we need to detect trouble and prove it stopped',
+   first:'Start with one alert and a named response owner. Practice stopping the workload, revoking its credential and closing the app session separately. Check waiting work and retest what previously worked.',
+   evidence:'Keep the alert, each controller’s outcome and a fresh check of the old route. An unreachable controller leaves its part unverified.',
+   next:'Add containment automation and more signal sources as autonomy increases. Verify Identity Protection can help surface risky activity. Verify Antenna can carry configured signals to systems that apply their own controls.',
+   example:'Nova’s workspace can stop while the CRM session still answers. Closing and retesting that session supplies separate evidence.'}
 ];
 
 const PRACTICE_CASE = {

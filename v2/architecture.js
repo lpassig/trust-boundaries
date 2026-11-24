@@ -29,7 +29,7 @@ const ArchitectureReference = (() => {
    name:'MCP gateway',kind:'Configured for Nova’s CRM reads',
    summary:'Can examine an agent’s tool call and apply configured policy before forwarding it to the MCP server.',
    detail:'Nova’s demo uses a gateway in front of the CRM MCP server. Deployments can also connect MCP clients directly to servers. The CRM owns the decision to return a record.',
-   sources:[['Independent MCP gateway example','https://blog.iamidentity.ai/blog/mcp-agent-gateway/']]
+   sources:[['Example DataPower Interact Gateway MCP policies','https://www.ibm.com/docs/en/dp-interact-gateway/12.1.1?topic=servers-mcp-server-policies'],['Independent MCP gateway example','https://blog.iamidentity.ai/blog/mcp-agent-gateway/']]
   },
   mcpTool:{
    name:'CRM MCP server',kind:'Configured tool server',
@@ -127,6 +127,7 @@ const ArchitectureReference = (() => {
    title:'Pause and recover bounded access',
    premise:'A separate deliberate attempt follows a known resource denial. The controller pauses the current task session.',
    steps:[
+    ['risk','A connected identity monitor can surface unusual access. The game simulates this alert and the response policy that acts on it.'],
     ['controllers','Apply the pause to the current session generation and preserve the incident evidence.'],
     ['people','Send the authorized sponsor a review request tied to this incident, mission and session generation.'],
     ['authorization','Correlate the reply and re-read authoritative policy. Hold the pause if the reply is stale or a required service is unavailable.'],

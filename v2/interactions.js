@@ -31,6 +31,10 @@ const StoryInteractions = (() => {
    helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    policyConsole:'The policy information point supplies trusted facts. The policy decision point evaluates the request. The policy enforcement point applies the decision.',
+   registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
+   aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
+   mcpGateway:'The configured MCP gateway validates the request at its own endpoint and forwards the allowed tool call. CRM separately enforces which records come back.',
+   riskMonitor:'IBM Verify Identity Protection (AuthMind) can observe identity activity from connected systems and flag unusual access for investigation.',
    source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
    reviewer:'Morgan reviews a specific revision and recipient before each share. The work order stays in the work inbox.',
    outside:'Luca is a contact at Harbor Bikes. His customer portal upload reached Nova through CRM as source material. The approved mission and CRM policy control what Nova can share.'
@@ -39,7 +43,8 @@ const StoryInteractions = (() => {
  function objectDescription(mode,key){return objects[mode][key];}
  function availableTools(s,mode){
   return [
-   ...(mode==='agent'&&s.started?['workOrder','policyConsole']:[]),
+   ...(mode==='agent'&&s.started?['workOrder','policyConsole','registries']:[]),
+   ...(mode==='agent'&&s.opened?['aiGateway','mcpGateway','riskMonitor']:[]),
    ...(s.draft?['source','reviewer']:[]),
    ...(s.message?['outside']:[])
   ];
@@ -89,6 +94,10 @@ const StoryInteractions = (() => {
    sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
    policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
+   registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
+   aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
+   mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
+   riskMonitor:{name:'Identity monitoring',kind:'On screen',point:[524,401],object:'phone',tool:'riskMonitor'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
    outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
    sentToJamie:{name:'Alex → Jamie',kind:'Sent message',channel:'Class group chat · phone',point:[526,404],object:'phone'},

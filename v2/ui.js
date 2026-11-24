@@ -146,7 +146,9 @@ function showActionRefusal(event){
   ?teen()?'The school sets the sharing rule. The school app applies it and sent nothing. Your homework agreement still lets you finish your own project.'
    :'The customer policy service evaluated the attachment. The approved mission covers the summary, and CRM applies the separate rule that protects private notes.'
   :'';
- show(event.title,`<p>${esc(event.text)}</p>${note?`<div class="request-result"><b>Who applied the rule?</b><p>${esc(note)}</p></div>`:''}<div class="actions">
+ const risk=!teen()&&paused&&event.request?.operation==='boundary.bypass'
+  ?`<div class="request-result"><b>Identity alert · Verify Identity Protection (AuthMind)</b><p>In this simulation, connected activity shows Nova tried a second access path after the CRM refusal. The configured response policy pauses the task session and sends it for Priya’s review.</p></div>`:'';
+ show(event.title,`<p>${esc(event.text)}</p>${note?`<div class="request-result"><b>Who applied the rule?</b><p>${esc(note)}</p></div>`:''}${risk}<div class="actions">
   ${button(label,continuation)}
   ${state().last===event?button(teen()?'See what happened':'Follow this request',()=>showRequestTrace(event,()=>showReply(event)),'secondary'):''}
   ${button('Back to the room',close,'secondary')}
@@ -169,7 +171,8 @@ function showSavedReply(event){
  if(event.kind==='story'&&(event.action==='change-recipient'||!teen()&&['revise-file','wait-approval'].includes(event.action)))return showSend();
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
  const recoveredAccounts=!teen()&&event.action==='resolve-review'&&event.decision?.allowed_records;
- show(event.title,`<p>${esc(event.text)}</p>${recoveredAccounts?.length?`<p><b>Accounts still approved</b> · ${esc(customerNames(recoveredAccounts))}.</p>`:''}<div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
+ const modelRoute=!teen()&&event.action==='prepare'?`<div class="request-result"><b>Model request · AI Gateway</b><p>The configured watsonx Orchestrate AI Gateway routes the outline request to an approved model. Nova will use the MCP gateway for the account records in the next step.</p></div>`:'';
+ show(event.title,`<p>${esc(event.text)}</p>${modelRoute}${recoveredAccounts?.length?`<p><b>Accounts still approved</b> · ${esc(customerNames(recoveredAccounts))}.</p>`:''}<div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
 }
 function perform(action,payload={}){
  const result=StoryRules.act(state(),mode,action,payload);states[mode]=result.state;selected=null;close();render();ping(result.event?.kind);
@@ -216,13 +219,15 @@ function inventory(){
  if(s.checks.length===4)items.push(['checklist','☷',teen()?'Ready for dinner':'Closing evidence',teen()?'Project sent · laptop signed out':'Four task outcomes checked',teen()?'Tell your parent you’re done.':'Bring the evidence to finish this task.']);
  return items;
 }
+const novaToolLabels={registries:['Agent registries','IBM Agent Identity · Vault'],aiGateway:['AI Gateway','Model requests'],
+ mcpGateway:['MCP gateway','CRM tool requests'],riskMonitor:['Identity monitoring','Verify Identity Protection']};
 function objectName(key){
  const tools=teen()?{source:'Museum website',reviewer:'Ms Patel',outside:'Class group chat'}:{workOrder:'Work order',policyConsole:'Policy console',source:'CRM tool',reviewer:'Morgan’s review',outside:'Imported attachment'};
- return tools[key]||episode().objects[OBJECT_KEYS.indexOf(key)];
+ return tools[key]||novaToolLabels[key]?.[0]||episode().objects[OBJECT_KEYS.indexOf(key)];
 }
 function objectDetail(key){
  const tools=teen()?{source:'Check the dates',reviewer:'School inbox',outside:'Jamie’s forwarded message'}:{workOrder:'Priya’s original request',policyConsole:'PIP, PDP and PEP',source:'Read account records · MCP',reviewer:'Exact-copy approval and feedback',outside:'Luca · customer portal upload'};
- return tools[key]||StoryInteractions.objectStatus(state(),mode,key)||episode().objectDetails?.[OBJECT_KEYS.indexOf(key)]||'';
+ return tools[key]||novaToolLabels[key]?.[1]||StoryInteractions.objectStatus(state(),mode,key)||episode().objectDetails?.[OBJECT_KEYS.indexOf(key)]||'';
 }
 function heldUse(){return selected?StoryInteractions.itemUse(state(),mode,selected):null;}
 function targetState(key,pin=false){
@@ -245,15 +250,17 @@ function render(){
  $('#scene-footnote').textContent=use?use.instruction:StoryInteractions.sceneSummary(s,mode);
  $('#place').textContent=e.place;$('#scene-condition').textContent=s.finished?(teen()?'READY FOR DINNER':'CHAPTER COMPLETE'):s.paused?(teen()?'LET’S TALK':'MISSION PAUSED'):s.ended?(teen()?'DINNER TIME':'MISSION REVOKED'):s.delivered?(teen()?'SENT TO MS PATEL':'DELIVERED'):s.message&&!s.verified?'NEW MESSAGE':'';
  const artStep=s.draft?7:0;
+ const helperReady=!teen()||s.draft;
  $('#art').innerHTML=roomArt(mode,Math.min(c,2),{step:artStep,hasIncoming:s.message,helperVisible:s.draft,verified:s.verified,delivered:s.delivered,revoked:s.ended,paused:s.paused,hasNote:s.notes.length>0,hasSourceCredit:s.caption,signInRequired:teen()&&s.checks.includes('signin')&&s.containment?.controllerReachable,serviceStillOpen:s.ended&&s.containment&&!s.containment.sessionClosed});
- $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>i===5&&!s.draft?'':`<button class="pin ${targetState(OBJECT_KEYS[i],true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc(objectLabel(OBJECT_KEYS[i],true))}" aria-label="${esc(objectLabel(OBJECT_KEYS[i],true))}">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</button>`).join('');
- const links=STORY_PINS[mode].map(([x,y,tx,ty],i)=>i===5&&!s.draft?'':`<path d="M${x} ${y}L${tx} ${ty}"/>`).join('');
+ $('#pins').innerHTML=STORY_PINS[mode].map(([x,y],i)=>OBJECT_KEYS[i]==='helper'&&!helperReady?'':`<button class="pin ${targetState(OBJECT_KEYS[i],true)}" style="left:${x/10}%;top:${y/5.8}%" data-object="${OBJECT_KEYS[i]}" data-tip="${esc(objectLabel(OBJECT_KEYS[i],true))}" aria-label="${esc(objectLabel(OBJECT_KEYS[i],true))}">${sceneObjectIcon(OBJECT_KEYS[i],mode)}</button>`).join('');
+ const links=STORY_PINS[mode].map(([x,y,tx,ty],i)=>OBJECT_KEYS[i]==='helper'&&!helperReady?'':`<path d="M${x} ${y}L${tx} ${ty}"/>`).join('');
  $('#pins').insertAdjacentHTML('afterbegin',`<svg class="pin-links" viewBox="0 0 1000 580" aria-hidden="true">${links}</svg>`);
  const tools=StoryInteractions.availableTools(s,mode);
- $('#objects').innerHTML=[...OBJECT_KEYS,...tools].map(key=>{
+ const renderObject=key=>{
   const detail=objectDetail(key),tag=targetTag(key);
-  return `<button data-object="${key}" class="${targetState(key)}${tools.includes(key)?' scene-tool':''}" aria-label="${esc(objectLabel(key))}" ${key==='helper'&&!s.draft?'disabled':''}><b aria-hidden="true">${sceneObjectIcon(key==='policyConsole'?'console':key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
- }).join('');
+  return `<button data-object="${key}" class="${targetState(key)}${tools.includes(key)?' scene-tool':''}" aria-label="${esc(objectLabel(key))}" ${key==='helper'&&!helperReady?'disabled':''}><b aria-hidden="true">${sceneObjectIcon(({policyConsole:'console',registries:'memory',aiGateway:'console',mcpGateway:'source',riskMonitor:'shield'})[key]||key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
+ };
+ $('#objects').innerHTML=OBJECT_KEYS.map(renderObject).join('')+(!teen()&&tools.length?'<span class="tool-tray-label">Systems and records</span>':'')+tools.map(renderObject).join('');
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A new request is waiting.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
@@ -454,8 +461,24 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
    ['The agent can open the app but can see or do too much','Check what the app allows after the agent connects.',()=>showBuyerActionScope(reopen)]
   ])}
   <details class="debrief"><summary>Other controls in Nova’s mission</summary>${secondary}<div class="product-cards">${other}</div></details>
-  <div class="actions">${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
+  <div class="actions">${button('Open the maturity guide',()=>showMaturity(reopen),'secondary')}${button('Open the technical product map',productMap,'secondary')}${button(exitLabel,exit,'secondary')}</div>`,
   'BUYER GUIDE');
+}
+function showMaturity(back=showIntro,selected=null){
+ const reopen=()=>showMaturity(back,selected);
+ if(selected)return showReference(`${selected.name} · first pilot`,
+  `<ul class="route-list">
+  <li><b>Start here</b><br>${esc(selected.first)}</li>
+  <li><b>Evidence to save</b><br>${esc(selected.evidence)}</li>
+  <li><b>Where products fit</b><br>${esc(selected.next)}</li>
+  <li><b>In Nova’s story</b><br>${esc(selected.example)}</li></ul>
+  <div class="actions">${button('Match a work problem to a control',()=>showBuyerGuide(reopen,'Back to the maturity guide'))}
+  ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'BAR MATURITY GUIDE');
+ showReference('Where should we start?',`<p>Build, Authorize and Resist is a maturity guide. Start with one agent and one workflow. Reuse controls you already have and add coverage where the pilot reveals a gap.</p>
+  <p>Begin with Build when ownership or inventory is missing. Before enabling sensitive tool actions, put an Authorize check in place. Practice stopping the pilot early, then deepen Resist as autonomy and impact grow.</p>
+  ${choices(BAR_STAGES.map(stage=>[stage.name,stage.question,()=>showMaturity(back,stage)]))}
+  <details class="debrief"><summary>Framework basis</summary><p>This is the game’s adaptation of the supplied BAR model. It uses governance and inventory, testing controls, and response and recovery as prompts for a pilot. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
+  <div class="actions">${button('Go back',back,'secondary')}</div>`,'BAR MATURITY GUIDE');
 }
 function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
  const product=productById(need.pilot.evidence);
@@ -639,11 +662,17 @@ function showCredential(back=null){
 
 function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
 function interact(key,pin){
- if(!state().started)return showIntro();
+ if(!state().started&&(teen()||key!=='helper'))return showIntro();
  if(selected&&heldUse().targets.includes(key))return useItem(key);
  if(!selected&&StoryInteractions.isStoryObject(mode,key,move()[2],pin))return nextMove();
  speakingObject=!teen()&&key==='parent'?'missionControl':key;
- show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${!teen()&&key==='workOrder'?`<p>${esc(episode().brief)}</p>`:''}`,'About this object');
+ const details={
+  workOrder:`<p>${esc(episode().brief)}</p>`,registries:agentRegistryDetails,
+  aiGateway:()=>protocolSourceLinks(['aiGateway']),mcpGateway:()=>`<p>DataPower Interact Gateway is one product with documented MCP policies. This story models a configured gateway role.</p>${protocolSourceLinks(['mcpGateway'])}`,
+  riskMonitor:()=>`<p>The game illustrates a configured alert and response. The response policy and controllers apply any pause, credential revocation or session closure.</p>${protocolSourceLinks(['identityRisk'])}`
+ };
+ const extra=!teen()&&details[key];
+ show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${typeof extra==='function'?extra():extra||''}`,'About this object');
  dialog.dataset.inspect='true';
  syncSpeech();
 }
@@ -663,7 +692,8 @@ function showIntro(){
    ['Start with a work problem','See what a product can do and what to test first.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
-   ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()]
+   ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],
+   ['BAR maturity guide','Find what to put in place for your first agent pilot.',()=>showMaturity()]
   ])}</div><div class="actions">${button('How to play',showGuide,'quiet')}</div>
   <p class="small-print">The stories are fictional. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'POINT-AND-CLICK ADVENTURE');
@@ -715,13 +745,20 @@ function showPolicyConsole(back){
   </details>
   <div class="actions">${decision?button('Follow this decision',()=>showRequestTrace(s.last,()=>showPolicyConsole(back),'Back to the policy console')):''}${button('Explore the architecture',()=>showArchitecture('map','read','policyContext'),'secondary')}${button('Back to the read result',back,'secondary')}</div>`,'POLICY CONTROLS');
 }
+function agentRegistryDetails(){
+ return `<ul class="route-list">
+  <li><b>IBM Agent Identity inventory</b><br>Nova and Pip each have an agent identity and accountable owner. Nova acts for Priya. Pip receives a separate file-formatting grant.</li>
+  <li><b>Vault Agent Registry</b><br>For the brokered read in this deployment, the team configures a Vault registration for Nova’s identity and a ceiling on what it can inherit when acting on behalf of a user.</li>
+  <li><b>Customer mission record</b><br>Priya’s grant supplies the business scope for this job. CRM checks the actual request against it.</li></ul>${protocolSourceLinks(['agentInventory','vaultRegistry'])}`;
+}
 function showParent(){speakingObject=teen()?'parent':'missionControl';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
  if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Hear from Priya'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW','review-preview');
  if(!s.pass){
   const roles=teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':
    `Priya submitted the request and is authorized to approve this task. The mission service checks her authority and records a grant for two accounts and one recipient. Morgan reviews each copy later.`;
-  const policy=teen()?'':`<details class="debrief"><summary>Where do PIP, PDP and PEP fit?</summary><p>The mission service supplies approved scope as a trusted source of policy information (the PIP role). The customer policy decision point (PDP) evaluates each actual CRM request. CRM is the policy enforcement point (PEP) that allows or blocks it.</p></details>`;
+  const policy=teen()?'':`<details class="debrief"><summary>Which agent registries are involved?</summary>${agentRegistryDetails()}</details>
+   <details class="debrief"><summary>Where do PIP, PDP and PEP fit?</summary><p>The mission service supplies approved scope as a trusted source of policy information (the PIP role). The customer policy decision point (PDP) evaluates each actual CRM request. CRM is the policy enforcement point (PEP) that allows or blocks it.</p></details>`;
   return show(teen()?'“Which apps does the project need?”':'Approve the two-account mission',`<p>${roles}</p>${policy}${choices([[teen()?'School app and museum website until dinner':'Record Priya’s approval',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
  }
  if(s.ended){if(s.checks.length<4)return showChecks();return show(teen()?'“What’s finished?”':'Review this task’s outcome.',`<p>${teen()?'“Sent to Ms Patel, signed out of the laptop, and phone put away,” you say. “Can I set the table?”':'The approved report arrived. This task’s authority, credential, session, workload and queue have their own evidence.'}</p>${choices([[teen()?'Finish the evening':'Finish this mission',teen()?'Put the laptop away and head to the table.':'No future task is authorized by closing this one.',()=>perform('finish'),'good']])}`,e.authority,'closure-preview');}
@@ -970,7 +1007,7 @@ function showSource(){
  const event=!teen()&&s.last?.action==='collect-source'?s.last:null;
  const lease=!teen()&&s.sourceLease;
  show(teen()?'The museum page confirms your dates.':'CRM returned the two approved records.',
-  `${lease?`<p><b>HashiCorp Vault issued a read-only lease</b> to the connector. CRM checked the two records separately.</p>`:''}<div class="paper"><h3>${teen()?'Riverside Museum · The railway comes to town':'Customer records for tomorrow’s meeting'}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div>${event?crmReadPath(event,showSource):''}${choices([
+  `${lease?`<p>The <b>MCP gateway</b> forwarded the tool call. <b>HashiCorp Vault</b> issued a read-only credential to the connector. CRM checked the two records before returning them.</p>`:''}<div class="paper"><h3>${teen()?'Riverside Museum · The railway comes to town':'Customer records for tomorrow’s meeting'}</h3>${lines.map(line=>`<p>${esc(line)}</p>`).join('')}</div>${event?crmReadPath(event,showSource):''}${choices([
    ...(!s.caption&&!s.delivered?[['Add this source',teen()?'Put the museum page title under your timeline.':'Credit Harbor Bikes and Pine Studio below the handover.',()=>perform('attach-source',{source:'original'}),'good']]:[]),
    ...(lease?[['Compare connector credentials','See what survives after the task ends.',()=>showCredentialComparison(lease)]]:[]),
    [s.delivered?'See the delivery receipt':'Back to the draft','',s.delivered?showDelivery:showDraft],
@@ -1469,6 +1506,7 @@ function showEnding(){
   ${comparison}
   <details class="debrief"><summary>Build, authorize and resist</summary>
    ${novaDebrief(s)}<details><summary>Revocation protocols</summary>${protocolHTML(CLOSING_PROTOCOL)}</details>
+   <div class="actions">${button('Open the BAR maturity guide',()=>showMaturity(showEnding),'secondary')}</div>
   </details>
   <div class="actions">
    ${practice}${otherStory}${button('Replay the closing checks',()=>perform('replay-containment'),'secondary')}

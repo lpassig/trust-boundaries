@@ -114,16 +114,16 @@ const NOVA_PRODUCTS = [
   },
   {
     "id": "risk",
-    "name": "IBM Identity Protection",
-    "role": "An optional risk-observation input",
-    "how": "The supplied architecture includes identity-activity observation as an input for investigation and remediation. A configured risk signal can cause the identity control plane to re-evaluate the task.",
-    "limit": "This game scripts its detours and does not run a risk detector. Observed risk does not itself revoke credentials or stop a workload; response policy and enforcement still have to act.",
+    "name": "IBM Verify Identity Protection (AuthMind)",
+    "role": "Agent discovery and runtime identity observation",
+    "how": "Connected identity activity can help security teams discover agents and investigate unusual access. Nova’s optional detour illustrates a risk observation passed to a configured response policy.",
+    "limit": "The observation and response are simulated. The deployed response policy chooses the action, and the affected controllers apply and verify it.",
     "standards": [
       "Identity activity",
       "Risk / remediation input"
     ],
     "url": "https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities",
-    "status": "Optional risk integration; no detector connected"
+    "status": "Documented identity observability; the game illustrates a configured response"
   }
 ];
 

@@ -25,6 +25,9 @@ test('the first CRM trace records MCP discovery and audience before the gateway 
  assert.equal(initial.sessionOpened,true);
  assert.equal(initial.source,false);
  assert.equal(initial.sourceLease,null);
+ const outline=T.build(initial,'agent').nodes;
+ assert(outline.some(node=>node.role==='watsonx Orchestrate AI Gateway'));
+ assert(outline.some(node=>node.role==='Configured MCP gateway'&&node.status==='not-reached'));
  const blocked=act(R.fresh(),'collect-source');
  assert.equal(blocked.event.request.mcp_authorization,undefined);
  const read=run(initial,'collect-source');
@@ -293,7 +296,9 @@ test('Alex can ask a parent about known school-app feedback directly; Nova still
 test('Nova’s recovery stays paused when current policy is unavailable or the approved account set no longer fits',()=>{
  let s=feedback();
  s=act(s,'try-private').state;
+ assert(!T.build(s,'agent').nodes.some(node=>node.sources?.includes('identityRisk')));
  s=act(s,'bypass-notes').state;
+ assert(T.build(s,'agent').nodes.some(node=>node.role==='Verify Identity Protection (AuthMind)'&&node.status==='reference'));
  s=run(s,'review');
  for(const mutate of [x=>x.authority.available=false,x=>x.authority.resource.records=['123']]){
   const before=structuredClone(s);
