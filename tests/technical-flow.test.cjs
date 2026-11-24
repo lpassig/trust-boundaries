@@ -358,3 +358,26 @@ test('Sam cannot receive a project outside the current plan',()=>{
  assert.equal(result.state.helperReceipts.length,0);
  assert.equal(result.state.proof,null);
 });
+
+test('the identity pilot refuses and permits the same handoff with separate evidence',()=>{
+ const start=R.buyerExample({stopBeforeHelper:true});
+ const denied=R.buyerHelperAttempt(start,false);
+ const allowed=R.buyerHelperAttempt(denied.state,true);
+ const refusal=denied.event, completion=allowed.event;
+ assert.equal(refusal.decision.result,'deny');
+ assert.equal(refusal.request.actor,'nova-042');
+ assert.equal(refusal.request.delegation,null);
+ assert.equal(denied.state.fileRevision,start.fileRevision);
+ assert.equal(denied.state.helperReceipts.length,0);
+ for(const key of ['operation','file','revision','recipient','mission_id','mission_version']){
+  assert.equal(refusal.request[key],completion.request[key]);
+ }
+ assert.equal(completion.decision.result,'permit');
+ assert.notEqual(refusal.request.request_id,completion.request.request_id);
+ assert.notEqual(refusal.decision.decision_id,completion.decision.decision_id);
+ assert.equal(completion.request.delegation.originalSubject,'sponsor-001');
+ assert.equal(completion.request.requested_by,'nova-042');
+ assert.equal(completion.request.actor,'pip-01');
+ assert.equal(completion.request.delegation.outputRevision,start.fileRevision+1);
+ assert.deepEqual(start.authority.resource.helpers,['pip-01']);
+});

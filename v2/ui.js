@@ -1314,7 +1314,8 @@ function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recor
   ['Delegated human',['Unclear','Priya · '+receipt.originalSubject],true],
   ['Requested the work',['shared-report-account','Nova · '+receipt.requestedBy],true],
   ['Formatted the file',['shared-report-account','Pip · '+receipt.actor],true],
-  ['Operation and file',['Formatting logged',receipt.actions[0]+' · '+receipt.file+' · rev. '+receipt.inputRevision+' → '+receipt.outputRevision]]
+  ['Operation and file',['Formatting logged',receipt.actions[0]+' · '+receipt.file+' · rev. '+receipt.inputRevision+' → '+receipt.outputRevision]],
+  ['Completed delegation',['Unclear',receipt.id]]
  ];
  showReference('Who did what in Pip’s handoff?',`<p>${esc(origin)} Compare the shared account with the record of who acted.</p>
   ${decisionComparison(['Shared-account example','This handoff'],activities)}
@@ -1324,8 +1325,34 @@ function showHelperAudit(receipt,answer=null,back=showHelperResult,origin='Recor
    ['Priya delegated, Pip requested, Nova formatted','',()=>review(false)],
    ['Morgan delegated, Nova requested, Pip formatted','',()=>review(false)]
   ]):`<div class="receipt" role="status"><b>${answer?'That matches the record.':'Check who delegated and who executed.'}</b><p>IBM Agent Identity supplies the delegated identity context. The workflow record ties that context to Pip’s file-only action. Pip used its own identity and received no parent credential or CRM access.</p></div>`}
-  <div class="actions">${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(backLabel,back,'secondary')}</div>`,
+  <div class="actions">${button('Test the handoff',()=>showBuyerHelperPilot(()=>review(answer)))}${answer===false?button('Try again',()=>review(null),'secondary'):''}${button(backLabel,back,'secondary')}</div>`,
   'DELEGATED IDENTITY');
+}
+
+function showBuyerHelperPilot(back,trial=StoryRules.buyerExample({stopBeforeHelper:true}),attempts=[]){
+ const attempt=allow=>{
+  const {state,event}=StoryRules.buyerHelperAttempt(trial,allow);
+  showBuyerHelperPilot(back,state,[...attempts,event]);
+ };
+ const records=attempts.map(({request,decision})=>{
+  const handoff=request.delegation;
+  return `<li><b>${handoff?'File service permitted formatting':'File service refused the handoff'}</b>
+   <p>${handoff?`Pip returned revision ${esc(handoff.outputRevision)}.`:'Pip received no file and returned no output.'}</p>
+   <details><summary>Inspect simulated audit record</summary>
+    <p>Requested by <code>${esc(request.requested_by||request.actor)}</code> · intended helper <code>${esc(request.recipient)}</code><br>
+    <code>${esc(request.operation)}</code> · ${esc(request.file)} · revision ${esc(request.revision)}<br>
+    Request <code>${esc(request.request_id)}</code> · decision <code>${esc(decision.decision_id)}</code> · ${esc(decision.result)}<br>
+    ${handoff?`Completed delegation <code>${esc(handoff.id)}</code><br>Sponsor <code>${esc(handoff.originalSubject)}</code> · acting agent <code>${esc(handoff.actor)}</code>`:'No completed delegation or formatting receipt.'}</p>
+   </details></li>`;
+ }).join('');
+ const next=attempts.length===0?button('Try without Pip’s file permission',()=>attempt(false)):
+  attempts.length===1?button('Allow Pip to format this file and retry',()=>attempt(true)):
+   button('Replay both attempts',()=>showBuyerHelperPilot(back),'secondary');
+ showReference('Will the file service let Pip format the report?',`<p>Nova asks Pip to format the same report for Priya in both attempts. IBM Agent Identity supplies separate identities. The file service checks its own permissions before handing over the file.</p>
+  ${records?`<ol class="route-list" aria-label="Handoff attempts">${records}</ol>`:''}
+  <div class="actions">${next}${button('Back to Pip’s activity record',back,'secondary')}</div>
+  <details class="debrief"><summary>What your team sets up</summary><p>Configure the workflow to correlate the requesting agent, intended helper, task and file revision. The resource checks its permitted helpers and owns the allow or refuse audit record. OAuth Token Exchange can represent delegation where the issuer supports it.</p>${protocolSourceLinks(['agentInventory','exchange'])}</details>`,
+  'DELEGATED IDENTITY PILOT');
 }
 
 function showHelperAccountReply(event){

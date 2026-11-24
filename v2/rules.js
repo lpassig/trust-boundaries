@@ -308,16 +308,23 @@ const StoryRules = (() => {
   if(s.reviewPending&&(!s.paused||s.reviewPending.generation!==s.generation||s.reviewPending.scope!==s.pass?.scope||s.reviewPending.missionVersion!==s.mission.version))return d;
   return s;
  }
- function buyerExample({stopAtEdit=false}={}){
+ function buyerExample({stopAtEdit=false,stopBeforeHelper=false}={}){
   const actions=[
    ['begin'],['read-brief'],['ask-pass',{scope:'task'}],['open'],['prepare'],['collect-source'],['attach-source'],
-   ['approve-draft'],['send-draft'],['keep-minor'],['decline-extension'],['decline-private'],
-   ['proof-helper',{scope:'file',shareLogin:false}],['approve'],['revise-file']
+   ['approve-draft'],['send-draft'],['keep-minor'],['decline-extension'],['decline-private']
   ];
-  if(!stopAtEdit)actions.push(['approve'],['send'],['close-pass'],['remediate',{control:'session'}],
-   ['remediate',{control:'credential'}],['probe-session']);
+  if(!stopBeforeHelper){
+   actions.push(['proof-helper',{scope:'file',shareLogin:false}],['approve'],['revise-file']);
+   if(!stopAtEdit)actions.push(['approve'],['send'],['close-pass'],['remediate',{control:'session'}],
+    ['remediate',{control:'credential'}],['probe-session']);
+  }
   return actions.reduce((s,[action,payload])=>act(s,'agent',action,payload).state,fresh());
  }
- return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportFollowUp,reportShare,approvalPreview,approvalMatches,alexExtra,novaAddition,buyerExample};
+ function buyerHelperAttempt(current,allowHelper){
+  const {authority}=current;
+  const resource={...authority.resource,helpers:allowHelper?['pip-01']:[]};
+  return act({...current,authority:{...authority,resource}},'agent','proof-helper',{scope:'file',shareLogin:false});
+ }
+ return {fresh,stage,act,hydrate,assessment,secure,changesResolved,reportRecords,reportFollowUp,reportShare,approvalPreview,approvalMatches,alexExtra,novaAddition,buyerExample,buyerHelperAttempt};
 })();
 if(typeof module!=='undefined')module.exports=StoryRules;

@@ -260,7 +260,7 @@ const NOVA_BUYER_NEEDS = [
       checklist:{prerequisite:'Two registered test agents with separate identities, and a sponsor who can delegate one test task.',
         owner:'The identity team sets up the agent identities and delegation. The workflow and app owners correlate those identities with the action.',
         success:'A permitted file handoff records the sponsor, requesting agent and acting agent as three distinct identities.',
-        failure:'Have the app refuse the same handoff when the helper has no valid delegation for it.',
+        failure:'Try the same handoff with Pip outside the file service’s allowed helpers. The app should refuse before Pip receives the file.',
         evidence:'Save the delegation reference and the app’s allowed and denied audit records with the actor and request IDs.'}},
     sources:[['IBM Agent Identity','https://www.ibm.com/products/agent-identity']]
   },
