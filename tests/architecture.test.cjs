@@ -6,6 +6,7 @@ const architecture=require('../v2/architecture.js');
 
 test('architecture steps resolve to a component and threat links resolve to a request',()=>{
  const products=vm.runInNewContext(fs.readFileSync(require.resolve('../v2/products.js'),'utf8')+'\nNOVA_PRODUCTS');
+ const sources=vm.runInNewContext(fs.readFileSync(require.resolve('../assets/protocols.js'),'utf8')+'\nPROTOCOL_SOURCES');
  const mapIds=architecture.groups.flatMap(([,ids])=>ids);
  assert.deepEqual(new Set(mapIds),new Set(Object.keys(architecture.components)));
  assert.equal(mapIds.length,new Set(mapIds).size);
@@ -13,7 +14,10 @@ test('architecture steps resolve to a component and threat links resolve to a re
   if(component.product)assert(products.some(p=>p.id===component.product),component.product);
  }
  for(const [id,flow] of Object.entries(architecture.flows)){
-  for(const [component] of flow.steps)assert(mapIds.includes(component),id+': '+component);
+  for(const [component,,protocols=[]] of flow.steps){
+   assert(mapIds.includes(component),id+': '+component);
+   for(const protocol of protocols)assert.match(sources[protocol]?.url??'',/^https:\/\//,id+': '+protocol);
+  }
  }
  for(const threat of architecture.threats)assert(architecture.flows[threat.flow],threat.title);
  for(const [plane,components] of architecture.technical.topology){

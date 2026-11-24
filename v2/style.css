@@ -276,6 +276,17 @@ dialog.is-architecture { width: min(850px, calc(100% - 28px)); }
 .architecture-steps li p {
   margin: 7px 0 0;
 }
+.architecture-steps .debrief {
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+}
+.architecture-steps .debrief summary {
+  display: list-item;
+  padding-block: 10px;
+  color: var(--accent);
+  cursor: pointer;
+}
 .architecture-threats dt {
   font-weight: 700;
 }

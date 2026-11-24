@@ -66,10 +66,10 @@ const ArchitectureReference = (() => {
     ['mission','Record these two accounts, the one-page handover and Morgan as recipient.'],
     ['iai','Give Nova a separate agent identity and delegated authority for the task.'],
     ['openshell','Run Nova’s MCP client inside the governed workspace.'],
-    ['mcpGateway','The client discovers the authorization server from the protected MCP resource metadata (RFC 9728), then requests a token for that MCP resource (RFC 8707).'],
-    ['mcpGateway','The configured gateway validates the client’s access token and forwards the tool call using separate authorization for the MCP server hop.'],
-    ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.'],
-    ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.'],
+    ['mcpGateway','The client discovers the authorization server from the protected MCP resource metadata (RFC 9728), then requests a token for that MCP resource (RFC 8707).',['mcp','protectedResource','resource']],
+    ['mcpGateway','The configured gateway validates the client’s access token and forwards the tool call using separate authorization for the MCP server hop.',['mcp']],
+    ['mcpTool','The MCP server validates its HTTP authorization and tool arguments. Its connector maps the tool call to a proposed CRM read.',['mcp']],
+    ['vault','If configured, the broker obtains or reuses a valid short-lived CRM read credential before the backend call. The Vault-audience token stays at Vault.',['leases']],
     ['crm','The CRM enforcement point (PEP) verifies the caller and observes the actual record IDs and read operation.'],
     ['policyContext','Supply current identity, mission and resource attributes from authoritative systems.'],
     ['authorization','Evaluate whether the current policy and mission permit the observed read.'],
@@ -95,7 +95,7 @@ const ArchitectureReference = (() => {
    premise:'Morgan may approve a review copy for feedback and later a separate final copy.',
    steps:[
     ['people','Morgan sees the file, revision, accounts and intended recipient.'],
-    ['verify','A configured CIBA flow authenticates Morgan out of band. The workflow correlates the authentication result with its own immutable transaction preview.'],
+    ['verify','A configured CIBA flow authenticates Morgan out of band. The workflow correlates the authentication result with its own immutable transaction preview.',['ciba']],
     ['authorization','Bind the recorded approval to the actor, file digest, recipient, record set, mission and policy versions, session generation, expiry and one-use ID. The game uses file revision as a proxy for the digest.'],
     ['crm','Rebuild the action from the actual request. Atomically consume the matching approval with a durable send intent and record the outcome. Make retries idempotent.']
    ],
@@ -142,8 +142,8 @@ const ArchitectureReference = (() => {
    steps:[
     ['mission','Withdraw the task grant and stop new governed operations.'],
     ['openshell','Stop Nova’s workspace.'],
-    ['antenna','Where configured, a shared signal can notify receivers. Confirmation comes from the systems that act.'],
-    ['controllers','Revoke the credential, close the CRM session and check any queued follow-up.'],
+    ['antenna','Where configured, a shared signal can notify receivers. Confirmation comes from the systems that act.',['ssf','caep']],
+    ['controllers','Revoke the credential, close the CRM session and check any queued follow-up.',['leases']],
     ['controllers','Retest the old route independently. Record a refusal or leave the result unverified if the controller cannot answer.']
    ],
    result:'The tested route closes. Earlier delivery stays delivered.'

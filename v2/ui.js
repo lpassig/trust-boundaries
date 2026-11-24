@@ -364,16 +364,26 @@ function architectureDesign(){
  ${sections.map(({title,paragraphs,sources})=>`<details class="product-card"><summary><b>${esc(title)}</b></summary>${paragraphs.map(p=>`<p>${esc(p)}</p>`).join('')}<p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p></details>`).join('')}`;
 }
 
+function architectureComponentDetail(id,protocols=[]){
+ const entry=ArchitectureReference.components[id],product=entry.product&&productById(entry.product);
+ const productSource=product?[[product.sourceLabel||product.name+' documentation',product.url]]:[];
+ const specifications=protocols.map(key=>[PROTOCOL_SOURCES[key].name,PROTOCOL_SOURCES[key].url]);
+ const sources=[...new Map([...specifications,...productSource,...(entry.sources||[])].map(([label,url])=>[url,label]))];
+ const sourceLinks=sources.length?`<p class="sources">${sources.map(([url,label])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`:'';
+ return {
+  kind:entry.kind,hasSources:!!sources.length,
+  body:`<p>${esc(entry.summary)}</p><p>${esc(entry.detail||product?.limit)}</p>${sourceLinks}`
+ };
+}
+
 function architectureMap(openId){
- const {groups,components}=ArchitectureReference;
+ const {groups}=ArchitectureReference;
  return `<div class="architecture-map">${groups.map(([title,ids])=>`<section class="architecture-group">
   <h3>${esc(title)}</h3><div class="architecture-nodes">${ids.map(id=>{
-   const entry=components[id],product=entry.product&&productById(entry.product);
-   const sources=product?[[product.sourceLabel||product.name+' reference',product.url]]:entry.sources||[];
-   const reference=sources.length?`<p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`:'';
+   const {kind,body}=architectureComponentDetail(id);
    return `<details class="architecture-node" data-architecture-node="${id}" ${id===openId?'open':''}><summary>
-    <strong>${esc(architectureComponentName(id))}</strong><small>${esc(entry.kind)}</small>
-   </summary><p>${esc(entry.summary)}</p><p>${esc(entry.detail||product?.limit)}</p>${reference}</details>`;
+    <strong>${esc(architectureComponentName(id))}</strong><small>${esc(kind)}</small>
+   </summary>${body}</details>`;
   }).join('')}</div></section>`).join('')}</div>
   <p class="small-print">This example combines product capabilities with customer integrations. The CRM and current work order supply the business rules.</p><p class="sources"><a href="https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html" target="_blank" rel="noopener noreferrer">NVIDIA Secure Agent Workspace reference design</a></p>`;
 }
@@ -382,9 +392,12 @@ function architectureFlow(flowId){
  const {flows}=ArchitectureReference,flow=flows[flowId];
  return `<label for="architecture-flow">Choose a request</label>
   <select id="architecture-flow">${Object.entries(flows).map(([id,item])=>`<option value="${id}" ${id===flowId?'selected':''}>${esc(item.title)}</option>`).join('')}</select>
-  <p>${esc(flow.premise)}</p><ol class="architecture-steps">${flow.steps.map(([id,text])=>`<li>
-   <button class="secondary" data-architecture-component="${id}">${esc(architectureComponentName(id))}</button><p>${esc(text)}</p>
-  </li>`).join('')}</ol><div class="receipt"><b>Outcome</b><p>${esc(flow.result)}</p></div>`;
+  <p>${esc(flow.premise)}</p><ol class="architecture-steps">${flow.steps.map(([id,text,protocols])=>{
+   const {kind,body,hasSources}=architectureComponentDetail(id,protocols);
+   return `<li><b>${esc(architectureComponentName(id))}</b><p>${esc(text)}</p>
+    <details class="debrief"><summary>${hasSources?'Role and sources':'Role in this deployment'}</summary>
+    <p class="eyebrow">${esc(kind)}</p>${body}</details></li>`;
+  }).join('')}</ol><div class="receipt"><b>Outcome</b><p>${esc(flow.result)}</p></div>`;
 }
 
 function architectureThreats(){
