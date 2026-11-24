@@ -718,14 +718,21 @@ function showBuyerAccessCheck(back,key,{trials={},backLabel=null}={}){
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
  const reference=replay.reference||'Vault lease '+StoryRules.buyerExample().sourceLease.id;
  const trial=trials[key]||DecisionLab.startCloseoutCheck();
- const exercise=buyerCloseoutReplay(replay,reference,trial,next=>showBuyerAccessCheck(back,key,{trials:{...trials,[key]:next},backLabel}));
+ const exercise=buyerCloseoutReplay(replay,reference,trial,next=>{
+  showBuyerAccessCheck(back,key,{trials:{...trials,[key]:next},backLabel});
+  const result=next.closure!=='open'&&!next.probe?$('#closeout-controller-response'):$('#closeout-evidence > li:last-child');
+  result.tabIndex=-1;
+  result.focus({preventScroll:true});
+  result.scrollIntoView({block:'center',behavior:'instant'});
+ });
  const checkButtons=Object.entries(accessChecks).map(([id,item])=>button(item.label,
   ()=>showBuyerAccessCheck(back,id,{trials,backLabel}),`choice${id===key?' good':''}`,closeoutStatus(trials[id]))).join('');
- showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li>
-  <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
+ showReference(symptom,`<p><b>Who owns it</b> · ${esc(owner)}</p>
   <h3>Try it in the simulation</h3>${exercise}
   <section class="debrief"><h3>Three separate checks</h3><p>Choose a control to test. Each result applies to that control.</p>
    <nav class="closeout-checks" aria-label="Choose a closeout check">${checkButtons}</nav></section>
+  <ul class="route-list"><li><b>What to test first</b><br>${esc(check)}</li>
+   <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
   <div class="actions">${backLabel?button(backLabel,back,'secondary'):button('Back to symptoms',()=>showBuyerAccess(back,false,trials),'secondary')}
   ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
  $('.closeout-checks .good').setAttribute('aria-current','true');
@@ -741,10 +748,10 @@ function buyerCloseoutReplay(replay,reference,trial,advance){
  else if(trial.probe==='closed')next=button('Replay this check',()=>advance(DecisionLab.startCloseoutCheck()),'secondary');
  else if(trial.probe==='unknown')next=button(replay.retry,()=>close(true));
  else next=button(replay.close,()=>close(true))+button('Simulate the controller being unreachable',()=>close(false),'secondary');
- return `<ol class="lab-summary" aria-label="Evidence for this check">
+ return `<ol class="lab-summary" id="closeout-evidence" aria-label="Evidence for this check">
    <li><b>Tested reference</b><span>${esc(reference)}</span></li>
    ${trial.baseline?`<li><b>Before the change</b><span>${esc(replay.active)}</span></li>`:''}
-   ${closure?`<li><b>Controller response</b><span>${esc(closure)}</span></li>`:''}
+   ${closure?`<li id="closeout-controller-response"><b>Controller response</b><span>${esc(closure)}</span></li>`:''}
    ${closure?`<li><b>${result?esc(result[0]):'Fresh retest'}</b><span>${result?esc(result[1]):'Retest pending'}</span></li>`:''}
   </ol>
   <div class="actions">${next}</div>`;
