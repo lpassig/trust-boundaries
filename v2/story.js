@@ -198,7 +198,7 @@ const JOURNEY_SEQUENCE = [
     teen: [
       ['Ms Patel', 'Alex', 'Suggests a closing sentence and a museum video.'],
       ['Alex', 'Parent', 'Asks to use the specific YouTube source.'],
-      ['Parent', 'School app', 'Checks the teacher’s message through the usual school channel.'],
+      ['Parent', 'School app', 'Uses their parent account on their own phone to find Ms Patel’s reply and compare its link with Alex’s.'],
       ['Parent', 'Phone controls', 'Approves the verified museum source for the rest of the homework session.'],
       ['Phone controls', 'Alex', 'Allows Alex to open the approved source.']
     ],
