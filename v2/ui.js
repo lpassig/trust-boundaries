@@ -441,7 +441,8 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
  const {flows}=ArchitectureReference;
  const boundary=flowId;
  if(!flows[flowId])flowId='read';
- const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='threats'?architectureThreats():architectureMap(componentId);
+ const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):view==='runtime'?architectureRuntime():view==='deployment'?`${architectureDeployment()}
+  <div class="actions">${button('Compare the BAR deployments',()=>showMaturity(()=>showArchitecture('deployment',flowId)),'secondary')}</div>`:view==='threats'?architectureThreats():architectureMap(componentId);
  showReference('Mission-bound authorization',
   `<p>This reference describes a target deployment. The game replays fictional requests and outcomes. Product and protocol links identify the documented capabilities used in each layer.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -496,26 +497,49 @@ function showMaturity(back=showIntro,selected=null){
  const title=stage=>`${stage.label} (${stage.name.toUpperCase()})`;
  const backLabel='Back to Raise the BAR';
  const stageExercises={
-  Build:['Compare the agent activity records',()=>showBuyerEvidence('iai',reopen,backLabel)],
+  Build:['Test the drafting assistant',()=>showBuildPilot(reopen)],
   Authorize:['Test what Nova can read',()=>showRuntimeExercise(reopen,{scopeOnly:true,backLabel})],
-  Resist:['Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel})]
+  Resist:['Run a containment drill',()=>showRuntimeIncident(reopen,null,backLabel)]
  };
- if(selected)return showReference(title(selected),
-  `<p>${esc(selected.mode)}</p><ul class="route-list">
-  <li><b>Start here</b><br>${esc(selected.first)}</li>
-  <li><b>Evidence to save</b><br>${esc(selected.evidence)}</li>
-  <li><b>${esc(selected.value[0])} to measure</b><br>${esc(selected.value[1])}</li>
-  <li><b>Where products fit</b><br>${esc(selected.next)}</li>
-  <li><b>In Nova’s story</b><br>${esc(selected.example)}</li></ul>
-  <div class="actions">${button(...stageExercises[selected.name])}
-  ${selected.name==='Resist'?button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
-  ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
-  ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
- showReference('Raise the BAR',`<p>Choose the stage that best describes one workflow. If the work is still manual, start with one assisted task.</p>
-  <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.mode)}</li>`).join('')}</ol>
-  <p>Start with the controls you have. Check ownership and access first, enforce tool permissions before enabling sensitive actions, and practice stopping the pilot early.</p>
+ if(selected){
+  const {deployment}=selected;
+  return showReference(title(selected),
+   `<p>${esc(selected.mode)}</p><h3>${esc(deployment.title)}</h3><p>${esc(deployment.scenario)}</p>
+   <ul class="route-list">
+    <li><b>Who controls access</b><br>${esc(deployment.boundary)}</li>
+    <li><b>First pilot and evidence</b><br>${esc(selected.evidence)}</li>
+    <li><b>${esc(selected.value[0])} to measure</b><br>${esc(selected.value[1])}</li>
+    <li><b>Where products fit</b><br>${esc(selected.next)}</li>
+   </ul>
+   <div class="actions">${button(...stageExercises[selected.name])}</div>
+   <details class="debrief"><summary>Technical setup and sources</summary>
+    <ol class="route-list">${deployment.wiring.map(([actor,action])=>`<li><b>${esc(actor)}</b><br>${esc(action)}</li>`).join('')}</ol>
+    ${protocolSourceLinks(deployment.sources)}</details>
+   <div class="actions">
+    ${selected.name==='Resist'?button('Test whether the old session still works',()=>showBuyerAccessCheck(reopen,'session',{backLabel}),'secondary')+button('Compare a refusal and a risk alert',()=>showBuyerEvidence('risk',reopen,backLabel),'secondary'):''}
+    ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
+    ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
+ }
+ showReference('Raise the BAR',`<p>Compare three ways to deploy Nova for the same customer handover. Choose the stage that fits what your agent can do today.</p>
+  <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.deployment.title)}</li>`).join('')}</ol>
+  <p>Start with the controls you have. Move to the next example when the workflow needs more autonomy and you can verify the added controls.</p>
   <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
   <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
+}
+function showBuildPilot(back,attempt=null){
+ const draft=attempt==='draft';
+ const outcome=draft?'Draft ready for Priya’s review':'The assistant has no CRM tool';
+ const result=draft?'The assistant drafts a handover from harbor-bikes-test.txt. Priya chooses what to share.':'The application rejects the request. Priya can supply an approved summary for the draft.';
+ showReference('Test the drafting assistant',`<p>This example uses a named assistant, an approved model and one sanitized test file.</p>
+  ${attempt?`<div class="receipt"><b>${outcome}</b><p>${result}</p></div>
+   <ul class="route-list" aria-label="Example activity record">
+    <li><b>Run and owner</b><br>${draft?'BUILD-01':'BUILD-02'} · Nova · ${esc(NOVA_AGENT_OWNERS.nova)}</li>
+    <li><b>Input and model</b><br>${draft?'harbor-bikes-test.txt · approved model':'Request to fetch a CRM record · no tool call'}</li>
+    <li><b>Recorded outcome</b><br>${draft?'Draft generated for review':'Direct customer-record read refused'}</li>
+   </ul>`:''}
+  <div class="actions">${button('Draft from the test file',()=>showBuildPilot(back,'draft'))}
+   ${button('Try fetching a CRM record',()=>showBuildPilot(back,'crm'),'secondary')}
+   ${button('Back to Raise the BAR',back,'secondary')}</div>`, 'BUILD PILOT');
 }
 function buyerPilotChecklist(pilot,technical=false){
  const {prerequisite,owner,success,failure,evidence}=pilot.checklist;
@@ -1025,8 +1049,8 @@ function showSupervisorFailure(back,status='frozen'){
   ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
-function showRuntimeIncident(back,crmReachable=null){
- const check=reachable=>showRuntimeIncident(back,reachable);
+function showRuntimeIncident(back,crmReachable=null,backLabel='Back to runtime and containment'){
+ const check=reachable=>showRuntimeIncident(back,reachable,backLabel);
  const evidence=crmReachable===null?null:DecisionLab.incidentStatus(crmReachable);
  const rows=evidence?[
   ['Customer mission service','Mission withdrawn'],['OpenShell','Sandbox generation S-04 stopped'],
@@ -1039,7 +1063,7 @@ function showRuntimeIncident(back,crmReachable=null){
   <p>Review any completed or in-flight work separately. A completed delivery stays delivered.</p>`:''}
   <div class="actions">${!evidence?`${button('Verify with CRM reachable',()=>check(true))}${button('Simulate CRM being unreachable',()=>check(false),'secondary')}`
    :evidence.verified?button('Replay the incident check',()=>check(null),'secondary'):button('Restore CRM contact and verify',()=>check(true))}
-  ${button('Back to runtime and containment',back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
+  ${button(backLabel,back,'secondary')}</div>`,'REFERENCE ARCHITECTURE');
 }
 
 function showReadComparison(pair,back){

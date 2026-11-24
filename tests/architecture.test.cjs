@@ -48,6 +48,17 @@ test('deployment options refer to published protocol sources',()=>{
  }
 });
 
+test('all three BAR stages have a deployment, a pilot and resolvable technical references',()=>{
+ const stages=vm.runInNewContext(fs.readFileSync(require.resolve('../v2/story.js'),'utf8')+'\nBAR_STAGES');
+ const sources=vm.runInNewContext(fs.readFileSync(require.resolve('../assets/protocols.js'),'utf8')+'\nPROTOCOL_SOURCES');
+ assert.deepEqual(Array.from(stages,stage=>stage.name),['Build','Authorize','Resist']);
+ for(const {deployment,evidence,value} of stages){
+  assert(deployment.title&&deployment.scenario&&deployment.boundary&&evidence&&value.length===2);
+  assert(deployment.wiring.length>0&&deployment.sources.length>0);
+  for(const source of deployment.sources)assert.match(sources[source]?.url??'',/^https:\/\//);
+ }
+});
+
 test('the buyer guide lists the main and secondary product pilots with complete setup checklists',()=>{
  const needs=vm.runInNewContext(fs.readFileSync(require.resolve('../v2/products.js'),'utf8')+'\nNOVA_BUYER_NEEDS');
  const pilots=Array.from(needs,need=>need.pilot).filter(Boolean);

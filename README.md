@@ -47,7 +47,9 @@ Choose **Architecture** alongside Alex and Nova or open the [reference directly]
 
 Each buyer card opens its product’s technical setup and pilot checklist. **Access still works after the job ends** guides buyers to separate credential, app session and workspace simulations. **The agent can open the app but can see or do too much** compares an allowed read with a denied one on the same route. The IBM Verify worked example lets players test an edited send, approve the current copy, and retry using the story’s CRM decision.
 
-The **Raise the BAR** guide helps teams pick a first control for one workflow. Its stages are Agent AI Assistant (Build), Semi-Autonomous (Authorize), and Governed Autonomy (Resist). Each stage opens its example directly and explains which pilot result and measure of value to track. The room groups inspectable systems and records below the scene. Nova’s outline and CRM read distinguish the model gateway from the tool gateway, and the optional stopped detour shows a simulated Verify Identity Protection alert and a separate configured response.
+The **Raise the BAR** guide compares three example deployments of the same customer handover. Build drafts from a supplied file. Authorize adds customer records through a scope-checked CRM tool. Resist adds scheduled execution and verified containment. Each stage includes a first pilot, the evidence and value to measure, and expandable technical setup and sources. Open it from the first screen or from **Explore Architecture → Deployment options**.
+
+Nova’s room groups inspectable systems and records below the scene. The outline and CRM read distinguish the model gateway from the tool gateway. The optional stopped detour shows a simulated Verify Identity Protection alert and a separate configured response.
 
 **Start with a work problem** opens the buyer guide from the first screen. Each pilot card explains the outcome, what the buyer’s team owns, and the first test. The secondary cards include a worked watsonx Orchestrate file handoff and a Verify Antenna exercise that tracks signal delivery, receiver action, and the independent CRM retest.
 
