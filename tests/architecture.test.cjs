@@ -50,7 +50,7 @@ test('the buyer guide lists the main and secondary product pilots with complete 
  assert.deepEqual(pilots.filter(pilot=>!pilot.secondary).map(pilot=>pilot.evidence),['iai','verify','vault','openshell']);
  assert.deepEqual(pilots.filter(pilot=>pilot.secondary).map(pilot=>pilot.evidence),['orchestrate','risk','antenna']);
  for(const pilot of pilots){
-  assert(pilot.outcome&&pilot.integration&&pilot.test&&pilot.evidenceLabel);
+  assert(pilot.outcome&&pilot.integration&&pilot.evidenceLabel);
   for(const field of ['prerequisite','owner','success','failure','evidence'])assert(pilot.checklist[field]);
  }
 });

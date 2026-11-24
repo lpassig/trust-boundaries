@@ -460,12 +460,11 @@ function showBuyerGuide(exit=()=>state().started?close():showIntro(),exitLabel='
  const sources=need=>`<p class="sources">${need.sources.map(([name,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`).join(' · ')}</p>`;
  if(selected){
   const {pilot,product,fit}=selected;
-  return showReference(product,`<p>${esc(pilot.outcome)}</p>
-   <ul class="route-list"><li><b>When to evaluate it</b><br>${esc(fit)}</li>
-   <li><b>What your team owns</b><br>${esc(pilot.integration)}</li>
-   <li><b>First pilot test</b><br>${esc(pilot.test)}</li></ul>
-   <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}</div>
-   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}${button('Open technical setup',()=>showBuyerSetup(selected,reopen),'secondary')}</div>`,
+  return showReference(product,`<p>${esc(pilot.outcome)}</p><p>${esc(fit)}</p>
+   <div class="actions">${button(pilot.evidenceLabel,()=>showBuyerEvidence(pilot.evidence,reopen))}
+   ${button('Open technical setup',()=>showBuyerSetup(selected,reopen),'secondary')}</div>
+   <h3>Plan a first pilot</h3>${buyerPilotChecklist(pilot)}
+   ${sources(selected)}<div class="actions">${button('Choose another problem',()=>showBuyerGuide(exit,exitLabel),'secondary')}</div>`,
    'BUYER GUIDE');
  }
  const secondary=choices(NOVA_BUYER_NEEDS.filter(need=>need.pilot?.secondary).map(need=>[need.product,need.pilot.label,()=>choose(need)]));
@@ -505,16 +504,23 @@ function showMaturity(back=showIntro,selected=null){
   <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
   <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
 }
+function buyerPilotChecklist(pilot,technical=false){
+ const {prerequisite,owner,success,failure,evidence}=pilot.checklist;
+ const rows=[
+  ...(technical?[['What you need before setup',prerequisite]]:[]),
+  ['Who to involve',owner],
+  ['What should work',success],
+  ['What should fail or stay unverified',failure],
+  ['Evidence to save',evidence]
+ ];
+ return `<ul class="route-list">${rows.map(([label,value])=>`<li><b>${label}</b><br>${esc(value)}</li>`).join('')}</ul>`;
+}
+
 function showBuyerSetup(need,back,backLabel='Back to the buyer card'){
- const product=productById(need.pilot.evidence);
- const {prerequisite,owner,success,failure,evidence}=need.pilot.checklist;
- showReference(`${product.name} technical setup`,`<div class="receipt"><b>What your team connects</b><p>${esc(need.pilot.integration)}</p></div>
-  <h3>Pilot checklist</h3><ul class="route-list">
-  <li><b>Prerequisite</b><br>${esc(prerequisite)}</li>
-  <li><b>Integration owner</b><br>${esc(owner)}</li>
-  <li><b>Success case</b><br>${esc(success)}</li>
-  <li><b>Failure case</b><br>${esc(failure)}</li>
-  <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
+ const {pilot}=need;
+ const product=productById(pilot.evidence);
+ showReference(`${product.name} technical setup`,`<div class="receipt"><b>What your team connects</b><p>${esc(pilot.integration)}</p></div>
+  <h3>Pilot checklist</h3>${buyerPilotChecklist(pilot,true)}
   ${productCard(product,true)}
   <div class="actions">${button(backLabel,back)}${button('Open the full technical product map',()=>showProductMap(product.id,()=>showBuyerSetup(need,back,backLabel),'Back to technical setup'),'secondary')}</div>`,
   'TECHNICAL SETUP');
@@ -555,9 +561,9 @@ function showBuyerAccessCheck(back,key,{credential='',closeout=DecisionLab.start
  const need=pilot&&NOVA_BUYER_NEEDS.find(item=>item.pilot?.evidence===pilot);
  const exercise=replay?buyerCloseoutReplay(replay,closeout,next=>showBuyerAccessCheck(back,key,{closeout:next,backLabel})):
   credentialComparison(StoryRules.buyerExample().sourceLease,credential,next=>showBuyerAccessCheck(back,key,{credential:next,backLabel}));
- showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li></ul>
+ showReference(symptom,`<ul class="route-list"><li><b>Who owns it</b><br>${esc(owner)}</li><li><b>What to test first</b><br>${esc(check)}</li>
+  <li><b>Evidence to save</b><br>${esc(evidence)}</li></ul>
   <h3>Try it in the simulation</h3>${exercise}
-  <details class="debrief"><summary>Evidence to save</summary><p>${esc(evidence)}</p></details>
   <div class="actions">${backLabel?button(backLabel,back,'secondary'):button('Check another symptom',()=>showBuyerAccess(back),'secondary')}
   ${need?button(`Open ${need.product} technical setup`,()=>showBuyerSetup(need,reopen,'Back to the access check'),'secondary'):''}</div>`,'ACCESS AFTER THE JOB');
 }
