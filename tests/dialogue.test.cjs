@@ -63,7 +63,8 @@ test('permission and service replies point to the responsible control even when 
  assert.equal(I.eventSource('agent','Nova','open'),'phone');
  assert.equal(I.eventSource('agent','Nova','read-brief'),'workOrder');
  assert.equal(I.eventSource('agent','Nova','ask-pass'),'missionControl');
- assert.equal(I.eventSource('agent','Sponsor','verify-contact'),'sponsorMessage');
+ assert.equal(I.eventSource('agent','Sponsor','verify-contact'),'sponsorContact');
+ assert.equal(I.speechSource('agent','sponsorContact').tool,'sponsorMessage');
  assert.equal(I.eventSource('agent','Sponsor','verify-portal'),'workOrder');
  assert.equal(I.nextObject('agent','request','brief'),'workOrder');
  assert.equal(I.eventSource('agent','Nova','collect-source'),'source');
@@ -74,9 +75,9 @@ for(const mode of ['teen','agent']){
  test(`${mode}: shared scene beats distinguish a reviewer's message, the outside source and the resource denial`,()=>{
   const s=helperReview(mode),teen=mode==='teen';
   assert.deepEqual(Array.from(I.availableTools(R.fresh(),mode)),[]);
-  const tools=teen?[]:['workOrder','policyConsole','registries','aiGateway','mcpGateway','riskMonitor'];
+  const tools=teen?[]:['workOrder','sponsorMessage','policyConsole','registries','aiGateway','mcpGateway','riskMonitor'];
   const opening=R.act(R.fresh(),mode,'begin').state;
-  assert.deepEqual(Array.from(I.availableTools(opening,mode)),teen?[]:['workOrder','policyConsole','registries']);
+  assert.deepEqual(Array.from(I.availableTools(opening,mode)),teen?[]:['workOrder','sponsorMessage','policyConsole','registries']);
   assert.deepEqual(Array.from(I.availableTools(s,mode)),[...tools,'source','reviewer']);
   const approved=teen?s:R.act(s,mode,'approve-draft').state;
   const replied=R.act(approved,mode,'send-draft').state;

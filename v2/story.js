@@ -124,7 +124,7 @@ const EPISODES = {
     "minorText": "Morgan has read the draft. “Could you get to the point a little sooner? I’ll be reading this between calls.”",
     "minorAddition": "Two customer updates for tomorrow’s meeting.",
     "extensionTitle": "“Could we add Alder Books?”",
-    "extensionText": "“Alder Books asked to reschedule its renewal call. Could you check the new time so Morgan can plan the follow-up?” The proposal came through the work inbox. Check it with Priya before asking to add the account.",
+    "extensionText": "“Alder Books asked to reschedule its renewal call. Could you check the new time so Morgan can plan the follow-up?” Priya posted this suggestion in the work inbox. Confirm where it came from before proposing extra access.",
     "extensionAddition": "Alder Books · Bring the account status to tomorrow’s meeting. Source: customer record.",
     "deliveryReply": "Thanks. I can assign the Harbor Bikes renewal and the Pine Studio follow-up before the meeting.",
     "extendedDeliveryReply": "I’ll flag the new Alder Books call time for the team, too.",

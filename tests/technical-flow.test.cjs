@@ -159,7 +159,13 @@ test('Alder Books uses the same route and CRM can deny or permit the read',()=>{
  assert.equal(denied.event.decision.result,'deny');
  assert.equal(denied.state.extensionAdded,false);
  assert.equal(denied.state.alderUpdate,null);
- const amended=run(run(s,'request-extension'),'resolve-extension');
+ const pending=run(s,'request-extension');
+ assert.deepEqual(pending.mission,s.mission);
+ assert.equal(pending.last.request.operation,'mission.amend.request');
+ assert.equal(pending.last.request.requested_operation,R.novaAddition.operation);
+ assert.deepEqual(pending.last.request.records,[R.novaAddition.record]);
+ assert(T.build(pending,'agent').nodes.some(node=>node.label==='Propose the permission change'));
+ const amended=run(pending,'resolve-extension');
  assert.equal(amended.alderUpdate,null);
  const approved=act(amended,'add-extension');
  assert.equal(approved.event.request.tool_route,'crm-mcp-gateway');

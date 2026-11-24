@@ -30,6 +30,7 @@ const StoryInteractions = (() => {
    notebook:'The task notebook keeps ordinary context and the source of delivery receipts.',
    helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
    workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
+   sponsorMessage:'Priya sponsors Nova’s handover. She can propose a change and approve its exact scope within policy. The mission service records the approval. Morgan approves the copy that will be shared.',
    policyConsole:'The policy information point supplies trusted facts. The policy decision point evaluates the request. The policy enforcement point applies the decision.',
    registries:'An agent registry records which agent exists and who owns it. The configured Vault registry separately limits which Vault access enrolled agents can inherit.',
    aiGateway:'The configured watsonx Orchestrate AI Gateway routes Nova’s outline request to an approved model.',
@@ -43,7 +44,7 @@ const StoryInteractions = (() => {
  function objectDescription(mode,key){return objects[mode][key];}
  function availableTools(s,mode){
   return [
-   ...(mode==='agent'&&s.started?['workOrder','policyConsole','registries']:[]),
+   ...(mode==='agent'&&s.started?['workOrder','sponsorMessage','policyConsole','registries']:[]),
    ...(mode==='agent'&&s.opened?['aiGateway','mcpGateway','riskMonitor']:[]),
    ...(s.draft?['source','reviewer']:[]),
    ...(s.message?['outside']:[])
@@ -91,7 +92,8 @@ const StoryInteractions = (() => {
   const teen=mode==='teen';
   const sources={
    reviewer:{name:teen?'Ms Patel':'Morgan · reviewer',kind:'Message',channel:teen?'School inbox · on your phone':'Work inbox · review approval',point:teen?[526,404]:[449,173],object:teen?'phone':'brief',tool:'reviewer'},
-   sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief'},
+   sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief',tool:'sponsorMessage'},
+   sponsorContact:{name:'Priya · task sponsor',kind:'Message',channel:'Saved contact',point:[449,173],object:'brief',tool:'sponsorMessage'},
    workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
    policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
@@ -131,7 +133,7 @@ const StoryInteractions = (() => {
   if(['bypass-notes','shortcut'].includes(action))return 'stop';
   if(action==='inspect-request-source')return 'outside';
   if(action==='decline-private')return mode==='teen'?'sentToJamie':'hero';
-  if(action==='verify-contact')return mode==='teen'?'reviewer':'sponsorMessage';
+  if(action==='verify-contact')return mode==='teen'?'reviewer':'sponsorContact';
   if(mode==='agent'&&['request-extension','resolve-extension','review','resolve-review'].includes(action))return 'missionControl';
   if(speaker===(mode==='teen'?'Sam':'Pip'))return 'helper';
   if(mode==='agent'&&/Approver|Morgan/.test(speaker))return 'reviewer';

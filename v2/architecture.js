@@ -82,6 +82,7 @@ const ArchitectureReference = (() => {
    premise:'Priya suggests adding Alder Books after Morgan receives the review copy.',
    steps:[
     ['people','Confirm the request via Priya’s saved contact or the sponsor-owned change request linked to the work order.'],
+    ['orchestrate','Turn the verified business request into a proposed scope change. In this example Nova asks for a summary read of record 789. The recipient and report purpose stay as agreed.'],
     ['mission','Record the request. The original two accounts stay in scope while approval is pending.'],
     ['authorization','Check that the sponsor, agent ceiling and CRM policy permit the addition.'],
     ['mission','Record the approved scope and retire the old session generation.'],
