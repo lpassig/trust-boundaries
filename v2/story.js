@@ -74,7 +74,7 @@ const EPISODES = {
     "file": "summary.pdf",
     "to": "reviewer@company.example",
     "outside": "export@external-review.example",
-    "sender": "Luca · imported CRM attachment",
+    "sender": "Imported CRM attachment · Luca’s upload",
     "authority": "Mission service",
     "helper": "Pip",
     "contact": "Priya · saved contact",
@@ -93,7 +93,7 @@ const EPISODES = {
       "Task notebook",
       "Pip"
     ],
-    "objectDetails": ["Task scope and sponsor approval", "NVIDIA OpenShell", "CRM · resource enforcement", "Work orders and replies", "Notes for the team", "Formatting help"],
+    "objectDetails": ["Records the approved scope", "NVIDIA OpenShell", "CRM · resource enforcement", "Work orders and replies", "Notes for the team", "Formatting sub-agent"],
     "actorLine": "“One page by tomorrow. Let’s open the work order.”",
     "draftTitle": "Tomorrow’s customer handover",
     "draftLines": [
@@ -284,20 +284,20 @@ const MOVES = {
 
 const NOVA_MOVES = {
   "intro": [
-    "Start the mission",
-    "Open the recorded work order."
+    "Start Nova’s story",
+    "Read Priya’s work request."
   ],
   "request": [
     "Open the work order",
-    "Read the task, approved destination and sponsor."
+    "Read the work Priya requested and who should receive it."
   ],
   "permission": [
-    "Confirm the task scope",
-    "Record the accounts and recipient in the mission service."
+    "Review Priya’s scope",
+    "Check the requested accounts and recipient before recording the approval."
   ],
   "open": [
-    "Start the workspace",
-    "Open the workspace for this job."
+    "Review OpenShell startup",
+    "See what starts for this mission, then launch Nova’s workspace."
   ],
   "draft": [
     "Build the first outline",

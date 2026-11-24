@@ -22,6 +22,9 @@ test('Nova’s CRM read follows the MCP client, gateway and server before CRM au
 });
 test('the first CRM trace records MCP discovery and audience before the gateway and Vault checks',()=>{
  const initial=start();
+ assert.equal(initial.sessionOpened,true);
+ assert.equal(initial.source,false);
+ assert.equal(initial.sourceLease,null);
  const blocked=act(R.fresh(),'collect-source');
  assert.equal(blocked.event.request.mcp_authorization,undefined);
  const read=run(initial,'collect-source');

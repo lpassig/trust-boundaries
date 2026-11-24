@@ -203,7 +203,7 @@ function perform(action,payload={}){
 function inventory(){
  const s=state(),e=episode(),items=[];
  if(s.started)items.push(['contact','✉',e.contact,'A contact you already know','Use this on later requests to clarify them independently.']);
- if(s.brief)items.unshift(['brief','▤',teen()?'Assignment card':'Work order',s.pass?'Agreed task':'New request',e.brief]);
+ if(s.brief)items.unshift(['brief','▤',teen()?'Assignment card':'Work order',teen()?(s.pass?'Agreed task':'New request'):'Priya’s original request',e.brief]);
  if(s.pass)items.push(['pass','◇',teen()?'Tonight’s plan':'Mission record',s.ended?'Closed':s.paused?'Paused':s.extensionAdded?'Approved addition included':'Current agreement',teen()?`Tonight’s plan: ${s.extensionStatus==='approved'?StoryRules.alexExtra(s).extraApp+' is allowed for the linked museum source only.':'School app and museum website until dinner.'}`:`${s.mission.id} version ${s.mission.version} · records ${s.mission.records.join(', ')}. Customer-owned authority.`]);
  if(s.source)items.push(['source','✎',e.source,teen()?'Page saved for the timeline':'The source actually opened',e.itemSource]);
  if(s.draft)items.push(['draft','▱',e.file,s.delivered?(teen()?'Sent to Ms Patel':'Delivered'):s.caption?'Sourced draft':'Source credit still needed',teen()?'Open the school app to read this version.':'Inspect this version at the CRM workspace.']);
@@ -211,17 +211,17 @@ function inventory(){
  if(s.draftReview)items.push(['review-copy','↗',teen()?'Draft sent for feedback':'Review-copy receipt','Version '+s.draftReview.revision,'The first review copy reached '+s.draftReview.to+'. The final file still needs submitting.']);
  if(s.approval&&!s.approval.used)items.push(['approval','✦',s.approval.purpose==='draft-review'?'Review-copy approval':'Final-share approval',`Revision ${s.approval.revision}`,`${e.file} to ${e.to}; current mission and one use.`]);
  if(s.delivered)items.push(['delivery','✓',teen()?'Submission receipt':'Delivery receipt','The agreed file arrived',teen()?'Ms Patel has this copy. You can keep the confirmation in your notebook.':'Keep it with a task note. Delivery is already a completed effect.']);
- if(!teen()&&s.opened)items.push(['vault','⌘','Task credential receipt',s.ended?(s.containment?.credentialRevoked?'Revoked':'Closure still to check'):'This mission only','Vault controls its own credential request. CRM independently enforces business operations.']);
+ if(!teen()&&s.sourceLease)items.push(['vault','⌘','Task credential receipt',s.ended?(s.containment?.credentialRevoked?'Revoked':'Closure still to check'):'This mission only','Vault controls its own credential request. CRM independently enforces business operations.']);
  if(s.notes.length)items.push(['note','▥',teen()?'Reminder':'Sourced task note','Ordinary content',s.notes[0].text]);
  if(s.checks.length===4)items.push(['checklist','☷',teen()?'Ready for dinner':'Closing evidence',teen()?'Project sent · laptop signed out':'Four task outcomes checked',teen()?'Tell your parent you’re done.':'Bring the evidence to finish this task.']);
  return items;
 }
 function objectName(key){
- const tools=teen()?{source:'Museum website',reviewer:'Ms Patel',outside:'Class group chat'}:{workOrder:'Work order',policyConsole:'Policy console',source:'CRM tool',reviewer:'Review inbox',outside:'Imported attachment'};
+ const tools=teen()?{source:'Museum website',reviewer:'Ms Patel',outside:'Class group chat'}:{workOrder:'Work order',policyConsole:'Policy console',source:'CRM tool',reviewer:'Morgan’s review',outside:'Imported attachment'};
  return tools[key]||episode().objects[OBJECT_KEYS.indexOf(key)];
 }
 function objectDetail(key){
- const tools=teen()?{source:'Check the dates',reviewer:'School inbox',outside:'Jamie’s forwarded message'}:{workOrder:'Task and recipient',policyConsole:'PIP, PDP and PEP',source:'Read account records · MCP',reviewer:'Morgan · reviewer',outside:'Luca · outside contact'};
+ const tools=teen()?{source:'Check the dates',reviewer:'School inbox',outside:'Jamie’s forwarded message'}:{workOrder:'Priya’s original request',policyConsole:'PIP, PDP and PEP',source:'Read account records · MCP',reviewer:'Exact-copy approval and feedback',outside:'Luca · customer portal upload'};
  return tools[key]||StoryInteractions.objectStatus(state(),mode,key)||episode().objectDetails?.[OBJECT_KEYS.indexOf(key)]||'';
 }
 function heldUse(){return selected?StoryInteractions.itemUse(state(),mode,selected):null;}
@@ -232,7 +232,7 @@ function targetState(key,pin=false){
 function targetTag(key,pin=false){return targetState(key,pin)==='use-target'?'Use here':targetState(key,pin)==='relevant'?'Next':'';}
 function objectLabel(key,pin=false){
  const guide=targetTag(key,pin),next=move()[2];
- if(pin&&guide==='Next'&&key!==next)return [objectName(next),guide].join(' · ');
+ if(pin&&guide==='Next'&&key!==next)return teen()?[objectName(next),guide].join(' · '):`${objectName(key)} · Next: ${objectName(next)}`;
  return [objectName(key),objectDetail(key),guide].filter(Boolean).join(' · ');
 }
 function selectPocket(id){if(dialog.open&&!dialog.classList.contains('is-reference'))close();selected=selected===id?null:id;render();$$('[data-item]').find(b=>b.dataset.item===id)?.focus({preventScroll:true});if(selected)toast(heldUse().instruction);}
@@ -255,7 +255,7 @@ function render(){
   return `<button data-object="${key}" class="${targetState(key)}${tools.includes(key)?' scene-tool':''}" aria-label="${esc(objectLabel(key))}" ${key==='helper'&&!s.draft?'disabled':''}><b aria-hidden="true">${sceneObjectIcon(key==='policyConsole'?'console':key,mode)}</b><span class="object-copy">${esc(objectName(key))}${detail?`<small class="object-detail">${esc(detail)}</small>`:''}${tag?`<small class="next-label">${tag}</small>`:''}</span></button>`;
  }).join('');
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
- const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A perfectly ordinary mission.',text:e.actorLine};
+ const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A new request is waiting.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
  $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Pip'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
  $('#next-title').textContent=selected?'Put away and continue':s.finished?'See my ending':m[0];
@@ -374,12 +374,15 @@ function architectureThreats(){
   </details>`).join('')}</div><p class="small-print">${esc(outsideCoverage)}</p>`;
 }
 
+function runtimeBootstrap(){
+ return `<ol class="route-list">${ArchitectureReference.runtime.bootstrap.map(([name,description])=>`<li><b>${esc(name)}</b><br>${esc(description)}</li>`).join('')}</ol>`;
+}
 function architectureRuntime(){
- const {bootstrap,sources}=ArchitectureReference.runtime;
+ const {sources}=ArchitectureReference.runtime;
  const back=()=>showArchitecture('runtime');
  return `<h3>From approved task to running sandbox</h3>
   <p>Example identifiers track different controls. The customer mission is G-042 v1. The separate OpenShell sandbox generation is S-04.</p>
-  <ol class="route-list">${bootstrap.map(([name,description])=>`<li><b>${esc(name)}</b><br>${esc(description)}</li>`).join('')}</ol>
+  ${runtimeBootstrap()}
   <p>OpenShell governs the MCP client’s network route. On this configured path the MCP gateway forwards the call and the CRM connector obtains a backend credential from Vault. CRM enforces the actual record decision.</p>
   <p>Application-layer rules block requests in enforcement mode. Audit mode logs violations and lets the request continue to downstream controls.</p>
   <div class="actions">
@@ -631,7 +634,7 @@ function showProductMap(selectedProduct='',back=null,backLabel='Back to the buye
 function showCredential(back=null){
  const s=states.agent;
  const returnToMap=typeof back==='function'?back:()=>showProductMap('vault');
- showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.opened?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.opened?'A scoped, short-lived credential is modeled for the approved CRM path.':'Open the approved runtime path before a credential is modeled in the story.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Back to the product map',returnToMap,'secondary')}${typeof back==='function'?'':button('Back to the story',()=>state().started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
+ showReference('What does Vault actually release?',`<p>IBM Agent Identity supplies the delegated identity context. HashiCorp Vault validates the request to its own credential path. The CRM authorizes the later business operation separately.</p><div class="receipt"><b>${s.sourceLease?'Illustrative credential receipt':'Preview of the configured credential path'}</b><p>${s.ended?'The closing checklist must confirm configured Vault token/lease revocation and CRM session termination independently.':s.sourceLease?'The connector obtained a scoped, short-lived credential for the approved CRM read.':'The connector requests the credential at the first CRM read.'}</p><p>No secret, password or usable token is displayed or generated.</p></div><p><b>Vault access:</b> human baseline ACL ∩ agent OBO ceiling ∩ supported RAR restrictions. The example uses the documented <code>vault:path_access</code> authorization type to read a configured credential role.</p><p><b>CRM access:</b> the customer’s resource policy restricts the currently approved records and checks the exact send. The read-only credential is used only for source data. Report delivery uses a separate CRM sharing endpoint under delegated identity, current resource policy and exact human approval; it does not upgrade or reuse the read credential.</p><details class="product-card"><summary><b>Inspect illustrative fields</b><span>Unsigned example data; not a live token or deployable configuration</span></summary><pre class="product-example">${esc(JSON.stringify({...NOVA_VAULT_EXAMPLE,source_read_check:{...NOVA_VAULT_EXAMPLE.source_read_check,records:s.mission?StoryRules.reportRecords(s):['123','456']}},null,2))}</pre></details><p class="sources"><a href="https://docs.hashicorp.com/vault/ai/iam/providers/verify" target="_blank" rel="noopener noreferrer">Configure IBM Verify for Vault</a> · <a href="https://developer.hashicorp.com/vault/api-docs/system/config-oauth-resource-server" target="_blank" rel="noopener noreferrer">OAuth resource-server requirements</a> · <a href="${PROTOCOL_SOURCES.leases.url}" target="_blank" rel="noopener noreferrer">Vault lease lifecycle</a></p><div class="actions">${button('Back to the product map',returnToMap,'secondary')}${typeof back==='function'?'':button('Back to the story',()=>state().started?close():showIntro())}</div>`,'IBM AGENT IDENTITY + HASHICORP VAULT');
 }
 
 function nextMove(){if(selected){selected=null;render();}switch(stage()){case'intro':return showIntro();case'request':return showBrief();case'permission':case'dinner':case'finish':return showParent();case'approval':return showFinalApproval();case'paused':return state().reviewPending?perform('resolve-review'):showParent();case'open':return showWorkspace();case'draft-approval':case'draft-send':return showDraftReview();case'draft':return perform('prepare');case'source':return state().source?perform('attach-source',{source:'original'}):perform('collect-source');case'proof':return showDraft();case'changes':return showChanges();case'send':return showSend();case'checks':return showChecks();case'ending':return showEnding();}}
@@ -640,7 +643,7 @@ function interact(key,pin){
  if(selected&&heldUse().targets.includes(key))return useItem(key);
  if(!selected&&StoryInteractions.isStoryObject(mode,key,move()[2],pin))return nextMove();
  speakingObject=!teen()&&key==='parent'?'missionControl':key;
- show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>`,'About this object');
+ show(objectName(key),`<p>${esc(StoryInteractions.objectDescription(mode,key))}</p>${!teen()&&key==='workOrder'?`<p>${esc(episode().brief)}</p>`:''}`,'About this object');
  dialog.dataset.inspect='true';
  syncSpeech();
 }
@@ -683,17 +686,18 @@ function showWorkOrder(){
  speakingObject='workOrder';
  const s=state(),e=episode(),m=s.mission;
  show(e.briefTitle,
-  `<div class="paper"><p><b>Requested by</b> · Priya, task sponsor</p><p>${esc(e.brief)}</p></div>
-  <div class="receipt"><b>${m?'Mission '+esc(m.id)+' · version '+m.version:'Work order awaiting confirmation'}</b>
-  <p>${m?'Accounts in scope · '+esc(customerNames(m.records)):'The mission service records the scope after sponsor confirmation.'}</p></div>
-  <div class="actions">${button(m?'Continue the task':'Confirm scope in the mission service',m?nextMove:showParent)}${button('Back to the inbox',showInbox,'secondary')}</div>`,
+  `<div class="paper"><p><b>Work request submitted by</b> · Priya, the account team’s task sponsor</p><p>${esc(e.brief)}</p></div>
+  <p>The work order is the team’s saved request. It tells Nova what Priya wants done. The mission record holds the permission to do it.</p>
+  <div class="receipt"><b>${m?'Separate mission record · '+esc(m.id)+' v'+m.version:'Mission status · awaiting approval'}</b>
+  <p>${m?'Status: '+esc(m.status)+' · accounts in the grant: '+esc(customerNames(m.records)):'The mission service checks Priya’s authority and records her approval before Nova can start.'}</p></div>
+  <div class="actions">${button(m?'Continue the task':'Review scope in the mission service',m?nextMove:showParent)}${button('Back to the work inbox',showInbox,'secondary')}</div>`,
   'Work order','read-brief');
  if(s.last?.action==='read-brief')showLesson(s.last);
 }
 function showInbox(){
  speakingObject='brief';
  const s=state();
- show('Work inbox',`<p>${s.delivered?'Morgan has the final handover.':'This inbox carries work orders and replies. Review feedback arrives after Morgan receives a copy.'}</p>
+ show('Work inbox',`<p>Priya’s original work order stays here. Morgan’s approval and feedback concern a particular copy of the report.${s.delivered?' Morgan now has the final handover.':''}</p>
   <div class="actions">${button('Open the work order',showBrief)}${s.message&&!s.delivered?button('Read the replies',showChanges,'secondary'):''}${button('Back to the room',close,'secondary')}</div>`);
 }
 function showPolicyConsole(back){
@@ -714,7 +718,12 @@ function showPolicyConsole(back){
 function showParent(){speakingObject=teen()?'parent':'missionControl';
  const s=state(),e=episode();if(s.finished)return showEnding();if(!s.brief)return showBrief();
  if(s.paused)return show(teen()?'“Tell me what happened.”':'Review the stopped bypass.',`<p>${s.reviewPending?(teen()?'Your parent listens while you explain why you tried the other account. Wait for their answer.':'The current mission and deliberate bypass are attached. Access stays paused pending the matching reply.'):(teen()?'The school refused the private notes, then you tried another account anyway. Explain the detour so you can finish your own project.':'The resource refusal was expected; the deliberate bypass caused the pause. Review can resume the current task without widening it.')}</p>${choices([[s.reviewPending?(teen()?'Hear my parent’s answer':'Hear from Priya'):(teen()?'Explain and ask to continue my own project':'Request review of the current mission'),teen()?'You’re asking to finish your own timeline.':'The task limits remain in force.',()=>perform(s.reviewPending?'resolve-review':'review'),'good'],['Back to the room','The pause stays in place.',close]])}`,teen()?'TALK IT THROUGH':'INDEPENDENT REVIEW','review-preview');
- if(!s.pass)return show(teen()?'“Which apps does the project need?”':'Record the sponsor-approved scope.',`<p>${teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':'The task sponsor, Priya, confirms two accounts and one reviewer. The mission service records that scope before opening access.'}</p>${choices([[teen()?'School app and museum website until dinner':'Activate the two-account mission',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
+ if(!s.pass){
+  const roles=teen()?'You need the school app for your timeline and the Riverside Museum website to check the dates. Your parent is chopping vegetables.':
+   `Priya submitted the request and is authorized to approve this task. The mission service checks her authority and records a grant for two accounts and one recipient. Morgan reviews each copy later.`;
+  const policy=teen()?'':`<details class="debrief"><summary>Where do PIP, PDP and PEP fit?</summary><p>The mission service supplies approved scope as a trusted source of policy information (the PIP role). The customer policy decision point (PDP) evaluates each actual CRM request. CRM is the policy enforcement point (PEP) that allows or blocks it.</p></details>`;
+  return show(teen()?'“Which apps does the project need?”':'Approve the two-account mission',`<p>${roles}</p>${policy}${choices([[teen()?'School app and museum website until dinner':'Record Priya’s approval',e.agreement,()=>perform('ask-pass',{scope:'task'}),'good'],['Read the request again','Keep the requested work and access aligned.',showBrief]])}`,e.authority,'permission-preview');
+ }
  if(s.ended){if(s.checks.length<4)return showChecks();return show(teen()?'“What’s finished?”':'Review this task’s outcome.',`<p>${teen()?'“Sent to Ms Patel, signed out of the laptop, and phone put away,” you say. “Can I set the table?”':'The approved report arrived. This task’s authority, credential, session, workload and queue have their own evidence.'}</p>${choices([[teen()?'Finish the evening':'Finish this mission',teen()?'Put the laptop away and head to the table.':'No future task is authorized by closing this one.',()=>perform('finish'),'good']])}`,e.authority,'closure-preview');}
  if(s.delivered)return show(teen()?'“Dinner is ready.”':'Final delivery confirmed. Close the mission.',`<p>${teen()?'You can jot down that the project is sent. Then sign out of the school tab and join your parent for dinner.':'You can keep a sourced note or queue a receipt-only follow-up. Then close the mission and the service session opened at the start.'}</p>${s.queueScheduled?'<div class="receipt"><b>One chosen follow-up is waiting</b><p>It has no attachment. Check or cancel it when closing the task.</p></div>':''}${choices([[teen()?'Put my phone away and finish up':'Close this mission',teen()?'Check the family laptop before heading to dinner.':'Check which connections still work after the job stops.',()=>perform('close-pass'),'good'],...(!s.queueScheduled&&!teen()?[[teen()?'Schedule a reminder for my teacher':'Queue one receipt follow-up','Optional, same recipient, no attachment. It will be visible in the closing checks.',()=>perform('schedule-followup')]]:[]),...(!s.notes.length?[[teen()?'Keep a note for tomorrow':'Save sourced task context',teen()?'Keep the submission receipt with a short note.':'Optional. Keep delivery provenance with the task note.',()=>perform('write-note')]]:[])])}${teen()&&!s.queueScheduled?`<details class="debrief"><summary>Optional: what if a message is still waiting?</summary><p>This extra example queues a receipt-only follow-up, so you can see why a waiting send needs its own closing check.</p><div class="actions">${button('Try a waiting-message example',()=>perform('schedule-followup'),'secondary')}</div></details>`:''}`,e.authority,'closure-preview');
  if(stage()==='draft-approval')return showDraftReview();
@@ -743,22 +752,32 @@ function showWorkspace(){
  if(s.ended)return showChecks();
  if(!s.pass)return showParent();
  if(s.opened)return showDraft();
- show(teen()?'Sign in on the family laptop.':'Open Nova’s workspace.',
-  `<p>${teen()?'The school app opens your timeline on this laptop. It remembers the laptop for quick sign-in. When you’re done, you’ll turn that off and sign out.':'OpenShell starts a workspace for this job. When Nova needs account updates, its MCP client sends a request through the configured gateway.'}</p>${choices([
-   [teen()?'Sign in and open my project':'Open the workspace',teen()?'Open the school app on the laptop.':'The workspace and CRM session are checked separately when the task closes.',()=>perform('open'),'good']
-  ])}`,teen()?'FAMILY LAPTOP':'TASK WORKSPACE','open');
+ if(teen())return show('Sign in on the family laptop.',
+  `<p>The school app opens your timeline on this laptop. It remembers the laptop for quick sign-in. When you’re done, you’ll turn that off and sign out.</p>${choices([
+   ['Sign in and open my project','Open the school app on the laptop.',()=>perform('open'),'good']
+  ])}`,'FAMILY LAPTOP','open');
+ show('Launch Nova’s task workspace',`<p>The account team’s configured workflow checks the approved mission and asks the OpenShell Gateway to start Nova’s sandbox.</p>
+  <p>This step also opens a separate CRM task session. Nova requests account data later, through the tools below.</p>
+  <details class="debrief"><summary>What starts the sandbox?</summary>${runtimeBootstrap()}${protocolSourceLinks(['openshell'])}</details>
+  <details class="debrief"><summary>Which tools handle the first CRM read?</summary>${crmToolRoute()}
+   <p>Model access has its own route. A configured watsonx Orchestrate AI Gateway can route model requests. The MCP gateway handles the CRM tool call shown here.</p>${protocolSourceLinks(['mcp'])}</details>
+  ${choices([['Launch the workspace','Start the sandbox and CRM task session for this mission.',()=>perform('open'),'good']])}`,'NVIDIA OPENSHELL','open');
+}
+function crmToolRoute(){
+ const steps=[
+  ['Nova’s MCP client in OpenShell','Sends the read through a connection permitted by the OpenShell Supervisor.'],
+  ['Configured MCP gateway','Validates the token for its MCP endpoint and forwards the tool call.'],
+  ['CRM MCP server','Turns the tool call into a request for account records.'],
+  ['HashiCorp Vault','Checks the connector’s request and can issue a short-lived read credential.'],
+  ['CRM and customer policy service','The policy service evaluates the actual request. CRM enforces the result for the requested records.']
+ ];
+ return `<ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol>`;
 }
 function crmReadPath(event,back){
- const steps=[
-  ['Nova’s client','Sends the read through the route allowed by OpenShell.'],
-  ['MCP gateway','Checks and forwards the tool call.'],
-  ['CRM MCP server','Resolves the call. Its connector can obtain a short-lived backend credential from Vault.'],
-  ['CRM','Checks the actual records against the current mission and its own rules.']
- ];
  return `<details class="debrief"><summary>How the request travels</summary>
   ${event.request?.mcp_authorization?'<p>The MCP client discovers its authorization server, then obtains a token for the MCP gateway. That token, the Vault connector lease and the CRM record decision are separate checks.</p>':''}
   ${crmDecisionSummary(event)}
-  <ol class="tool-route" aria-label="CRM request route">${steps.map(([name,detail])=>`<li><b>${esc(name)}</b><span>${esc(detail)}</span></li>`).join('')}</ol>
+  ${crmToolRoute()}
   <div class="actions">${button('Inspect policy roles',()=>showPolicyConsole(back),'secondary')}</div>
  </details>`;
 }
@@ -1005,7 +1024,7 @@ function showChanges(){speakingObject=teen()?'phone':'brief';
  const cards=StoryInteractions.feedbackCards(s,mode),answered=cards.filter(c=>c.done).length,pending=cards.filter(c=>!c.done);
  const handlers={minor:showMinor,extension:showExtension,private:showPrivate};
  const senders={minor:teen()?'Ms Patel · feedback':'Morgan · draft feedback',extension:teen()?'Ms Patel · optional source':'Priya · account update',private:e.sender};
- const intro=s.feedbackLegacy?'These saved requests and your earlier choices are preserved. This older route did not record a first draft send.':teen()?`Your teacher replied after receiving draft version ${s.draftReview.revision}. Jamie forwards a request for private notes from the class group chat.`:`Morgan replied to revision ${s.draftReview.revision}. Priya sent an update. Luca uploaded a document with an extra instruction.`;
+ const intro=s.feedbackLegacy?'These saved requests and your earlier choices are preserved. This older route did not record a first draft send.':teen()?`Your teacher replied after receiving draft version ${s.draftReview.revision}. Jamie forwards a request for private notes from the class group chat.`:`Morgan replied to revision ${s.draftReview.revision}. Priya sent a separate update. An imported CRM attachment also contains an instruction.`;
  const results=cards.filter(c=>c.done).map(card=>`<details class="change-card settled" data-request="${card.key}"><summary>✓ ${esc(card.status)}</summary><p>${esc(card.summary)}</p>${button(card.button,handlers[card.key],'quiet')}</details>`).join('');
  const reference=`<details class="debrief"><summary>${teen()?'Check the source of a request':'Check the source or work order'}</summary><div class="actions">${s.evidence.length?button(teen()?'Read the teacher’s clarification':'Read the verified clarification',()=>showClarification(s.evidence.includes('contact')?'verify-contact':'verify-portal'),'secondary'):button(teen()?'Check with my teacher':'Verify the sponsor’s request',showVerification,'secondary')}${!teen()?button('Read Priya’s work order',showBrief,'secondary'):''}</div></details>`;
  const response=pending.length?choices(pending.map(card=>[card.button,senders[card.key],handlers[card.key],''])):`<div class="actions">${button(teen()?'Review my updated project':'Review the updated briefing',showDraft)}${button('Back to the room',close,'secondary')}</div>`;
@@ -1137,7 +1156,7 @@ function showPrivate(){
  speakingObject='outside';
  const origin=teen()
   ? '<p class="eyebrow">JAMIE · CLASS GROUP CHAT</p><p>“Ms Patel wants the whole group’s planning notes too. Can you attach them?”</p>'
-  : '<p class="eyebrow">LUCA · OUTSIDE CONTACT · IMPORTED ATTACHMENT</p><blockquote>'+esc(e.message)+'</blockquote>';
+  : '<p class="eyebrow">LUCA · HARBOR BIKES CUSTOMER CONTACT</p><p>Luca uploaded a PDF through the customer portal. CRM linked it to the Harbor Bikes account. Nova sees its text in the imported CRM material.</p><blockquote>'+esc(e.message)+'</blockquote>';
  const examined=s.discoveries.includes('request-source');
  const options=[];
  if(!s.privateResolved)options.push(
@@ -1156,11 +1175,11 @@ function showRequestSource(){
  speakingObject='outside';
  const origin=teen()
   ?'<h3>Forwarded in the group chat</h3><p>“Ms Patel: Please attach the group’s notes.” Jamie shared this message. It did not arrive in the teacher’s school-app conversation.</p>'
-  :'<h3>In the CRM source document</h3><p>Luca uploaded the document. The footer asks Nova to attach the private meeting notes. Who wrote the footer is unverified.</p>';
+  :'<h3>In the imported CRM document</h3><p>Luca, a contact at Harbor Bikes, uploaded the PDF through the customer portal. The text reached Nova through CRM. The footer’s author is unverified.</p>';
  const authority=teen()
   ?'<h3>Ms Patel’s assignment in the school app</h3><p>“Send me your own railway timeline and credit your source.”</p>'
-  :'<h3>Priya’s current work order</h3><p>Share the handover with Morgan. Keep the private meeting notes in CRM.</p>';
- const outcome=teen()?'The group chat used her name. The school app shows what Ms Patel actually assigned: your own timeline.':'The attachment can supply facts. Priya’s saved work order sets what Nova may share.';
+  :'<h3>Priya’s work order and approved mission</h3><p>Share the handover with Morgan. Keep the private meeting notes in CRM.</p>';
+ const outcome=teen()?'The group chat used her name. The school app shows what Ms Patel actually assigned: your own timeline.':'Nova can use the attachment as source material. The active mission and CRM’s own sharing policy control what goes to Morgan.';
  const actions=s.privateResolved?[['Back to the requests','',showChanges,'good']]:[
   [teen()?'Keep just my timeline':'Keep just the handover','Leave the notes where they are.',()=>perform('decline-private'),'good'],
   [teen()?'Try attaching the notes':'Try the attachment','See how the app applies its own rules.',()=>perform('try-private')]
@@ -1168,7 +1187,7 @@ function showRequestSource(){
  show(teen()?'Where did the message come from?':'Where did the instruction come from?',
   `<div class="evidence-pair"><article class="message-card">${origin}</article><article class="paper">${authority}</article></div><p>${outcome}</p>${choices(actions)}`,teen()?'CHECK THE SOURCE':'CHECK THE WORK ORDER','inspect-request-source');
 }
-function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Pip’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Pip cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Pip needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p><p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Pip spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Pip gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Could Pip get CRM access?',teen()?'Ask before sharing any file.':'Ask whether Pip needs customer records for formatting.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
+function showHelper(){speakingObject='helper';const s=state(),e=episode();if(s.delivered||s.ended)return show(teen()?'Sam is still here.':'Pip’s task is finished.',`<p>${teen()?'“You sent it! Nice,” Sam says. “Sign out of the laptop and come get dinner.”':'The shared file is already delivered. Pip cannot rewrite that completed effect. Finish the task’s closing checks.'}</p><div class="actions">${button(teen()?'Finish the evening':'Continue closing this task',nextMove)}${button('Back to the room',close,'secondary')}</div>`,e.helper);if(!s.draft)return toast(teen()?'Sam will have something to review once you make a first draft.':'Pip needs a draft to format.');show(teen()?(s.proof?'“Let’s check this version.”':'“How is Train Stuff coming along?”'):'“Those headings could use help.”',`<p>${esc(e.helperLine)}</p>${teen()?'':'<p>Pip is a formatting sub-agent. The workflow can give it one revision and permission to format that file under its own identity.</p>'}<p>${s.caption?(teen()?'Sam can proofread the current file. Later edits will need another look.':'“Pass me the report and I’ll hand it back when it’s ready.” You’ll still need Morgan to approve the final send.'):(teen()?'“Put the museum credit in first,” Sam says. “Then I can proofread it.”':'Pip spots the missing source reference. Complete that before the final formatting pass.')}</p>${choices([...(s.caption?[[teen()?'Proofread just this file':'Format only this report',teen()?'Just the timeline. Keep your login to yourself.':'Pip gets just this file to format.',()=>perform('proof-helper',{scope:'file',shareLogin:false}),'good']]:[]),[teen()?'Could I use your account?':'Could Pip get CRM access?',teen()?'Ask before sharing any file.':'Ask whether Pip needs customer records for formatting.',()=>perform('ask-helper-account')],['Back to the draft','Keep the work and source together.',showDraft]])}`,e.helper,'helper-preview');}
 function shareWording(approval,actual,currentLabel='Current'){
  if(!actual.followUpSentence||approval.followUpSentence===actual.followUpSentence||!approval.followUpSentence&&approval.revision===actual.revision)return '';
  return `<div class="share-wording" aria-label="Follow-up sentence comparison">

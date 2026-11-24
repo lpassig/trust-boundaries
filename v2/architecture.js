@@ -285,7 +285,7 @@ const ArchitectureReference = (() => {
 
  const runtime = {
   bootstrap:[
-   ['Customer mission authority','The sponsor approves a bounded task. An enterprise launch integration can check the active mission before requesting a workspace.'],
+   ['Customer workflow and mission authority','The sponsor approves a bounded task. In this example the account team’s configured workflow checks the active mission and requests a workspace as an authorized OpenShell operator.'],
    ['OpenShell Gateway','Authenticates the operator, checks lifecycle permission, and prepares sandbox- and generation-bound credentials.'],
    ['Compute Driver','Provisions the sandbox and outer network fence. It places the trusted Supervisor outside the workload boundary and supplies its credentials through the runtime’s trusted provisioning path.'],
    ['Trusted Supervisor','Uses the sandbox JWT on the private, server-authenticated TLS channel to the sandbox. A separate gateway JWT authenticates the Supervisor to the Gateway. The Supervisor receives the approved runtime policy and provider configuration.'],

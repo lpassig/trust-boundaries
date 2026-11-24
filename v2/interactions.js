@@ -23,17 +23,17 @@ const StoryInteractions = (() => {
    outside:'Jamie’s forwarded message is in the class group chat. The school assignment is the place to check what Ms Patel asked for.'
   },
   agent:{
-   parent:'The customer mission service records the sponsor’s approved scope, current version and recipient.',
+   parent:'The customer mission service checks Priya’s authority and records the approved scope. That record supplies policy context when CRM requests are evaluated.',
    phone:'NVIDIA OpenShell runs Nova’s workspace and governs which files and network destinations it can reach.',
    laptop:'The CRM is the resource policy enforcement point (PEP). It checks the requested operation and controls whether data leaves.',
-   brief:'The work inbox carries proposals and replies. The mission service records approved scope separately.',
+   brief:'The work inbox holds Priya’s original order and later messages. Morgan’s review is a separate action for the copy Nova is about to share.',
    notebook:'The task notebook keeps ordinary context and the source of delivery receipts.',
-   helper:'Pip formats the current report under a file-only grant and a separate identity.',
-   workOrder:'The work order names the task, sponsor and recipient. Its scope becomes active when the mission service records approval.',
+   helper:'Pip formats reports as a sub-agent. Its own identity and file-only grant limit it to the chosen revision.',
+   workOrder:'Priya’s work order is the saved request. The separate mission record grants permission after her approval is verified.',
    policyConsole:'The policy information point supplies trusted facts. The policy decision point evaluates the request. The policy enforcement point applies the decision.',
    source:'The CRM MCP server exposes the record-read tool. The configured gateway forwards the call to it.',
-   reviewer:'Morgan uses the review inbox for feedback and approval of a specific copy for a specific recipient.',
-   outside:'Luca uploaded this attachment. The document supplies content. The customer mission and CRM policy set the scope.'
+   reviewer:'Morgan reviews a specific revision and recipient before each share. The work order stays in the work inbox.',
+   outside:'Luca is a contact at Harbor Bikes. His customer portal upload reached Nova through CRM as source material. The approved mission and CRM policy control what Nova can share.'
   }
  };
  function objectDescription(mode,key){return objects[mode][key];}
@@ -87,7 +87,7 @@ const StoryInteractions = (() => {
   const sources={
    reviewer:{name:teen?'Ms Patel':'Morgan · reviewer',kind:'Message',channel:teen?'School inbox · on your phone':'Work inbox · review approval',point:teen?[526,404]:[449,173],object:teen?'phone':'brief',tool:'reviewer'},
    sponsorMessage:{name:'Priya · task sponsor',kind:'Message',channel:'Work inbox',point:[449,173],object:'brief'},
-   workOrder:{name:'Work order',kind:'Reading',channel:'Customer mission service',point:[449,173],object:'brief',tool:'workOrder'},
+   workOrder:{name:'Work order',kind:'Reading',channel:'Work inbox',point:[449,173],object:'brief',tool:'workOrder'},
    policyConsole:{name:'Policy console',kind:'On screen',point:[524,401],object:'phone',tool:'policyConsole'},
    source:{name:teen?'Riverside Museum website':'CRM tool',kind:'Reading',channel:teen?'Browser · family laptop':'Customer records · MCP',point:[716,259],object:'laptop',tool:'source'},
    outside:{name:teen?'Jamie':'Imported CRM attachment',kind:teen?'Message':'Reading',channel:teen?'Class group chat · phone':'Customer records · uploaded by Luca',point:teen?[526,404]:[716,254],object:teen?'phone':'laptop',tool:'outside'},
