@@ -632,6 +632,7 @@ const PROTOCOL_SOURCES = {
  oauth21:{name:'OAuth 2.1 Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/'},
  jwt:{name:'RFC 7519 — JSON Web Token',url:'https://www.rfc-editor.org/rfc/rfc7519.html'},
  clientRegistration:{name:'RFC 7591 — Dynamic Client Registration',url:'https://www.rfc-editor.org/rfc/rfc7591.html'},
+ clientMetadata:{name:'OAuth Client ID Metadata Document Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/'},
  scimProtocol:{name:'RFC 7644 — SCIM Protocol',url:'https://www.rfc-editor.org/rfc/rfc7644.html'},
  scimSchema:{name:'RFC 7643 — SCIM Core Schema',url:'https://www.rfc-editor.org/rfc/rfc7643.html'},
  transactionTokens:{name:'Transaction Tokens Internet-Draft',url:'https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/'},
@@ -641,6 +642,7 @@ const PROTOCOL_SOURCES = {
  ssf:{name:'OpenID Shared Signals Framework 1.0',url:'https://openid.net/specs/openid-sharedsignals-framework-1_0.html'},
  caep:{name:'OpenID CAEP 1.0',url:'https://openid.net/specs/openid-caep-1_0.html'},
  mcp:{name:'MCP HTTP Authorization — 2026-07-28',url:'https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization'},
+ mcpClientRegistration:{name:'MCP Client Registration — 2026-07-28',url:'https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/client-registration'},
  openshell:{name:'NVIDIA OpenShell architecture',url:'https://docs.nvidia.com/openshell/about/architecture'},
  vault:{name:'Vault Agentic IAM',url:'https://developer.hashicorp.com/vault/ai/iam'},
  leases:{name:'Vault lease, renew, and revoke',url:'https://developer.hashicorp.com/vault/docs/concepts/lease'},
@@ -2322,7 +2324,7 @@ const NOVA_PRODUCTS = [
     "name": "HashiCorp Vault",
     "role": "The broker for a short-lived CRM credential",
     "how": "In the chosen brokered path, Vault validates the delegated JWT and checks its own request permissions. Agentic IAM combines the human’s baseline ACL, the agent’s ceiling and supported RAR restrictions. A configured secrets engine issues a scoped credential.",
-    "limit": "Vault authorizes Vault requests. The CRM must separately authorize records and final operations. The OAuth resource-server feature requires Vault Enterprise 2.1.0 or later; /auth/jwt/login is a different flow.",
+    "limit": "Vault authorizes Vault requests. CRM independently authorizes its records and operations. For generally available Agentic IAM, use Vault Enterprise 2.1.0 or later with the appropriate license, or an eligible HCP Vault Dedicated cluster. The OAuth resource-server flow is separate from /auth/jwt/login.",
     "standards": [
       "OAuth resource server",
       "Agent Registry",
@@ -2383,7 +2385,7 @@ const NOVA_PRODUCTS = [
       "Identity activity",
       "Risk / remediation input"
     ],
-    "url": "https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities",
+    "url": "https://www.ibm.com/products/verify-identity-protection",
     "status": "Documented identity observability; the game illustrates a configured response"
   }
 ];
@@ -2543,17 +2545,17 @@ const NOVA_BUYER_NEEDS = [
   {
     question:'Replace a standing database password',
     product:'HashiCorp Vault',
-    fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
+    fit:'Evaluate a Vault secrets engine when a supported system needs short-lived credentials. Evaluate Agentic IAM when Vault also needs to apply delegated agent permissions to its own requests.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
     pilot:{label:'Our connector uses a long-lived password',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
       outcome:'Give the data connector a short-lived credential for the job. Vault issues it and can revoke it when the work ends.',
       integration:'Check support for your connector, target, and selected Vault secrets engine. Configure credential access in Vault and verify that CRM can close its existing session separately.',
-      checklist:{prerequisite:'A supported staging target and secrets engine, a read-only role, and an eligible deployment if using Agentic IAM.',
+      checklist:{prerequisite:'A supported staging target and secrets engine with a read-only role. The Agentic IAM path also needs appropriately licensed Vault Enterprise 2.1.0 or later or an eligible HCP Vault Dedicated cluster.',
         owner:'The Vault team configures the role and lease. The connector owner holds the credential outside the agent context. The app owner handles its sessions.',
         success:'The connector opens a fresh connection with the short-lived credential and reads one allowed test record.',
         failure:'Revoke the lease, then verify a new connection using that same credential is refused. Check an already-open session separately.',
         evidence:'Save the lease ID, revocation outcome and target-side connection results. Omit credential values from the records.'}},
-    sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
+    sources:[['Vault dynamic secret leases','https://developer.hashicorp.com/vault/docs/concepts/lease'],['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
     question:'Limit what the running agent can reach',
@@ -2605,7 +2607,7 @@ const NOVA_BUYER_NEEDS = [
         success:'The risky activity is attributed to the expected agent and target. The response owner can show the result for that task session.',
         failure:'A missing activity source leaves detection coverage unverified. An alert with a missing controller result leaves the response unverified.',
         evidence:'Save the agent and resource references, source event and alert IDs, and the separate response result.'}},
-    sources:[['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
+    sources:[['IBM Verify Identity Protection product reference','https://www.ibm.com/products/verify-identity-protection'],['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
   },
   {
     question:'Share a risk or session alert with other systems',
@@ -2931,10 +2933,10 @@ const ArchitectureReference = (() => {
    when:'Use SCIM to create, update or deactivate identity records between a directory and a registry when both support the chosen representation.',
    inStory:'Nova and Pip already have registered identities. If a deployment provisions agents via SCIM, it needs an agreed schema or mapping for those records. Provisioning establishes the identity record. The mission and resource policies govern what that identity can do.',
    sources:['scimProtocol','scimSchema']},
-  {id:'registration',title:'Dynamic Client Registration · OAuth client onboarding',
-   when:'Use RFC 7591 when an authorization server supports accepting client metadata and issuing a client identifier dynamically.',
-   inStory:'Nova’s MCP client is configured before the task. The MCP authorization profile also allows pre-registration and Client ID Metadata Documents under its client registration rules. Client registration and agent ownership are separate responsibilities.',
-   sources:['clientRegistration','mcp']},
+  {id:'registration',title:'OAuth client onboarding for MCP',
+   when:'Use an existing pre-registered client when available. The July 2026 MCP profile recommends support for OAuth Client ID Metadata Documents and retains RFC 7591 Dynamic Client Registration as a deprecated compatibility fallback.',
+   inStory:'Nova’s MCP client is configured before the task. Client onboarding identifies the software to the authorization server. Agent ownership and permission to read customer records are checked separately.',
+   sources:['mcpClientRegistration','clientMetadata','clientRegistration']},
   {id:'spiffe',title:'SPIFFE and SVID · Workload identity',
    when:'Use an X.509-SVID or JWT-SVID where services need to verify a workload’s identity within a configured trust domain.',
    inStory:'The OpenShell bootstrap illustrates its sandbox and gateway JWTs. SPIFFE can be a separate identity integration between workloads. A caller identity is an input to the mission and resource checks.',

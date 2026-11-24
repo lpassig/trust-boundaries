@@ -61,7 +61,7 @@ const NOVA_PRODUCTS = [
     "name": "HashiCorp Vault",
     "role": "The broker for a short-lived CRM credential",
     "how": "In the chosen brokered path, Vault validates the delegated JWT and checks its own request permissions. Agentic IAM combines the human’s baseline ACL, the agent’s ceiling and supported RAR restrictions. A configured secrets engine issues a scoped credential.",
-    "limit": "Vault authorizes Vault requests. The CRM must separately authorize records and final operations. The OAuth resource-server feature requires Vault Enterprise 2.1.0 or later; /auth/jwt/login is a different flow.",
+    "limit": "Vault authorizes Vault requests. CRM independently authorizes its records and operations. For generally available Agentic IAM, use Vault Enterprise 2.1.0 or later with the appropriate license, or an eligible HCP Vault Dedicated cluster. The OAuth resource-server flow is separate from /auth/jwt/login.",
     "standards": [
       "OAuth resource server",
       "Agent Registry",
@@ -122,7 +122,7 @@ const NOVA_PRODUCTS = [
       "Identity activity",
       "Risk / remediation input"
     ],
-    "url": "https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities",
+    "url": "https://www.ibm.com/products/verify-identity-protection",
     "status": "Documented identity observability; the game illustrates a configured response"
   }
 ];
@@ -282,17 +282,17 @@ const NOVA_BUYER_NEEDS = [
   {
     question:'Replace a standing database password',
     product:'HashiCorp Vault',
-    fit:'Evaluate Vault Agentic IAM when a supported system needs short-lived credentials. Confirm the target integration and an eligible Vault Enterprise or HCP Vault Dedicated deployment.',
+    fit:'Evaluate a Vault secrets engine when a supported system needs short-lived credentials. Evaluate Agentic IAM when Vault also needs to apply delegated agent permissions to its own requests.',
     example:'The connector can use a short-lived source-read credential outside Nova’s context. Revocation can retire the lease while the CRM closes and checks its own session.',
     pilot:{label:'Our connector uses a long-lived password',evidence:'vault',evidenceLabel:'See the lease and CRM retest',
       outcome:'Give the data connector a short-lived credential for the job. Vault issues it and can revoke it when the work ends.',
       integration:'Check support for your connector, target, and selected Vault secrets engine. Configure credential access in Vault and verify that CRM can close its existing session separately.',
-      checklist:{prerequisite:'A supported staging target and secrets engine, a read-only role, and an eligible deployment if using Agentic IAM.',
+      checklist:{prerequisite:'A supported staging target and secrets engine with a read-only role. The Agentic IAM path also needs appropriately licensed Vault Enterprise 2.1.0 or later or an eligible HCP Vault Dedicated cluster.',
         owner:'The Vault team configures the role and lease. The connector owner holds the credential outside the agent context. The app owner handles its sessions.',
         success:'The connector opens a fresh connection with the short-lived credential and reads one allowed test record.',
         failure:'Revoke the lease, then verify a new connection using that same credential is refused. Check an already-open session separately.',
         evidence:'Save the lease ID, revocation outcome and target-side connection results. Omit credential values from the records.'}},
-    sources:[['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
+    sources:[['Vault dynamic secret leases','https://developer.hashicorp.com/vault/docs/concepts/lease'],['Vault Agentic IAM','https://developer.hashicorp.com/vault/ai/iam']]
   },
   {
     question:'Limit what the running agent can reach',
@@ -344,7 +344,7 @@ const NOVA_BUYER_NEEDS = [
         success:'The risky activity is attributed to the expected agent and target. The response owner can show the result for that task session.',
         failure:'A missing activity source leaves detection coverage unverified. An alert with a missing controller result leaves the response unverified.',
         evidence:'Save the agent and resource references, source event and alert IDs, and the separate response result.'}},
-    sources:[['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
+    sources:[['IBM Verify Identity Protection product reference','https://www.ibm.com/products/verify-identity-protection'],['IBM on AuthMind identity observability','https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities']]
   },
   {
     question:'Share a risk or session alert with other systems',

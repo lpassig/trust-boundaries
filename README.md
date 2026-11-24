@@ -53,7 +53,7 @@ The **Raise the BAR** guide helps teams pick a first control for one workflow. I
 
 **Apply this at work** opens the buyer guide from Alex’s ending and from the staffing case recap. The recap keeps each choice and its explanation available for review. The four main product options link to Pip’s activity record, Morgan’s revision comparison, the Vault lease and CRM retest, and the OpenShell boundary exercise. The guide uses recorded Nova evidence when available and labels independent worked examples for the other paths.
 
-Nova’s first CRM trace shows discovery through protected resource metadata (RFC 9728), the resource-specific access token (RFC 8707), and the separate Vault and CRM checks. **Deployment options** in Explore Architecture links SCIM, Dynamic Client Registration, SPIFFE/SVID, Transaction Tokens and A2A to the configured example. The same reference opens from Pip’s result.
+Nova’s first CRM trace shows discovery through protected resource metadata (RFC 9728), the resource-specific access token (RFC 8707), and the separate Vault and CRM checks. **Deployment options** in Explore Architecture links SCIM, MCP client onboarding, SPIFFE/SVID, Transaction Tokens and A2A to the configured example. The same reference opens from Pip’s result.
 
 In Explore Architecture, **Runtime and containment** separates the Gateway, Compute Driver, sandbox and Supervisor. **What stopped this request?** compares network and CRM denials on the same fictional read. The incident examples distinguish a frozen workload, a stopped workload, partial containment and independently verified closure.
 
