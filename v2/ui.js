@@ -193,7 +193,7 @@ function showSavedReply(event){
  if(event.kind==='story'&&(event.action==='change-recipient'||!teen()&&['revise-file','wait-approval'].includes(event.action)))return showSend();
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
  const recoveredAccounts=!teen()&&event.action==='resolve-review'&&event.decision?.allowed_records;
- const modelRoute=!teen()&&event.action==='prepare'?`<div class="request-result"><b>Model request · AI Gateway</b><p>The configured watsonx Orchestrate AI Gateway routes the outline request to an approved model. Nova will use the MCP gateway for the account records in the next step.</p></div>`:'';
+ const modelRoute=!teen()&&event.action==='prepare'?`<div class="request-result"><b>Model request routed</b><p>The AI Gateway sent the outline request to an approved model. Customer records have yet to be read. The next action sends a tool request through the MCP gateway to CRM.</p></div>`:'';
  show(event.title,`<p>${esc(event.text)}</p>${modelRoute}${recoveredAccounts?.length?`<p><b>Accounts still approved</b> · ${esc(customerNames(recoveredAccounts))}.</p>`:''}<div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
 }
 function perform(action,payload={}){
@@ -374,7 +374,7 @@ function render(){
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A new request is waiting.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
- $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Quill'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
+ $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=speech.name==='Nova'?'◉':speech.name==='Quill'?'✦':speech.name[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
  $('#next-title').textContent=selected?'Put away and continue':s.finished?'See my ending':m[0];
  $('#next-text').textContent=selected?use.instruction:m[1];
  const items=inventory();$('#pocket-count').textContent=String(items.length)+(items.length===1?' ITEM':' ITEMS');

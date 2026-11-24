@@ -25,7 +25,7 @@ const PROTOCOL_SOURCES = {
  leases:{name:'Vault lease, renew, and revoke',url:'https://developer.hashicorp.com/vault/docs/concepts/lease'},
  agentInventory:{name:'IBM Agent Identity inventory and registration',url:'https://www.ibm.com/products/agent-identity'},
  vaultRegistry:{name:'Vault Agent Registry',url:'https://developer.hashicorp.com/vault/ai/iam/concepts/agent-registry'},
- aiGateway:{name:'watsonx Orchestrate model routing',url:'https://www.ibm.com/products/watsonx-orchestrate/developers'},
+ aiGateway:{name:'IBM watsonx Orchestrate model configuration',url:'https://www.ibm.com/docs/en/watsonx/watson-orchestrate/base?topic=agent-adding-ai-models-through-ai-gateway'},
  mcpGateway:{name:'Example DataPower Interact Gateway MCP policies',url:'https://www.ibm.com/docs/en/dp-interact-gateway/12.1.1?topic=servers-mcp-server-policies'},
  identityRisk:{name:'IBM on AuthMind runtime identity observability',url:'https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities'},
  aiRmf:{name:'NIST AI Risk Management Framework',url:'https://nvlpubs.nist.gov/nistpubs/AI/NIST.AI.100-1.pdf'},

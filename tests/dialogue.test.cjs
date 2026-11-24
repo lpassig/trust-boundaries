@@ -76,6 +76,14 @@ test('permission and service replies point to the responsible control even when 
  assert.equal(I.speechSource('agent','sponsorContact').tool,'sponsorMessage');
  assert.equal(I.eventSource('agent','Sponsor','verify-portal'),'workOrder');
  assert.equal(I.nextObject('agent','request','brief'),'workOrder');
+ assert.equal(I.eventSource('teen','Alex','prepare'),'hero');
+ const modelRoute=I.speechSource('agent',I.eventSource('agent','Nova','prepare'));
+ assert.equal(modelRoute.tool,'aiGateway');
+ assert.equal(modelRoute.kind,'Model routing');
+ assert.equal(modelRoute.object,'phone');
+ assert.equal(I.eventSource('agent','Nova','prepare','blocked'),'hero');
+ assert.equal(I.eventSource('agent','Nova','apply-minor'),'hero');
+ assert.equal(I.eventSource('teen','Alex','keep-minor'),'hero');
  assert.equal(I.eventSource('agent','Nova','collect-source'),'source');
  assert.equal(I.eventSource('teen','School receipt','send-draft'),'laptop');
 });

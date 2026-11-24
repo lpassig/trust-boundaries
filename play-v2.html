@@ -697,7 +697,7 @@ const PROTOCOL_SOURCES = {
  leases:{name:'Vault lease, renew, and revoke',url:'https://developer.hashicorp.com/vault/docs/concepts/lease'},
  agentInventory:{name:'IBM Agent Identity inventory and registration',url:'https://www.ibm.com/products/agent-identity'},
  vaultRegistry:{name:'Vault Agent Registry',url:'https://developer.hashicorp.com/vault/ai/iam/concepts/agent-registry'},
- aiGateway:{name:'watsonx Orchestrate model routing',url:'https://www.ibm.com/products/watsonx-orchestrate/developers'},
+ aiGateway:{name:'IBM watsonx Orchestrate model configuration',url:'https://www.ibm.com/docs/en/watsonx/watson-orchestrate/base?topic=agent-adding-ai-models-through-ai-gateway'},
  mcpGateway:{name:'Example DataPower Interact Gateway MCP policies',url:'https://www.ibm.com/docs/en/dp-interact-gateway/12.1.1?topic=servers-mcp-server-policies'},
  identityRisk:{name:'IBM on AuthMind runtime identity observability',url:'https://newsroom.ibm.com/blog-ibm-advances-agent-identity-security-with-new-vault-capabilities'},
  aiRmf:{name:'NIST AI Risk Management Framework',url:'https://nvlpubs.nist.gov/nistpubs/AI/NIST.AI.100-1.pdf'},
@@ -1910,7 +1910,7 @@ const StoryInteractions = (() => {
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
    verify:{name:'IBM Verify',kind:'Review channel',point:[449,173],object:'brief',tool:'verify'},
    orchestrate:{name:'IBM watsonx Orchestrate',kind:'Workflow',point:[524,401],object:'phone',tool:'orchestrate'},
-   aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
+   aiGateway:{name:'AI Gateway',kind:'Model routing',channel:'IBM watsonx Orchestrate',point:[524,401],object:'phone',tool:'aiGateway'},
    mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
    riskMonitor:{name:'IBM Identity Protection',kind:'Monitoring',point:[812,245],tool:'riskMonitor'},
    antenna:{name:'IBM Verify Antenna',kind:'Shared signals',point:[812,245],tool:'antenna'},
@@ -1946,10 +1946,12 @@ const StoryInteractions = (() => {
   if(action==='read-brief')return mode==='teen'?'brief':'workOrder';
   if(action==='ask-pass')return mode==='teen'?'parent':'missionControl';
   if(action==='open')return mode==='teen'?'laptop':'phone';
+  if(action==='prepare')return mode==='teen'?'hero':'aiGateway';
   if(action==='collect-source')return 'source';
+  if(['apply-minor','keep-minor','attach-source'].includes(action))return 'hero';
   if(action==='add-extension')return 'extra';
   if(action==='verify-portal')return mode==='teen'?'laptop':'workOrder';
-  if(['send-draft','send','try-private','prepare','apply-minor','keep-minor','attach-source'].includes(action))return 'laptop';
+  if(['send-draft','send','try-private'].includes(action))return 'laptop';
   if(action==='try-extension')return mode==='teen'?'homework':'laptop';
   if(['bypass-notes','shortcut'].includes(action))return 'stop';
   if(action==='inspect-request-source')return 'outside';
@@ -2876,7 +2878,7 @@ const ArchitectureReference = (() => {
    name:'IBM watsonx Orchestrate AI Gateway',kind:'Orchestrate capability',
    summary:'Integrates models from multiple providers and lets operators configure model routing.',
    detail:'It can also discover and import external agents from supported platforms. This is a separate role from checking the records in Nova’s CRM request.',
-   sources:[['Model integration and routing','https://www.ibm.com/products/watsonx-orchestrate/developers'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
+   sources:[['IBM watsonx Orchestrate model configuration','https://www.ibm.com/docs/en/watsonx/watson-orchestrate/base?topic=agent-adding-ai-models-through-ai-gateway'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
   },
   mcpClient:{
    name:'Nova’s MCP client',kind:'Client running inside OpenShell',
@@ -3558,7 +3560,7 @@ function showSavedReply(event){
  if(event.kind==='story'&&(event.action==='change-recipient'||!teen()&&['revise-file','wait-approval'].includes(event.action)))return showSend();
  speakingObject=StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind);
  const recoveredAccounts=!teen()&&event.action==='resolve-review'&&event.decision?.allowed_records;
- const modelRoute=!teen()&&event.action==='prepare'?`<div class="request-result"><b>Model request · AI Gateway</b><p>The configured watsonx Orchestrate AI Gateway routes the outline request to an approved model. Nova will use the MCP gateway for the account records in the next step.</p></div>`:'';
+ const modelRoute=!teen()&&event.action==='prepare'?`<div class="request-result"><b>Model request routed</b><p>The AI Gateway sent the outline request to an approved model. Customer records have yet to be read. The next action sends a tool request through the MCP gateway to CRM.</p></div>`:'';
  show(event.title,`<p>${esc(event.text)}</p>${modelRoute}${recoveredAccounts?.length?`<p><b>Accounts still approved</b> · ${esc(customerNames(recoveredAccounts))}.</p>`:''}<div class="actions">${button(move()[0],nextMove)}${button('Back to the room',close,'secondary')}</div>`,StoryInteractions.speechSource(mode,speakingObject).kind);
 }
 function perform(action,payload={}){
@@ -3739,7 +3741,7 @@ function render(){
  $$('[data-object]').forEach(b=>b.onclick=()=>interact(b.dataset.object,b.classList.contains('pin')));
  const event=storyEvent(s.last)||{speaker:e.name,title:teen()?'The last upload of the day.':'A new request is waiting.',text:e.actorLine};
  const speech=StoryInteractions.speechSource(mode,StoryInteractions.eventSource(mode,event.speaker,event.action,event.kind));
- $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=event.speaker==='Nova'?'◉':event.speaker==='Quill'?'✦':event.speaker[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
+ $('#speaker').textContent=[speech.name,speech.kind,speech.channel].filter(Boolean).join(' · ');$('#speaker-portrait').textContent=speech.name==='Nova'?'◉':speech.name==='Quill'?'✦':speech.name[0];$('#dialogue-title').textContent=event.title;$('#dialogue-text').textContent=event.text;
  $('#next-title').textContent=selected?'Put away and continue':s.finished?'See my ending':m[0];
  $('#next-text').textContent=selected?use.instruction:m[1];
  const items=inventory();$('#pocket-count').textContent=String(items.length)+(items.length===1?' ITEM':' ITEMS');

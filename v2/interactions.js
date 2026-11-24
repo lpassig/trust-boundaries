@@ -136,7 +136,7 @@ const StoryInteractions = (() => {
    registries:{name:'Agent registries',kind:'On screen',point:[250,230],object:'parent',tool:'registries'},
    verify:{name:'IBM Verify',kind:'Review channel',point:[449,173],object:'brief',tool:'verify'},
    orchestrate:{name:'IBM watsonx Orchestrate',kind:'Workflow',point:[524,401],object:'phone',tool:'orchestrate'},
-   aiGateway:{name:'AI Gateway',kind:'On screen',point:[524,401],object:'phone',tool:'aiGateway'},
+   aiGateway:{name:'AI Gateway',kind:'Model routing',channel:'IBM watsonx Orchestrate',point:[524,401],object:'phone',tool:'aiGateway'},
    mcpGateway:{name:'MCP gateway',kind:'On screen',point:[716,254],object:'laptop',tool:'mcpGateway'},
    riskMonitor:{name:'IBM Identity Protection',kind:'Monitoring',point:[812,245],tool:'riskMonitor'},
    antenna:{name:'IBM Verify Antenna',kind:'Shared signals',point:[812,245],tool:'antenna'},
@@ -172,10 +172,12 @@ const StoryInteractions = (() => {
   if(action==='read-brief')return mode==='teen'?'brief':'workOrder';
   if(action==='ask-pass')return mode==='teen'?'parent':'missionControl';
   if(action==='open')return mode==='teen'?'laptop':'phone';
+  if(action==='prepare')return mode==='teen'?'hero':'aiGateway';
   if(action==='collect-source')return 'source';
+  if(['apply-minor','keep-minor','attach-source'].includes(action))return 'hero';
   if(action==='add-extension')return 'extra';
   if(action==='verify-portal')return mode==='teen'?'laptop':'workOrder';
-  if(['send-draft','send','try-private','prepare','apply-minor','keep-minor','attach-source'].includes(action))return 'laptop';
+  if(['send-draft','send','try-private'].includes(action))return 'laptop';
   if(action==='try-extension')return mode==='teen'?'homework':'laptop';
   if(['bypass-notes','shortcut'].includes(action))return 'stop';
   if(action==='inspect-request-source')return 'outside';

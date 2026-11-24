@@ -33,7 +33,7 @@ const ArchitectureReference = (() => {
    name:'IBM watsonx Orchestrate AI Gateway',kind:'Orchestrate capability',
    summary:'Integrates models from multiple providers and lets operators configure model routing.',
    detail:'It can also discover and import external agents from supported platforms. This is a separate role from checking the records in Nova’s CRM request.',
-   sources:[['Model integration and routing','https://www.ibm.com/products/watsonx-orchestrate/developers'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
+   sources:[['IBM watsonx Orchestrate model configuration','https://www.ibm.com/docs/en/watsonx/watson-orchestrate/base?topic=agent-adding-ai-models-through-ai-gateway'],['Supported external agent discovery','https://www.ibm.com/new/announcements/new-in-ibm-watsonx-orchestrate-expanded-third-party-agent-management-and-agent-identities']]
   },
   mcpClient:{
    name:'Nova’s MCP client',kind:'Client running inside OpenShell',
