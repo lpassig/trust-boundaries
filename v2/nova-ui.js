@@ -169,7 +169,7 @@ function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
  const replyRoom=!looked&&state.events.at(-1)?.environment;
  const replyFromAnotherRoom=replyRoom&&replyRoom!==room;
  const dialogue=reply?`<div class="nova-dialogue" id="nova-reply" tabindex="-1" role="status"><b>${esc(reply.owner)}</b>
-  ${replyFromAnotherRoom?`<small> · ${esc(NovaRailway.scenes[replyRoom])}</small>`:''}<p>${esc(reply.reply)}</p>
+  ${replyFromAnotherRoom?`<small> · <span>${esc(NovaRailway.scenes[replyRoom])}</span></small>`:''}<p>${esc(reply.reply)}</p>
   ${looked?novaSourceLinks(novaSources[inspect]):''}</div>`:'';
  const options=NovaRailway.available(state);
  const inspectStation=id=>{

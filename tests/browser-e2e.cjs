@@ -622,6 +622,7 @@ async function germanReview(){
    check(target?.textContent.includes(tr(next.label))&&tr(next.label)!==next.label,'German Nova action missing for '+next.id);
    target.click();
    check(q('#nova-reply p')?.textContent===tr(next.reply)&&tr(next.reply)!==next.reply,'German Nova dialogue missing for '+next.id);
+   if(remote)check(q('#nova-reply small span')?.textContent===tr(NovaRailway.scenes[next.room]),'Remote receipt location is untranslated');
    check(document.documentElement.scrollWidth<=innerWidth,'German Nova scene overflows after '+next.id);
    check([...document.querySelectorAll('.nova-navigation button')].every(button=>button.scrollWidth<=button.clientWidth+1),'German room label clips');
   }
