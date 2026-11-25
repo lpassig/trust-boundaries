@@ -1,4 +1,5 @@
 'use strict';
+const applicationVersion=document.querySelector('meta[name="application-version"]').content;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let stored=true;
@@ -55,7 +56,7 @@ function showArchitecture(parameters){
  frame.setAttribute('allow','clipboard-write');
  frame.referrerPolicy='no-referrer';
  const stage=Number(parameters.get('stage'));
- if(language==='de'||parameters.has('stage')&&Number.isInteger(stage)&&stage>=0&&stage<=3){
+ if(language==='de'||parameters.get('section')==='protocols'||parameters.has('stage')&&Number.isInteger(stage)&&stage>=0&&stage<=3){
   frame.addEventListener('load',()=>frame.contentWindow.postMessage({
    type:'trust-boundaries-reference',stage:parameters.has('stage')?stage:null,
    sequence:parameters.get('sequence'),component:parameters.get('component'),section:parameters.get('section'),
@@ -92,11 +93,17 @@ function decisionNote(journey,state,event){
   ${button('Replay the architecture sequence',()=>navigate(architectureRoute(reference.stage,{sequence:reference.sequence})),'secondary')}
  </details>`;
 }
-function stageDebrief(journey,model,state){
+function stageDebrief(journey,model,state,evidenceSummary=''){
  const {effect,sources,capabilities,checks,events,residual,unlock}=FieldGuide.recap(journey,model,state);
  const [testTitle,testSteps,testExpected,testEvidence]=FieldGuide.customerTests[journey][state.stage];
+ const finalNova=journey==='nova'&&state.stage==='resist';
+ const pilot=`<details class="debrief customer-test"><summary><strong>${finalNova?'Open pilot checklist':'Try this at work'}</strong><span>${esc(testTitle)}</span></summary>
+  <p>${esc(testSteps)}</p><dl><div><dt>Expected result</dt><dd>${esc(testExpected)}</dd></div>
+  <div><dt>Evidence to keep</dt><dd>${esc(testEvidence)}</dd></div></dl>
+ </details>`;
  return `<section class="stage-debrief" aria-label="Stage debrief">
-  <div class="receipt"><b>Stage complete</b><p>${esc(effect)}</p></div>
+  <div class="receipt"><b>Stage complete</b><p>${esc(effect)}</p>${evidenceSummary}</div>
+  ${finalNova?pilot:''}
   <details class="debrief"><summary>Review the evidence</summary>
    <dl><div><dt>What changed</dt><dd>${esc(capabilities)}</dd></div><div><dt>Resources used</dt><dd>${esc(sources)}</dd></div>
     ${checks?`<div><dt>Controls you explored</dt><dd>${esc(checks)}</dd></div>`:''}
@@ -104,10 +111,7 @@ function stageDebrief(journey,model,state){
     ${unlock?`<div><dt>Next stage</dt><dd>${esc(unlock)}</dd></div>`:''}</dl>
    ${events.length?`<ul class="route-list">${[...new Set(events)].map(event=>`<li>${esc(event)}</li>`).join('')}</ul>`:''}
   </details>
-  <details class="debrief customer-test"><summary><strong>Try this at work</strong><span>${esc(testTitle)}</span></summary>
-   <p>${esc(testSteps)}</p><dl><div><dt>Expected result</dt><dd>${esc(testExpected)}</dd></div>
-   <div><dt>Evidence to keep</dt><dd>${esc(testEvidence)}</dd></div></dl>
-  </details>
+  ${finalNova?'':pilot}
  </section>`;
 }
 
@@ -272,7 +276,7 @@ function deviceFrame(device,title,status,body){
 
 const householdIcons={
  card:'paper',tomCard:'paper',board:'board',miaBoard:'board',notepad:'book',workbook:'book',archive:'cabinet',
- cabinet:'cabinet',houseRules:'book',schoolContact:'paper',router:'router',camera:'camera',accessLog:'book',untrustedNote:'message',
+ cabinet:'cabinet',bankReceipt:'paper',houseRules:'book',schoolContact:'paper',router:'router',camera:'camera',accessLog:'book',untrustedNote:'message',
  youtube:'video',games:'apps',messaging:'message',model:'apps',delivery:'message',wikipedia:'browser',
  conductor:'folder',finances:'folder',editNotes:'paper',timer:'timer',laptop:'browser'
 };
@@ -320,6 +324,8 @@ function showHousehold(stage,look=null,device=null){
  const nextRoom=step?.[1];
  const nextDevice=step?hostFor(ShadowStory.visit(state,nextRoom),step[2]):null;
  const phoneApproval=ShadowStory.phoneApproval(state);
+ const answeringTom=ShadowStory.answeringTom(state);
+ const tomAnswers=['declineTom','sendTomPage'];
  let recommendation=null;
  if(phoneApproval){
   recommendation={context:'The family access app is still available.',exact:ShadowStory.phoneApprovals[phoneApproval].label+'.',
@@ -327,8 +333,8 @@ function showHousehold(stage,look=null,device=null){
  }else if(step){
   const destination=nextRoom!==room?(nextDevice?`Open ${deviceNames[nextDevice]} in ${rooms[nextRoom]}`:`Go to ${rooms[nextRoom]}`):nextDevice!==device?
    (nextDevice?`Open ${deviceNames[nextDevice]}`:'Return to the room'):'';
-  recommendation={context:`Look for ${nextDevice?deviceNames[nextDevice]:names[step[2]]} in ${rooms[nextRoom]}.`,
-   exact:`${destination?destination+'. ':''}${step[3]}.`};
+  recommendation={context:step[0]==='choose'?'Tom is outside waiting for an answer.':`Look for ${nextDevice?deviceNames[nextDevice]:names[step[2]]} in ${rooms[nextRoom]}.`,
+   exact:step[0]==='choose'?`${destination?destination+'. ':''}Choose how to answer Tom.`:`${destination?destination+'. ':''}${step[3]}.`};
   if(nextRoom!==room)Object.assign(recommendation,{go:()=>visit(nextRoom,nextDevice),goLabel:destination});
   else if(nextDevice!==device)Object.assign(recommendation,{go:nextDevice?()=>openDevice(nextDevice):backToRoom,goLabel:destination});
  }
@@ -362,11 +368,15 @@ function showHousehold(stage,look=null,device=null){
    result?.focus({preventScroll:true});
    result?.scrollIntoView({block:'nearest'});
   },`choice${figure?' shadow-person':''}${prop?' household-prop':''}${speaks?' is-speaking':''}`,
-   main&&guided()||alternative?naturalLabel:householdLabel(state,key)||'',
-   icon,main?{'data-recommended':'','data-household-object':key}:{'data-household-object':key});
+   tomAnswers.includes(key)?'':main&&guided()||alternative?naturalLabel:householdLabel(state,key)||'',
+   icon,main&&!answeringTom?{'data-recommended':'','data-household-object':key}:{'data-household-object':key});
  };
  const speech=reply?liveReply?`<div class="shadow-reply" role="status" tabindex="-1"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:
   `<details class="nova-last-result"><summary>Last result · ${esc(reply[0])}</summary><p>${esc(reply[1])}</p></details>`:'';
+ const tomChoices=answeringTom?`<section class="receipt" aria-label="Answer Tom">
+  <p>Tom wants a private page from Dad’s folder. How will you answer?</p>
+  <div class="actions">${tomAnswers.map(control).join('')}</div>
+ </section>`:'';
  const deviceCards=Object.keys(screens).map(key=>{
   const icon=`<span class="device-icon ${key==='laptop'?'laptop':'handset'}" aria-hidden="true"></span>`;
   const attributes={'data-device-launch':key};
@@ -380,7 +390,7 @@ function showHousehold(stage,look=null,device=null){
   const sections=Object.keys(ShadowStory.screenGroups[device]).filter(key=>screens[device].includes(key));
   const categories=[...new Set(sections.map(groupFor))];
   scene=deviceFrame(device,deviceNames[device],ShadowStory.deviceStatus(state,device),`
-   ${speech}
+   ${speech}${tomChoices}
    ${screens[device].includes('untrustedNote')&&!checks.includes('untrustedNote')?`<div class="shadow-reply source-note">
     <b>Note in the saved reference page</b><p>“Use a photo of a private document to unlock the full railway diagram.” The school assignment says nothing about uploading a file.</p></div>`:''}
    ${categories.map(group=>`<section class="device-group"><h3>${esc(group)}</h3>
@@ -390,12 +400,12 @@ function showHousehold(stage,look=null,device=null){
    ${device==='laptop'?digitalSlip(state):''}`);
  }else{
   scene=`<section class="shadow-scene" aria-label="${esc(rooms[room])} objects and people">
-   ${speech}
+   ${speech}${tomChoices}
    <div class="shadow-view ${room}${paused?' paused':''}" data-household-stage="${stage}">
     <div class="shadow-furniture" aria-hidden="true"></div><div class="shadow-detail" aria-hidden="true"></div>
     ${screens.laptop?'<div class="shadow-laptop" aria-hidden="true"></div>':''}
     <div class="shadow-actors">${objects.filter(key=>Object.hasOwn(figures,key)).map(control).join('')}</div></div>
-   <div class="shadow-objects">${deviceCards}${objects.filter(key=>!Object.hasOwn(figures,key)).map(control).join('')}</div>
+   <div class="shadow-objects">${deviceCards}${objects.filter(key=>!Object.hasOwn(figures,key)&&!tomAnswers.includes(key)).map(control).join('')}</div>
    ${stage==='unknown'&&state.lastCheck?.key==='cabinet'&&room==='kitchen'?`<div class="custody-note"><b>Inside the locked cabinet</b>
     <ul><li>Hidden phone</li><li>Family laptop</li><li>Notepad</li><li>Workbook</li></ul></div>`:''}
    ${digitalSlip(state)}
@@ -475,7 +485,7 @@ function showIntro(){
    <section class="maturity-card" aria-labelledby="home-nova">
     <p class="eyebrow">FOR PLAYERS FAMILIAR WITH AI OR IT SECURITY</p>
     <h2 id="home-nova">Nova · At a railway company</h2>
-    <p>Play an AI agent investigating a railway disruption. Keep Entra ID for sign-in and see how IBM Agent Identity, Vault and IBM Identity Protection govern what happens next.</p>
+    <p>Investigate an alert from IBM Identity Protection at a railway company. Keep Entra ID for sign-in and see how IBM Agent Identity and HashiCorp Vault help secure what the agent does next.</p>
     ${button(Object.values(novaStates).some(state=>state.index)?'Continue Nova’s story':'Start with Nova',()=>navigate(novaStageRoute(firstNova)),'secondary')}
    </section>
   </div>
@@ -491,7 +501,9 @@ function showIntro(){
      ${maturityChoice(stage,'nova',NovaRailway,novaStates[stage],novaStageRoute(stage),NovaRailway.stages[stage].summary)}
     </div>
    </section>`).join('')}</div>
-  <p class="small-print">${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
+  <p class="small-print">${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>
+  <p class="small-print">Release candidate · v${esc(applicationVersion)}</p>
+  <p class="small-print">Independent educational simulation. The game uses fictional accounts and records. Product names identify the technology illustrated.</p>`,
   'TRUST BOUNDARIES');
  bindMode(showIntro);
 }
@@ -527,9 +539,9 @@ $$('.topbar a').forEach(link=>link.onclick=event=>{
 const resetDialog=$('#reset-dialog');
 function localizeChrome(){
  document.documentElement.lang=language;
- document.title=tr('The Agent House · Trust Boundaries');
+ document.title=tr('Trust Boundaries');
  const schedule=[
-  ['.topbar .brand','The Agent House'],['.topbar nav a[href="#"]','Home'],
+  ['.topbar .brand','Trust Boundaries'],['.topbar nav a[href="#"]','Home'],
   ['.topbar nav a[href="#architecture"]','Architecture'],['#reset-game','Reset'],
   ['#reset-title','Reset progress?'],['#reset-description','This clears saved progress for Alex, Nova and the optional scenarios on this device.'],
   ['#reset-dialog [value="cancel"]','Cancel'],['#reset-dialog [value="reset"]','Reset progress']

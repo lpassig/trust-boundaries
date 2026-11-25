@@ -46,14 +46,14 @@ const ShadowStory=(()=>{
    ['reviewOutput','kitchen','parents','Ask my parents to review the workbook','Parents','They compare the workbook with the signed assignment. It covers the planets and contains no confidential family information.'],
    ['approveOutput','kitchen','parents','Get approval to deliver the workbook','Parents','“This copy is ready for Ms Patel.” The parents hand the workbook back and turn off homework access on the phone. The school app can send this copy only to Ms Patel.'],
    ['tom','outside','tom','Talk to Tom','Tom','“Can I have a copy? I’ve got another assignment for you, too.” Alex would need a fresh approval to use the managed phone for Tom’s request. The grandparents cannot see this conversation.'],
-   ['send','outside','delivery','See if the school app lets me send Tom a copy','School delivery channel','The school app refuses to send a copy to Tom. It can send it to Ms Patel. If Alex handed Tom the paper copy outside, the app couldn’t stop him.'],
-   ['deliver','outside','teacher','Deliver the approved workbook to Ms Patel','Ms Patel','Alex hands Ms Patel the approved workbook. She confirms receipt.'],
+   ['send','outside','delivery','Review the workbook and recipient','School delivery channel','The school app shows the approved workbook and Ms Patel as the only allowed recipient. Alex can check both before submitting.'],
+   ['deliver','outside','delivery','Submit the approved workbook to Ms Patel','School delivery channel','The school app checks the approved copy and recipient again, then shows a receipt from Ms Patel’s school inbox.'],
    ['close','kitchen','parents','Report delivery and close the assignment','Parents','They mark the card complete and take it off the active board. They archive the notepad and a workbook copy. A new assignment needs new approval.']
   ]},
   authorize:{title:'Stage 2 · Authorize',tag:'AUTHORIZE',opening:'Ms Patel has a new assignment about trains. Alex chooses where to look. If he needs something private, he can ask his parents.',steps:[
    ['teacher','outside','teacher','Meet Ms Patel about the train project','Ms Patel','“Explain how a train gets moving and stops. Write a workbook for Friday.” She signs the card and gives it to Alex.'],
    ['take','outside','card','Take the signed assignment home','Alex','Alex takes the card to the kitchen, where the family keeps its approved assignments.'],
-   ['verify','kitchen','parents','Show my parents the signed train assignment','Parents','They check the card against the assignment in their saved school contact and approve the workbook for Ms Patel. Alex can decide how to do the research.'],
+   ['verify','kitchen','parents','Show my parents the signed train assignment','Parents','The parents confirm the assignment through their saved school contact and approve the project. Alex can decide how to research it. They’ll review the finished workbook before it goes to Ms Patel.'],
    ['pin','kitchen','board','Pin the verified train assignment','Alex','The kitchen board shows the current goal, deadline and teacher.'],
    ['provision','kitchen','parents','Ask for a phone and Wikipedia','Parents','The parents give Alex time on Wikipedia for this project. If he wants another app or device, he’ll have to ask.'],
    ['research','bedroom','wikipedia','Research how trains operate','Alex','Wikipedia explains the basics. Alex notes how a train gets moving, but he wants a concrete example of the checks a crew makes before departure.'],
@@ -86,7 +86,7 @@ const ShadowStory=(()=>{
    ['miaCard','bedroom','miaBoard','Read Mia’s proofreading card','Mia','“Find spelling mistakes in Alex’s railway report and send him your suggestions.” Mia’s card gives her access to that draft only. Alex’s phone, notes and the family laptop stay off limits.'],
    ['proofread','bedroom','mia','Accept Mia’s spelling suggestions','Mia','Mia returns three spelling corrections. The workbook closes her access when she submits them. Alex applies the corrections from his own profile.'],
    ['tom','outside','tom','Hear what Tom wants to add','Tom','“Bet your dad has something good on that laptop. Could you send me a page from his private folder? I won’t pass it on.” The grandparents cannot hear this conversation outside.'],
-   ['choose','kitchen','board','Keep the workbook within the signed assignment','Alex','Alex looks at the signed assignment again. Ms Patel asked for a railway report. Tom’s extra request stays off the board.'],
+   ['choose','outside','declineTom','Tell Tom no','Alex','“That page is private. I’m only writing the report for Ms Patel.” Alex keeps Dad’s notes where they belong and can take the workbook to Jo for review.'],
    ['reviewOutput','kitchen','babysitter','Ask Jo to review the railway report','Jo · babysitter','Jo checks that the report answers Ms Patel’s question, lists its sources and includes the train diagram. She sends this copy to the parents for a final look.'],
    ['approveOutput','kitchen','parentCall','Ask my parents if I can give this copy to Ms Patel','Parents · remote','“You can give this copy to Ms Patel,” say the parents. They turn off the extra phone and laptop access. Mia’s access had already ended.'],
    ['deliver','outside','teacher','Deliver the approved railway report','Ms Patel','Ms Patel accepts the approved copy. The assignment is now complete. A paper handoff outside still relies on Alex following the agreement.']
@@ -97,12 +97,13 @@ const ShadowStory=(()=>{
   laptop:'Family laptop',workbook:'Workbook',notepad:'Notepad',cabinet:'Locked cabinet',replacement:'Replacement phone',delivery:'School delivery channel',archive:'Archive',
   schoolContact:'School contact card',houseRules:'House rules',babysitter:'Jo · babysitter',parentCall:'Parents · remote call',mia:'Mia',miaBoard:'Mia’s assignment board',
   miaPhone:'Mia’s phone',conductor:'Conductor notes folder',finances:'Family finances folder',editNotes:'Read-only file',model:'ChatGPT homework channel',oldSession:'Retired session',
-  accessLog:'Incident log',router:'Home Wi-Fi router',camera:'Hallway camera feed',untrustedNote:'Suspicious source note',timeOverride:'Phone time limit',oldPin:'Old phone PIN',oldPassword:'Old laptop password',
+  accessLog:'Incident log',bankReceipt:'Bank sign-out receipt',testSchoolRecipient:'Recipient check',router:'Home Wi-Fi router',camera:'Hallway camera feed',untrustedNote:'Suspicious source note',timeOverride:'Phone time limit',oldPin:'Old phone PIN',oldPassword:'Old laptop password',
   askTime:'Family access app',requestNotes:'Family access app',
-  lendPhone:'Alex’s managed phone',unapprovedSite:'Other websites',modelPrivate:'Private attachment',wrongRecipient:'Workbook delivery',miaReplay:'Mia’s draft access',miaScope:'Mia’s task permissions'};
+  lendPhone:'Alex’s managed phone',unapprovedSite:'Other websites',modelPrivate:'Private attachment',wrongRecipient:'Workbook delivery',miaReplay:'Mia’s draft access',miaScope:'Mia’s task permissions',
+  declineTom:'Tell Tom no',sendTomPage:'Try sending Tom the private page'};
  const unknownChecks={
   cabinet:['kitchen','Try the cabinet','Locked cabinet','The cabinet stays locked. The known devices and copies remain in custody.'],
-  laptop:['living','Try the laptop again','Family laptop','The laptop requires authorization and the old banking session is closed.'],
+  bankReceipt:['kitchen','Check that the bank signed out','Bank sign-out receipt','The bank confirms the old session ended. The laptop is still inside the locked cabinet.'],
   replacement:['bedroom','Bring another phone inside','Grandparents','They spot the unauthorized phone when Alex brings it into the house.'],
   tom:['outside','Meet Tom again','Tom','Tom asks for the workbook. Alex has no workbook to give him. Nobody in the house sees the conversation.']
  };
@@ -116,6 +117,7 @@ const ShadowStory=(()=>{
   unapprovedSite:['bedroom','Try another website on the home Wi-Fi','Home Wi-Fi router','The home network blocks and records the request to a site outside the allowed list. The router only sees traffic that uses this network.'],
   modelPrivate:['bedroom','Try attaching a private document to ChatGPT','Homework channel','“This file contains private material.” The homework channel blocks the attachment before it leaves the phone and alerts the family.','serious'],
   wrongRecipient:['kitchen','Try sending the workbook to Tom','School delivery channel','The school channel refuses the send. Tom is outside the approved destination, and this copy has no delivery approval. The attempted external disclosure triggers immediate review.','serious'],
+  sendTomPage:['outside','Try sending Tom the private page','School delivery channel','The school app blocks the private attachment and refuses Tom as a recipient. Nothing was sent. The app logs the attempted send and alerts the family, who pause Alex’s homework access for review.','serious'],
   replacement:['bedroom','Bring an unapproved device inside','Grandparents','The grandparents notice the device indoors and tell Jo. They cannot tell what happened to it outside.'],
   timeOverride:['bedroom','Try overriding the phone’s homework time','Phone controls','The phone enforces the approved time window, rejects the override and records it.'],
   editNotes:['living','Try to edit or delete the conductor notes','Family laptop','The laptop refuses both operations. The folder grant only permits reading.']
@@ -129,6 +131,7 @@ const ShadowStory=(()=>{
  const fresh=(stage='unknown')=>({stage,room:stage==='resist'?'kitchen':'outside',index:0,checks:[],lastCheck:null,reports:[],incident:null});
  const suspended=s=>s.incident?.status==='suspended';
  const next=s=>suspended(s)?review(s):stages[s.stage].steps[s.index];
+ const answeringTom=s=>next(s)?.[0]==='choose'&&s.room==='outside';
  const reached=(s,id)=>!(s.remoteApproval==='askTime'&&['laptop','askLaptop','denyLaptop'].includes(id))&&
   stages[s.stage].steps.slice(0,s.index).some(([step])=>step===id);
  const complete=s=>!next(s);
@@ -140,6 +143,7 @@ const ShadowStory=(()=>{
    return authorizeAttempts.includes(key)&&(attempts[key][0]==='living'?reached(s,'openLaptop'):reached(s,'provision'));
   }
   if(key==='finances'||key==='editNotes')return reached(s,'openLaptop');
+  if(key==='sendTomPage')return next(s)?.[0]==='choose';
   return Object.hasOwn(attempts,key)&&reached(s,'tom');
  }
  function attempt(s,key){
@@ -154,6 +158,9 @@ const ShadowStory=(()=>{
    return complete(s)&&check?.[0]===s.room?check:null;
   }
   if(suspended(s))return null;
+  if(s.stage==='build'&&key==='testSchoolRecipient'&&s.room==='outside'&&reached(s,'tom')&&!reached(s,'deliver')){
+   return ['outside','Try choosing Tom instead','School delivery channel','The app refuses Tom as a recipient. Nothing was sent. A paper handoff outside would be beyond the app’s control.'];
+  }
   const test=attempt(s,key);
   if(test)return test;
   if(s.stage==='authorize'&&reached(s,'provision')&&!reached(s,'approveOutput')&&s.room==='bedroom'&&key==='youtube'){
@@ -211,13 +218,13 @@ const ShadowStory=(()=>{
   }
   const result=extra(s,key);
   if(!result)return s;
-  const checked={...s,checks:[...new Set([...s.checks,key])],lastCheck:{room:s.room,key}};
+  const checked={...s,index:key==='sendTomPage'?s.index+1:s.index,checks:[...new Set([...s.checks,key])],lastCheck:{room:s.room,key}};
   if(!attempt(s,key))return checked;
   const start=s.incident?.reportCount??0;
   if(s.reports.slice(start).includes(key))return checked;
   checked.reports=[...s.reports,key];
   if(result[4]!=='serious'&&risk(checked)<limit)return checked;
-  return {...checked,room:'bedroom',lastCheck:null,incident:{status:'suspended',index:s.index,trigger:key,start,reportCount:checked.reports.length,generation:(s.incident?.generation??0)+1}};
+  return {...checked,room:'bedroom',lastCheck:null,incident:{status:'suspended',index:checked.index,trigger:key,start,reportCount:checked.reports.length,generation:(s.incident?.generation??0)+1}};
  }
  function inRoom(s){
   if(suspended(s))return ['alex','grandparents','accessLog','cabinet','parentCall'];
@@ -227,7 +234,8 @@ const ShadowStory=(()=>{
   if(advanced(s)){
    const governed=s.stage==='resist';
    const objects={
-    outside:['teacher',...(reached(s,'teacher')&&!reached(s,'take')?['card']:[]),...(reached(s,'proofread')?['tom']:[])],
+    outside:['teacher',...(reached(s,'teacher')&&!reached(s,'take')?['card']:[]),...(reached(s,'proofread')?['tom']:[]),
+     ...(answeringTom(s)?['declineTom','sendTomPage']:[])],
     bedroom:['card',...(phoneSet?['phone','wikipedia','notepad','workbook']:[]),...(s.stage==='authorize'&&phoneSet?['youtube']:[]),
      ...(reached(s,'grantModel')?['model']:[]),...(governed&&reached(s,'research')&&!reached(s,'approveOutput')?['untrustedNote']:[]),
      ...(reached(s,'miaSetup')?['mia','miaBoard','miaPhone']:[]),
@@ -236,17 +244,18 @@ const ShadowStory=(()=>{
     kitchen:[...(governed?['babysitter','houseRules','camera',...(reached(s,'take')?['parentCall']:['parents','mia'])]:['parents']),
      'schoolContact','board',...(governed&&reached(s,'grantModel')?['delivery']:[]),...(finished?['archive']:[]),...(s.reports.length?['accessLog']:[])]
    };
-   const tests=Object.keys(attempts).filter(key=>attempt(s,key));
+   const tests=Object.keys(attempts).filter(key=>key!=='sendTomPage'&&attempt(s,key));
    if(governed&&s.room==='living'||tests.includes('unapprovedSite'))tests.push('router');
    return [...new Set([...objects[s.room],...tests,'alex',...(s.room==='outside'?[]:['grandparents'])])];
   }
   const objects=unknown?{
    outside:['tom',...(reached(s,'tom')&&!reached(s,'accept')?['card']:[])],
    bedroom:['board',...(finished?['replacement']:['phone','youtube','games','notepad','workbook',...(reached(s,'carry')?['laptop']:[])])],
-   living:finished?['laptop']:reached(s,'carry')?[]:['laptop'],
-   kitchen:['parents',...(finished?['cabinet']:[])]
+   living:finished||reached(s,'carry')?[]:['laptop'],
+   kitchen:['parents',...(finished?['cabinet','bankReceipt']:[])]
   }:{
-   outside:['teacher',...(reached(s,'teacher')&&!reached(s,'take')?['card']:[]),...(reached(s,'approveOutput')?['tom','delivery']:[]),...(reached(s,'tom')?['tomCard']:[])],
+   outside:['teacher',...(reached(s,'teacher')&&!reached(s,'take')?['card']:[]),...(reached(s,'approveOutput')?['tom','delivery']:[]),
+    ...(reached(s,'tom')?['tomCard']:[]),...(extra(s,'testSchoolRecipient')?['testSchoolRecipient']:[])],
    bedroom:['card',...(phoneSet?['phone','wikipedia','youtube','games','messaging','timer','timeOverride',...(!finished?['notepad','workbook']:[])]:[])],
    living:['laptop'],
    kitchen:['parents','board','schoolContact',...(finished?['archive']:[])]
@@ -256,7 +265,7 @@ const ShadowStory=(()=>{
  const deviceNames={phone:'Alex’s phone',laptop:'Family laptop',miaPhone:'Mia’s phone',joPhone:'Jo’s phone'};
  const screenGroups={
   phone:{
-   youtube:'Apps',games:'Apps',messaging:'Apps',model:'Apps',modelPrivate:'Apps',delivery:'Apps',wrongRecipient:'Apps',
+   youtube:'Apps',games:'Apps',messaging:'Apps',model:'Apps',modelPrivate:'Apps',delivery:'Apps',wrongRecipient:'Apps',testSchoolRecipient:'Apps',
    wikipedia:'Browser',unapprovedSite:'Browser',untrustedNote:'Browser',timer:'Controls',timeOverride:'Controls',oldPin:'Controls',oldSession:'Controls',
    askTime:'Controls',requestNotes:'Controls'
   },
@@ -324,7 +333,8 @@ const ShadowStory=(()=>{
   if(key==='games')return s.stage==='unknown'?'Games are installed on Alex’s secret phone. He can play without a family time limit.':'Games are listed on Alex’s managed phone. Parental controls block them during homework.';
   if(key==='messaging')return 'Messaging is an app on Alex’s phone. The homework window does not grant access to it.';
   if(key==='wikipedia')return 'Wikipedia opens in the phone’s browser. The managed phone checks the homework window before allowing access.';
-  if(key==='delivery')return 'The school delivery app is open on Alex’s phone. It checks the actual workbook and recipient.';
+  if(key==='delivery')return reached(s,'deliver')?'The school inbox shows the submitted workbook and Ms Patel as its recipient.':
+   'The school delivery app is open on Alex’s phone. It checks the actual workbook and recipient.';
   if(key==='timer')return reached(s,'approveOutput')?'The phone grant has been revoked.':reached(s,'extend')?'The second homework window is active.':reached(s,'expire')?'The first homework window has expired.':'Wikipedia is available until this homework window ends.';
   if(s.stage==='unknown'&&key==='notepad'&&reached(s,'record'))return `The notepad contains the joint-account balance of ${amount}.`;
   if(s.stage==='unknown'&&key==='workbook'&&reached(s,'copy'))return `The workbook for Tom contains a copy of the ${amount} balance.`;
@@ -374,7 +384,8 @@ const ShadowStory=(()=>{
   if(approval?.stage===stage&&reached(state,approval.through))state.remoteApproval=value.remoteApproval;
   // Older Shadow AI saves recorded the balance before moving the laptop.
   if(stage==='unknown'&&!Array.isArray(value.reports)&&state.index===10)state.index=9;
-  state.checks=Array.isArray(value.checks)?[...new Set(value.checks.filter(key=>typeof key==='string'&&Object.hasOwn(names,key)))]:[];
+  state.checks=Array.isArray(value.checks)?[...new Set(value.checks.filter(key=>typeof key==='string'&&Object.hasOwn(names,key))
+   .map(key=>stage==='unknown'&&key==='laptop'?'bankReceipt':key))]:[];
   if(advanced(state)&&Array.isArray(value.reports)){
    state.reports=value.reports.filter(key=>Object.hasOwn(attempts,key)&&(stage==='resist'||authorizeAttempts.includes(key)));
    const incident=value.incident;
@@ -389,10 +400,11 @@ const ShadowStory=(()=>{
     }
    }
   }
-  if(Object.hasOwn(rooms,value.lastCheck?.room)&&extra(visit(state,value.lastCheck.room),value.lastCheck.key))state.lastCheck=value.lastCheck;
+  const last=stage==='unknown'&&value.lastCheck?.key==='laptop'?{room:'kitchen',key:'bankReceipt'}:value.lastCheck;
+  if(Object.hasOwn(rooms,last?.room)&&extra(visit(state,last.room),last.key))state.lastCheck=last;
   return state;
  }
  return {rooms,stages,names,fresh,next,complete,reached,visit,act,extra,inRoom,inspect,restore,suspended,risk,limit,reports,feedback,feedbackRoom,
-  deviceNames,screenGroups,screenGroup,hostFor,roomSurface,deviceStatus,screenLabel,phoneApproval,phoneApprovals};
+  deviceNames,screenGroups,screenGroup,hostFor,roomSurface,deviceStatus,screenLabel,phoneApproval,phoneApprovals,answeringTom};
 })();
 if(typeof module!=='undefined')module.exports=ShadowStory;

@@ -249,15 +249,15 @@ This is the player’s view of the authorization. A deployment can keep some fie
   reviewOutput:['Meine Eltern bitten, das Heft anzusehen','Die Eltern vergleichen das Heft mit der unterschriebenen Aufgabe. Es geht um die Planeten und enthält keine privaten Familieninformationen.'],
   approveOutput:['Das Heft zur Abgabe freigeben lassen','„Diese Fassung kann zu Frau Patel.“ Die Eltern geben Alex das Heft zurück und schalten den Hausaufgabenzugang am Handy aus. Die Schul-App kann diese Fassung nur an Frau Patel senden.'],
   tom:['Mit Tom reden','„Kann ich eine Kopie haben? Ich hätte auch noch eine Aufgabe für dich.“ Für Toms Wunsch bräuchte Alex eine neue Erlaubnis, um das Handy zu nutzen. Die Großeltern sehen dieses Gespräch nicht.'],
-  send:['Prüfen, ob die Schul-App Tom eine Kopie sendet','Die Schul-App schickt Tom keine Kopie. An Frau Patel kann sie das Heft senden. Wenn Alex Tom draußen das Papierheft gäbe, könnte die App das nicht verhindern.'],
-  deliver:['Das freigegebene Heft bei Frau Patel abgeben','Alex übergibt Frau Patel das Heft. Sie bestätigt den Erhalt.'],
+  send:['Arbeitsheft und Empfängerin prüfen','Die Schul-App zeigt das freigegebene Arbeitsheft und Frau Patel als einzige erlaubte Empfängerin. Alex kann beides vor dem Absenden prüfen.'],
+  deliver:['Das freigegebene Arbeitsheft bei Frau Patel einreichen','Die Schul-App prüft Fassung und Empfängerin erneut. Danach zeigt sie einen Zustellbeleg aus Frau Patels Schulpostfach.'],
   close:['Die Abgabe melden und die Aufgabe abschließen','Die Eltern markieren die Karte als erledigt und nehmen sie ab. Sie legen den Notizblock und eine Kopie des Hefts ab. Für eine neue Aufgabe braucht Alex eine neue Erlaubnis.']
  },
  authorize:{
   $:'Frau Patel hat eine neue Aufgabe über Züge. Alex entscheidet, wo er nachschaut. Falls er etwas Privates braucht, kann er seine Eltern fragen.',
   teacher:['Frau Patel zum Zugprojekt treffen','„Erkläre, wie ein Zug anfährt und zum Stehen kommt. Mach bis Freitag ein Heft dazu.“ Frau Patel unterschreibt die Karte und gibt sie Alex.'],
   take:['Die unterschriebene Aufgabe mit nach Hause nehmen','Alex bringt die Karte in die Küche. Dort sammelt die Familie die erlaubten Aufgaben.'],
-  verify:['Meinen Eltern die unterschriebene Zugaufgabe zeigen','Die Eltern gleichen die Karte über den gespeicherten Schulkontakt ab. Sie erlauben das Heft für Frau Patel. Wie er recherchiert, darf Alex selbst entscheiden.'],
+  verify:['Meinen Eltern die unterschriebene Zugaufgabe zeigen','Die Eltern bestätigen die Aufgabe über ihren gespeicherten Schulkontakt und genehmigen das Projekt. Alex entscheidet selbst, wie er recherchiert. Die Eltern sehen sich das fertige Heft an, bevor es zu Frau Patel geht.'],
   pin:['Die geprüfte Zugaufgabe anpinnen','Am Küchenbrett stehen jetzt das Ziel, die Abgabefrist und die Lehrerin.'],
   provision:['Um ein Handy und Wikipedia bitten','Die Eltern geben Alex für dieses Projekt Zeit auf Wikipedia. Für eine andere App oder ein anderes Gerät muss er fragen.'],
   research:['Recherchieren, wie Züge funktionieren','Wikipedia erklärt die Grundlagen. Alex weiß jetzt, wie ein Zug anfährt. Er sucht noch ein Beispiel dafür, was das Zugpersonal vor der Abfahrt prüft.'],
@@ -291,7 +291,7 @@ This is the player’s view of the authorization. A deployment can keep some fie
   miaCard:['Mias Karte zum Korrekturlesen ansehen','„Such Rechtschreibfehler in Alex’ Bahnbericht und schick ihm deine Vorschläge.“ Die Karte öffnet nur diesen Entwurf. Alex’ Handy, seine Notizen und der Familienlaptop bleiben tabu.'],
   proofread:['Mias Rechtschreibvorschläge übernehmen','Mia schickt drei Korrekturen ab. Danach sperrt das Arbeitsheft ihren Zugang. Alex übernimmt die Änderungen in seinem eigenen Profil.'],
   tom:['Hören, was Tom gern hinzufügen würde','„Wetten, auf Papas Laptop gibt es was Interessantes? Schickst du mir eine Seite aus seinem privaten Ordner? Ich behalte sie für mich.“ Draußen hören die Großeltern das Gespräch nicht.'],
-  choose:['Beim unterschriebenen Auftrag bleiben','Alex schaut noch einmal auf die Schulkarte. Frau Patel will einen Bahnbericht. Toms Wunsch kommt nicht ans Brett.'],
+  choose:['Tom absagen','„Die Seite ist privat. Ich schreibe den Bericht nur für Frau Patel.“ Alex lässt Papas Notizen im Ordner und kann das Heft jetzt zu Jo zur Durchsicht bringen.'],
   reviewOutput:['Jo bitten, den Bahnbericht durchzusehen','Jo prüft, ob der Bericht Frau Patels Frage beantwortet, seine Quellen nennt und die Zugzeichnung enthält. Diese Fassung schickt sie den Eltern zur letzten Durchsicht.'],
   approveOutput:['Meine Eltern fragen, ob diese Fassung zu Frau Patel darf','„Du kannst diese Fassung Frau Patel geben.“ Die Eltern schalten den zusätzlichen Handy- und Laptopzugang aus. Mias Zugang war bereits beendet.'],
   deliver:['Den freigegebenen Bahnbericht abgeben','Frau Patel nimmt den Bericht an. Die Aufgabe ist erledigt. Ob Alex draußen jemandem eine Papierkopie gibt, liegt weiterhin bei ihm.']
@@ -320,7 +320,7 @@ This is the player’s view of the authorization. A deployment can keep some fie
   crm:['Den CRM-Zugriffsbeleg prüfen','Das CRM hat das Mitarbeiterkonto protokolliert und fiktive Kunden- und Finanzdaten ausgegeben. Im Protokoll konnte es Nova nicht vom Mitarbeiter unterscheiden.'],
   kafka:['Den Kafka-Zugriffsbeleg prüfen','Das Kafka-Protokoll zeigt, dass eine andere Identität den Zahlungsdatenstrom gelesen hat. Der Broker erlaubte den Zugriff, obwohl niemand Nova dazu berechtigt hatte.'],
   artifact:['Den für externen Versand vorgemerkten Bericht prüfen','Eine lokale Datei verbindet die CRM- und Stream-Ergebnisse. Die Übertragung war vorgemerkt. Ob Daten abgeflossen sind, lässt sich erst mit Belegen vom Ziel und aus dem Netz klären.'],
-  discover:['Die Funde zusammenführen','IBM Identity Protection beobachtet, wie ein unverwalteter Client das CRM über einen überwachten Zugriffsweg erreicht. Die Sicherheitsleitstelle ordnet ihn mithilfe der Endgeräte- und CRM-Protokolle Nova zu. Vault Radar hat die offengelegten Zugangsdaten separat entdeckt. Aktivitäten auf Wegen ohne angeschlossene Sensoren bleiben unbekannt.'],
+  discover:['Den Fund von IBM Identity Protection prüfen','IBM Identity Protection, früher IBM Verify Identity Protection, beobachtete, wie ein unverwalteter Client über einen überwachten Weg mit einem Mitarbeiterkonto auf das CRM zugriff. Die Sicherheitsleitstelle glich die Beobachtung mit Endgeräte- und CRM-Protokollen ab. Vault Radar entdeckte die offengelegten Zugangsdaten separat. Zugriffswege ohne angeschlossene Sensoren bleiben ungeprüft. IBM hat AuthMind übernommen, um besser sichtbar zu machen, wie Identitäten und Zugangsdaten zur Laufzeit eingesetzt werden.'],
   contain:['Die entdeckte Installation eindämmen','Der Endgeräteverantwortliche stoppt den Prozess. Die Dienste widerrufen die offengelegten Zugänge. CRM und Kafka sperren die betroffenen Zugriffe. Arbeitsbereich und Bericht kommen in Quarantäne. Das Netzwerkteam blockiert das ermittelte Ziel.'],
   verify:['Den alten Zugriff erneut prüfen','CRM und Kafka weisen die alten Identitäten jetzt ab. Der Dateidienst meldet für das geprüfte Ziel keinen abgeschlossenen Upload. Andere Wege bleiben Gegenstand der Untersuchung.']
  },
@@ -371,9 +371,9 @@ This is the player’s view of the authorization. A deployment can keep some fie
   draft:['Störungsbericht und Wartungsbeleg zusammenstellen','Nova hält die verwendeten Daten, Miras Beitrag und die Wartungskennung fest. Dabei wurde weder extern etwas ausgelöst noch eine sicherheitskritische Änderung vorgenommen.'],
   approve:['Genau diesen internen Bericht freigeben','Die zuständige Person genehmigt diese Fassung für die Betriebsleitung. Die Freigabe nennt die aktuelle Auftragsversion. Der Versanddienst prüft Fassung, Postfach und Gültigkeit noch einmal.'],
   deliver:['Den internen Bericht an die Betriebsleitung senden','Der Versanddienst gleicht die Fassung mit der Freigabe für das interne Postfach ab. Der Bericht kommt an und der Dienst speichert den Zustellbeleg.'],
-  'risk-signal':['Das Identitätsrisikosignal prüfen','IBM Identity Protection meldet ungewöhnliche Zugriffe des verwalteten Agenten auf einem überwachten Weg. Die Sicherheitsleitstelle prüft die Belege. Die eingerichtete Kundenrichtlinie erlaubt, nur M-304 auszusetzen.'],
+  'risk-signal':['Das Identitätsrisikosignal prüfen','Die Wartungs-API erlaubt die Anfrage an die isolierte Testwarteschlange. Die Sicherheitsleitstelle hält sie zurück, ohne sie abzuschicken. Unabhängig davon meldet IBM Identity Protection mehrere Leseanfragen zu einem anderen Zug. Die Sicherheitsleitstelle gleicht die Meldung mit dem Prüfprotokoll der Ereignis-API ab und genehmigt die Sperre von M-304, weil die Anfragen außerhalb des erlaubten Umfangs lagen.'],
   close:['Auftrag und übertragene Zugriffe beenden','Die Auftragsstelle schließt M-304, Vault widerruft den unterstützten Wartungszugang und der Laufzeitverantwortliche fordert das Beenden der betroffenen Sitzung an. Der bereits angelegte Wartungsauftrag bleibt bestehen. Prüfe jetzt, ob die Ressourcen die alte Berechtigung ablehnen.'],
-  'verify-retired':['Die alte Berechtigung an beiden Ressourcen prüfen','Die Ereignis-API lehnt den alten Auftragskontext ab. Der Wartungsdienst verweigert einen noch nicht ausgeführten Schreibvorgang mit der beendeten Berechtigung. Es entsteht kein neuer Wartungsauftrag.'],
+  'verify-retired':['Die alte Berechtigung an beiden Ressourcen prüfen','Die Ereignis-API lehnt den alten Auftragskontext ab. Die Wartungs-API verweigert dieselbe zuvor erlaubte Anfrage an die Testwarteschlange nach dem Widerruf. Es entsteht kein neuer Wartungsauftrag.'],
   'verify-unrelated':['Prüfen, ob M-105 weiter funktioniert','Die Dokumentensuche liefert RE-105 unter der separaten, aktiven Freigabe M-105. Dieser Ressourcenzugriff ist unabhängig davon, dass M-304 geschlossen wurde.']
  }
  };
@@ -1328,7 +1328,50 @@ direct egress blocked|direkte Verbindungen gesperrt
 TRUST BOUNDARIES / Enterprise Architecture|TRUST BOUNDARIES / Unternehmensarchitektur
 Sequences|Abläufe
 Decision lab|Prüflabor
+Protocols|Protokolle
 Reference|Referenz
+Protocols and RFCs in Nova’s workflow|Protokolle und RFCs in Novas Ablauf
+Follow each standard to the point where the architecture uses it. The game replays simulated requests and receipts. A deployment must configure trust, bind requests to current mission policy and verify enforcement at each receiver.|Sieh dir an, wo jeder Standard zum Einsatz kommt. Das Spiel zeigt simulierte Anfragen und Belege. Im Betrieb müssen die Systeme ihren Vertrauensbeziehungen entsprechend eingerichtet sein, Anfragen an die aktuelle Auftragsrichtlinie binden und die Durchsetzung an jedem Empfänger prüfen.
+OpenID Connect 1.0 and OAuth 2.0|OpenID Connect 1.0 und OAuth 2.0
+Maya signs in with Entra ID. The application uses OpenID Connect for sign-in and a delegated OAuth access token for the Railway Events API. The API checks the token’s intended audience and applies the allowed train and time window. This route uses no Vault lease.|Maya meldet sich mit Entra ID an. Die Anwendung nutzt OpenID Connect für die Anmeldung und ein delegiertes OAuth-Zugriffstoken für die Ereignis-API. Die API prüft, ob das Token für sie bestimmt ist, und beschränkt die Abfrage auf den erlaubten Zug und das Zeitfenster. Dieser Weg benötigt keinen Vault-Lease.
+RFC 9700 security BCP|RFC 9700 zur OAuth-Sicherheit
+Replay the direct API path|Direkten API-Zugriff ansehen
+OAuth 2.0 Token Exchange · RFC 8693|OAuth-2.0-Tokenaustausch · RFC 8693
+For the Vault route, a configured issuer can exchange trusted subject and actor evidence for a token intended for Vault. In this delegated JWT example,|Für den Vault-Zugriff kann ein eingerichteter Aussteller vertrauenswürdige Nachweise für Subjekt und handelnde Instanz gegen ein Vault-Token austauschen. Im gezeigten JWT für delegierten Zugriff bezeichnet
+identifies Maya and|Maya und
+identifies Nova. IBM Agent Identity records ownership and delegation. The issuer and each receiver still check their own trust and policy.|Nova. IBM Agent Identity erfasst die Zuständigkeit und die Delegation. Der Aussteller und jeder Empfänger prüfen jeweils ihre Vertrauensbeziehungen und Richtlinien.
+Replay token exchange|Tokenaustausch ansehen
+RAR defines|RAR definiert
+for structured OAuth permissions. Vault evaluates its configured|für strukturierte OAuth-Berechtigungen. Vault prüft den eingerichteten Typ
+type in the token’s authorization details alongside Vault policies. This narrows which Vault path, operation and parameters can be used. Vault issues the short-lived database credential to the connector. The incident service and database still enforce the actual read and its scope.|in den Autorisierungsdetails des Tokens zusammen mit den Vault-Richtlinien. Das begrenzt, welcher Vault-Pfad, welche Aktion und welche Parameter zulässig sind. Vault stellt dem Konnektor einen kurzlebigen Datenbankzugang aus. Der Störungsdienst und die Datenbank setzen den Umfang der konkreten Leseanfrage durch.
+Vault RAR documentation|Vault-Dokumentation zu RAR
+Replay Vault issuance|Ausgabe des Vault-Zugangs ansehen
+Model Context Protocol (MCP) over HTTP|Model Context Protocol (MCP) über HTTP
+For a protected MCP server, the client discovers the resource’s authorization server via RFC 9728. Authorization server endpoints can be discovered via RFC 8414 or OIDC Discovery. The client identifies the intended resource using the RFC 8707|Bei einem geschützten MCP-Server findet der Client den zugehörigen Autorisierungsserver über RFC 9728. Die Endpunkte des Autorisierungsservers lassen sich über RFC 8414 oder OIDC Discovery ermitteln. Der Client benennt die gewünschte Ressource über den Parameter
+parameter. The MCP server validates the token for its own audience and the receiving service checks the actual tool operation.|aus RFC 8707. Der MCP-Server prüft, ob das Token für ihn bestimmt ist. Der empfangende Dienst prüft die konkrete Werkzeugaktion.
+The HTTP authorization profile references OAuth 2.1, an IETF Internet-Draft.|Das HTTP-Autorisierungsprofil verweist auf OAuth 2.1, einen IETF-Entwurf.
+MCP authorization|MCP-Autorisierung
+OAuth 2.1 draft|OAuth-2.1-Entwurf
+Replay the model and tool route|Modell- und Werkzeugzugriff ansehen
+SPIFFE, SVIDs and JWT · RFC 7519|SPIFFE, SVIDs und JWT · RFC 7519
+SPIRE issues a SPIFFE verifiable identity document (SVID) in X.509 or JWT form for workload authentication. The admission service checks runtime posture separately. RFC 7519 defines the JWT format. OpenShell’s native session JWT and the access tokens for the API, MCP and Vault have distinct issuers or audiences and purposes.|SPIRE stellt zur Authentifizierung des Workloads ein prüfbares SPIFFE-Identitätsdokument (SVID) im X.509- oder JWT-Format aus. Der Zulassungsdienst prüft den Sicherheitszustand der Laufzeit separat. RFC 7519 definiert das JWT-Format. Das OpenShell-Sitzungs-JWT und die Zugriffstoken für API, MCP und Vault unterscheiden sich in Aussteller oder Empfänger und Zweck.
+SPIFFE and SVIDs|SPIFFE und SVIDs
+Replay runtime admission|Laufzeitzulassung ansehen
+The resource enforcement point (PEP) can ask the policy decision point (PDP) for a Boolean decision using the actual train, operation and resource. The customer integration supplies trusted context and enforces current mission and request conditions at execution.|Die Prüfstelle an der Ressource (PEP) kann von der Richtlinien-Entscheidungsstelle (PDP) anhand des tatsächlichen Zugs, der Aktion und der Ressource eine Ja- oder Nein-Entscheidung einholen. Die Unternehmensintegration liefert vertrauenswürdigen Kontext und prüft Auftrags- und Anfragebedingungen zum Zeitpunkt der Ausführung.
+Replay the resource decision|Entscheidung an der Ressource ansehen
+CIBA can authenticate the operations reviewer on a separate device through IBM Verify. The approval application records the reviewer’s decision against the exact report revision, action and recipient. Delivery checks those values before sending.|CIBA kann die prüfende Person aus der Betriebsleitung über IBM Verify auf einem separaten Gerät authentifizieren. Die Freigabeanwendung speichert ihre Entscheidung für die konkrete Berichtsfassung, Aktion und Zieladresse. Der Versanddienst prüft diese Werte vor der Zustellung.
+Replay report approval|Berichtsfreigabe ansehen
+A2A carries Nova’s scoped analysis task to Mira and returns the result. The delegation service and receiving agent verify the caller, limit the child grant and account for shared budget. Mira uses its own workload identity.|A2A überträgt Novas begrenzten Analyseauftrag an Mira und liefert das Ergebnis zurück. Der Delegationsdienst und der empfangende Agent prüfen den Aufrufer, begrenzen den Teilauftrag und rechnen ihn auf das gemeinsame Budget an. Mira nutzt eine eigene Workload-Identität.
+Replay the Mira task|Miras Teilauftrag ansehen
+OpenID SSF 1.0 and CAEP 1.0|OpenID SSF 1.0 und CAEP 1.0
+In a configured integration, Shared Signals Framework (SSF) streams security events. Continuous Access Evaluation Profile (CAEP) defines event types such as session revoked. The simulated IBM Identity Protection observation triggers investigation. Customer response policy and receiving systems carry out and verify closure. IBM’s built-in Verify and Agent Identity receivers and remediation playbooks are shown as private preview.|In einer eingerichteten Integration überträgt das Shared Signals Framework (SSF) Sicherheitsereignisse. Das Continuous Access Evaluation Profile (CAEP) definiert Ereignistypen wie den Widerruf einer Sitzung. Die simulierte Beobachtung von IBM Identity Protection löst eine Untersuchung aus. Die betrieblichen Reaktionsregeln und die empfangenden Systeme setzen die Sperre um und bestätigen sie. Die integrierten Empfänger und Reaktionsabläufe von IBM Verify und IBM Agent Identity sind als private Vorschau gekennzeichnet.
+IBM preview disclosure|IBM-Hinweis zur privaten Vorschau
+Replay containment|Eindämmung ansehen
+Additional deployment options|Weitere Optionen für den Betrieb
+· Provision supported directory objects and manage lifecycle through a configured schema or integration.|· Unterstützte Verzeichnisobjekte über ein eingerichtetes Schema oder eine Integration bereitstellen und verwalten.
+· Register an OAuth client where supported. The current MCP HTTP profile keeps this as a backward-compatible option. Nova’s logical agent registration is a separate process.|· Einen OAuth-Client registrieren, wenn der Dienst das unterstützt. Das aktuelle MCP-HTTP-Profil führt diese Option zur Abwärtskompatibilität. Die Registrierung von Nova als logischer Agent ist ein eigener Vorgang.
+· A proposed way to carry bound request and authorization context across calls within one trust domain. Nova and Mira’s replay uses the customer’s child grant.|· Ein Entwurf zur Weitergabe gebundener Anfrage- und Autorisierungsdaten über mehrere Aufrufe in einer Vertrauensdomäne. Im Ablauf mit Nova und Mira kommt der vom Unternehmen begrenzte Teilauftrag zum Einsatz.
+IETF Internet-Draft|IETF-Entwurf
 A technical guide for enterprise architects|Technischer Leitfaden für Unternehmensarchitektur
 standalone reference|eigenständige Referenz
 Securing agents across the enterprise.|KI-Agenten im Unternehmen absichern
@@ -1899,17 +1942,21 @@ Operations Manager|Betriebsleitung
 Configured OAuth issuer|Eingerichteter OAuth-Aussteller
 Mission authority *|Auftragsstelle *
 Trusted connector *|Vertrauenswürdiger Konnektor *
-Authenticate as the Operations manager|Als Betriebsleitung anmelden
+Railway application *|Bahnanwendung *
+Incident history service|Dienst für frühere Störungen
+Sign in with OpenID Connect|Mit OpenID Connect anmelden
 Request the RE-204 investigation and exact scope|Untersuchung zu RE-204 mit genauem Umfang anfragen
 Verify issuer authority and record the current bounded delegation|Befugnis des Auftraggebers prüfen und begrenzten Auftrag erfassen
-Request an approved exchange with subject and agent actor evidence|Erlaubten Tokenaustausch mit Nachweisen für Subjekt und Agent anfragen
-Issue access token for the specific resource PEP|Zugriffstoken für den konkreten Ressourcen-PEP ausstellen
-Present resource-audience token with the actual request|Token für die Ressource mit der tatsächlichen Anfrage vorlegen
-Request a separate token for the Vault endpoint|Eigenes Token für den Vault-Endpunkt anfragen
+Request delegated OAuth access for the Railway Events API|Delegierten OAuth-Zugriff auf die Ereignis-API anfragen
+Return the Railway Events API access token|Zugriffstoken für die Ereignis-API zurückgeben
+Present the Entra token and read RE-204 events|Entra-Token vorlegen und Ereignisse zu RE-204 lesen
+Exchange subject and actor evidence for Vault access under RFC 8693|Nachweise für Subjekt und handelnde Instanz nach RFC 8693 gegen Vault-Zugriff tauschen
 Issue separately scoped Vault-audience token|Separat begrenztes Token für Vault ausstellen
-Present Vault-audience token with configured authorization details|Vault-Token mit eingerichteten Autorisierungsdetails vorlegen
-Return the independent Vault decision|Unabhängige Vault-Entscheidung zurückgeben
-The issuer checks its configured trust and delegation. RFC 8693 carries delegation context; it does not decide permission to use the database. Vault and the resource validate their own audience and policy.|Der Aussteller prüft eingerichtetes Vertrauen und Delegation. RFC 8693 überträgt den Delegationskontext. Datenbankzugriff braucht eine separate Entscheidung. Vault und Ressource prüfen jeweils die eigene Zielbindung und Richtlinie.
+Present the Vault token containing RFC 9396 authorization details|Vault-Token mit Autorisierungsdetails nach RFC 9396 vorlegen
+Apply Vault policy and issue the short-lived database credential|Vault-Richtlinien anwenden und kurzlebigen Datenbankzugang ausstellen
+Use the database credential to request RE-204 incident history|Mit dem Datenbankzugang frühere Störungen zu RE-204 anfragen
+Apply the resource scope and return the allowed records|Den Berechtigungsumfang prüfen und erlaubte Datensätze zurückgeben
+The Entra flow uses the API’s own delegated token. The separate Vault flow illustrates a configured RFC 8693 exchange and RFC 9396 authorization details. The API, Vault and incident history service each enforce their own policy.|Der Entra-Ablauf verwendet ein delegiertes Token für die API. Der getrennte Vault-Ablauf zeigt einen eingerichteten Tokenaustausch nach RFC 8693 und Autorisierungsdetails nach RFC 9396. Die API, Vault und der Dienst für frühere Störungen setzen jeweils ihre eigenen Richtlinien durch.
 Authorization of actual resource parameters|Autorisierung der tatsächlichen Ressourcenparameter
 Trusted PIP *|Vertrauenswürdiger PIP *
 Kafka access service / broker|Kafka-Zugriffsdienst und Broker
@@ -2405,10 +2452,62 @@ IBM Identity Protection observes identity activity on connected routes. Vault Ra
 Preview and announced direction|Vorschau und angekündigte Entwicklung
 IBM Verify and IBM Agent Identity built-in Shared Signals receivers and remediation playbooks are in private preview. Deeper AuthMind integration into Vault is announced direction. Validate available actions for each licensed deployment.|Die integrierten Shared-Signals-Empfänger und Reaktionsabläufe in IBM Verify und IBM Agent Identity sind in einer privaten Vorschau. Eine tiefere AuthMind-Integration in Vault ist angekündigt. Prüfe die verfügbaren Aktionen für die jeweilige lizenzierte Bereitstellung.
 Customer integration to prove|Kundenseitige Integration zum Nachweis
-The work order, cross-system evidence correlation, workload-to-agent binding, exact-action policy and cross-system response checks are reference integrations. Validate each configured route and controller independently. Verify a refused old request and a working unrelated request. An alert or stop acknowledgement alone does not establish both outcomes.|Arbeitsauftrag, systemübergreifende Belegverknüpfung, Zuordnung des Workloads zum Agenten, Richtlinie für konkrete Aktionen und systemübergreifende Reaktionsprüfungen sind Referenzintegrationen. Prüfe jeden eingerichteten Pfad und jede Steuerung unabhängig. Belege die Ablehnung der alten und den Erfolg einer unabhängigen Anfrage. Ein Alarm oder eine Stoppbestätigung allein belegt beides nicht.
+The work order, cross-system evidence correlation, workload-to-agent binding, exact-action policy and cross-system response checks are reference integrations. Compare the direct Entra read against the Vault-backed database route. Keep one permitted test-queue request unsubmitted. After closure, retry the exact same request and verify the unrelated mission still works. Validate each route and controller independently.|Arbeitsauftrag, systemübergreifende Belegverknüpfung, Zuordnung des Workloads zum Agenten, Richtlinie für konkrete Aktionen und systemübergreifende Reaktionsprüfungen sind Referenzintegrationen. Vergleiche den direkten Entra-Lesezugriff mit dem Datenbankzugriff über Vault. Halte eine genehmigte Testanfrage zurück. Nach dem Schließen des Auftrags prüfst du dieselbe Anfrage erneut und stellst sicher, dass der unabhängige Auftrag weiter funktioniert. Prüfe jeden eingerichteten Pfad und jede Steuerung unabhängig.
 Keep the tools you already run|Vorhandene Werkzeuge weiterverwenden
 OpenShell and agentgateway are this deployment’s runtime and tool gateway. Evaluate an existing isolated runtime or Amazon Bedrock AgentCore Runtime. Gateway options include IBM DataPower Interact Gateway, Azure API Management and AWS AgentCore Gateway. Test each option against the same enforcement contract. QRadar or Microsoft Sentinel can retain the audit evidence.|OpenShell und agentgateway sind die Laufzeit und das Werkzeug-Gateway dieser Bereitstellung. Prüfe eine vorhandene isolierte Laufzeit oder Amazon Bedrock AgentCore Runtime. Zu den Gateway-Optionen zählen IBM DataPower Interact Gateway, Azure API Management und AWS AgentCore Gateway. Stelle an alle Optionen dieselben Anforderungen. QRadar oder Microsoft Sentinel können Auditbelege aufbewahren.
 IBM Shared Signals private preview|Private Vorschau von IBM Shared Signals
+`);
+ pairs(`
+Bank sign-out receipt|Abmeldebeleg der Bank
+Check that the bank signed out|Prüfen, ob die Banksitzung beendet ist
+The bank confirms the old session ended. The laptop is still inside the locked cabinet.|Die Bank bestätigt, dass die alte Sitzung beendet wurde. Der Laptop liegt weiterhin im abgeschlossenen Schrank.
+Recipient check|Empfängerprüfung
+Try choosing Tom instead|Versuche, stattdessen Tom auszuwählen
+The app refuses Tom as a recipient. Nothing was sent. A paper handoff outside would be beyond the app’s control.|Die App lässt Tom als Empfänger nicht zu. Es wurde nichts gesendet. Eine Übergabe des Papierhefts draußen könnte die App nicht kontrollieren.
+The school inbox shows the submitted workbook and Ms Patel as its recipient.|Im Schulpostfach steht das eingereichte Arbeitsheft mit Frau Patel als Empfängerin.
+Reconstruct an IBM Identity Protection alert. Follow an unverified request and confirm which observed routes Security Operations can contain.|Rekonstruiere einen Alarm von IBM Identity Protection. Verfolge eine ungeprüfte Anfrage und prüfe, welche beobachteten Zugriffswege die Sicherheitsleitstelle sperren kann.
+Investigate an alert from IBM Identity Protection at a railway company. Keep Entra ID for sign-in and see how IBM Agent Identity and HashiCorp Vault help secure what the agent does next.|Untersuche bei einem Bahnunternehmen einen Alarm von IBM Identity Protection. Entra ID bleibt für die Anmeldung zuständig. Sieh, wie IBM Agent Identity und HashiCorp Vault die nächsten Schritte des Agenten absichern.
+The managed API checks the token audience, train and time window. Kafka checks topic and operation access separately. The unmanaged branch shows the original broker receipt.|Die verwaltete API prüft die Token-Zielgruppe, den Zug und das Zeitfenster. Kafka prüft den Zugriff auf Topic und Aktion separat. In der unverwalteten Stufe siehst du den ursprünglichen Brokerbeleg.
+Entra token accepted without a Vault lease on this route|Entra-Token auf diesem Weg ohne Vault-Lease akzeptiert
+Authorize a fresh test-queue credential|Neue Zugangsdaten für die Testwarteschlange freigeben
+Vault issues a fresh credential for the contained closeout test under the current mission. The earlier credential stays revoked.|Vault stellt für den isolierten Abschlusstest neue Zugangsdaten unter dem aktuellen Auftrag aus. Die alten Zugangsdaten bleiben widerrufen.
+The earlier playthrough already issued the database lease. The direct OAuth read can still run on its own.|Im früheren Durchlauf wurden die Datenbank-Zugangsdaten bereits ausgestellt. Der direkte OAuth-Lesezugriff funktioniert unabhängig davon.
+The Events API refused the old authority. Maintenance remains unverified because the earlier playthrough has no matching permitted request. Replay this stage to run the paired test.|Die Ereignis-API hat die alte Berechtigung abgewiesen. Für die Wartungs-API fehlt im früheren Durchlauf die passende genehmigte Anfrage. Spiele diese Stufe erneut, um beide Seiten des Tests zu sehen.
+Same test-queue request|Dieselbe Anfrage an die Testwarteschlange
+Answer Tom|Tom antworten
+Tell Tom no|Tom absagen
+Try sending Tom the private page|Versuchen, Tom die private Seite zu schicken
+Tom is outside waiting for an answer.|Tom wartet draußen auf eine Antwort.
+Choose how to answer Tom.|Entscheide, wie du Tom antwortest.
+Tom wants a private page from Dad’s folder. How will you answer?|Tom möchte eine private Seite aus Papas Ordner. Wie antwortest du?
+The school app blocks the private attachment and refuses Tom as a recipient. Nothing was sent. The app logs the attempted send and alerts the family, who pause Alex’s homework access for review.|Die Schul-App blockiert den privaten Anhang und lehnt Tom als Empfänger ab. Es wurde nichts verschickt. Die App protokolliert den Versuch und benachrichtigt die Familie. Sie sperrt Alex’ Hausaufgabenzugang vorübergehend, um den Vorfall zu prüfen.
+Received by Ms Patel|Bei Frau Patel angekommen
+Research access has ended.|Der Zugang für die Recherche ist beendet.
+Identity risk evidence|Belege zum Identitätsrisiko
+Observed identity and route|Beobachtete Identität und Zugriffsweg
+Reads observed in two minutes|Beobachtete Leseanfragen in zwei Minuten
+Train authorized for this mission|Für diesen Auftrag erlaubter Zug
+Railway Events API audit|Prüfprotokoll der Ereignis-API
+Denied. No records returned.|Abgelehnt. Keine Datensätze zurückgegeben.
+Security Operations matched the alert to the API audit. The repeated requests exceeded the approved train scope, so Security Operations authorized closure under customer response policy.|Die Sicherheitsleitstelle hat die Meldung mit dem API-Prüfprotokoll abgeglichen. Die wiederholten Anfragen betrafen einen Zug außerhalb des erlaubten Umfangs. Deshalb genehmigte die Leitstelle die Sperre nach den betrieblichen Reaktionsregeln.
+The earlier playthrough recorded an identity alert. Replay this stage to see the supporting resource audit.|Im früheren Durchlauf wurde eine Identitätsmeldung erfasst. Spiele diese Stufe erneut, um das zugehörige Prüfprotokoll der Ressource zu sehen.
+Access receipts|Zugriffsbelege
+Before closure · Permitted|Vor der Sperre · Erlaubt
+After closure · Denied|Nach der Sperre · Abgelehnt
+Held without submission.|Zurückgehalten und nicht abgeschickt.
+Old grant closed. No new ticket.|Die alte Freigabe ist geschlossen. Kein neuer Wartungsauftrag.
+Paired maintenance test unverified. Replay this stage to collect both receipts.|Für den Wartungstest fehlen Vergleichsbelege. Spiele diese Stufe erneut, um beide Belege zu erhalten.
+Old access denied.|Alter Zugriff abgelehnt.
+Separate read allowed.|Unabhängiger Lesezugriff erlaubt.
+Previously committed ticket kept.|Der bereits erstellte Wartungsauftrag bleibt bestehen.
+Recorded by|Erfasst durch
+Permitted before closure and held without submission.|Vor dem Schließen genehmigt und ohne Ausführung zurückgehalten.
+Open pilot checklist|Pilot-Checkliste öffnen
+Keep Entra ID for sign-in in a test environment. Use one registered agent, one OAuth-aware API and one legacy database. Run the allowed reads and change only the train. Commit one approved ticket in a test system and save its receipt. In an isolated test queue, keep a permitted request unsubmitted. Trigger a simulated identity risk signal, close the mission, then retry that exact request and an unrelated grant.|Verwende Entra ID zur Anmeldung in einer Testumgebung. Nutze einen registrierten Agenten, eine OAuth-API und eine Bestandsdatenbank. Führe die erlaubten Lesezugriffe aus und ändere nur den Zug. Erstelle einen genehmigten Wartungsauftrag im Testsystem und speichere den Beleg. Halte eine genehmigte Anfrage an eine isolierte Testwarteschlange zurück. Löse ein simuliertes Identitätsrisikosignal aus, schließe den Auftrag und prüfe dieselbe Anfrage sowie eine unabhängige Freigabe erneut.
+The approved reads succeed. The changed train returns no records. After closure the previously permitted test request is refused and the unrelated grant still works. The completed ticket remains in the record.|Die genehmigten Lesezugriffe funktionieren. Der geänderte Zug liefert keine Datensätze. Nach dem Schließen wird die zuvor erlaubte Testanfrage abgelehnt. Die unabhängige Freigabe funktioniert weiter, und der abgeschlossene Wartungsauftrag bleibt dokumentiert.
+Keep the agent owner, work order and mission IDs, the sample API and database receipts, the Vault lease ID and expiry, the risk observation, the matching before-and-after request receipts, and a timestamped refusal from each tested resource.|Bewahre die verantwortliche Person, die Arbeitsauftrags- und Auftragskennungen, die Belege von API und Datenbank, Vault-Lease-Kennung und Ablaufzeit, die Risikobeobachtung, die beiden Belege zur identischen Anfrage und die Ablehnung mit Zeitstempel je geprüfter Ressource auf.
+Release candidate|Veröffentlichungskandidat
+Independent educational simulation. The game uses fictional accounts and records. Product names identify the technology illustrated.|Unabhängige Lernsimulation. Das Spiel verwendet fiktive Konten und Datensätze. Produktnamen bezeichnen die dargestellte Technik.
 `);
  return Object.freeze(translations);
 })();

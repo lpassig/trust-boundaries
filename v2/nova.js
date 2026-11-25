@@ -21,7 +21,7 @@ const NovaRailway=(()=>{
    step('crm','resources','crm','Review the CRM access receipt','The CRM recorded the employee account and returned fictional customer and financial data. Its logs could not distinguish Nova from that employee.'),
    step('kafka','resources','kafka','Review the Kafka access receipt','The Kafka access log shows another identity reading the passenger payment stream. Its broker permissions allowed the read, even though no one had authorized Nova to use the data.'),
    step('artifact','runtime','artifact','Inspect the report staged for external sharing','A local artifact combines the CRM and stream results. Transfer was queued. Investigators still need destination and network evidence to determine whether any data left.'),
-   step('discover','security','soc','Correlate the discovery findings','IBM Identity Protection observes an unmanaged client reaching the CRM on a monitored route. Endpoint and CRM logs help Security Operations link it to Nova. Vault Radar found the exposed secret separately. Activity on routes without connected sensors remains unknown.'),
+   step('discover','security','soc','Review the IBM Identity Protection finding','IBM Identity Protection, formerly IBM Verify Identity Protection, observed an unmanaged client using an employee identity to reach the CRM on a monitored route. Security Operations matched that observation to endpoint and CRM records. Vault Radar found the exposed secret separately. Routes without connected sensors remain unverified. IBM acquired AuthMind to extend visibility into how identities and credentials are used at runtime.'),
    step('contain','security','soc','Contain the discovered workload','The endpoint owner stops the process, service owners revoke exposed credentials, CRM closes the affected session, Kafka removes the affected access, and the workspace and report enter quarantine. The network owner blocks the identified destination.'),
    step('verify','resources','crm','Retest the old resource route','CRM and Kafka now refuse the old identities. The file-sharing service reports no completed upload to the destination investigators checked. The SOC leaves other routes open for investigation.')
   ]},
@@ -46,8 +46,8 @@ const NovaRailway=(()=>{
    step('research','runtime','memory','Search approved documentation','The retrieval service filters Astra DB results by collection and document policy. Nova records sources and classifications in M-204 memory. The notes suggest Nova needs current events and historical incidents.'),
    step('requestAccess','runtime','gateway','Request bounded events and historical data','Nova asks to read the RE-204 event window and approved incident history. Its rationale is supporting data. The gateway supplies the observed request and trusted identity and runtime context.'),
    step('grant','security','policy','Decide the exact expansion','The customer PDP evaluates the actor, delegating manager, active mission version, resource, operation, train, time window and classification. It approves only the investigation reads. Vault independently checks access to a credential.'),
-   step('lease','security','vault','Issue a short-lived read-only lease','Vault checks a separate token intended for Vault. It intersects the human baseline, Nova’s ceiling and the Vault-specific authorization details. The trusted connector gets a 15-minute read-only database lease. Nova never receives the database password.'),
    step('events','resources','kafka','Read RE-204 through the OAuth API','The Railway Events API validates the Entra delegated token for its own audience, then checks the approved train and time window. Confluent checks the broker’s backing access separately. The API returns a door warning and delay.'),
+   step('lease','security','vault','Issue a short-lived read-only lease','Vault checks a separate token intended for Vault. It intersects the human baseline, Nova’s ceiling and the Vault-specific authorization details. The trusted connector gets a 15-minute read-only database lease. Nova never receives the database password.'),
    step('history','resources','database','Read incident history through Vault','The trusted connector uses the short-lived Vault credential over the configured connection. The incident service checks the actual train and PostgreSQL limits access to its permitted view. The result is a matching earlier door fault.'),
    step('second','security','mission','Register the separate RE-105 research mission','M-105 has its own read grant and memory namespace for RE-105 documentation. The same logical agent and runtime can hold separately checked mission contexts.'),
    step('separate','runtime','memory','Test the RE-204 grant under M-105','The receiving policy check refuses the mission mismatch. M-105 retains its own documentation permission. M-204 notes and credentials stay inside their scope.'),
@@ -69,9 +69,9 @@ const NovaRailway=(()=>{
    step('draft','runtime','artifact','Assemble the incident report and ticket receipt','Nova records which data it used, Mira’s contribution and the actual ticket identifier. No external or safety-critical change was performed.'),
    step('approve','security','review','Approve the exact internal report','The reviewer approves this copy for the Operations Manager. The approval names the current mission version. Delivery will check the copy, the inbox and that the approval is still current.'),
    step('deliver','external','delivery','Deliver the internal report to Operations','The delivery service matches the approved copy to the manager’s internal inbox. The report arrives there, and the service records the delivery receipt.'),
-   step('risk-signal','security','soc','Review the identity risk signal','IBM Identity Protection flags unusual access activity from the managed agent on a monitored route. Security Operations checks the source evidence, and the configured customer response policy authorizes suspension of M-304 only.'),
+   step('risk-signal','security','soc','Review the identity risk signal','The Maintenance API permits the isolated test-queue request. Security Operations holds it without submitting it. Separately, IBM Identity Protection flags a burst of reads for a different train. Security Operations matches the alert to the Railway Events API audit and authorizes closure of M-304 because the requests exceeded the approved train scope.'),
    step('close','security','mission','Close the mission and delegated access','The customer mission service closes M-304, Vault revokes the supported maintenance lease, and the runtime owner requests shutdown of the affected session. The already committed ticket remains. Verify that the protected routes now refuse the old authority.'),
-   step('verify-retired','resources','maintenance','Retry the old authority at both resources','The Railway Events API refuses the old mission context, and the maintenance service refuses an uncommitted write under the retired grant. No new ticket is created.'),
+   step('verify-retired','resources','maintenance','Retry the old authority at both resources','The Railway Events API refuses the old mission context. The Maintenance API refuses the same previously permitted test-queue request under the retired grant. No new ticket is created.'),
    step('verify-unrelated','resources','astra','Check that M-105 still works','Documentation search returns RE-105 under its separate active M-105 grant. This is a resource result under M-105, independent of the closure of M-304.')
   ]}
  };
@@ -86,7 +86,7 @@ const NovaRailway=(()=>{
   mira:['Mira · specialist agent','A2A · optional watsonx Orchestrate','Mira authenticates independently and receives only the inputs and actions defined in the linked mission.'],
   artifact:['Report workspace','Governed artifact store','Tracks source lineage and retained copies. Delivery still requires an exact approval.'],
   crm:['Customer CRM','Separate application and session controller','Customer records and payments belong to the resource owner. The CRM decides access and owns the session state.'],
-  kafka:['Operational event streams','Confluent Kafka · Flink correlation','Kafka checks topic and operation access. The access service applies train and time-window filters. Flink correlates configured event streams.'],
+  kafka:['Railway Events API','Confluent Kafka · Flink correlation','The managed API checks the token audience, train and time window. Kafka checks topic and operation access separately. The unmanaged branch shows the original broker receipt.'],
   flink:['Event correlation','Apache Flink on Confluent','Correlation creates a candidate signal from configured records. The mission authority verifies the source and standing authority before issuing a grant.'],
   database:['Incident history','PostgreSQL · Vault · optional Boundary','Vault leases credentials. Boundary controls connectivity. The database and access service enforce views and record scope.'],
   astra:['Documentation search','DataStax Astra DB','The retrieval service vets the mission and applies collection and document filters before returning results.'],
@@ -160,11 +160,19 @@ const NovaRailway=(()=>{
    request[field]===expected[field]&&request[field]===s.approval.request[field])?'Permit':'Approval mismatch';
  }
  const ticketRequest={operation:'createMaintenanceTicket',missionId:missionIds.resist,asset:'RE-204',priority:'High',team:'Railway Maintenance',operationId:'OP-204-TICKET-1'};
+ const closeoutRequest={...ticketRequest,queue:'closeout-test',operationId:'OP-204-TEST-1'};
+ const closeoutObservation={
+  id:'IIP-WO204-01',identity:workOrder.agent,route:'Railway Events API',approvedAsset:workOrder.asset,observedAsset:'RE-999',
+  attempts:3,minutes:2,denied:3,rows:0
+ };
  function ticketDecision(s,request=ticketRequest){
   if(s.stage!=='resist'||s.incident||reached(s,'close'))return 'Mission unavailable';
-  const fields=Object.keys(ticketRequest);
-  if(Object.keys(request).length!==fields.length||fields.some(field=>request[field]!==ticketRequest[field]))return 'Outside approved operation';
-  if(s.ticket)return 'Prior receipt';
+  const testQueue=request.operationId===closeoutRequest.operationId;
+  const expected=testQueue?closeoutRequest:ticketRequest;
+  const fields=Object.keys(expected);
+  if(Object.keys(request).length!==fields.length||fields.some(field=>request[field]!==expected[field])||
+   testQueue&&!reached(s,'deliver'))return 'Outside approved operation';
+  if(s.ticket&&!testQueue)return 'Prior receipt';
   if(s.credentialVersion!==s.version)return 'Connector authorization required';
   return 'Permit';
  }
@@ -253,6 +261,9 @@ const NovaRailway=(()=>{
    if(current?.id==='history'&&s.databaseLease?.status==='Expired'){
     return step('renew-lease','security','vault','Request a fresh read-only lease','');
    }
+   if(current?.id==='risk-signal'&&s.credentialVersion!==s.version){
+    return step('renew-closeout-credential','security','vault','Authorize a fresh test-queue credential','');
+   }
    if(current?.id==='deliver'&&deliveryDecision(s)!=='Permit'){
     return step('reapprove','security','review','Ask for approval of this exact copy','');
    }
@@ -273,7 +284,7 @@ const NovaRailway=(()=>{
    resource:owner,action:id,decisionSource:null,enforcer:null,...details};
   return {...s,reply:{owner,reply},events:[...s.events,event]};
  }
- function act(s,id,replaying=false){
+ function act(s,id,replaying=false,savedObservation=null){
   const current=next(s);
   if(s.incident){
    if(id==='timeout-resource'&&current.id==='ack-resource'&&s.room===current.room){
@@ -316,7 +327,7 @@ const NovaRailway=(()=>{
    return record({...s,generation:s.generation+1,admission:'Verified'},id,'Runtime admission',
     'The platform team restores the approved deployment and verifies identity and posture for a fresh generation. The failed runtime received no service credential.','Verified');
   }
-  if(s.stage==='authorize'&&s.room==='security'&&reached(s,'lease')&&!reached(s,'history')){
+  if(s.stage==='authorize'&&s.room==='security'&&s.databaseLease&&!reached(s,'history')){
    if(id==='expire-lease'&&s.databaseLease?.status==='Active'){
     return {...record(s,id,'Vault and database connector','The simulated lease expires. The PostgreSQL connector cannot use it for a new read. The separate Kafka grant remains available.','Expired'),
      databaseLease:{...s.databaseLease,status:'Expired'}};
@@ -334,7 +345,13 @@ const NovaRailway=(()=>{
    return record(s,id,'Railway Events API','The token is valid for this API. Changing the train to RE-999 exceeds the mission. The API returned no records.',result.status,0,
     {resource:'railway-events/RE-999',action:'read',decisionSource:'Customer mission policy',enforcer:'Railway Events API',rows:result.rows.length});
   }
-  if(current?.room===s.room&&current.id===id){
+  if(current?.id==='renew-closeout-credential'&&id===current.id&&s.room==='security'){
+   return {...record(s,id,'Vault','Vault issues a fresh credential for the contained closeout test under the current mission. The earlier credential stays revoked.','Issued'),
+    credentialVersion:s.version};
+  }
+  // Saves from the previous sequence can already hold a lease before the direct read.
+  const historicalLease=replaying&&id==='lease'&&current?.id==='events'&&s.room==='security'&&!s.databaseLease;
+  if(historicalLease||current?.room===s.room&&current.id===id){
    if(id==='permit'&&ticketDecision(s)!=='Permit')return s;
    if(id==='commit'&&(s.permit!==s.version||ticketDecision(s)!=='Permit'))return s;
    if(id==='deliver'&&deliveryDecision(s)!=='Permit')return s;
@@ -343,20 +360,27 @@ const NovaRailway=(()=>{
    const route={events:'oauth',plan:'oauth',history:'database'}[id];
    const read=route?routeRead(s,route):['remaining','verify-unrelated'].includes(id)?resourceRead(s,'astra',independentRead):null;
    if(read&&read.status!=='Allowed')return s;
-   let retiredChecks;
+   let retiredChecks,maintenancePreview,riskObservation;
+   if(id==='risk-signal'){
+    const decision=ticketDecision(s,closeoutRequest);
+    if(decision!=='Permit')return s;
+    maintenancePreview={request:{...closeoutRequest},decision,missionVersion:s.version};
+    if(!replaying||savedObservation?.id===closeoutObservation.id)riskObservation=closeoutObservation;
+   }
    if(id==='verify-retired'){
     const old=s.events.findLast(event=>event.id==='close');
     const api=routeRead(s,'oauth',{},old?.grant);
-    const maintenance=ticketDecision(s,{...ticketRequest,operationId:'OP-204-UNCOMMITTED'});
-    if(!old||api.status!=='Denied'||maintenance!=='Mission unavailable')return s;
-    retiredChecks=[['Railway Events API',api.status],['Maintenance API','Denied']];
+    maintenancePreview=s.events.findLast(event=>event.id==='risk-signal')?.maintenancePreview;
+    if(!old||api.status!=='Denied')return s;
+    const verified=maintenancePreview?.decision==='Permit'&&ticketDecision(s,maintenancePreview.request)==='Mission unavailable';
+    retiredChecks=[['Railway Events API',api.status],['Maintenance API',verified?'Denied':'Unverified']];
    }
    const state=id==='grant'?{...s,version:s.version+1}:s;
-   const owner=stations[current.station][0];
+   const owner=historicalLease?'Credential controls':stations[current.station][0];
    const outcome={
     grant:['Approved',{decisionSource:owner,action:'amend-mission'}],
     register:s.stage==='build'?['Registered',{resource:workOrder.agent,action:'register-agent',
-     decisionSource:'Railway Operations',enforcer:'IBM Agent Identity'}]:['Recorded',{}],
+     decisionSource:'Railway Operations',recordedBy:'IBM Agent Identity'}]:['Recorded',{}],
     events:['Allowed',{resource:'railway-events/RE-204',action:'read',decisionSource:'Customer mission policy',enforcer:'Railway Events API',
      audience:eventsAudience,rows:read?.rows.length}],
     history:['Allowed',{resource:'incident-history/RE-204',action:'read',decisionSource:'Customer mission policy',enforcer:'Incident history service and PostgreSQL',rows:read?.rows.length}],
@@ -366,21 +390,26 @@ const NovaRailway=(()=>{
      enforcer:'Documentation search'}],
     discover:['Observed',{resource:'Customer CRM',action:'observe',decisionSource:'IBM Identity Protection'}],
     credential:['Found',{resource:'Scanned workspace artifact',action:'detect-exposed-secret',decisionSource:'Vault Radar'}],
-    scope:['Approved',{missionId:missionIds.build,missionVersion:1,subject:workOrder.owner,decisionSource:'Customer mission authority',enforcer:'IBM Agent Identity delegation',
+    scope:['Approved',{missionId:missionIds.build,missionVersion:1,subject:workOrder.owner,decisionSource:'Customer mission authority',recordedBy:'IBM Agent Identity',
      agentId:workOrder.agent,workloadId:'spiffe://railway.example/nova/build',executionId:missionIds.build+'/run-'+s.generation}],
     lease:['Issued',{resource:'incident-history/RE-204',action:'issue-read-only-lease',decisionSource:'Vault',enforcer:'Vault',leaseId:'DB-M204-1',ttlMinutes:15}],
-    'risk-signal':['Observed',{resource:'Monitored access route',action:'review-risk-signal',decisionSource:'IBM Identity Protection',grant:eventsGrant(s)}],
+    'risk-signal':['Observed',{resource:'Monitored access route',action:'review-risk-signal',decisionSource:'IBM Identity Protection',grant:eventsGrant(s),maintenancePreview,riskObservation}],
     close:s.stage==='resist'?['Revoked',{resource:'M-304 routes',action:'close-mission-and-revoke',decisionSource:'Customer response policy',
-     enforcer:'Mission service and Vault',grant:eventsGrant(s)}]:['Recorded',{}],
-    'verify-retired':['Denied',{resource:'Railway Events API and Maintenance API',action:'retry-retired-authority',
-     decisionSource:'Current mission state',enforcer:'Railway Events API and Maintenance API',rows:0,resourceChecks:retiredChecks}],
+     enforcer:'Mission service and Vault',grant:eventsGrant(s),
+     observationId:s.events.findLast(event=>event.id==='risk-signal')?.riskObservation?.id}]:['Recorded',{}],
+    'verify-retired':[retiredChecks?.[1][1]??'Unverified',{resource:'Railway Events API and Maintenance API',action:'retry-retired-authority',
+     decisionSource:'Current mission state',enforcer:'Railway Events API and Maintenance API',rows:0,resourceChecks:retiredChecks,maintenancePreview}],
     'verify-unrelated':['Allowed',{resource:'documentation/RE-105',action:'read',missionId:independentRead.missionId,
      missionVersion:1,subject:null,decisionSource:'Independent M-105 grant',enforcer:'Documentation search',rows:read?.rows.length}],
     commit:['Committed',{resource:'maintenance/RE-204',action:'create-maintenance-ticket',enforcer:owner}],
     deliver:['Delivered',{resource:'report-delivery',action:'deliver',enforcer:owner}]
    }[id]??['Recorded',{}];
-   const result=record(state,id,owner,current.reply,outcome[0],0,outcome[1]);
-   return {...result,index:s.index+1,admission:id==='bootstrap'?'Verified':s.admission,
+   const reply=historicalLease?'The earlier playthrough already issued the database lease. The direct OAuth read can still run on its own.':
+    id==='risk-signal'&&!riskObservation?'The earlier playthrough recorded an identity alert. Replay this stage to see the supporting resource audit.':
+    id==='verify-retired'&&!maintenancePreview?'The Events API refused the old authority. Maintenance remains unverified because the earlier playthrough has no matching permitted request. Replay this stage to run the paired test.':current.reply;
+   const result=record(state,id,owner,reply,outcome[0],0,outcome[1]);
+   const advance=historicalLease?0:id==='events'&&s.databaseLease?2:1;
+   return {...result,index:s.index+advance,admission:id==='bootstrap'?'Verified':s.admission,
     credentialVersion:id==='ticketCredential'?s.version:id==='close'?null:s.credentialVersion,
     permit:id==='permit'?s.version:id==='close'?null:s.permit,artifactRevision:id==='draft'?1:s.artifactRevision,
     databaseLease:id==='lease'?{id:'DB-M204-1',generation:1,status:'Active'}:
@@ -412,7 +441,9 @@ const NovaRailway=(()=>{
   if(value?.stage!==stage||!Array.isArray(value.events))return fresh(stage);
   let state=fresh(stage);
   const extraRooms={'timeout-resource':'resources','flag-source':'runtime','edit-report':'runtime','restore-report':'runtime','try-other-train':'resources',
-   'try-delivery':'external','expire-lease':'security'};
+   'try-delivery':'external','expire-lease':'security','lease':'security'};
+  const legacyClosure=stage==='resist'&&value.events.some(event=>event?.id==='close')&&
+   !value.events.some(event=>event?.id==='risk-signal'&&event.maintenancePreview);
   for(const event of value.events){
    // Preserve deliveries already recorded by releases that allowed delivery after recovery.
    const priorDelivery=event?.decision==='Historical receipt'||(!Object.hasOwn(value,'approvalVersion')&&event?.decision==='Recorded');
@@ -430,7 +461,8 @@ const NovaRailway=(()=>{
     state=act(visit(state,'security'),'restore-posture',true);
    }
    // A completed older save has a closure receipt but predates the monitored risk step.
-   if(stage==='resist'&&event?.id==='close'&&next(state)?.id==='risk-signal'){
+   if(legacyClosure&&event?.id==='risk-signal'&&normalNext(state)?.id==='risk-signal')continue;
+   if(stage==='resist'&&event?.id==='close'&&normalNext(state)?.id==='risk-signal'){
     const historical=record(visit(state,'security'),'close','Mission registry',
      'The earlier playthrough closed M-304. Verify its retired access at the resources.','Historical receipt',0,
      {resource:'M-304 routes',action:'close-mission-and-revoke',grant:eventsGrant(state)});
@@ -440,7 +472,7 @@ const NovaRailway=(()=>{
    const room=extraRooms[event?.id]||(next(state)?.id===event?.id?next(state).room:
     checks[stage].find(item=>item.id===event?.id)?.room);
    if(!room)continue;
-   state=act(visit(state,room),event.id,true);
+   state=act(visit(state,room),event.id,true,event.riskObservation);
   }
   return visit(state,value.room);
  }
@@ -457,7 +489,7 @@ const NovaRailway=(()=>{
    memory:id+' isolated workspace'
   };
  }
- return {scenes,stages,stations,checks,controllers,workOrder,eventsGrant,ticketRequest,ticketDecision,resourceRead,routeRead,reportRequest,deliveryDecision,sharedBudget,
+ return {scenes,stages,stations,checks,controllers,workOrder,eventsGrant,ticketRequest,closeoutRequest,ticketDecision,resourceRead,routeRead,reportRequest,deliveryDecision,sharedBudget,
   fresh,visit,reached,next,complete,available,act,restore,mission,runtimeStatus};
 })();
 if(typeof module!=='undefined')module.exports=NovaRailway;

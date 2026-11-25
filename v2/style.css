@@ -69,9 +69,9 @@ p, li, dd { color: var(--muted); }
 .receipt, .debrief { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-block: 10px; background: var(--panel); }
 .receipt { border-left: 3px solid var(--green); }
 .receipt p:last-child { margin: 4px 0 0; }
-.stage-debrief dl { display: grid; gap: 8px; }
-.stage-debrief dt { color: var(--accent); font-size: 14px; font-weight: 700; }
-.stage-debrief dd { margin-inline-start: 0; }
+.stage-debrief dl, [data-risk-evidence] dl { display: grid; gap: 8px; }
+.stage-debrief dt, [data-risk-evidence] dt { color: var(--accent); font-size: 14px; font-weight: 700; }
+.stage-debrief dd, [data-risk-evidence] dd { margin-inline-start: 0; }
 .customer-test summary>span { display: block; margin-inline-start: 1.2em; font-weight: 400; }
 .nova-workbench { padding: 12px 16px; background: #192632; border-block: 1px solid #425966; }
 .nova-workbench h3, .nova-workbench p { margin-block: 0 8px; }

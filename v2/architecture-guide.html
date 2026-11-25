@@ -1,19 +1,97 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"><title>Trust Boundaries | Enterprise Architecture Guide</title><style>
 :root{--blue:#0f62fe;--ink:#161616;--muted:#525252;--line:#e0e0e0;--light:#f4f4f4;--purple:#8a3ffc;--red:#da1e28;--green:#198038;--orange:#b65c00}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font:16px/1.6 'IBM Plex Sans',Arial,sans-serif;background:white}button,input,select{font:inherit}button{cursor:pointer}a{color:var(--blue)}h1,h2,h3,p{margin:0 0 16px}h1{font-size:clamp(38px,5vw,62px);font-weight:600;letter-spacing:-1.6px;line-height:1.06;max-width:950px}h2{font-size:36px;line-height:1.16;letter-spacing:-.7px}h3{font-size:22px;font-weight:600}p{max-width:900px}code,pre,.mono,.eyebrow,small{font-family:'IBM Plex Mono',ui-monospace,monospace}small,.eyebrow{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}.wrap{max-width:1300px;margin:auto;padding:0 42px}.top{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line)}.nav{display:flex;align-items:center;gap:10px;min-height:58px;overflow:auto;white-space:nowrap}.brand{font-weight:600;margin-right:auto;font-size:14px}.brand:before{content:'';background:var(--blue);display:inline-block;width:9px;height:9px;margin-right:9px}.nav button{border:0;background:white;color:var(--muted);font-size:13px;padding:12px 14px}.nav button.active{color:var(--blue);background:#edf5ff;box-shadow:inset 0 -2px var(--blue)}.hero{padding:65px 0 30px;border-bottom:1px solid var(--line)}.hero p{font-size:20px;color:var(--muted);max-width:850px}.stagegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:30px 0 0}.stagegrid button{text-align:left;background:white;border:0;padding:19px;min-height:126px}.stagegrid button.active{background:#edf5ff;box-shadow:inset 0 3px var(--blue)}.stagegrid button strong{display:block;font-size:19px;margin:3px 0}.stagegrid button span{color:var(--muted);font-size:13px}.section{padding:44px 0;border-bottom:1px solid var(--line);scroll-margin-top:65px}.lede{font-size:19px;color:var(--muted);max-width:920px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin:24px 0 30px}.metric{padding:17px;border-right:1px solid var(--line);border-top:3px solid var(--purple)}.metric:nth-child(2){border-top-color:var(--blue)}.metric:nth-child(3){border-top-color:var(--green)}.metric:nth-child(4){border-top-color:var(--orange);border-right:0}.metric strong{display:block;font-size:15px;margin-top:5px}.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:10px 13px;background:var(--light);border-bottom:1px solid var(--line)}.toolbar .spacer{flex:1}.btn{background:white;border:1px solid #c6c6c6;padding:7px 12px;color:var(--ink);font-size:13px}.btn:hover,.btn:focus-visible{border-color:var(--blue);color:var(--blue)}.btn.active,.primary{background:var(--blue);border-color:var(--blue);color:white}.btn:disabled{opacity:.4;cursor:default}.frame{border:1px solid var(--line);margin:15px 0 12px;background:white}.canvas{overflow:auto;padding:20px;background:#fafafa;min-height:200px}.canvas svg{display:block;width:100%;height:auto;margin:auto}.canvas svg .node{cursor:pointer}.canvas svg .node:hover polygon,.canvas svg .node:hover path,.canvas svg .node.selected polygon,.canvas svg .node.selected path{stroke:#0f62fe;stroke-width:2.5}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:12px 16px;border-top:1px solid var(--line)}.key{display:inline-flex;align-items:center;gap:6px}.dot{width:9px;height:9px;display:inline-block;background:var(--c)}.caption{font-size:14px;color:var(--muted);max-width:1000px}.detailrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0}.detailcard{border:1px solid var(--line);padding:18px;min-height:130px}.detailcard h4{margin:0 0 10px;font-size:18px}.detailcard p{font-size:14px;color:var(--muted);margin:0}.panel{position:fixed;right:20px;top:78px;bottom:auto;z-index:20;width:390px;max-width:92vw;max-height:80vh;overflow:auto;background:white;box-shadow:0 8px 32px #0003;border:1px solid var(--line);padding:20px}.panel[hidden]{display:none}.panel h3{padding-right:30px}.panel .close{position:absolute;right:12px;top:12px}.panel ul{padding-left:18px;font-size:14px}.panel p{font-size:14px}.panel .connections{border-top:1px solid var(--line);padding-top:10px}.selector{width:100%;padding:12px;border:1px solid #8d8d8d;background:white;margin:0 0 12px}.seqcanvas{overflow:auto;background:white;max-height:660px;padding:10px}.seqcanvas svg{display:block;min-width:100%;height:auto}.replay{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:18px 0}.replay>div{padding:18px;background:white}.replay h4{margin:5px 0;font-size:18px}.replay p{font-size:14px;color:var(--muted)}.hop{display:flex;align-items:center;justify-content:center;gap:10px;min-height:85px}.hop span{padding:10px;border:1px solid #a6c8ff;background:#edf5ff;max-width:45%;text-align:center;font-size:14px}.hop i{font-size:24px;color:var(--blue);font-style:normal}.range{width:100%;accent-color:var(--blue)}.tag{font:11px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}pre{background:var(--light);border:1px solid var(--line);padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;margin:8px 0}.source pre{white-space:pre;overflow:auto;max-height:430px}.source{margin:12px 0;border:1px solid var(--line);padding:10px 15px}.source summary{cursor:pointer;font-size:14px;font-weight:600}.lab{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);gap:1px;background:var(--line)}.lab>div{background:white;padding:20px}.lab select{width:100%;padding:8px;border:1px solid #8d8d8d;margin:6px 0 16px}.checks{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.check{padding:8px 10px;border:1px solid #8d8d8d;background:white;font-size:13px}.check[aria-pressed=true]{background:#edf5ff;border-color:var(--blue)}.check[aria-pressed=false]{text-decoration:line-through;color:#777}.decision{padding:14px 16px;border-left:4px solid var(--green);background:#defbe6;font-weight:600;margin-bottom:10px}.decision.deny{border-color:var(--red);background:#fff1f1}.decision.unknown{border-color:var(--orange);background:#fff2e8}.tablewrap{overflow:auto;border:1px solid var(--line);margin:15px 0 25px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:650px}td,th{padding:12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{background:#e8e8e8;font-weight:600}tr:last-child td{border-bottom:0}.catalogsearch{padding:12px;border:1px solid #8d8d8d;width:100%;margin-bottom:12px}.catalog{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}.catalog button{background:white;border:0;text-align:left;padding:14px}.catalog button:hover{background:#edf5ff}.catalog strong{display:block;font-size:15px}.catalog span{font-size:12px;color:var(--muted)}.note{border-left:3px solid var(--blue);padding:12px 15px;background:#edf5ff;font-size:14px;margin:15px 0}.footer{padding:25px 0;color:var(--muted);font-size:13px}.modal{position:fixed;inset:0;background:#0007;z-index:30;padding:25px;display:grid;place-items:center}.modal[hidden]{display:none}.modalinner{width:100%;height:100%;background:white;display:flex;flex-direction:column}.modalinner .canvas{flex:1}.modalinner .canvas svg{width:auto;max-width:none;height:auto;min-width:100%}[hidden]{display:none!important}@media(max-width:800px){.wrap{padding:0 18px}.stagegrid,.metrics{grid-template-columns:repeat(2,1fr)}.detailrow,.replay,.lab{grid-template-columns:1fr}.catalog{grid-template-columns:repeat(2,1fr)}.hero{padding:35px 0 22px}.nav{gap:0}.nav button{padding:10px}.brand{margin-right:8px}h2{font-size:30px}.canvas{padding:8px}.canvas svg{min-width:720px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-.portfolio { padding: 16px; margin-block: 16px; }
-.portfolio summary { cursor: pointer; font-weight: 650; }
-.portfolio[open] summary { margin-bottom: 16px; }
+.portfolio, .protocol-options { padding: 16px; margin-block: 16px; }
+.portfolio summary, .protocol-options summary { cursor: pointer; font-weight: 650; }
+.portfolio[open] summary, .protocol-options[open] summary { margin-bottom: 16px; }
+.protocol-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:12px; margin-block:20px; }
+.protocol-card { min-width:0; padding:16px; overflow-wrap:anywhere; }
+.protocol-card h3 { margin-bottom:8px; line-height:1.3; }
+.protocol-card p { margin-bottom:10px; }
+.protocol-card .btn { min-height:44px; }
 @media (max-width:620px) {
  .top .brand { display:none }
- .top .nav { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); min-height:48px; padding-inline:8px; white-space:normal }
+ .top .nav { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); min-height:48px; padding-inline:6px; white-space:normal }
  .top .nav button { min-height:44px; padding:7px 3px; font-size:12px; line-height:1.2 }
+ .stagegrid, .metrics, .catalog { grid-template-columns:repeat(2,minmax(0,1fr)); overflow-wrap:anywhere; }
+}
+@media (max-width:400px) {
+ .catalog { grid-template-columns:minmax(0,1fr); }
 }
 </style></head><body>
-<header class="top"><div class="wrap nav"><div class="brand">TRUST BOUNDARIES / Enterprise Architecture</div><button data-jump="architecture" class="active">Architecture</button><button data-jump="sequences">Sequences</button><button data-jump="lab">Decision lab</button><button data-jump="reference">Reference</button></div></header>
+<header class="top"><div class="wrap nav"><div class="brand">TRUST BOUNDARIES / Enterprise Architecture</div><button data-jump="architecture" class="active" aria-current="location">Architecture</button><button data-jump="sequences">Sequences</button><button data-jump="lab">Decision lab</button><button data-jump="protocols">Protocols</button><button data-jump="reference">Reference</button></div></header>
 <main><div class="wrap"><section class="hero"><div class="eyebrow">A technical guide for enterprise architects · standalone reference</div><h1>Securing agents across the enterprise.</h1><p>Follow the evolution from an unmanaged agent to governed autonomy. Inspect the architecture, replay each request and trace the evidence at every trust boundary.</p><div id="stagegrid" class="stagegrid"></div></section>
 <section class="section" id="architecture"><div class="eyebrow" id="stageNum"></div><h2 id="stageTitle"></h2><p id="stageIntro" class="lede"></p><div class="metrics" id="metrics"></div><h3>Connected architecture</h3><p class="caption">Select a component to inspect its role and connections. Switch to the detailed topology to see the control-plane and telemetry paths.</p><div class="frame"><div class="toolbar"><button class="btn active" id="overview">Overview</button><button class="btn" id="full">Detailed topology</button><div class="spacer"></div><button class="btn" id="zoomout" aria-label="Zoom out">−</button><button class="btn" id="zoomin" aria-label="Zoom in">+</button><button class="btn" id="expand">Expand</button></div><div class="canvas" id="architectureCanvas"></div><div class="legend"><span class="key"><i class="dot" style="--c:#8a3ffc"></i>Identity / authority</span><span class="key"><i class="dot" style="--c:#0f62fe"></i>Enforcement</span><span class="key"><i class="dot" style="--c:#198038"></i>Resources</span><span class="key"><i class="dot" style="--c:#b65c00"></i>Evidence / response</span><span class="key"><i class="dot" style="--c:#da1e28"></i>Unsafe or blocked</span><span>Dashed: signals / control context · * customer integration</span></div></div><p class="caption" id="archNote"></p><div class="detailrow"><div class="detailcard"><small>Security invariant</small><h4 id="invariant"></h4><p id="invariantDetail"></p></div><div class="detailcard"><small>Residual risk</small><h4 id="residual"></h4><p id="residualDetail"></p></div></div><details class="source"><summary>Architecture Mermaid source</summary><button class="btn" data-copy="arch">Copy source</button><pre id="archSource"></pre></details></section>
 <section class="section" id="sequences"><div class="eyebrow">Request paths · sequence diagrams</div><h2>One request, end to end.</h2><p class="lede">Select a sequence and step through its ordered interactions. Alternative branches are explicitly labelled; the replay is a walkthrough of the diagram, not a live transaction.</p><select id="seqSelect" class="selector" aria-label="Sequence diagram"></select><div class="frame"><div class="toolbar"><button class="btn" id="prev">Previous</button><button class="btn primary" id="play">Play</button><button class="btn" id="next">Next</button><button class="btn" id="reset">Reset</button><div class="spacer"></div><span id="stepCounter" class="mono" style="font-size:12px"></span><button class="btn" id="seqExpand">Expand</button></div><div class="seqcanvas" id="seqCanvas" tabindex="0" role="region" aria-label="Sequence diagram"></div></div><details class="sequence-transcript"><summary>Read the sequence as text</summary><ol id="seqTranscript"></ol></details><input class="range" type="range" min="0" value="0" id="scrub" aria-label="Replay step"><div class="replay"><div><span class="tag" id="branch"></span><h4 id="stepTitle"></h4><div class="hop" id="hop"></div><p id="stepBody"></p></div><div><span class="tag">Illustrative evidence contract</span><pre id="evidence"></pre></div></div><p class="caption" id="seqNote"></p><details class="source"><summary>Mermaid sequence source</summary><button class="btn" data-copy="seq">Copy source</button><pre id="seqSource"></pre></details></section>
 <section class="section" id="lab"><div class="eyebrow">Interactive control walkthrough</div><h2>Peel the defenses.</h2><p class="lede">Change a request or remove a control to see the resulting failure mode. This is a deterministic teaching simulation, not a security product test.</p><div class="lab"><div><small>Request</small><select id="labRequest"><option value="read">Read RE-204 operational records</option><option value="finance">Read unrelated payment records</option><option value="export">Send confidential report to external recipient</option><option value="stale">Commit after mission suspension</option><option value="delegate">Delegate outside parent mission</option></select><small>Controls available for this stage</small><div class="checks" id="layerChecks"></div><button class="btn" id="labReset">Restore stage controls</button></div><div><small>Decision and evidence</small><div id="labDecision" class="decision"></div><div id="labReason"></div><p id="labGaps" hidden></p><p id="labResponse" hidden></p><pre id="labTrace"></pre></div></div><p class="caption" style="margin-top:12px">Missing controls create an exposure, not proof that a particular bypass succeeds. Native resource rules and external enforcement can still deny the operation.</p></section>
+<section class="section" id="protocols" aria-labelledby="protocols-title">
+<h2 id="protocols-title">Protocols and RFCs in Nova’s workflow</h2>
+<p class="lede">Follow each standard to the point where the architecture uses it. The game replays simulated requests and receipts. A deployment must configure trust, bind requests to current mission policy and verify enforcement at each receiver.</p>
+<div class="protocol-grid">
+ <article class="frame protocol-card" id="protocol-oauth">
+  <h3>OpenID Connect 1.0 and OAuth 2.0</h3>
+  <p>Maya signs in with Entra ID. The application uses OpenID Connect for sign-in and a delegated OAuth access token for the Railway Events API. The API checks the token’s intended audience and applies the allowed train and time window. This route uses no Vault lease.</p>
+  <p><a href="https://openid.net/specs/openid-connect-core-1_0.html" target="_blank" rel="noopener noreferrer">OpenID Connect Core 1.0</a> · <a href="https://www.rfc-editor.org/rfc/rfc6749.html" target="_blank" rel="noopener noreferrer">RFC 6749</a> · <a href="https://www.rfc-editor.org/rfc/rfc9700.html" target="_blank" rel="noopener noreferrer">RFC 9700 security BCP</a> · <a href="https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow" target="_blank" rel="noopener noreferrer">Microsoft Entra OBO</a></p>
+  <button class="btn" data-protocol-stage="2" data-protocol-sequence="delegation" data-protocol-step="4">Replay the direct API path</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-exchange">
+  <h3>OAuth 2.0 Token Exchange · RFC 8693</h3>
+  <p>For the Vault route, a configured issuer can exchange trusted subject and actor evidence for a token intended for Vault. In this delegated JWT example, <code>sub</code> identifies Maya and <code>act.sub</code> identifies Nova. IBM Agent Identity records ownership and delegation. The issuer and each receiver still check their own trust and policy.</p>
+  <p><a href="https://www.rfc-editor.org/rfc/rfc8693.html" target="_blank" rel="noopener noreferrer">RFC 8693</a></p>
+  <button class="btn" data-protocol-stage="2" data-protocol-sequence="delegation" data-protocol-step="7">Replay token exchange</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-rar">
+  <h3>Rich Authorization Requests (RAR) · RFC 9396</h3>
+  <p>RAR defines <code>authorization_details</code> for structured OAuth permissions. Vault evaluates its configured <code>vault:path_access</code> type in the token’s authorization details alongside Vault policies. This narrows which Vault path, operation and parameters can be used. Vault issues the short-lived database credential to the connector. The incident service and database still enforce the actual read and its scope.</p>
+  <p><a href="https://www.rfc-editor.org/rfc/rfc9396.html" target="_blank" rel="noopener noreferrer">RFC 9396</a> · <a href="https://docs.hashicorp.com/vault/ai/iam/concepts/rar" target="_blank" rel="noopener noreferrer">Vault RAR documentation</a></p>
+  <button class="btn" data-protocol-stage="2" data-protocol-sequence="delegation" data-protocol-step="9">Replay Vault issuance</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-mcp">
+  <h3>Model Context Protocol (MCP) over HTTP</h3>
+  <p>For a protected MCP server, the client discovers the resource’s authorization server via RFC 9728. Authorization server endpoints can be discovered via RFC 8414 or OIDC Discovery. The client identifies the intended resource using the RFC 8707 <code>resource</code> parameter. The MCP server validates the token for its own audience and the receiving service checks the actual tool operation.</p>
+  <p>The HTTP authorization profile references OAuth 2.1, an IETF Internet-Draft.</p>
+  <p><a href="https://modelcontextprotocol.io/specification/latest/basic/authorization" target="_blank" rel="noopener noreferrer">MCP authorization</a> · <a href="https://www.rfc-editor.org/rfc/rfc9728.html" target="_blank" rel="noopener noreferrer">RFC 9728</a> · <a href="https://www.rfc-editor.org/rfc/rfc8414.html" target="_blank" rel="noopener noreferrer">RFC 8414</a> · <a href="https://www.rfc-editor.org/rfc/rfc8707.html" target="_blank" rel="noopener noreferrer">RFC 8707</a> · <a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/" target="_blank" rel="noopener noreferrer">OAuth 2.1 draft</a></p>
+  <button class="btn" data-protocol-stage="1" data-protocol-sequence="model-tool">Replay the model and tool route</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-workload">
+  <h3>SPIFFE, SVIDs and JWT · RFC 7519</h3>
+  <p>SPIRE issues a SPIFFE verifiable identity document (SVID) in X.509 or JWT form for workload authentication. The admission service checks runtime posture separately. RFC 7519 defines the JWT format. OpenShell’s native session JWT and the access tokens for the API, MCP and Vault have distinct issuers or audiences and purposes.</p>
+  <p><a href="https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/" target="_blank" rel="noopener noreferrer">SPIFFE and SVIDs</a> · <a href="https://www.rfc-editor.org/rfc/rfc7519.html" target="_blank" rel="noopener noreferrer">RFC 7519</a></p>
+  <button class="btn" data-protocol-stage="1" data-protocol-sequence="bootstrap">Replay runtime admission</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-authzen">
+  <h3>OpenID AuthZEN Authorization API 1.0</h3>
+  <p>The resource enforcement point (PEP) can ask the policy decision point (PDP) for a Boolean decision using the actual train, operation and resource. The customer integration supplies trusted context and enforces current mission and request conditions at execution.</p>
+  <p><a href="https://openid.net/specs/authorization-api-1_0-final.html" target="_blank" rel="noopener noreferrer">AuthZEN Authorization API 1.0</a></p>
+  <button class="btn" data-protocol-stage="2" data-protocol-sequence="observed-read">Replay the resource decision</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-ciba">
+  <h3>OpenID CIBA Core 1.0</h3>
+  <p>CIBA can authenticate the operations reviewer on a separate device through IBM Verify. The approval application records the reviewer’s decision against the exact report revision, action and recipient. Delivery checks those values before sending.</p>
+  <p><a href="https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html" target="_blank" rel="noopener noreferrer">OpenID CIBA Core 1.0</a> · <a href="https://docs.verify.ibm.com/verify/docs/oauth-20-grant-type-ciba" target="_blank" rel="noopener noreferrer">IBM Verify CIBA</a></p>
+  <button class="btn" data-protocol-stage="3" data-protocol-sequence="artifact">Replay report approval</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-a2a">
+  <h3>Agent2Agent Protocol (A2A)</h3>
+  <p>A2A carries Nova’s scoped analysis task to Mira and returns the result. The delegation service and receiving agent verify the caller, limit the child grant and account for shared budget. Mira uses its own workload identity.</p>
+  <p><a href="https://a2a-protocol.org/latest/specification/" target="_blank" rel="noopener noreferrer">A2A specification</a></p>
+  <button class="btn" data-protocol-stage="3" data-protocol-sequence="a2a">Replay the Mira task</button>
+ </article>
+ <article class="frame protocol-card" id="protocol-signals">
+  <h3>OpenID SSF 1.0 and CAEP 1.0</h3>
+  <p>In a configured integration, Shared Signals Framework (SSF) streams security events. Continuous Access Evaluation Profile (CAEP) defines event types such as session revoked. The simulated IBM Identity Protection observation triggers investigation. Customer response policy and receiving systems carry out and verify closure. IBM’s built-in Verify and Agent Identity receivers and remediation playbooks are shown as private preview.</p>
+  <p><a href="https://openid.net/specs/openid-sharedsignals-framework-1_0-final.html" target="_blank" rel="noopener noreferrer">OpenID SSF 1.0</a> · <a href="https://openid.net/specs/openid-caep-1_0-final.html" target="_blank" rel="noopener noreferrer">OpenID CAEP 1.0</a> · <a href="https://community.ibm.com/community/user/blogs/dinesh-jain/2026/11/24/agent-risk-eap-blog" target="_blank" rel="noopener noreferrer">IBM preview disclosure</a></p>
+  <button class="btn" data-protocol-stage="3" data-protocol-sequence="containment">Replay containment</button>
+ </article>
+</div>
+<details class="frame protocol-options">
+ <summary>Additional deployment options</summary>
+ <ul>
+  <li><strong>SCIM 2.0</strong> · Provision supported directory objects and manage lifecycle through a configured schema or integration. <a href="https://www.rfc-editor.org/rfc/rfc7643.html" target="_blank" rel="noopener noreferrer">RFC 7643</a> · <a href="https://www.rfc-editor.org/rfc/rfc7644.html" target="_blank" rel="noopener noreferrer">RFC 7644</a></li>
+  <li><strong>OAuth Dynamic Client Registration</strong> · Register an OAuth client where supported. The current MCP HTTP profile keeps this as a backward-compatible option. Nova’s logical agent registration is a separate process. <a href="https://www.rfc-editor.org/rfc/rfc7591.html" target="_blank" rel="noopener noreferrer">RFC 7591</a></li>
+  <li><strong>Transaction Tokens</strong> · A proposed way to carry bound request and authorization context across calls within one trust domain. Nova and Mira’s replay uses the customer’s child grant. <a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-transaction-tokens/" target="_blank" rel="noopener noreferrer">IETF Internet-Draft</a></li>
+ </ul>
+</details>
+</section>
 <section class="section" id="reference"><div class="eyebrow">Architecture reference</div><h2>Components, contracts and ownership.</h2><p class="lede">Inspect the systems in the selected architecture. Integration components are marked with an asterisk and require implementation and verification.</p><details class="frame portfolio"><summary>WO-204 · Reference deployment and alternatives</summary>
 <p>Keep your workforce identity provider. This example uses Microsoft Entra ID. IBM Verify, Okta or Ping can stay in place where their configured federation and token flows meet the target’s requirements.</p>
 <h3>Documented product capabilities</h3>
@@ -25,7 +103,7 @@
 <h3>Preview and announced direction</h3>
 <p>IBM Verify and IBM Agent Identity built-in Shared Signals receivers and remediation playbooks are in private preview. Deeper AuthMind integration into Vault is announced direction. Validate available actions for each licensed deployment.</p>
 <h3>Customer integration to prove</h3>
-<p>The work order, cross-system evidence correlation, workload-to-agent binding, exact-action policy and cross-system response checks are reference integrations. Validate each configured route and controller independently. Verify a refused old request and a working unrelated request. An alert or stop acknowledgement alone does not establish both outcomes.</p>
+<p>The work order, cross-system evidence correlation, workload-to-agent binding, exact-action policy and cross-system response checks are reference integrations. Compare the direct Entra read against the Vault-backed database route. Keep one permitted test-queue request unsubmitted. After closure, retry the exact same request and verify the unrelated mission still works. Validate each route and controller independently.</p>
 <h3>Keep the tools you already run</h3>
 <p>OpenShell and agentgateway are this deployment’s runtime and tool gateway. Evaluate an existing isolated runtime or Amazon Bedrock AgentCore Runtime. Gateway options include IBM DataPower Interact Gateway, Azure API Management and AWS AgentCore Gateway. Test each option against the same enforcement contract. QRadar or Microsoft Sentinel can retain the audit evidence.</p>
 <p><a href="https://www.ibm.com/products/agent-identity" target="_blank" rel="noopener noreferrer">IBM Agent Identity</a> · <a href="https://developer.hashicorp.com/vault/ai/iam" target="_blank" rel="noopener noreferrer">Vault Agentic IAM</a> · <a href="https://www.ibm.com/products/identity-protection" target="_blank" rel="noopener noreferrer">IBM Identity Protection</a> · <a href="https://community.ibm.com/community/user/blogs/dinesh-jain/2026/11/24/agent-risk-eap-blog" target="_blank" rel="noopener noreferrer">IBM Shared Signals private preview</a></p>
@@ -98,19 +176,21 @@ const localizeGuide=id=>{if(guideLanguage)guideLanguage.localize(id?$(id):docume
 const names=['Discover and contain','Build a trusted runtime','Authorize scoped operations','Resist and recover'];
 const focusedFlows=[
  [2,'delegation','Human delegation and OAuth token exchange',
-  {H:'Operations Manager',I:'Configured OAuth issuer',M:'Mission authority *',C:'Trusted connector *',P:'Resource PEP *',V:'Vault'},
+  {H:'Operations Manager',E:'Microsoft Entra ID',M:'Mission authority *',A:'Railway application *',P:'Railway Events API',C:'Trusted connector *',I:'Configured OAuth issuer',V:'Vault',D:'Incident history service'},
   [
-   ['H','I','Authenticate as the Operations manager'],
+   ['H','E','Sign in with OpenID Connect'],
    ['H','M','Request the RE-204 investigation and exact scope'],
    ['M','M','Verify issuer authority and record the current bounded delegation'],
-   ['C','I','Request an approved exchange with subject and agent actor evidence'],
-   ['I','C','Issue access token for the specific resource PEP',true],
-   ['C','P','Present resource-audience token with the actual request'],
-   ['C','I','Request a separate token for the Vault endpoint'],
+   ['A','E','Request delegated OAuth access for the Railway Events API'],
+   ['E','A','Return the Railway Events API access token',true],
+   ['A','P','Present the Entra token and read RE-204 events'],
+   ['C','I','Exchange subject and actor evidence for Vault access under RFC 8693'],
    ['I','C','Issue separately scoped Vault-audience token',true],
-   ['C','V','Present Vault-audience token with configured authorization details'],
-   ['V','C','Return the independent Vault decision',true]
-  ],'The issuer checks its configured trust and delegation. RFC 8693 carries delegation context; it does not decide permission to use the database. Vault and the resource validate their own audience and policy.'],
+   ['C','V','Present the Vault token containing RFC 9396 authorization details'],
+   ['V','C','Apply Vault policy and issue the short-lived database credential',true],
+   ['C','D','Use the database credential to request RE-204 incident history'],
+   ['D','C','Apply the resource scope and return the allowed records',true]
+  ],'The Entra flow uses the API’s own delegated token. The separate Vault flow illustrates a configured RFC 8693 exchange and RFC 9396 authorization details. The API, Vault and incident history service each enforce their own policy.'],
  [2,'observed-read','Authorization of actual resource parameters',
   {N:'Nova',G:'MCP gateway',P:'Resource PEP *',D:'Business PDP *',I:'Trusted PIP *',R:'Kafka access service / broker'},
   [
@@ -185,8 +265,11 @@ focusedFlows.forEach(([index,id,label,actors,messages,after])=>{
  data[index].sequences.push({title:`Sequence ${index}.${number} — ${label}`,actors,rows,source,after});
  sequenceKeys[index].push(id);
 });
-function openStoryReference({stage:requested,sequence,component,section}){
- if(!Number.isInteger(requested)||requested<0||requested>=data.length)return;
+function openStoryReference({stage:requested,sequence,component,section,message}){
+ if(!Number.isInteger(requested)||requested<0||requested>=data.length){
+  if(section==='protocols')jumpTo('protocols','instant');
+  return;
+ }
  const sequenceIndex=sequenceKeys[requested].indexOf(sequence);
  const validComponent=Object.hasOwn(data[requested].nodes,component);
  setStage(requested);
@@ -194,6 +277,10 @@ function openStoryReference({stage:requested,sequence,component,section}){
   seq=sequenceIndex;
   $('seqSelect').value=seq;
   renderSeq();
+  if(Number.isInteger(message)&&message>0&&message<=Number($('scrub').max)+1){
+   step=message-1;
+   updateStep(true);
+  }
   jumpTo('sequences','instant');
   $('seqSelect').focus({preventScroll:true});
  }else if(validComponent){
@@ -205,8 +292,16 @@ function openStoryReference({stage:requested,sequence,component,section}){
  }else if(section==='reference'){
   document.querySelector('.portfolio').open=true;
   jumpTo('reference','instant');
+ }else if(section==='protocols'){
+  jumpTo('protocols','instant');
  }else jumpTo('architecture','instant');
 }
+$('protocols').addEventListener('click',event=>{
+ const button=event.target.closest('[data-protocol-sequence]');
+ if(!button)return;
+ const {protocolStage,protocolSequence,protocolStep}=button.dataset;
+ openStoryReference({stage:Number(protocolStage),sequence:protocolSequence,message:Number(protocolStep)});
+});
 function jumpTo(section,behavior='auto'){
  document.querySelectorAll('.nav button[data-jump]').forEach(button=>{
   const current=button.dataset.jump===section;
@@ -250,8 +345,12 @@ window.addEventListener('message',event=>{
 });
 function stepEvidence(message){
  const flow=sequenceKeys[stage][seq];
- if(flow==='delegation'&&[5,6,8,9].includes(message.n)){
-  return {sub:'operations-manager',act:{sub:'nova'},aud:message.n<=6?'resource-PEP':'vault',mission:'M-204',version:2};
+ if(flow==='delegation'&&[5,6].includes(message.n)){
+  return {issuer:'Microsoft Entra ID',aud:'urn:railway:events',mission:'M-204',version:2};
+ }
+ if(flow==='delegation'&&[8,9].includes(message.n)){
+  return {sub:'operations-manager',act:{sub:'nova'},aud:'https://vault.railway.example',
+   authorization_detail_type:'vault:path_access',mission:'M-204',version:2};
  }
  if(flow==='observed-read'&&message.n>=3&&message.n<=9){
   return {actor:'nova',delegated_subject:'operations-manager',mission:'M-204',asset:'RE-204',

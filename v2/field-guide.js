@@ -17,7 +17,7 @@ const FieldGuide=(()=>{
     ['askMia','Ask Mia to check spelling and hear Tom out'],['reviewOutput','Get the okay, hand it in and end extra access']]]
   },
   nova:{
-   unknown:['The unmanaged railway job','Trace an unverified request to its data and confirm which routes the company can contain.',[
+   unknown:['The unmanaged railway job','Reconstruct an IBM Identity Protection alert. Follow an unverified request and confirm which observed routes Security Operations can contain.',[
     ['accept','Identify the request and unmanaged runtime'],['credential','Trace inherited access and exposed data'],
     ['artifact','Find the staged transfer and correlate evidence'],['contain','Contain and independently retest the affected routes']]],
    build:['M-101 · Public railway research','Set up a trusted assistant, prepare a public-source report and release it to Operations.',[
@@ -53,6 +53,7 @@ const FieldGuide=(()=>{
   if(stage==='unknown')return model.complete(state)?
    ['Bank signed out','The parents signed out of the bank and locked away the devices and copies they found.']:
    ['No permission','Tom’s dare gives Alex no permission to open the bank account.'];
+  if(reached('deliver'))return ['Received by Ms Patel','Research access has ended.'];
   if(reached('approveOutput'))return ['Research access closed','Only the approved copy is ready for Ms Patel.'];
   if(reached('expire')&&!reached('extend'))return ['Window expired','Ask the parents for more time on Wikipedia.'];
   if(reached('grantNotes')){
@@ -219,9 +220,9 @@ const FieldGuide=(()=>{
     'The old read is denied. The M-105 read still works and its receipt names M-105 and RE-105.',
     'Both resource receipts with mission ID, version, operation, resource and decision.'],
    resist:['Can you verify one work order from sign-in to revoked access?',
-    'Keep Entra ID for sign-in in a test environment. Use one registered agent, one OAuth-aware API and one legacy database. Run the allowed reads, change only the train, then use a synthetic identity risk signal to close the affected mission and retry the old access and an unrelated grant.',
-    'The approved reads succeed. The changed train returns no records. After closure the retired authority fails at the receiving systems and the unrelated grant still works.',
-    'Keep the agent owner, work order and mission IDs, the sample API and database receipts, the Vault lease ID and expiry, the risk observation, and a timestamped refusal from each tested resource.']
+    'Keep Entra ID for sign-in in a test environment. Use one registered agent, one OAuth-aware API and one legacy database. Run the allowed reads and change only the train. Commit one approved ticket in a test system and save its receipt. In an isolated test queue, keep a permitted request unsubmitted. Trigger a simulated identity risk signal, close the mission, then retry that exact request and an unrelated grant.',
+    'The approved reads succeed. The changed train returns no records. After closure the previously permitted test request is refused and the unrelated grant still works. The completed ticket remains in the record.',
+    'Keep the agent owner, work order and mission IDs, the sample API and database receipts, the Vault lease ID and expiry, the risk observation, the matching before-and-after request receipts, and a timestamped refusal from each tested resource.']
   }
  };
  const hintLevel=seconds=>seconds>=60?3:seconds>=40?2:seconds>=20?1:0;

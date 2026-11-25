@@ -181,6 +181,10 @@ async function immersionReview(){
  const novaRoom=async room=>tap(q('[data-nova-room="'+room+'"]'));
  const customerTest=async ()=>{
   ensure(document.querySelectorAll('.customer-test').length===1,'Missing or duplicate customer test');
+  if(q('[data-order-event=verify-retired]')){
+   ensure(q('.stage-debrief .receipt + .customer-test summary')?.textContent.includes('Open pilot checklist'),
+    'The pilot checklist is missing beside the final outcome');
+  }
   await tap(q('.customer-test summary'));
   ensure(q('.customer-test[open]').textContent.includes('Evidence to keep'),'Customer test omits evidence');
  };
@@ -210,6 +214,20 @@ async function immersionReview(){
     await deviceAction('Try to open Family finances');
     ensure(q('.shadow-reply').textContent.includes('deny this read'),'Laptop did not enforce folder scope');
    }
+   if(stage==='build'&&id==='send'){
+    await deviceAction('Try choosing Tom instead');
+    ensure(q('.shadow-reply').textContent.includes('Nothing was sent.'),'The optional wrong recipient was not refused');
+   }
+   if(stage==='resist'&&id==='choose'){
+    ensure(q('[data-household-object=declineTom]')&&q('[data-household-object=sendTomPage]'),'Tom’s two answers are missing');
+    if(innerWidth<500){
+     await deviceAction('Try sending Tom the private page');
+     ensure(ShadowStory.suspended(household.resist)&&q('.shadow-reply').textContent.includes('Nothing was sent'),'School app did not block and escalate Tom’s send');
+     await deviceAction('Hear the decision after incident review');
+     ensure(ShadowStory.next(household.resist)[0]==='reviewOutput','The refusal looped back to Tom');
+     continue;
+    }
+   }
    await deviceAction(label);
    ensure(household[stage].index===prior.index+1,'Alex stalled at '+id);
    if(stage==='build'&&id==='verify'){
@@ -217,7 +235,16 @@ async function immersionReview(){
     ensure(!q('.shadow-reply[role=status]')&&q('.nova-last-result summary').textContent.includes('Parents'),'Parents’ reply followed Alex out of the kitchen');
    }
    if(stage==='authorize'&&id==='approveOutput')ensure(q('#game').textContent.includes('Ready to deliver'),'Alex’s receipt is unclear');
+   if(id==='deliver')ensure(q('.mission-status b').textContent==='Received by Ms Patel','The delivered workbook is still shown as waiting');
+   if(stage==='build'&&id==='deliver')ensure(q('.shadow-reply').textContent.includes('receipt from Ms Patel’s school inbox'),'The story switched delivery methods');
    if(++count>50)throw Error('Alex did not finish');
+  }
+  if(stage==='unknown'){
+   await alexRoom('living');
+   ensure(!q('[data-device-launch=laptop]'),'The confiscated laptop reappeared in the living room');
+   await alexRoom('kitchen');
+   await deviceAction('Check that the bank signed out');
+   ensure(q('.shadow-reply').textContent.includes('locked cabinet'),'The bank receipt does not preserve custody');
   }
   await customerTest();
  }
@@ -255,10 +282,17 @@ async function immersionReview(){
     await tap(q('[data-read-path='+next.id+']'));
     ensure(q('[data-two-paths] .route-outcome').textContent.includes('Allowed'),'Missing visible read receipt');
     if(next.id==='events'){
+     ensure(!novaStates.authorize.databaseLease&&q('[data-two-paths]').textContent.includes('Entra token accepted without a Vault lease'),
+      'The Entra route still appears to depend on Vault');
      await tap(q('[data-read-scope-test]'));
      ensure(q('[data-two-paths]').textContent.includes('Railway Events API returned zero records.'),'Changed train did not show a resource refusal');
     }
    }else await action(next.label);
+   if(next.id==='risk-signal'){
+    const evidence=q('[data-risk-evidence]');
+    ensure(evidence?.textContent.includes('IIP-WO204-01')&&evidence.textContent.includes('RE-999')&&
+     evidence.textContent.includes('No records returned')&&evidence.textContent.includes('authorized closure'),'Risk observation has no visible evidence or closure reason');
+   }
    if(remote)ensure(novaStates[stage].room===priorRoom&&novaStates[stage].events.at(-1).environment===next.room,'A remote call moved the player or misattributed the event');
    if(next.id===checkpoint)break;
    if(++count>60)throw Error('Nova did not finish');
@@ -317,6 +351,10 @@ async function immersionReview(){
  await runNova('resist');
  ensure(novaStates.resist.deliveryReceipt.digest==='SIM-M-304-REPORT-2','Fresh approval did not bind the edited copy');
  ensure(q('#game').textContent.includes('Stage complete'),'No stage completion receipt');
+ const closeout=q('.stage-debrief .receipt + .customer-test')?.previousElementSibling;
+ ensure(closeout?.textContent.includes('OP-204-TEST-1')&&closeout.querySelector('[data-closeout=before]')&&
+  closeout.querySelector('[data-closeout=after]')&&closeout.textContent.includes('M-105')&&closeout.textContent.includes('MT-204'),
+  'Matched access receipts are missing beside the pilot checklist');
  await tap(q('[data-work-order] > summary'));
  ensure(q('[data-work-order][open]')&&!q('[data-work-order] [data-order-event=verify-retired]').closest('[hidden]'),
   'The completed work order is not visible');
@@ -330,6 +368,8 @@ async function immersionReview(){
  ensure(rows['risk-signal']?.includes('IBM Identity Protection')&&rows.close?.includes('Customer response policy')&&
   rows['verify-retired']?.includes('Railway Events API and Maintenance API')&&rows['verify-unrelated']?.includes('M-105')&&rows['verify-unrelated'].includes('Allowed'),
   'The risk source, configured action or independent closeout results are missing');
+ ensure(rows['risk-signal']?.includes('OP-204-TEST-1')&&rows['verify-retired']?.includes('OP-204-TEST-1')&&
+  novaStates.resist.ticket==='MT-204','Matched closeout proof or completed ticket is missing');
  ensure(document.documentElement.scrollWidth<=innerWidth,'The opened work order spills past the viewport');
  await capture('nova-work-order',q('[data-work-order]'));
  await customerTest();
@@ -475,6 +515,40 @@ async function verifyReference(send){
   }
  }
  assert.equal(sequences,15);
+ await inspect("document.querySelector('[data-jump=protocols]').click()");
+ assert.equal(await inspect("document.querySelector('.nav button[aria-current]').dataset.jump"),'protocols');
+ const rfcLinks=await inspect("[...document.querySelectorAll('#protocols a')].map(link=>link.href)");
+ for(const number of [6749,8693,9396,8707,9728,8414,7519,7591,7643,7644]){
+  assert(rfcLinks.includes('https://www.rfc-editor.org/rfc/rfc'+number+'.html'));
+ }
+ const protocolRoutes={
+  oauth:/^4\..*Railway Events API/,
+  exchange:/^7\..*RFC 8693/,
+  rar:/^9\..*RFC 9396/,
+  mcp:/^1\./,
+  workload:/^1\./,
+  authzen:/^1\./,
+  ciba:/^1\./,
+  a2a:/^1\./,
+  signals:/^1\./
+ };
+ for(const [protocol,title] of Object.entries(protocolRoutes)){
+  await inspect(`document.querySelector('#protocol-${protocol} button').click()`);
+  assert.match(await inspect("document.querySelector('#stepTitle').textContent"),title);
+ }
+ await send('Page.bringToFront');
+ const buttonPoint=await inspect(`(()=>{
+  const button=document.querySelector('#protocol-rar button');
+  button.scrollIntoView({block:'center',behavior:'instant'});
+  const rect=button.getBoundingClientRect();
+  return {x:rect.x+rect.width/2,y:rect.y+rect.height/2};
+ })()`);
+ const framePoint=await evaluate("document.querySelector('iframe').getBoundingClientRect().toJSON()");
+ await send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:framePoint.x+buttonPoint.x,y:framePoint.y+buttonPoint.y}]});
+ await send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await wait(async()=>await inspect("document.activeElement.id")==='seqSelect');
+ assert.match(await inspect("document.querySelector('#stepTitle').textContent"),/^9\..*RFC 9396/);
+ await inspect("document.querySelector('[data-stage=\"3\"]').click()");
  assert.equal(await inspect("document.querySelector('#labDecision').textContent.startsWith('PERMIT')"),true);
  await inspect("document.querySelector('[data-layer=\"6\"]').click()");
  assert.match(await inspect("document.querySelector('#labDecision').textContent"),/^PERMIT/);
@@ -504,6 +578,8 @@ async function verifyReference(send){
  assert.match(await portfolio("document.querySelector('.portfolio').textContent"),/DataPower Interact Gateway/);
  const tree=await send('Accessibility.getFullAXTree');
  assert(tree.nodes.some(node=>node.name?.value?.includes('Return to Nova')));
+ await evaluate("location.hash='architecture?section=protocols'");
+ await openFrame("document.querySelector('[data-jump=protocols]').getAttribute('aria-current')==='location'");
  await evaluate("document.querySelector('#reset-game').click()");
  assert.equal(await evaluate("document.activeElement.value"),'cancel');
  await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
@@ -654,6 +730,8 @@ async function germanReview(){
    check(q('#nova-reply p')?.textContent===tr(next.reply)&&tr(next.reply)!==next.reply,'German Nova dialogue missing for '+next.id);
    if(remote)check(q('#nova-reply small span')?.textContent===tr(NovaRailway.scenes[next.room]),'Remote receipt location is untranslated');
    if(next.id==='events'){
+    check(!novaStates.authorize.databaseLease&&q('[data-two-paths]').textContent.includes('ohne Vault-Lease akzeptiert'),
+     'The German proof omits the independent Entra read');
     q('[data-read-scope-test]').click();
     check(q('[data-two-paths]').textContent.includes('keine Datensätze zurückgegeben'),'The German scope refusal is missing');
    }
@@ -666,6 +744,8 @@ async function germanReview(){
  q('[data-work-order] > summary').click();
  check(q('[data-work-order][open] > summary').textContent.includes('Arbeitsauftrag und Nachweise'),'German work order heading is missing');
  check(q('[data-order-event=verify-retired]').textContent.includes('Ablehnungen an den Ressourcen'),'German retired-access proof is missing');
+ check(q('[data-order-event=verify-retired]').textContent.includes('OP-204-TEST-1')&&
+  q('.stage-debrief .receipt + .customer-test summary').textContent.includes('Pilot-Checkliste öffnen'),'German closeout or checklist is incomplete');
  check(q('[data-order-event=verify-unrelated]').textContent.includes('Erlaubt'),'German M-105 proof is missing');
  check(document.documentElement.scrollWidth<=innerWidth,'The German work order spills past the viewport');
  await capture('german-nova');
@@ -690,6 +770,14 @@ async function verifyGermanGuide(send){
  assert.equal(await evaluate("document.querySelector('#stepTitle').textContent.includes('nach Finanzdaten')",context),true);
  assert.equal(await evaluate("document.querySelector('#architectureCanvas').textContent.includes('Mitarbeiterzugang')",context),true);
  assert.match(await evaluate("document.querySelector('.portfolio summary').textContent",context),/Referenzbereitstellung und Alternativen/);
+ await evaluate("document.querySelector('[data-jump=protocols]').click()",context);
+ assert.equal(await evaluate("document.querySelector('[data-jump=protocols]').textContent",context),'Protokolle');
+ assert.match(await evaluate("document.querySelector('#protocol-rar p').textContent",context),/Autorisierungsdetails des Tokens/);
+ assert.match(await evaluate("document.querySelector('#protocol-exchange p').textContent",context),/bezeichnet sub Maya und act.sub Nova/);
+ assert.match(await evaluate("document.querySelector('#protocols .protocol-options li').textContent",context),/Verzeichnisobjekte/);
+ assert.equal(await evaluate("document.documentElement.scrollWidth<=innerWidth&&document.querySelector('.nav').scrollWidth<=document.querySelector('.nav').clientWidth",context),true);
+ await evaluate("document.querySelector('#protocol-rar button').click()",context);
+ assert.match(await evaluate("document.querySelector('#stepTitle').textContent",context),/^9\..*Autorisierungsdetails nach RFC 9396/);
  await evaluate("document.querySelector('[data-stage=\"3\"]').click();document.querySelector('[data-layer=\"6\"]').click()",context);
  assert.match(await evaluate("document.querySelector('#labDecision').textContent",context),/^ERLAUBT/);
  assert.match(await evaluate("document.querySelector('#labResponse').textContent",context),/automatische Reaktion ist aus/);
@@ -708,11 +796,25 @@ async function directGerman(){
  if(document.documentElement.lang!=='en'||current()!=='Stage 1 · Build')throw Error('Switching language changed the active stage');
  return {directGermanLink:true};
 }
+async function verifyPilotKeyboard(send){
+ const evaluate=async expression=>(await send('Runtime.evaluate',{expression,returnByValue:true})).result.value;
+ await send('Page.bringToFront');
+ await evaluate("document.querySelector('.customer-test summary').focus()");
+ const press=async (key,code,windowsVirtualKeyCode,text)=>{
+  await send('Input.dispatchKeyEvent',{type:'keyDown',key,code,windowsVirtualKeyCode,text,unmodifiedText:text});
+  await send('Input.dispatchKeyEvent',{type:'keyUp',key,code,windowsVirtualKeyCode});
+ };
+ assert.equal(await evaluate("document.activeElement.closest('.customer-test').open"),true);
+ await press('Enter','Enter',13,'\r');
+ assert.equal(await evaluate("document.activeElement.closest('.customer-test').open"),false);
+ await press(' ','Space',32,' ');
+ assert.equal(await evaluate("document.activeElement.closest('.customer-test').open"),true);
+}
 (async()=>{
  const cases=[];
  cases.push(await testPage(390,844,explorationReview,verifyReference));
  cases.push(await testPage(390,844,immersionReview));
- cases.push(await testPage(1280,900,immersionReview));
+ cases.push(await testPage(1280,900,immersionReview,verifyPilotKeyboard));
  cases.push(await testPage(1280,900,surfaceReview));
  cases.push(await testPage(320,844,germanReview,verifyGermanGuide));
  cases.push(await testPage(1280,900,germanReview,verifyGermanGuide));

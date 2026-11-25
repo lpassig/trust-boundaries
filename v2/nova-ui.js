@@ -120,9 +120,12 @@ function novaEvidence(state,keepOpen){
   action:last.action,
   decision:last.decision.toLowerCase(),
   decision_source:last.decisionSource,
+  recorded_by:last.recordedBy,
   enforcement_source:last.enforcer,
   rows_returned:last.rows,
   audience:last.audience,
+  risk_observation:last.riskObservation,
+  source_observation_id:last.observationId,
   decision_id:'DEMO-DEC-'+state.events.length,
   trace_id:'DEMO-'+state.stage.toUpperCase()+'-'+state.events.length,
   risk_points:last.points
@@ -132,9 +135,9 @@ function novaEvidence(state,keepOpen){
   <p>Investigate the RE-204 door fault and deliver an internal handover. Each stage grants only the authority it needs.</p>
   <p><b>Three controls to evaluate</b></p>
   <ul class="route-list">
+   <li><b>IBM Identity Protection</b> <span>See how identities actually reach connected resources and investigate unusual use.</span></li>
    <li><b>IBM Agent Identity</b> <span>Connect the agent to an accountable owner and a specific delegation.</span></li>
    <li><b>HashiCorp Vault</b> <span>Give a trusted connector short-lived access to systems that use their own credentials.</span></li>
-   <li><b>IBM Identity Protection</b> <span>See how identities actually reach connected resources and investigate unusual use.</span></li>
   </ul>
   <ol class="work-order-stages">${Object.entries(workOrderSteps).map(([stage,labels])=>{
    const items=novaStates[stage].events.filter(row=>Object.hasOwn(labels,row.id));
@@ -142,9 +145,12 @@ function novaEvidence(state,keepOpen){
     `<li data-order-event="${esc(row.id)}"><b>${esc(labels[row.id])}</b> · <span>${esc(row.decision)}</span>
      ${row.missionId?`<code>${esc(row.missionId)}</code>`:''}
      ${row.decisionSource?`<div><b>Decision or observation</b> · <span>${esc(row.decisionSource)}</span></div>`:''}
+     ${row.recordedBy?`<div><b>Recorded by</b> · <span>${esc(row.recordedBy)}</span></div>`:''}
      ${row.enforcer?`<div><b>Enforced by</b> · <span>${esc(row.enforcer)}</span></div>`:''}
      ${row.subject&&row.executionId?`<div><b>Delegated by</b> · <span>${esc(row.subject)}</span></div>`:''}
      ${row.resourceChecks?`<ul>${row.resourceChecks.map(([resource,status])=>`<li><b>${esc(resource)}</b> · <span>${esc(status)}</span></li>`).join('')}</ul>`:''}
+     ${row.maintenancePreview?`<div><b>Same test-queue request</b> · <code>${esc(row.maintenancePreview.request.operationId)}</code>
+      <span>Permitted before closure and held without submission.</span></div>`:''}
      ${row.rows!==undefined?`<div>Records returned · ${row.rows}</div>`:''}
      ${row.executionId?`<dl class="work-order-identities">
       <div><dt>Logical agent</dt><dd><code>${esc(row.agentId)}</code></dd></div>
@@ -163,7 +169,7 @@ function novaReadPaths(state,next,act){
  const has=id=>state.events.some(event=>event.id===id);
  const ready=id=>next?.id===id;
  const card=(title,explanation,id,action)=>`<article class="receipt"><h4>${title}</h4><p>${explanation}</p>
-  ${has(id)?'<p class="route-outcome"><b>Allowed</b> · <span>Records returned</span></p>':ready(id)?button(action,()=>act(id),'secondary','', '',{'data-read-path':id}):
+  ${has(id)?`<p class="route-outcome"><b>Allowed</b> · <span>${id==='events'?'Entra token accepted without a Vault lease on this route':'Records returned'}</span></p>`:ready(id)?button(action,()=>act(id),'secondary','', '',{'data-read-path':id}):
   '<p class="small-print">Waiting for the approved route.</p>'}</article>`;
  return `<section class="nova-workbench" data-two-paths aria-labelledby="nova-two-title">
   <h3 id="nova-two-title">Two paths for WO-204</h3>
@@ -177,10 +183,44 @@ function novaReadPaths(state,next,act){
     button('Try RE-999 with the same token',()=>act('try-other-train'),'secondary','', '',{'data-read-scope-test':''})}</div>`:''}
  </section>`;
 }
+function novaRiskEvidence(state){
+ const last=state.events.at(-1);
+ if(!['risk-signal','close'].includes(last?.id))return '';
+ const observation=state.events.findLast(event=>event.id==='risk-signal')?.riskObservation;
+ if(!observation)return '';
+ return `<section class="receipt" data-risk-evidence aria-label="Identity risk evidence">
+  <b>IBM Identity Protection · <code>${esc(observation.id)}</code></b>
+  <dl><div><dt>Observed identity and route</dt><dd><code>${esc(observation.identity)}</code> · ${esc(observation.route)}</dd></div>
+  <div><dt>Reads observed in two minutes</dt><dd>${observation.attempts} · <code>${esc(observation.observedAsset)}</code></dd></div>
+  <div><dt>Train authorized for this mission</dt><dd><code>${esc(observation.approvedAsset)}</code></dd></div>
+  <div><dt>Railway Events API audit</dt><dd>${observation.denied} · Denied. No records returned.</dd></div></dl>
+  <p>Security Operations matched the alert to the API audit. The repeated requests exceeded the approved train scope, so Security Operations authorized closure under customer response policy.</p>
+ </section>`;
+}
+function novaCloseoutEvidence(state){
+ const retry=state.events.findLast(event=>event.id==='verify-retired');
+ const preview=retry?.maintenancePreview;
+ const verified=preview?.decision==='Permit'&&retry.resourceChecks?.some(([resource,status])=>resource==='Maintenance API'&&status==='Denied');
+ const unaffected=state.events.findLast(event=>event.id==='verify-unrelated'&&event.decision==='Allowed');
+ return `<section class="nova-closeout-evidence" aria-labelledby="closeout-evidence-title">
+  <h3 id="closeout-evidence-title">Access receipts</h3>
+  ${verified?`<p><b>Same test-queue request</b> · <code>${esc(preview.request.operationId)}</code> · <code>${esc(preview.request.asset)}</code></p>
+   <div class="nova-preview-results">
+    <div class="receipt" data-closeout="before"><b>Before closure · Permitted</b><p>Maintenance API · Held without submission.</p></div>
+    <div class="receipt" data-closeout="after"><b>After closure · Denied</b><p>Maintenance API · Old grant closed. No new ticket.</p></div>
+   </div>`:'<p>Paired maintenance test unverified. Replay this stage to collect both receipts.</p>'}
+  <ul class="route-list">
+   ${retry?.resourceChecks?.some(([resource,status])=>resource==='Railway Events API'&&status==='Denied')?'<li><b>Railway Events API</b> · Old access denied.</li>':''}
+   ${unaffected?`<li><b><code>${esc(unaffected.missionId)}</code> · Documentation search</b> · Separate read allowed.</li>`:''}
+   ${state.ticket?`<li><b><code>${esc(state.ticket)}</code></b> · Previously committed ticket kept.</li>`:''}
+   <li>${esc(NovaRailway.runtimeStatus(state))}</li>
+  </ul>
+ </section>`;
+}
 // These actions are service calls made from the current workspace. Their receipts still belong to the receiving station.
 const novaRemoteSteps={
  build:{bootstrap:'runtime',provider:'runtime',scope:'external',approve:'runtime',close:'external'},
- authorize:{grant:'runtime',lease:'runtime',second:'resources',approve:'runtime',close:'external',remaining:'external'},
+ authorize:{grant:'runtime',lease:'resources',second:'resources',approve:'runtime',close:'external',remaining:'external'},
  resist:{register:'resources',delegate:'runtime',ticketCredential:'runtime',approve:'runtime',reapprove:'external','risk-signal':'external',close:'external'}
 };
 function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
@@ -286,6 +326,8 @@ function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
   <div class="nova-scene ${esc(room)}">
    <div class="nova-location"><h2>${esc(NovaRailway.scenes[room])}</h2></div>
    ${replyFromAnotherRoom&&!revealReply?`<details class="nova-last-result"><summary>Last result · ${esc(reply.owner)}</summary>${dialogue}</details>`:dialogue}
+   ${novaRiskEvidence(state)}
+   ${done&&stage==='resist'?stageDebrief('nova',NovaRailway,state,novaCloseoutEvidence(state)):''}
    ${remoteAction}
    ${novaDiorama(room,crew,devices)}
    ${stage==='authorize'&&room==='resources'&&NovaRailway.reached(state,'grant')&&!NovaRailway.reached(state,'close')?novaReadPaths(state,next,act):''}
@@ -311,7 +353,7 @@ function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
   ${room==='resources'?novaTicketCard(state):''}
   ${decisionNote('nova',state,state.events.at(-1)?.id)}
   ${novaEvidence(state,keepEvidence)}
-  ${done?stageDebrief('nova',NovaRailway,state):''}
+  ${done&&stage!=='resist'?stageDebrief('nova',NovaRailway,state):''}
   <div class="actions">${done&&nextStage?button('Continue to the next stage',()=>navigate(novaStageRoute(nextStage))):''}
    ${button('Nova’s stages',()=>navigate('nova'),'secondary')}
    ${button('Compare with Alex at this stage',()=>navigate(stageRoutes[stage]),'secondary')}

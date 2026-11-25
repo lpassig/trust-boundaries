@@ -35,6 +35,25 @@ function tryAction(state,room,key){
  return Shadow.act(state,key);
 }
 
+test('Tom’s street request offers two outcomes and the refused send survives reload',()=>{
+ const question=reach('resist','tom');
+ assert(Shadow.answeringTom(question));
+ const declined=Shadow.act(question,'declineTom');
+ assert.equal(Shadow.next(declined)[0],'reviewOutput');
+ assert.equal(declined.incident,null);
+
+ const refused=tryAction(question,'outside','sendTomPage');
+ assert.equal(refused.incident.trigger,'sendTomPage');
+ assert.equal(Shadow.feedback(refused)[0],'School delivery channel');
+ assert.match(Shadow.feedback(refused)[1],/Nothing was sent/);
+ assert.equal(Shadow.visit(refused,'outside').room,'bedroom');
+ assert.deepEqual(Shadow.restore('resist',refused),refused);
+ const resumed=Shadow.act(refused,'parentCall');
+ assert.equal(Shadow.next(resumed)[0],'reviewOutput');
+ assert.equal(Shadow.reports(resumed).length,1);
+ assert.deepEqual(Shadow.restore('resist',resumed),resumed);
+});
+
 test('Alex can request a fresh Wikipedia window from the phone where access expired',()=>{
  const expired=reach('build','retry');
  assert(Shadow.roomSurface(expired).screens.phone.includes('askTime'));
@@ -166,7 +185,8 @@ test('Tom’s assignment becomes an indoor incident with four independent follow
  assert.match(Shadow.inspect(Shadow.visit(contained,'bedroom'),'board'),/removed/);
  assert(!Shadow.inRoom(Shadow.visit(contained,'bedroom')).includes('workbook'));
  let state=contained;
- for(const [room,key,speaker]of [['kitchen','cabinet','Locked cabinet'],['living','laptop','Family laptop'],['bedroom','replacement','Grandparents'],['outside','tom','Tom']]){
+ assert(!Shadow.roomSurface(Shadow.visit(state,'living')).screens.laptop);
+ for(const [room,key,speaker]of [['kitchen','cabinet','Locked cabinet'],['kitchen','bankReceipt','Bank sign-out receipt'],['bedroom','replacement','Grandparents'],['outside','tom','Tom']]){
   state=Shadow.visit(state,room);
   assert(Shadow.inRoom(state).includes(key));
   assert.equal(Shadow.extra(state,key)[2],speaker);
@@ -175,6 +195,19 @@ test('Tom’s assignment becomes an indoor incident with four independent follow
  assert.equal(state.checks.length,4);
  assert.match(Shadow.extra(state,'tom')[3],/Nobody in the house sees/);
  assert.deepEqual(Shadow.restore('unknown',JSON.parse(JSON.stringify(state))),state);
+});
+
+test('the approved school app submits the workbook and an alternate recipient does not advance it',()=>{
+ let state=reach('build','tom');
+ assert(Shadow.roomSurface(state).screens.phone.includes('delivery'));
+ assert(Shadow.roomSurface(state).screens.phone.includes('testSchoolRecipient'));
+ const refused=Shadow.act(state,'testSchoolRecipient');
+ assert.equal(refused.index,state.index);
+ assert.match(Shadow.feedback(refused)[1],/Nothing was sent/);
+ state=Shadow.act(Shadow.act(refused,'delivery'),'delivery');
+ assert(Shadow.reached(state,'deliver'));
+ assert.match(Shadow.feedback(state)[1],/receipt from Ms Patel’s school inbox/);
+ assert(!Shadow.roomSurface(state).screens.phone.includes('testSchoolRecipient'));
 });
 
 test('Build preserves the signed task, limits the phone, requires an extension and closes after delivery',()=>{

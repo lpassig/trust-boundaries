@@ -123,12 +123,14 @@ test('a paused report needs approval under the recovered mission while old deliv
  assert.equal(apply(state,'deliver','external').index,state.index);
  const oldSave={stage:'resist',room:'external',events:[...state.events,{id:'deliver',decision:'Recorded'}]};
  const restored=Nova.restore('resist',oldSave);
- assert.equal(Nova.next(restored).id,'risk-signal');
+ assert.equal(Nova.next(restored).id,'renew-closeout-credential');
  assert.equal(restored.events.at(-1).decision,'Historical receipt');
  assert.deepEqual(Nova.restore('resist',restored),restored);
  state=apply(state,'approve','security');
  assert.equal(state.approvalVersion,2);
  state=apply(state,'deliver','external');
+ assert.equal(Nova.next(state).id,'renew-closeout-credential');
+ state=apply(state,'renew-closeout-credential','security');
  assert.equal(Nova.next(state).id,'risk-signal');
 });
 
@@ -140,7 +142,8 @@ test('the same work order preserves independent discovery, registration and dele
  assert.match(Nova.stages.unknown.steps.find(step=>step.id==='discover').reply,/without connected sensors/);
  const build=walk('build','scope');
  const authority=find(build,'scope');
- assert.equal(authority.enforcer,'IBM Agent Identity delegation');
+ assert.equal(authority.recordedBy,'IBM Agent Identity');
+ assert.equal(authority.enforcer,null);
  assert.match(authority.subject,/Maya Chen/);
  assert.equal(new Set([authority.agentId,authority.workloadId,authority.executionId]).size,3);
  for(const stage of ['unknown','build','authorize','resist']){
@@ -155,43 +158,75 @@ test('an audience-bound Entra read and a Vault-backed read enforce the same work
  assert.equal(Nova.routeRead(state,'oauth').status,'Allowed');
  assert.equal(Nova.routeRead(state,'oauth',{}, {...grant,audience:'urn:vault'}).status,'Denied');
  assert.equal(Nova.routeRead(state,'database').status,'Denied');
- state=apply(state,'lease','security');
- assert.equal(Nova.routeRead(state,'database').status,'Allowed');
- assert.equal(Nova.routeRead(state,'database',{operation:'write'}).status,'Denied');
  state=apply(state,'events','resources');
+ assert.equal(state.databaseLease,null);
+ assert.equal(Nova.next(state).id,'lease');
  state=apply(state,'try-other-train','resources');
  assert.deepEqual([state.events.at(-1).decision,state.events.at(-1).enforcer,state.events.at(-1).rows],
   ['Denied','Railway Events API',0]);
- assert.equal(Nova.next(state).id,'history');
  assert.equal(Nova.restore('authorize',state).events.at(-1).decision,'Denied');
+ state=apply(state,'lease','security');
+ assert.equal(Nova.routeRead(state,'database').status,'Allowed');
+ assert.equal(Nova.routeRead(state,'database',{operation:'write'}).status,'Denied');
+ assert.equal(Nova.next(state).id,'history');
+});
+
+test('prior Authorize saves preserve an already issued or expired lease across the new read order',()=>{
+ const before=walk('authorize','grant');
+ const old={stage:'authorize',room:'security',events:[...before.events,{id:'lease'},{id:'expire-lease'}]};
+ let state=Nova.restore('authorize',old);
+ assert.equal(state.databaseLease.status,'Expired');
+ assert.equal(Nova.next(state).id,'events');
+ state=apply(state,'events','resources');
+ assert.equal(Nova.next(state).id,'renew-lease');
+ assert.deepEqual(Nova.restore('authorize',state),state);
 });
 
 test('risk observation, configured response and independent resource outcomes remain distinct after reload',()=>{
  const flagged=walk('resist','risk-signal');
  assert.equal(flagged.events.at(-1).decisionSource,'IBM Identity Protection');
+ const observation=flagged.events.at(-1).riskObservation;
+ assert.equal(flagged.risk,0,'The main alert has its own audit evidence');
+ assert.equal(observation.identity,Nova.workOrder.agent);
+ assert.notEqual(observation.observedAsset,observation.approvedAsset);
+ assert.equal(observation.denied,observation.attempts);
+ assert.equal(observation.rows,0);
+ const preview=flagged.events.at(-1).maintenancePreview;
+ assert.equal(preview.decision,'Permit');
+ assert.equal(Nova.ticketDecision(flagged,preview.request),'Permit');
  assert.equal(Nova.routeRead(flagged,'oauth').status,'Allowed');
  assert.equal(Nova.routeRead(flagged,'database').status,'Denied');
  const closed=apply(flagged,'close','security');
  assert.equal(closed.events.at(-1).decisionSource,'Customer response policy');
+ assert.equal(closed.events.at(-1).observationId,observation.id);
  assert.equal(closed.credentialVersion,null);
  assert.equal(Nova.routeRead(closed,'oauth',{},flagged.events.at(-1).grant).status,'Denied');
  assert.equal(Nova.ticketDecision(closed),'Mission unavailable');
+ assert.equal(Nova.ticketDecision(closed,preview.request),'Mission unavailable');
  assert.equal(Nova.runtimeStatus(closed),'Runtime stop not independently checked');
  assert(!Nova.complete(closed));
  const refused=apply(closed,'verify-retired','resources');
  assert.equal(refused.events.at(-1).decision,'Denied');
+ assert.deepEqual(refused.events.at(-1).maintenancePreview,preview);
  assert.deepEqual(refused.events.at(-1).resourceChecks,[['Railway Events API','Denied'],['Maintenance API','Denied']]);
  assert.equal(refused.ticket,'MT-204');
  const finished=apply(refused,'verify-unrelated','resources');
  assert.deepEqual([finished.events.at(-1).missionId,finished.events.at(-1).decision],['M-105','Allowed']);
  assert(Nova.complete(finished));
  assert.deepEqual(Nova.restore('resist',finished),finished);
+ const withoutObservation={...finished,events:finished.events.map(event=>
+  event.id==='risk-signal'?{...event,riskObservation:undefined}:event)};
+ const prior=Nova.restore('resist',withoutObservation);
+ assert(Nova.complete(prior));
+ assert.equal(prior.events.find(event=>event.id==='risk-signal').riskObservation,undefined);
  const older={...closed,events:closed.events.filter(event=>event.id!=='risk-signal')};
  const restored=Nova.restore('resist',older);
  assert.equal(Nova.mission(restored).status,'Closed');
  assert.equal(Nova.next(restored).id,'verify-retired');
  assert.equal(restored.events.at(-1).decision,'Historical receipt');
- assert.equal(apply(restored,'verify-retired','resources').events.at(-1).decision,'Denied');
+ const historical=apply(restored,'verify-retired','resources').events.at(-1);
+ assert.equal(historical.decision,'Unverified');
+ assert.deepEqual(historical.resourceChecks,[['Railway Events API','Denied'],['Maintenance API','Unverified']]);
 });
 
 test('commit checks the exact resource arguments and records exactly one business effect',()=>{
