@@ -186,28 +186,3 @@ function showNova(stage,inspect=null,revealReply=false){
    ${state.index?button('Replay this stage',()=>update(NovaRailway.fresh(stage)),'secondary'):''}</div>`, `${data.tag} · NOVA`);
  $$('[data-nova-room]').forEach(control=>control.onclick=()=>visit(control.dataset.novaRoom));
 }
-
-function novaArchitecture(){
- const groups=[
-  ['Identity and launch',['identity','admission','sandbox','model']],
-  ['Authority and enforcement',['mission','policy','gateway','vault','maintenance','review','delivery']],
-  ['Resources and delegation',['kafka','database','astra','memory','mira']],
-  ['Detection and response',['soc']]
- ];
- const routes=[
-  ['Bootstrap','Registration → workload identity and posture → customer admission → restricted runtime and mediated model credential'],
-  ['Resource read','Current mission and observed request → customer PDP → independently scoped connector lease → resource-side permission and result'],
-  ['Maintenance ticket','Tool access → approved connector → trusted request arguments → current authorization at commit → durable operation receipt'],
-  ['Containment','Connected observations → Confluent and optional Flink correlation → response controller with optional SSF or CAEP signaling → independent stop, revoke, and retest receipts']
- ];
- return `<h2>Nova’s railway deployment</h2>
-  <p>This is a logical deployment example. Mission lifecycle, bootstrap binding, aggregate budgets, scoped memory, commit-time approval and cross-product response are customer integrations.</p>
-  <ol class="route-list">${routes.map(([name,route])=>`<li><b>${esc(name)}</b><br>${esc(route)}</li>`).join('')}</ol>
-  <h3>Progression across the four stages</h3><ol class="route-list" start="0">${Object.values(NovaRailway.stages).map(data=>`<li><b>${esc(data.tag)}</b><br>${esc(data.summary)}</li>`).join('')}</ol>
-  ${groups.map(([heading,ids])=>`<section><h3>${esc(heading)}</h3><div class="product-cards">${ids.map(id=>{
-   const [label,role,detail]=NovaRailway.stations[id];
-   return `<details class="product-card"><summary><b>${esc(label)}</b><span>${esc(role)}</span></summary>
-    <p>${esc(detail)}</p>${novaSourceLinks(novaSources[id])}</details>`;
-  }).join('')}</div></section>`).join('')}
-  <div class="actions">${button('Play Nova’s railway investigation',()=>navigate('nova'))}</div>`;
-}

@@ -23,200 +23,17 @@ function showScreen(title,body,label){
  $('#game').innerHTML=`<p class="eyebrow">${esc(label)}</p><h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${body}`;
  bind();
 }
-function protocolSourceLinks(ids=[]){
- if(!ids.length)return '';
- return `<p class="sources">${ids.map(id=>{
-  const {name,url}=PROTOCOL_SOURCES[id];
-  return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`;
- }).join(' · ')}</p>`;
-}
-function productById(id){return NOVA_PRODUCTS.find(p=>p.id===id);}
-const architectureViews = [
- ['boundaries','Trust boundaries'],
- ['design','Technical design'],
- ['map','Product map'],
- ['sequences','Request sequences'],
- ['runtime','Runtime and containment'],
- ['deployment','Deployment options'],
- ['pilots','Pilot checklists'],
- ['threats','Threat coverage'],
- ['house','Household controls'],
- ['railway','Nova’s railway deployment']
-];
-
-function architectureComponentName(id){
- const component=ArchitectureReference.components[id];
- return component.name||productById(component.product).name;
-}
-
-function boundaryEvidence(edge){
- return `<dl class="boundary-evidence">
-  <dt>What crosses</dt><dd>${esc(edge.payload)}</dd>
-  <dt>Who checks it</dt><dd>${esc(edge.validator)}</dd>
-  <dt>What it establishes</dt><dd>${esc(edge.check)}</dd>
- </dl>`;
-}
-
-function architectureBoundaries(selected){
- const {boundaries}=ArchitectureReference.technical;
- const open=boundaries.find(edge=>edge.id===selected)||boundaries[0];
- return `<p>Select a system to see its role, or select a connection to see what it carries and who checks it.</p>
-  <ol class="boundary-graph" aria-label="Trust boundary connections">${boundaries.map(edge=>`<li>
-   <button class="secondary boundary-node" data-architecture-component="${edge.from}">${esc(architectureComponentName(edge.from))}</button>
-   <button class="secondary boundary-edge" data-boundary="${edge.id}" aria-pressed="${edge===open}" aria-controls="boundary-detail">${esc(edge.label)} <span aria-hidden="true">→</span></button>
-   <button class="secondary boundary-node" data-architecture-component="${edge.to}">${esc(edge.toLabel||architectureComponentName(edge.to))}</button>
-  </li>`).join('')}</ol>
-  <section class="receipt" id="boundary-detail" aria-live="polite">
-   <h3>${esc(open.label)}</h3>${boundaryEvidence(open)}
-  </section>`;
-}
-
-function architectureDesign(){
- const {topology,evidence,decisionExample,decisionResponse,sections}=ArchitectureReference.technical;
- return `<section aria-labelledby="topology-title"><h3 id="topology-title">Deployment topology and trust boundaries</h3>
- <div class="architecture-topology">${topology.map(([name,components,detail])=>`<article><h4>${esc(name)}</h4><div class="architecture-path">${components.map(id=>`<button class="secondary" data-architecture-component="${id}">${esc(architectureComponentName(id))}</button>`).join('')}</div><p>${esc(detail)}</p></article>`).join('')}</div></section>
- <details class="product-card"><summary><b>Authoritative inputs and evidence ownership</b></summary>
- <dl class="architecture-evidence">${evidence.map(([attribute,owner,detail])=>`<dt>${esc(attribute)}</dt><dd><b>${esc(owner)}</b><p>${esc(detail)}</p></dd>`).join('')}</dl></details>
- <details class="product-card"><summary><b>Inspect an exact-action authorization request</b><span>Example application contract for Nova’s final share</span></summary>
- <p>This archived example uses a fixed validity timestamp. The CRM PEP builds the request from observed inputs and authoritative stores. The example shows where a production application binds the digest.</p><h4>Request to the PDP</h4><pre class="product-example">${esc(JSON.stringify(decisionExample,null,2))}</pre>
- <h4>Bound decision for the CRM PEP</h4><pre class="product-example">${esc(JSON.stringify(decisionResponse,null,2))}</pre><p>A missing approval, stale generation or changed digest denies the current action. A timeout leaves the commit outcome unknown. Reconcile the operation ID and downstream receipt before retrying.</p></details>
- ${sections.map(({title,paragraphs,sources})=>`<details class="product-card"><summary><b>${esc(title)}</b></summary>${paragraphs.map(p=>`<p>${esc(p)}</p>`).join('')}<p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p></details>`).join('')}`;
-}
-
-function architectureComponentDetail(id,protocols=[]){
- const entry=ArchitectureReference.components[id],product=entry.product&&productById(entry.product);
- const productSource=product?[[product.sourceLabel||product.name+' documentation',product.url]]:[];
- const specifications=protocols.map(key=>[PROTOCOL_SOURCES[key].name,PROTOCOL_SOURCES[key].url]);
- const sources=[...new Map([...specifications,...productSource,...(entry.sources||[])].map(([label,url])=>[url,label]))];
- const sourceLinks=sources.length?`<p class="sources">${sources.map(([url,label])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`:'';
- return {
-  kind:entry.kind,hasSources:!!sources.length,
-  body:`<p>${esc(entry.summary)}</p><p>${esc(entry.detail||product?.limit)}</p>${sourceLinks}`
- };
-}
-
-function architectureMap(openId){
- const {groups}=ArchitectureReference;
- return `<div class="architecture-map">${groups.map(([title,ids])=>`<section class="architecture-group">
-  <h3>${esc(title)}</h3><div class="architecture-nodes">${ids.map(id=>{
-   const {kind,body}=architectureComponentDetail(id);
-   return `<details class="architecture-node" data-architecture-node="${id}" ${id===openId?'open':''}><summary>
-    <strong>${esc(architectureComponentName(id))}</strong><small>${esc(kind)}</small>
-   </summary>${body}</details>`;
-  }).join('')}</div></section>`).join('')}</div>
-  <p class="small-print">This example combines product capabilities with customer integrations. The CRM and current work order supply the business rules.</p><p class="sources"><a href="https://docs.nvidia.com/enterprise-reference-architectures/secure-agent-workspace-reference-design/latest/what-is-secure-agent-workspace.html" target="_blank" rel="noopener noreferrer">NVIDIA Secure Agent Workspace reference design</a></p>`;
-}
-
-function architectureFlow(flowId){
- const {flows}=ArchitectureReference,flow=flows[flowId];
- return `<label for="architecture-flow">Choose a request</label>
-  <select id="architecture-flow">${Object.entries(flows).map(([id,item])=>`<option value="${id}" ${id===flowId?'selected':''}>${esc(item.title)}</option>`).join('')}</select>
-  <p>${esc(flow.premise)}</p><ol class="architecture-steps">${flow.steps.map(([id,text,protocols])=>{
-   const {kind,body,hasSources}=architectureComponentDetail(id,protocols);
-   return `<li><b>${esc(architectureComponentName(id))}</b><p>${esc(text)}</p>
-    <details class="debrief"><summary>${hasSources?'Role and sources':'Role in this deployment'}</summary>
-    <p class="eyebrow">${esc(kind)}</p>${body}</details></li>`;
-  }).join('')}</ol><div class="receipt"><b>Outcome</b><p>${esc(flow.result)}</p></div>`;
-}
-
-function architectureThreats(){
- const {threats,outsideCoverage}=ArchitectureReference;
- return `<p>Compare a household interaction with the control that would respond at work.</p>
-  <div class="architecture-threats">${threats.map(item=>`<details class="product-card"><summary><b>${esc(item.title)}</b></summary>
-   <dl><dt>The Agent House</dt><dd>${esc(item.alex)}</dd><dt>Workplace example</dt><dd>${esc(item.nova)}</dd><dt>What enforces it</dt><dd>${esc(item.control)}</dd></dl>
-   <button class="secondary" data-architecture-flow="${item.flow}">Follow the technical sequence</button>
-  </details>`).join('')}</div><p class="small-print">${esc(outsideCoverage)}</p>`;
-}
-
-function runtimeBootstrap(){
- return `<ol class="route-list">${ArchitectureReference.runtime.bootstrap.map(([name,description])=>`<li><b>${esc(name)}</b><br>${esc(description)}</li>`).join('')}</ol>`;
-}
-function architectureRuntime(){
- const {sources}=ArchitectureReference.runtime;
- return `<h3>From approved task to running sandbox</h3>
-  <p>Example identifiers track different controls. The customer mission is G-042 v1. The separate OpenShell sandbox generation is S-04.</p>
-  ${runtimeBootstrap()}
-  <p>OpenShell governs the MCP client’s network route. On this configured path the MCP gateway forwards the call and the CRM connector obtains a backend credential from Vault. CRM enforces the actual record decision.</p>
-  <p>Application-layer rules block requests in enforcement mode. Audit mode logs violations and lets the request continue to downstream controls.</p>
-  <p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`;
-}
-
-function architectureDeployment(){
- const {deploymentOptions}=ArchitectureReference;
- return `<h3>Deployment options</h3>
-  <p>Expand a standard to see when it fits and how it relates to Nova’s example deployment.</p>
-  <div class="product-cards">${deploymentOptions.map(option=>`<details class="product-card">
-   <summary><b>${esc(option.title)}</b></summary><p>${esc(option.when)}</p><p>${esc(option.inStory)}</p>
-   ${protocolSourceLinks(option.sources)}</details>`).join('')}</div>`;
-}
-
-function householdBoundaries(){
- const controls=[
-  ['Outside → house','Grandparents and the entrance camera observe who or what comes in. The home router checks device admission on its own network.'],
-  ['Assignment issuer → Alex','The school contact or signature verifier checks the issuer. Jo separately checks the scope of the issuer’s authority.'],
-  ['Alex → phone','The family uses a known identity and device registration. The verifier supplies a fresh device check before the cabinet issues a key.'],
-  ['Phone → app','The phone checks the approved app and time window.'],
-  ['App → external service','The router checks the destination on its network. The homework and shopping services check the actual request.'],
-  ['Alex → family laptop','The cabinet issues the scoped slip. The laptop checks the active grant, resource and operation at use.'],
-  ['Alex → Mia','The linked assignment authorizes proofreading on one draft under Mia’s identity. The usage meter charges the parent mission.'],
-  ['Assignment → assignment','The laptop and workbook service enforce separate scopes and notes for the train and Munich assignments.'],
-  ['Notepad → workbook','The workbook tracks which sources contributed to sections. Review holds an unverified section.'],
-  ['Workbook → recipient','The school channel checks the actual revision and approved recipient.'],
-  ['Jo → parents’ authority','The key cabinet enforces delegated administrative scope and hard rules.'],
-  ['Alex → observation log','An independent store keeps forwarded records and refuses edits by Alex’s profile.']
- ];
- return `<h2>Who enforces each boundary?</h2><dl class="architecture-evidence">${controls.map(([path,control])=>`<dt>${esc(path)}</dt><dd>${esc(control)}</dd>`).join('')}</dl>
- <p>These are configured controls in the stories. The household cannot observe every conversation, device or network outside its boundaries.</p>
- <p class="sources"><a href="https://www.rfc-editor.org/rfc/rfc9334.html">IETF attestation architecture</a> · <a href="https://www.rfc-editor.org/rfc/rfc9396.html">OAuth rich authorization requests</a> · <a href="https://www.w3.org/TR/prov-overview/">W3C provenance overview</a></p>`;
-}
-
-function showArchitecture(view='boundaries',flowId='read',componentId=null,focusControl=false){
- const {flows}=ArchitectureReference;
- const boundary=flowId;
- if(!flows[flowId])flowId='read';
- const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):
-  view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='pilots'?architecturePilots():view==='threats'?architectureThreats():
-  view==='house'?householdBoundaries():view==='railway'?novaArchitecture():architectureMap(componentId);
- showScreen('Mission-bound authorization',
-  `<p>Use this reference to connect controls in The Agent House with a workplace deployment. The customer handover is a worked example.</p>
-  <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
-  ${body}`,
-  'REFERENCE ARCHITECTURE');
- $$('[data-architecture-view]').forEach(control=>control.onclick=()=>showArchitecture(control.dataset.architectureView,flowId,null,true));
- $$('[data-architecture-component]').forEach(control=>control.onclick=()=>showArchitecture('map',flowId,control.dataset.architectureComponent));
- $$('[data-architecture-flow]').forEach(control=>control.onclick=()=>showArchitecture('sequences',control.dataset.architectureFlow,null,true));
- $$('[data-boundary]').forEach(control=>control.onclick=()=>{
-  const edge=ArchitectureReference.technical.boundaries.find(item=>item.id===control.dataset.boundary);
-  $$('[data-boundary]').forEach(item=>item.setAttribute('aria-pressed',String(item===control)));
-  $('#boundary-detail').innerHTML=`<h3>${esc(edge.label)}</h3>${boundaryEvidence(edge)}`;
- });
- const select=$('#architecture-flow');
- if(select)select.onchange=()=>showArchitecture('sequences',select.value,null,true);
- if(componentId){
-  const node=$(`[data-architecture-node="${componentId}"] > summary`);
-  node?.focus();
- }else if(focusControl){
-  (select||$('[data-architecture-view][aria-pressed="true"]'))?.focus({preventScroll:true});
- }
-}
-
-function buyerPilotChecklist(pilot){
- const {prerequisite,owner,success,failure,evidence}=pilot.checklist;
- const rows=[
-  ['What you need before setup',prerequisite],
-  ['Who to involve',owner],
-  ['What should work',success],
-  ['What should fail or stay unverified',failure],
-  ['Evidence to save',evidence]
- ];
- return `<ul class="route-list">${rows.map(([label,value])=>`<li><b>${label}</b><br>${esc(value)}</li>`).join('')}</ul>`;
-}
-
-function architecturePilots(){
- return `<div class="product-cards">${NOVA_BUYER_NEEDS.map(({question,product,fit,pilot,sources})=>
-  `<details class="product-card"><summary><b>${esc(pilot?.label||question)}</b><span>${esc(product)}</span></summary>
-  <p>${esc(fit)}</p>${pilot?`<p>${esc(pilot.integration)}</p>${buyerPilotChecklist(pilot)}`:''}
-  <p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p></details>`).join('')}</div>`;
+function showArchitecture(){
+ const frame=document.createElement('iframe');
+ frame.className='architecture-guide-frame';
+ frame.title='Enterprise Architecture Guide';
+ frame.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');
+ frame.setAttribute('allow','clipboard-write');
+ frame.referrerPolicy='no-referrer';
+ const bundled=$('#architecture-guide-data');
+ if(bundled)frame.srcdoc=JSON.parse(bundled.textContent);
+ else frame.src='architecture-guide.html';
+ $('#game').replaceChildren(frame);
 }
 
 function digitalSlip(story){
@@ -440,14 +257,19 @@ function showIntro(){
 }
 function renderRoute(){
  const route=location.hash.slice(1);
+ const architectureOpen=route==='architecture';
+ document.body.classList.toggle('architecture-open',architectureOpen);
+ const link=$('.topbar a[href="#architecture"]');
+ if(architectureOpen)link.setAttribute('aria-current','page');
+ else link.removeAttribute('aria-current');
  const stage=Object.keys(stageRoutes).find(key=>stageRoutes[key]===route);
  const novaStage=Object.keys(NovaRailway.stages).find(key=>novaStageRoute(key)===route);
  if(stage)showHousehold(stage);
  else if(novaStage)showNova(novaStage);
  else if(route==='nova')showNovaIntro();
- else if(route==='architecture')showArchitecture();
+ else if(architectureOpen)showArchitecture();
  else showIntro();
- $('#screen-title').focus({preventScroll:true});
+ $('#screen-title')?.focus({preventScroll:true});
  window.scrollTo(0,0);
 }
 function navigate(route){

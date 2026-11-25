@@ -1,5 +1,6 @@
 """Build or check the story game, its offline copies, and the previous URL redirect."""
 from argparse import ArgumentParser
+from json import dumps
 from pathlib import Path
 
 root = Path(__file__).resolve().parent
@@ -10,10 +11,13 @@ args = parser.parse_args()
 
 html = (src / 'index.html').read_text(encoding='utf-8')
 html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + (src / 'style.css').read_text(encoding='utf-8') + '\n</style>')
+guide = dumps((src / 'architecture-guide.html').read_text(encoding='utf-8'), ensure_ascii=False)
+html = html.replace('<main id="game"></main>', '<main id="game"></main>\n'
+                    '<script type="application/json" id="architecture-guide-data">'
+                    + guide.replace('<', '\\u003c') + '</script>')
 for name, path in [
     ('../assets/people.js', root / 'assets/people.js'),
-    ('../assets/protocols.js', root / 'assets/protocols.js'),
-    *[(name, src / name) for name in ['products.js', 'architecture.js', 'shadow.js', 'trust-checks.js', 'nova.js', 'nova-ui.js', 'ui.js']],
+    *[(name, src / name) for name in ['shadow.js', 'trust-checks.js', 'nova.js', 'nova-ui.js', 'ui.js']],
 ]:
     code = path.read_text(encoding='utf-8').replace('</script', '<\\/script')
     html = html.replace(f'<script src="{name}"></script>', '<script>\n' + code + '\n</script>')

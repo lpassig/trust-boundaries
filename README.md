@@ -15,7 +15,7 @@ Select the highlighted action to advance. Open a phone to use its apps and brows
 
 **Optional security scenarios** appear in the rooms from BUILD onward. Try a registered phone that fails verification, a signed assignment that exceeds the issuer’s authority, an edited workbook, or a revoked read that was already waiting to execute. Scenario choices and evidence stay separate from the main assignment. From AUTHORIZE onward, find the digital permission slip inside the scene after the parents approve the conductor notes.
 
-[Architecture](https://lpassig.github.io/trust-boundaries/#architecture) is a browsable reference with product roles, request sequences, deployment options and pilot checklists. It uses a worked customer handover to show how the household controls could translate to a workplace.
+[Architecture](https://lpassig.github.io/trust-boundaries/#architecture) opens the Enterprise Architecture Guide for Nova’s railway scenario. Select a maturity stage, inspect its topology and components, replay a request, or use the decision lab. The guide is bundled into the offline game.
 
 ## Build and verify
 
