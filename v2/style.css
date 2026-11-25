@@ -78,6 +78,12 @@ p, li, dd { color: var(--muted); }
 .nova-workbench .choice { width: 100%; }
 .nova-workbench [data-ticket-preview][aria-describedby] { color: #101e24; background: #a7efd8; }
 .nova-preview-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; }
+.nova-workbench h4 { margin: 0 0 6px; }
+.work-order-stages { display: grid; gap: 14px; padding-inline-start: 1.5rem; }
+.work-order-stages h3 { margin: 0; font-size: 1rem; }
+.work-order-identities { margin-block: 8px; }
+.work-order-identities dt { font-weight: 650; }
+.work-order-identities dd { margin-inline-start: 0; overflow-wrap: anywhere; }
 .route-list { padding-inline-start: 22px; }
 .route-list li + li { margin-top: 6px; }
 

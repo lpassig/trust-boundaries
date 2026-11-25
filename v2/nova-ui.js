@@ -56,7 +56,7 @@ function showNovaIntro(){
  const started=Object.values(novaStates).some(state=>state.index>0);
  showScreen('Nova’s railway investigation',`
   <div class="nova-intro">
-   <div><p>Follow the same four maturity stages as Alex. Help Nova investigate a disruption at a fictional railway company.</p>
+   <div><p>Follow one railway work order from an unmanaged copy of Nova to a governed agent. Keep Microsoft Entra ID for workforce sign-in and see what three additional controls contribute.</p>
     <div class="actions">${next?button(started?'Continue Nova':'Start Nova',()=>navigate(novaStageRoute(next))):''}
      ${button('Home',()=>navigate(''),'secondary')}${button('Explore the architecture',()=>navigate('architecture'),'secondary')}</div></div>
    ${novaDiorama('external',`<div class="nova-crew" aria-hidden="true">${novaSprite()}</div>`)}
@@ -97,10 +97,18 @@ function novaTicketCard(state){
   ${state.ticket?`<p>Recorded effect · ${esc(state.ticket)}</p>`:''}
   <p>The resource PEP observes the actual arguments and rechecks the current decision at commit. Vault’s lease decision and MCP tool access remain separate.</p></details>`;
 }
-function novaEvidence(state){
- if(!state.events.length)return '';
+const workOrderSteps={
+ unknown:{credential:'Exposed credential',discover:'Observed access and coverage',verify:'Containment check'},
+ build:{register:'Agent registration',request:'Workforce sign-in and intake',scope:'Recorded delegation'},
+ authorize:{lease:'Vault issued a database lease',events:'OAuth API read',history:'Legacy database read',
+  'try-other-train':'One parameter changed',remaining:'Independent M-105 check'},
+ resist:{plan:'Authorized operational read','risk-signal':'Identity risk signal',close:'Configured response',
+  'verify-retired':'Resource-side refusals','verify-unrelated':'Independent M-105 check'}
+};
+function novaEvidence(state,keepOpen){
  const last=state.events.at(-1);
- const event={
+ const event=last?{
+  work_order_id:last.workOrderId,
   event_type:last.decision==='Committed'?'operation.committed':'security.'+last.decision.toLowerCase().replaceAll(' ','_'),
   agent_id:state.stage==='unknown'?'unregistered': 'nova',
   runtime_id:state.stage==='unknown'?'unmanaged-workstation':'nova-runtime-'+(last.runtime??last.version),
@@ -113,26 +121,74 @@ function novaEvidence(state){
   decision:last.decision.toLowerCase(),
   decision_source:last.decisionSource,
   enforcement_source:last.enforcer,
+  rows_returned:last.rows,
+  audience:last.audience,
   decision_id:'DEMO-DEC-'+state.events.length,
   trace_id:'DEMO-'+state.stage.toUpperCase()+'-'+state.events.length,
   risk_points:last.points
- };
- return `<details class="debrief"><summary>Decision evidence · ${state.events.length} recorded</summary>
-  <ol class="route-list">${state.events.map(item=>`<li><b>${esc(item.owner)}</b> · ${esc(item.id)} · ${esc(item.decision)}</li>`).join('')}</ol>
-  <h3>Latest normalized event</h3><pre class="product-example">${esc(JSON.stringify(event,null,2))}</pre>
-  <p class="small-print">The customer maps source events to this fictional schema. Confluent can carry events, Flink can correlate them, and the separately authorized response service acts on the resulting signals.</p></details>`;
+ }:null;
+ return `<details class="debrief work-order" data-work-order${keepOpen?' open':''}>
+  <summary>${esc(NovaRailway.workOrder.id)} · Work order and evidence</summary>
+  <p>Investigate the RE-204 door fault and deliver an internal handover. Each stage grants only the authority it needs.</p>
+  <p><b>Three controls to evaluate</b></p>
+  <ul class="route-list">
+   <li><b>IBM Agent Identity</b> <span>Connect the agent to an accountable owner and a specific delegation.</span></li>
+   <li><b>HashiCorp Vault</b> <span>Give a trusted connector short-lived access to systems that use their own credentials.</span></li>
+   <li><b>IBM Identity Protection</b> <span>See how identities actually reach connected resources and investigate unusual use.</span></li>
+  </ul>
+  <ol class="work-order-stages">${Object.entries(workOrderSteps).map(([stage,labels])=>{
+   const items=novaStates[stage].events.filter(row=>Object.hasOwn(labels,row.id));
+   return `<li><h3>${esc(NovaRailway.stages[stage].title)}</h3>${items.length?`<ul class="route-list">${items.map(row=>
+    `<li data-order-event="${esc(row.id)}"><b>${esc(labels[row.id])}</b> · <span>${esc(row.decision)}</span>
+     ${row.missionId?`<code>${esc(row.missionId)}</code>`:''}
+     ${row.decisionSource?`<div><b>Decision or observation</b> · <span>${esc(row.decisionSource)}</span></div>`:''}
+     ${row.enforcer?`<div><b>Enforced by</b> · <span>${esc(row.enforcer)}</span></div>`:''}
+     ${row.subject&&row.executionId?`<div><b>Delegated by</b> · <span>${esc(row.subject)}</span></div>`:''}
+     ${row.resourceChecks?`<ul>${row.resourceChecks.map(([resource,status])=>`<li><b>${esc(resource)}</b> · <span>${esc(status)}</span></li>`).join('')}</ul>`:''}
+     ${row.rows!==undefined?`<div>Records returned · ${row.rows}</div>`:''}
+     ${row.executionId?`<dl class="work-order-identities">
+      <div><dt>Logical agent</dt><dd><code>${esc(row.agentId)}</code></dd></div>
+      <div><dt>Workload identity</dt><dd><code>${esc(row.workloadId)}</code></dd></div>
+      <div><dt>Work order execution</dt><dd><code>${esc(row.executionId)}</code></dd></div></dl>`:''}
+     ${row.audience?`<div><b>Token audience</b> · <code>${esc(row.audience)}</code></div>`:''}
+     ${row.leaseId?`<div><code>${esc(row.leaseId)}</code> · <span>${row.ttlMinutes} simulated minutes</span></div>`:''}</li>`).join('')}</ul>`:
+    '<p class="small-print">Evidence will appear as you play this stage.</p>'}</li>`;
+  }).join('')}</ol>
+  ${event?`<details><summary>Latest normalized event</summary><pre class="product-example">${esc(JSON.stringify(event,null,2))}</pre></details>`:''}
+  <p class="small-print">The work order and evidence are synthetic fixtures. Correlation across production services requires customer integration.</p>
+  ${button('Compare the reference deployment and alternatives',()=>navigate(architectureRoute(Object.keys(NovaRailway.stages).indexOf(state.stage),{section:'reference'})),'secondary')}
+  </details>`;
+}
+function novaReadPaths(state,next,act){
+ const has=id=>state.events.some(event=>event.id===id);
+ const ready=id=>next?.id===id;
+ const card=(title,explanation,id,action)=>`<article class="receipt"><h4>${title}</h4><p>${explanation}</p>
+  ${has(id)?'<p class="route-outcome"><b>Allowed</b> · <span>Records returned</span></p>':ready(id)?button(action,()=>act(id),'secondary','', '',{'data-read-path':id}):
+  '<p class="small-print">Waiting for the approved route.</p>'}</article>`;
+ return `<section class="nova-workbench" data-two-paths aria-labelledby="nova-two-title">
+  <h3 id="nova-two-title">Two paths for WO-204</h3>
+  <div class="nova-preview-results">
+   ${card('OAuth-aware Railway Events API','Native Entra delegation is enough here. The API trusts Entra, validates the token for its own audience and checks the actual train and time window.','events','Try the OAuth API read')}
+   ${card('Legacy incident database','The database accepts its own credential. A trusted connector presents a separate Vault-audience token to Vault and uses the 15-minute read-only lease. Nova sees the records, while the password stays with the connector.','history','Try the Vault-backed read')}
+  </div>
+  ${has('events')?`<div class="receipt"><h4>Change just the train</h4>
+   <p>Keep the same API, token and time window. Change RE-204 to RE-999.</p>
+   ${has('try-other-train')?'<p class="route-outcome"><b>Denied</b> · <span>Railway Events API returned zero records.</span></p>':
+    button('Try RE-999 with the same token',()=>act('try-other-train'),'secondary','', '',{'data-read-scope-test':''})}</div>`:''}
+ </section>`;
 }
 // These actions are service calls made from the current workspace. Their receipts still belong to the receiving station.
 const novaRemoteSteps={
  build:{bootstrap:'runtime',provider:'runtime',scope:'external',approve:'runtime',close:'external'},
  authorize:{grant:'runtime',lease:'runtime',second:'resources',approve:'runtime',close:'external',remaining:'external'},
- resist:{register:'resources',delegate:'runtime',ticketCredential:'runtime',approve:'runtime',reapprove:'external',close:'external'}
+ resist:{register:'resources',delegate:'runtime',ticketCredential:'runtime',approve:'runtime',reapprove:'external','risk-signal':'external',close:'external'}
 };
 function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
  const state=novaStates[stage],data=NovaRailway.stages[stage],{room}=state;
  const order=Object.keys(NovaRailway.stages);
  const next=NovaRailway.next(state),done=NovaRailway.complete(state);
  const nextStage=order[order.indexOf(stage)+1];
+ const keepEvidence=$('[data-work-order]')?.open;
  const update=(nextState,showReply=false)=>{
   novaStates[stage]=nextState;
   try{localStorage.setItem(NOVA_SAVE,JSON.stringify(novaStates));}catch{/* Playing still works in memory. */}
@@ -232,6 +288,7 @@ function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
    ${replyFromAnotherRoom&&!revealReply?`<details class="nova-last-result"><summary>Last result · ${esc(reply.owner)}</summary>${dialogue}</details>`:dialogue}
    ${remoteAction}
    ${novaDiorama(room,crew,devices)}
+   ${stage==='authorize'&&room==='resources'&&NovaRailway.reached(state,'grant')&&!NovaRailway.reached(state,'close')?novaReadPaths(state,next,act):''}
    ${ticketWorkbench}
    ${lookingAtConsole?novaConsole(state,inspect,closeConsole,act):next?.room===room?
     `<div class="actions nova-actions">${button('Inspect '+NovaRailway.stations[next.station][0],()=>inspectStation(next.station),'secondary')}</div>`:''}
@@ -253,7 +310,7 @@ function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
   ${novaMissionCard(state)}
   ${room==='resources'?novaTicketCard(state):''}
   ${decisionNote('nova',state,state.events.at(-1)?.id)}
-  ${novaEvidence(state)}
+  ${novaEvidence(state,keepEvidence)}
   ${done?stageDebrief('nova',NovaRailway,state):''}
   <div class="actions">${done&&nextStage?button('Continue to the next stage',()=>navigate(novaStageRoute(nextStage))):''}
    ${button('Nova’s stages',()=>navigate('nova'),'secondary')}

@@ -218,10 +218,10 @@ const FieldGuide=(()=>{
     'Open two synthetic missions for one agent. Close M-204, retry its old incident-history read, then read the separate RE-105 document under M-105.',
     'The old read is denied. The M-105 read still works and its receipt names M-105 and RE-105.',
     'Both resource receipts with mission ID, version, operation, resource and decision.'],
-   resist:['Does the resource recheck authority before commit?',
-    'Preview a synthetic maintenance ticket. Revoke the test mission while the preview is pending, then try to commit the same ticket.',
-    'The maintenance API refuses the commit. The ticket store shows zero new tickets for that operation ID.',
-    'The preview, revocation and commit decisions in time order, plus the ticket lookup for the operation ID.']
+   resist:['Can you verify one work order from sign-in to revoked access?',
+    'Keep Entra ID for sign-in in a test environment. Use one registered agent, one OAuth-aware API and one legacy database. Run the allowed reads, change only the train, then use a synthetic identity risk signal to close the affected mission and retry the old access and an unrelated grant.',
+    'The approved reads succeed. The changed train returns no records. After closure the retired authority fails at the receiving systems and the unrelated grant still works.',
+    'Keep the agent owner, work order and mission IDs, the sample API and database receipts, the Vault lease ID and expiry, the risk observation, and a timestamped refusal from each tested resource.']
   }
  };
  const hintLevel=seconds=>seconds>=60?3:seconds>=40?2:seconds>=20?1:0;

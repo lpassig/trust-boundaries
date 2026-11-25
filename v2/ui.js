@@ -58,7 +58,7 @@ function showArchitecture(parameters){
  if(language==='de'||parameters.has('stage')&&Number.isInteger(stage)&&stage>=0&&stage<=3){
   frame.addEventListener('load',()=>frame.contentWindow.postMessage({
    type:'trust-boundaries-reference',stage:parameters.has('stage')?stage:null,
-   sequence:parameters.get('sequence'),component:parameters.get('component'),
+   sequence:parameters.get('sequence'),component:parameters.get('component'),section:parameters.get('section'),
    ...(language==='de'?{language,messages:GERMAN}:{})
   },'*'),{once:true});
  }
@@ -475,7 +475,7 @@ function showIntro(){
    <section class="maturity-card" aria-labelledby="home-nova">
     <p class="eyebrow">FOR PLAYERS FAMILIAR WITH AI OR IT SECURITY</p>
     <h2 id="home-nova">Nova · At a railway company</h2>
-    <p>Play an AI agent, software that uses tools to do a job. Investigate a railway disruption and see how an organization controls access to its systems, data and tools.</p>
+    <p>Play an AI agent investigating a railway disruption. Keep Entra ID for sign-in and see how IBM Agent Identity, Vault and IBM Identity Protection govern what happens next.</p>
     ${button(Object.values(novaStates).some(state=>state.index)?'Continue Nova’s story':'Start with Nova',()=>navigate(novaStageRoute(firstNova)),'secondary')}
    </section>
   </div>

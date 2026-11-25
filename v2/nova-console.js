@@ -12,7 +12,7 @@ function novaConsole(state,station,close,act){
   database:['Incident','Asset','Finding','Outcome'],astra:['Document','Title','Excerpt']};
  let recordTable='';
  if(Object.hasOwn(resources,station)){
-  const read=NovaRailway.resourceRead(state,station,station==='astra'&&closed&&state.stage==='authorize'?{asset:'RE-105',missionId:'M-105'}:{});
+  const read=NovaRailway.resourceRead(state,station,station==='astra'&&closed&&['authorize','resist'].includes(state.stage)?{asset:'RE-105',missionId:'M-105'}:{});
   field('Resource decision',read.status);
   field('Evidence',read.reason);
   if(read.rows.length){
@@ -27,11 +27,17 @@ function novaConsole(state,station,close,act){
   field('Runtime',stopStatus??(unknown?'Unmanaged workstation':`nova-runtime-${state.generation}`));
   field('Admission',suspended?'Mission suspended · new issuance blocked':stopStatus?'Closed':unknown?'Unverified':state.admission==='Failed'?'Posture failed · issuance blocked':
    state.admission==='Pending'?'Waiting for workload and posture checks':'Verified for the current deployment');
-  field('Network',suspended&&!state.incident.confirmed.includes('runtime')?'Runtime route status unverified':stopStatus?'Agent route unavailable':unknown?'Broad workstation access':stageNetwork(state));
+  field('Network',suspended&&!state.incident.confirmed.includes('runtime')||closed&&state.stage==='resist'?'Runtime route status unverified':
+   stopStatus?'Agent route unavailable':unknown?'Broad workstation access':stageNetwork(state));
   if(station==='sandbox')field('Research plan',mission?.scope??'Review the request before running a managed task.');
  }
  if(station==='identity'){
-  field('Logical identity',unknown?'No registered agent record':reached('register')?'nova · Railway Operations owner recorded':'Registration pending');
+  const registered=reached('register');
+  field('Workforce sign-in','Microsoft Entra ID');
+  field('Logical identity',registered?NovaRailway.workOrder.agent:'Registration pending');
+  if(registered)field('Accountable owner',NovaRailway.workOrder.owner);
+  if(reached('provision')||mission)field('Runtime instance','nova-runtime-'+state.generation);
+  if(mission)field('Work order execution',mission.id+'/run-'+state.generation);
   field('Delegation',mission?.subject??'No active authority recorded');
  }
  if(station==='model'){
@@ -87,7 +93,7 @@ function novaConsole(state,station,close,act){
  }
  const reportControls=station==='artifact'&&state.stage==='resist'&&reached('approve')&&!reached('deliver')&&!suspended;
  if(['artifact','delivery','review'].includes(station)&&state.artifactRevision&&!suspended){
-  const report=state.stage==='build'?'Revision 1 · Common causes of rail disruption include equipment faults, severe weather and signal failures.':
+  const report=state.stage==='build'?'Revision 1 · Public references describe possible door faults, including sensor alignment and obstruction. The actual RE-204 cause still needs investigation.':
    state.stage==='authorize'?'Revision 1 · Inspect the RE-204 door sensor. The event log and earlier incident history support that recommendation.':
    state.artifactRevision===1?'Revision 1 · Inspect door sensor D3 before the next service.':
    'Revision 2 · Inspect door sensor D3 and confirm the connector is seated before the next service.';

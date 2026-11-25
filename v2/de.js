@@ -313,43 +313,43 @@ This is the player’s view of the authorization. A deployment can keep some fie
  const nova={
  unknown:{
   $:'Entdecke einen unverwalteten Agenten. Verfolge seine Zugriffe und prüfe, welche Zugänge wirklich gesperrt sind.',
-  accept:['Die ungeprüfte Anfrage ansehen','Eine Nachricht von einem unbekannten Absender: „Finde heraus, was die Störung kosten könnte, und schick mir die Kundenliste.“ Nova nimmt sie in die Aufgabenliste auf. Das Unternehmen kennt weder diese Installation noch eine verantwortliche Person.'],
+  accept:['Die ungeprüfte Anfrage ansehen','Ein unbekannter Absender nennt WO-204, den Arbeitsauftrag zur Türstörung bei RE-204, und fordert die Kundenliste an. Die unverwaltete Kopie von Nova nimmt die Anfrage an. Die Nennung eines echten Arbeitsauftrags erteilt dem Absender keine Berechtigung.'],
   runtime:['Den unverwalteten Arbeitsplatz ansehen','Nova läuft in einem lokalen Container mit weitreichendem Netzwerk- und Werkzeugzugriff. Ein neues Werkzeug taucht ohne Prüfung auf. Die Plattformverantwortlichen kennen weder die Installation noch deren Werkzeugliste.'],
   usage:['Die Warnung zur Modellnutzung lesen','Der Zähler beim externen Modell zeigt viele Aufrufe mit wenig Fortschritt. Trotz Warnung geht es weiter. Es gibt kein erzwungenes Auftragsbudget.'],
-  credential:['Den Fund der Zugangsdaten prüfen','Im Protokoll des Arbeitsplatzes ist zu sehen, dass Nova Zugangsdaten eines Mitarbeiters verwendet. Die Untersuchung hält die Kontoreferenz fest. Der geheime Wert bleibt außerhalb der Akte.'],
+  credential:['Den Fund in Vault Radar prüfen','Vault Radar meldet offengelegte Zugangsdaten eines Mitarbeiters in einer gescannten Datei. Der Fund enthält nur einen Verweis. Unabhängig davon zeigt das Arbeitsplatzprotokoll, dass das Mitarbeiterkonto benutzt wurde.'],
   crm:['Den CRM-Zugriffsbeleg prüfen','Das CRM hat das Mitarbeiterkonto protokolliert und fiktive Kunden- und Finanzdaten ausgegeben. Im Protokoll konnte es Nova nicht vom Mitarbeiter unterscheiden.'],
   kafka:['Den Kafka-Zugriffsbeleg prüfen','Das Kafka-Protokoll zeigt, dass eine andere Identität den Zahlungsdatenstrom gelesen hat. Der Broker erlaubte den Zugriff, obwohl niemand Nova dazu berechtigt hatte.'],
   artifact:['Den für externen Versand vorgemerkten Bericht prüfen','Eine lokale Datei verbindet die CRM- und Stream-Ergebnisse. Die Übertragung war vorgemerkt. Ob Daten abgeflossen sind, lässt sich erst mit Belegen vom Ziel und aus dem Netz klären.'],
-  discover:['Die Funde zusammenführen','Das SOC verknüpft Signale aus IBM Identity Protection, einen Fund offengelegter Zugangsdaten in Vault Radar, Belege vom Endgerät und aus dem Netz, Modellnutzung und Confluent-Auditereignisse. Jede Quelle deckt nur den eingerichteten Bereich ab.'],
+  discover:['Die Funde zusammenführen','IBM Identity Protection beobachtet, wie ein unverwalteter Client das CRM über einen überwachten Zugriffsweg erreicht. Die Sicherheitsleitstelle ordnet ihn mithilfe der Endgeräte- und CRM-Protokolle Nova zu. Vault Radar hat die offengelegten Zugangsdaten separat entdeckt. Aktivitäten auf Wegen ohne angeschlossene Sensoren bleiben unbekannt.'],
   contain:['Die entdeckte Installation eindämmen','Der Endgeräteverantwortliche stoppt den Prozess. Die Dienste widerrufen die offengelegten Zugänge. CRM und Kafka sperren die betroffenen Zugriffe. Arbeitsbereich und Bericht kommen in Quarantäne. Das Netzwerkteam blockiert das ermittelte Ziel.'],
   verify:['Den alten Zugriff erneut prüfen','CRM und Kafka weisen die alten Identitäten jetzt ab. Der Dateidienst meldet für das geprüfte Ziel keinen abgeschlossenen Upload. Andere Wege bleiben Gegenstand der Untersuchung.']
  },
  build:{
   $:'Registriere Nova, prüfe die Laufzeitumgebung und schließe einen Rechercheauftrag mit öffentlichen Quellen ab.',
-  register:['Nova und die verantwortliche Stelle registrieren','IBM Agent Identity erfasst die Verantwortung und den Lebenszyklus des Agenten. In der Vault Agent Registry ist ihm eine eigene Entität mit Richtlinien zugeordnet. Agent, Workload und Sandbox-Instanz haben jeweils eine eigene Kennung.'],
+  register:['Nova und die verantwortliche Stelle registrieren','IBM Agent Identity registriert agent:nova mit Maya Chen aus der Betriebsleitung als verantwortlicher Person. In der Vault Agent Registry ist eine eigene Entität mit Richtlinien zugeordnet. Agenteneintrag, Workload-Identität und Ausführung haben unterschiedliche Kennungen.'],
   provision:['Die verwaltete OpenShift-Laufzeit ansehen','Die Plattform stellt das freigegebene Image und eine eingeschränkte OpenShell-Sandbox bereit. OpenShift betreibt den Workload. Terraform sowie Image- und Clusterprüfungen gehören zur Bereitstellung. OpenShell begrenzt den Zugriff auf Dateien, Prozesse und das Netzwerk.'],
   bootstrap:['Workload-Identität und Zustand der Laufzeit prüfen','Red Hat ZTWIM verwaltet SPIRE für SPIFFE-Workload-Identitäten. Ein Zulassungsdienst des Unternehmens prüft Identität, Zuordnung zu Nova und aktuellen Zustand der Bereitstellung getrennt, bevor Zugangsdaten ausgegeben werden dürfen.'],
   provider:['Die erlaubte Modellverbindung vorbereiten','Die vertrauenswürdige Anbindung des Modellanbieters kann Zugangsdaten über Vault beziehen. Der Modellschlüssel bleibt beim vermittelnden Dienst. Nova braucht vor Nutzung des Granite-Endpunkts einen aktiven Auftrag.'],
-  request:['Den bestätigten Auftrag der Betriebsleitung lesen','Der Mitarbeiter meldet sich über IBM Verify oder den Identitätsanbieter des Unternehmens an. Die Auftragsstelle prüft seine Rolle. M-101 erlaubt eine Zusammenfassung üblicher Störungen aus öffentlichen Quellen und legt Frist, Budget und internen Empfänger fest.'],
-  scope:['Den Auftrag für öffentliche Recherche aktivieren','Das Register hält Ziel, Modell, öffentliches Recherchewerkzeug, Arbeitsbereich und Empfänger fest. Betriebsdaten, CRM, Zahlungsdaten und Kafka liegen außerhalb von M-101.'],
+  request:['Den bestätigten Auftrag der Betriebsleitung lesen','Maya meldet sich über Microsoft Entra ID an und bittet um eine erste Einschätzung für WO-204. Die Auftragsstelle prüft ihre Rolle. M-101 erlaubt eine öffentliche Recherche zu möglichen Türfehlern und einen internen Bericht.'],
+  scope:['Den Auftrag für öffentliche Recherche aktivieren','Die Auftragsstelle genehmigt die erste Einschätzung für WO-204. IBM Agent Identity erfasst die eingerichtete Delegation von Maya an Nova. M-101 erlaubt öffentliche Recherche und einen internen Bericht. Private Daten und interne Betriebswerkzeuge bleiben gesperrt.'],
   research:['Über das erlaubte MCP-Gateway recherchieren','Nova ruft öffentliche Bahndokumentation über das zugelassene Recherchewerkzeug ab. Das Gateway filtert die Werkzeugverbindung. Nur M-101 darf in seinen Auftragsspeicher schreiben.'],
   budget:['Das Modellbudget prüfen','Das Gateway blockiert weitere Modellaufrufe, sobald das Budget aufgebraucht ist. Ergebnisse und Quellen sind schon gespeichert. Nova kann den Bericht mit der freigegebenen Vorlage fertigstellen.'],
   internal:['Interne Störungsdaten anfragen','OpenShell verhindert den direkten Zugriff aus der Sandbox. Auch der erlaubte Konnektor weist die Anfrage ab, weil M-101 nur öffentliche Recherche erlaubt. Die beiden Stellen prüfen unterschiedliche Dinge.'],
-  draft:['Den Bericht aus den gespeicherten Notizen erstellen','Der Berichtsbereich füllt die Vorlage mit Novas Ergebnissen und Quellen. Die Betriebsleitung kann jetzt eine kurze Übersicht zu Störungsursachen lesen. Das Modell bleibt gesperrt und das Budget aufgebraucht.'],
+  draft:['Den Bericht aus den gespeicherten Notizen erstellen','Der Berichtsbereich füllt die Vorlage mit Novas Ergebnissen und Quellen. Die Betriebsleitung kann nun die erste Einschätzung zu möglichen Türstörungen für WO-204 lesen. Das Modell bleibt gesperrt und das Budget aufgebraucht.'],
   approve:['Genau diese Fassung von einem Menschen prüfen lassen','Ein eingerichteter CIBA-Ablauf mit IBM Verify kann die prüfende Person auf einem separaten Gerät anmelden. Die Unternehmensanwendung bindet deren Entscheidung an den Hash dieser Berichtsfassung, die Aktion und den internen Empfänger.'],
   deliver:['Den freigegebenen Bericht senden','Der Versanddienst prüft die tatsächliche Fassung und das Ziel. Er stellt den Bericht der Betriebsleitung zu und protokolliert die Zustellung.'],
   close:['Den Rechercheauftrag abschließen','Das Register schließt M-101. Die für Zugangsdaten und Ressourcen verantwortlichen Dienste beenden den auftragsbezogenen Zugriff. Die allgemeine Mitarbeiteranmeldung ist davon getrennt.']
  },
  authorize:{
   $:'Untersuche RE-204, beantrage zusätzliche Daten und halte zwei Aufträge voneinander getrennt.',
-  request:['Den Untersuchungsauftrag für RE-204 lesen','Eine angemeldete Führungskraft der Betriebsleitung beauftragt Nova, RE-204 zu untersuchen und nächste Schritte vorzuschlagen. Ihre Rolle erlaubt Betriebsaufträge. Zahlungsdaten und Änderungen am Produktivbetrieb sind ausgeschlossen.'],
+  request:['Den Untersuchungsauftrag für RE-204 lesen','Nach der ersten Einschätzung meldet sich Maya über Entra ID an. Sie beauftragt Nova, die Türstörung von RE-204 für WO-204 zu untersuchen. Zahlungsdaten und Änderungen am Produktivbetrieb sind ausgeschlossen.'],
   register:['Auftrag M-204 registrieren','M-204 startet mit freigegebenen Betriebsdokumenten. Der Auftragsdienst erfasst den begrenzten Auftrag der Betriebsleitung, Empfänger, Ablaufzeit und Budget. Ein eingerichteter OAuth-Tokenaustausch kann die menschliche Identität und Nova als handelnden Akteur an den vorgesehenen Dienst weitergeben.'],
   research:['In der freigegebenen Dokumentation suchen','Der Suchdienst filtert Astra-DB-Ergebnisse nach Sammlung und Dokumentrichtlinie. Nova speichert Quellen und Einstufungen in M-204. Für die Untersuchung fehlen noch aktuelle Ereignisse und frühere Störungen.'],
   requestAccess:['Ein begrenztes Ereignisfenster und alte Störungsdaten anfragen','Nova bittet um Lesezugriff auf das Zeitfenster von RE-204 und die freigegebene Störungshistorie. Die Begründung dient als Zusatzinformation. Das Gateway liefert die tatsächlich beobachtete Anfrage und geprüfte Angaben zu Identität und Laufzeit.'],
   grant:['Über die genaue Erweiterung entscheiden','Der Richtlinienentscheidungsdienst des Unternehmens (PDP) prüft Akteur, beauftragende Person, Auftragsversion, Ressource, Aktion, Zug, Zeitfenster und Einstufung. Er erlaubt nur die beantragten Lesezugriffe. Vault prüft den Bezug von Zugangsdaten separat.'],
-  lease:['Kurzlebige Zugangsdaten zum Lesen ausstellen','Der Konnektor erhält von Vault begrenzte Datenbank-Zugangsdaten. Beim eingerichteten Zugriff im Namen eines Menschen berücksichtigt Vault dessen Grundrechte, Novas Obergrenze und die einschlägigen Autorisierungsdetails. Daraus folgt die Entscheidung für Vault.'],
-  events:['Betriebsereignisse zu RE-204 lesen','Confluent erlaubt das entsprechende Topic und den Consumer-Zugriff. Der Kafka-Zugriffsdienst beschränkt die Datensätze zusätzlich auf RE-204 und das erlaubte Zeitfenster. Er liefert eine fiktive Türwarnung und die zugehörige Verspätung.'],
-  history:['Die freigegebene Störungsansicht lesen','Ein verwalteter Datenbankdienst nutzt die Leseberechtigung von Vault über den eingerichteten Boundary-Zugangsweg. PostgreSQL und seine Anwendung filtern die Daten. Boundary steuert die Verbindung.'],
+  lease:['Kurzlebige Zugangsdaten zum Lesen ausstellen','Vault prüft ein separates Token, das für Vault bestimmt ist. Es berücksichtigt Mayas Grundrechte, Novas Obergrenze und die Vault-spezifischen Autorisierungsdetails. Der vertrauenswürdige Konnektor erhält einen Lesezugang für 15 Minuten. Das Passwort bleibt beim Konnektor.'],
+  events:['RE-204 über die OAuth-API lesen','Die Ereignis-API prüft das delegierte Entra-Token für ihre eigene Zielgruppe und dann Zug und Zeitfenster. Confluent prüft den Zugriff auf dem Broker separat. Die API liefert eine Türwarnung und eine Verspätung.'],
+  history:['Die Störungshistorie mit Vault lesen','Der vertrauenswürdige Konnektor verwendet die kurzlebigen Vault-Zugangsdaten über die eingerichtete Verbindung. Der Dienst prüft den angefragten Zug, und PostgreSQL begrenzt den Zugriff auf die freigegebene Ansicht. Die Antwort zeigt einen ähnlichen früheren Türfehler.'],
   second:['Den eigenen Rechercheauftrag für RE-105 registrieren','M-105 hat eine eigene Lesefreigabe und einen eigenen Speicherbereich für RE-105. Derselbe Agent und dieselbe Laufzeit können getrennt geprüfte Aufträge bearbeiten.'],
   separate:['Die RE-204-Freigabe unter M-105 ausprobieren','Die empfangende Stelle lehnt die abweichende Auftragskennung ab. M-105 behält seinen Dokumentenzugriff. Notizen und Zugangsdaten von M-204 bleiben getrennt.'],
   draft:['Den Störungsbericht für RE-204 schreiben','Nova vergleicht Türwarnung und Verspätung mit früheren Störungen. Der Bericht empfiehlt eine Inspektion und nennt Ereignis, PostgreSQL-Störungsansicht und Wartungsnotizen als Quellen. Daten von M-105 fließen nicht ein.'],
@@ -360,9 +360,9 @@ This is the player’s view of the authorization. A deployment can keep some fie
  },
  resist:{
   $:'Untersuche eine ereignisgesteuerte Störung, arbeite mit Mira und lass einen genau beschriebenen Wartungsauftrag zu.',
-  event:['Das Störungsereignis für RE-204 prüfen','Confluent transportiert fiktive Betriebsereignisse. Flink verknüpft die Türwarnungen und die Verspätung zu einem Untersuchungssignal. Der zuständige Auftragsdienst bewertet dieses Signal.'],
-  register:['Die Untersuchung nach der bestehenden Regel starten','Der Auftragsdienst prüft das Ereignis und eröffnet M-304 unter Verantwortung der Betriebsleitung. Er erlaubt übliche Lesezugriffe für diesen Vorfall auf RE-204. M-204 bleibt geschlossen. Sicherheitskritische Steuerungen, Entschädigungen und fremde Daten sind ausgeschlossen.'],
-  plan:['In der zugelassenen Laufzeit ermitteln','Die Verspätung beginnt kurz nach einer Türwarnung. Nova gleicht sie mit Störungsverlauf und Wartungsnotizen ab. Für eine zweite Einschätzung schlägt Nova vor, Mira die Belege zum Türsystem zu schicken.'],
+  event:['Das Störungsereignis für RE-204 prüfen','Für WO-204 kommt eine neue Türwarnung an. Confluent transportiert die Ereignisse und Flink verknüpft sie. Die Auftragsstelle bewertet dieses Signal.'],
+  register:['Die Untersuchung nach der bestehenden Regel starten','Der Auftragsdienst prüft das Ereignis und eröffnet M-304 für WO-204 unter Mayas bestehender Betriebsbefugnis. Er erlaubt übliche Lesezugriffe für RE-204. M-204 bleibt geschlossen. M-105 behält seinen eigenen Dokumentenzugriff. Sicherheitskritische Steuerungen, Entschädigungen und fremde Daten sind ausgeschlossen.'],
+  plan:['In der zugelassenen Laufzeit ermitteln','Nova prüft die erlaubten Türereignisse über die Ereignis-API und vergleicht sie mit dem früheren Bericht und den freigegebenen Wartungsnotizen. Nova möchte Mira diese Belege für eine zweite Einschätzung schicken.'],
   delegate:['Miras genau begrenzten Teilauftrag freigeben','Der Auftragsdienst prüft, ob eine Weitergabe erlaubt ist. Er erstellt zu M-304 einen Teilauftrag, der nur das technische Datenpaket zur Analyse freigibt. Mira meldet sich mit eigener Workload-Identität an und erhält keine Zugangsdaten von Nova. Beide rechnen gegen dasselbe Budget ab.'],
   mira:['Miras begrenzte Analyse empfangen','Mira meldet einen wahrscheinlichen Türsensorfehler und verweist auf das freigegebene Paket. A2A übermittelt das Ergebnis. Miras Freigabe endet, und das gemeinsame Modellbudget ist aufgebraucht. Die Belege stützen einen internen Wartungsauftrag.'],
   ticketCredential:['Zugangsdaten für den Wartungskonnektor genehmigen','Vault entscheidet unabhängig über den eingeschränkten Zugang für den vertrauenswürdigen Wartungskonnektor. Nova bekommt den geheimen Wert nicht. Das Wartungssystem muss den tatsächlichen Auftrag separat erlauben.'],
@@ -371,7 +371,10 @@ This is the player’s view of the authorization. A deployment can keep some fie
   draft:['Störungsbericht und Wartungsbeleg zusammenstellen','Nova hält die verwendeten Daten, Miras Beitrag und die Wartungskennung fest. Dabei wurde weder extern etwas ausgelöst noch eine sicherheitskritische Änderung vorgenommen.'],
   approve:['Genau diesen internen Bericht freigeben','Die zuständige Person genehmigt diese Fassung für die Betriebsleitung. Die Freigabe nennt die aktuelle Auftragsversion. Der Versanddienst prüft Fassung, Postfach und Gültigkeit noch einmal.'],
   deliver:['Den internen Bericht an die Betriebsleitung senden','Der Versanddienst gleicht die Fassung mit der Freigabe für das interne Postfach ab. Der Bericht kommt an und der Dienst speichert den Zustellbeleg.'],
-  close:['Auftrag und übertragene Zugriffe beenden','Die Betriebsleitung hat Bericht und Wartungsauftrag. Das Team beendet M-304, die Konnektor-Leases, die Laufzeitsitzung und Miras Teilauftrag. Miras andere Arbeit läuft weiter.']
+  'risk-signal':['Das Identitätsrisikosignal prüfen','IBM Identity Protection meldet ungewöhnliche Zugriffe des verwalteten Agenten auf einem überwachten Weg. Die Sicherheitsleitstelle prüft die Belege. Die eingerichtete Kundenrichtlinie erlaubt, nur M-304 auszusetzen.'],
+  close:['Auftrag und übertragene Zugriffe beenden','Die Auftragsstelle schließt M-304, Vault widerruft den unterstützten Wartungszugang und der Laufzeitverantwortliche fordert das Beenden der betroffenen Sitzung an. Der bereits angelegte Wartungsauftrag bleibt bestehen. Prüfe jetzt, ob die Ressourcen die alte Berechtigung ablehnen.'],
+  'verify-retired':['Die alte Berechtigung an beiden Ressourcen prüfen','Die Ereignis-API lehnt den alten Auftragskontext ab. Der Wartungsdienst verweigert einen noch nicht ausgeführten Schreibvorgang mit der beendeten Berechtigung. Es entsteht kein neuer Wartungsauftrag.'],
+  'verify-unrelated':['Prüfen, ob M-105 weiter funktioniert','Die Dokumentensuche liefert RE-105 unter der separaten, aktiven Freigabe M-105. Dieser Ressourcenzugriff ist unabhängig davon, dass M-304 geschlossen wurde.']
  }
  };
  stageCopy(NovaRailway,nova);
@@ -2314,6 +2317,98 @@ Does the resource recheck authority before commit?|Prüft die Ressource die Bere
 Preview a synthetic maintenance ticket. Revoke the test mission while the preview is pending, then try to commit the same ticket.|Erstelle die Vorschau eines simulierten Wartungstickets. Widerrufe den Testauftrag während der Vorschau und versuche danach, genau dieses Ticket anzulegen.
 The maintenance API refuses the commit. The ticket store shows zero new tickets for that operation ID.|Die Wartungs-API verweigert die Ausführung. Für diese Vorgangs-ID ist kein neues Ticket gespeichert.
 The preview, revocation and commit decisions in time order, plus the ticket lookup for the operation ID.|Vorschau, Widerruf und Ausführungsentscheidung in zeitlicher Reihenfolge sowie die Ticketsuche für die Vorgangs-ID.
+`);
+ pairs(`
+Follow one railway work order from an unmanaged copy of Nova to a governed agent. Keep Microsoft Entra ID for workforce sign-in and see what three additional controls contribute.|Begleite einen Bahn-Arbeitsauftrag von einer unverwalteten Nova-Kopie bis zum kontrollierten Agenten. Microsoft Entra ID bleibt für die Anmeldung zuständig. Entdecke, was drei zusätzliche Kontrollen beitragen.
+Play an AI agent investigating a railway disruption. Keep Entra ID for sign-in and see how IBM Agent Identity, Vault and IBM Identity Protection govern what happens next.|Spiele einen KI-Agenten, der eine Bahnstörung untersucht. Entra ID bleibt für die Anmeldung zuständig. Erlebe, wie IBM Agent Identity, Vault und IBM Identity Protection den weiteren Ablauf absichern.
+Work order and evidence|Arbeitsauftrag und Nachweise
+Investigate the RE-204 door fault and deliver an internal handover. Each stage grants only the authority it needs.|Untersuche die Türstörung bei RE-204 und erstelle eine interne Übergabe. Jede Stufe gibt nur die dafür nötige Berechtigung.
+Three controls to evaluate|Drei Kontrollen für deine Evaluierung
+Connect the agent to an accountable owner and a specific delegation.|Ordnet dem Agenten eine verantwortliche Person und einen konkreten delegierten Auftrag zu.
+Give a trusted connector short-lived access to systems that use their own credentials.|Gibt einem vertrauenswürdigen Konnektor kurzzeitig Zugriff auf Systeme mit eigenen Zugangsdaten.
+See how identities actually reach connected resources and investigate unusual use.|Zeigt, wie Identitäten auf angebundene Ressourcen zugreifen, und hilft, auffällige Nutzung zu untersuchen.
+Exposed credential|Offengelegte Zugangsdaten
+Observed access and coverage|Beobachteter Zugriff und Sensorabdeckung
+Containment check|Prüfung der Eindämmung
+Agent registration|Agentenregistrierung
+Workforce sign-in and intake|Anmeldung und Auftragseingang
+Recorded delegation|Erfasste Delegation
+Vault issued a database lease|Vault hat befristete Datenbank-Zugangsdaten ausgestellt
+OAuth API read|Lesezugriff über die OAuth-API
+Legacy database read|Lesezugriff auf die Bestandsdatenbank
+One parameter changed|Ein Parameter geändert
+Independent M-105 check|Unabhängige Prüfung von M-105
+Authorized operational read|Erlaubter Zugriff auf Betriebsereignisse
+Identity risk signal|Identitätsrisikosignal
+Configured response|Eingerichtete Reaktion
+Resource-side refusals|Ablehnungen an den Ressourcen
+Decision or observation|Entscheidung oder Beobachtung
+Enforced by|Durchgesetzt von
+Records returned|Zurückgegebene Datensätze
+{{1}} simulated minutes|{{1}} simulierte Minuten
+Token audience|Token-Zielgruppe
+Evidence will appear as you play this stage.|Die Nachweise erscheinen, wenn du diese Stufe spielst.
+The work order and evidence are synthetic fixtures. Correlation across production services requires customer integration.|Arbeitsauftrag und Nachweise sind simuliert. Die Verknüpfung von Produktionsdiensten erfordert eine kundenseitige Integration.
+Compare the reference deployment and alternatives|Referenzbereitstellung und Alternativen vergleichen
+Two paths for WO-204|Zwei Zugriffswege für WO-204
+OAuth-aware Railway Events API|Ereignis-API mit OAuth
+Native Entra delegation is enough here. The API trusts Entra, validates the token for its own audience and checks the actual train and time window.|Hier genügt die Entra-Delegation. Die API vertraut Entra, prüft das für sie ausgestellte Token und kontrolliert den angefragten Zug und Zeitraum.
+Try the OAuth API read|Den Lesezugriff über die OAuth-API testen
+Legacy incident database|Bestehende Störungsdatenbank
+The database accepts its own credential. A trusted connector presents a separate Vault-audience token to Vault and uses the 15-minute read-only lease. Nova sees the records, while the password stays with the connector.|Die Datenbank verwendet eigene Zugangsdaten. Ein vertrauenswürdiger Konnektor legt Vault ein separates Vault-Token vor und erhält einen Lesezugang für 15 Minuten. Nova sieht die Ergebnisse. Das Passwort bleibt beim Konnektor.
+Try the Vault-backed read|Den Lesezugriff mit Vault testen
+Waiting for the approved route.|Der freigegebene Zugriffsweg ist noch nicht verfügbar.
+Change just the train|Nur den Zug ändern
+Keep the same API, token and time window. Change RE-204 to RE-999.|API, Token und Zeitfenster bleiben gleich. Ändere RE-204 zu RE-999.
+Try RE-999 with the same token|RE-999 mit demselben Token anfragen
+Railway Events API returned zero records.|Die Ereignis-API hat keine Datensätze zurückgegeben.
+The token is valid for this API. Changing the train to RE-999 exceeds the mission. The API returned no records.|Das Token ist für diese API gültig. Der Wechsel zu RE-999 überschreitet die Auftragsfreigabe. Die API hat keine Datensätze zurückgegeben.
+The Railway Events API refuses this token context.|Die Ereignis-API weist diesen Token-Kontext ab.
+Railway Events API|Ereignis-API
+Railway Events API and Maintenance API|Ereignis-API und Wartungs-API
+Customer mission policy|Auftragsrichtlinie des Unternehmens
+Customer mission authority|Auftragsstelle des Unternehmens
+Customer standing policy|Bestehende Richtlinie des Unternehmens
+Customer response policy|Reaktionsrichtlinie des Unternehmens
+IBM Agent Identity delegation|Delegation über IBM Agent Identity
+Scanned workspace artifact|Gescannte Datei aus dem Arbeitsbereich
+Monitored access route|Überwachter Zugriffsweg
+Incident history service and PostgreSQL|Dienst für Störungshistorie und PostgreSQL
+Mission service and Vault|Auftragsdienst und Vault
+Current mission state|Aktueller Auftragsstatus
+Independent M-105 grant|Unabhängige Freigabe für M-105
+Observed|Beobachtet
+Found|Gefunden
+Logical agent|Logischer Agent
+Workload identity|Workload-Identität
+Delegated by|Delegiert durch
+Maintenance API|Wartungs-API
+RE-204 event and documentation reads, package-only delegation and one internal maintenance ticket|Lesezugriff auf Ereignisse und Dokumente zu RE-204, Delegation nur für das Datenpaket und ein interner Wartungsauftrag
+Accountable owner|Verantwortliche Person
+Work order execution|Ausführung des Arbeitsauftrags
+Workforce sign-in|Mitarbeiteranmeldung
+Runtime stop not independently checked|Laufzeitstopp nicht unabhängig geprüft
+Maya Chen · Railway Operations|Maya Chen · Betriebsleitung
+The earlier playthrough closed M-304. Verify its retired access at the resources.|Im früheren Durchlauf wurde M-304 geschlossen. Prüfe den alten Zugriff an den Ressourcen.
+Entra signs in the workforce user. IBM Agent Identity records the logical agent, accountable owner and configured delegation. Runtime admission is separate.|Entra meldet die Person an. IBM Agent Identity erfasst den logischen Agenten, die verantwortliche Person und die eingerichtete Delegation. Die Laufzeitzulassung erfolgt separat.
+Public references describe possible door faults, including sensor alignment and obstruction. The actual RE-204 cause still needs investigation.|Öffentliche Quellen nennen mögliche Türstörungen, etwa eine falsche Sensorausrichtung oder ein Hindernis. Die tatsächliche Ursache bei RE-204 muss noch untersucht werden.
+Can you verify one work order from sign-in to revoked access?|Kannst du einen Arbeitsauftrag von der Anmeldung bis zum Widerruf nachvollziehen?
+Keep Entra ID for sign-in in a test environment. Use one registered agent, one OAuth-aware API and one legacy database. Run the allowed reads, change only the train, then use a synthetic identity risk signal to close the affected mission and retry the old access and an unrelated grant.|Verwende Entra ID für die Anmeldung in einer Testumgebung. Nutze einen registrierten Agenten, eine OAuth-API und eine Bestandsdatenbank. Führe die erlaubten Lesezugriffe aus und ändere dann nur den Zug. Schließe den betroffenen Auftrag mit einem simulierten Identitätsrisikosignal. Prüfe anschließend den alten Zugriff und eine unabhängige Freigabe.
+The approved reads succeed. The changed train returns no records. After closure the retired authority fails at the receiving systems and the unrelated grant still works.|Die freigegebenen Lesezugriffe funktionieren. Der geänderte Zug liefert keine Datensätze. Nach dem Schließen weisen die empfangenden Dienste die alte Berechtigung ab. Die unabhängige Freigabe bleibt nutzbar.
+Keep the agent owner, work order and mission IDs, the sample API and database receipts, the Vault lease ID and expiry, the risk observation, and a timestamped refusal from each tested resource.|Bewahre die verantwortliche Person, die Arbeitsauftrags- und Auftragskennungen, die Belege von API und Datenbank, Vault-Lease-Kennung und Ablaufzeit, die Risikobeobachtung und eine Ablehnung mit Zeitstempel je geprüfter Ressource auf.
+Reference deployment and alternatives|Referenzbereitstellung und Alternativen
+Keep your workforce identity provider. This example uses Microsoft Entra ID. IBM Verify, Okta or Ping can stay in place where their configured federation and token flows meet the target’s requirements.|Behalte den Identitätsanbieter für Mitarbeitende bei. Dieses Beispiel nutzt Microsoft Entra ID. IBM Verify, Okta oder Ping können bleiben, wenn ihre Föderation und Token-Abläufe die Anforderungen des Ziels erfüllen.
+Documented product capabilities|Dokumentierte Produktfunktionen
+IBM Agent Identity records agent ownership and supports configured delegation. An OAuth-aware target can accept a suitable Entra delegated token directly.|IBM Agent Identity erfasst die Verantwortung für Agenten und unterstützt eingerichtete Delegation. Ein OAuth-fähiges Ziel kann ein passendes delegiertes Entra-Token direkt akzeptieren.
+Vault Enterprise Agentic IAM evaluates its own audience and authorization details. The trusted connector uses a leased database credential. The target resource owns business authorization.|Vault Enterprise Agentic IAM prüft die eigene Token-Zielgruppe und Autorisierungsdetails. Der vertrauenswürdige Konnektor nutzt befristete Datenbank-Zugangsdaten. Die Zielressource entscheidet über die fachliche Freigabe.
+IBM Identity Protection observes identity activity on connected routes. Vault Radar findings describe exposed secrets. Both can provide evidence to an investigation.|IBM Identity Protection beobachtet Identitätsaktivitäten auf angebundenen Wegen. Vault Radar meldet offengelegte Zugangsdaten. Beide können Belege für eine Untersuchung liefern.
+Preview and announced direction|Vorschau und angekündigte Entwicklung
+IBM Verify and IBM Agent Identity built-in Shared Signals receivers and remediation playbooks are in private preview. Deeper AuthMind integration into Vault is announced direction. Validate available actions for each licensed deployment.|Die integrierten Shared-Signals-Empfänger und Reaktionsabläufe in IBM Verify und IBM Agent Identity sind in einer privaten Vorschau. Eine tiefere AuthMind-Integration in Vault ist angekündigt. Prüfe die verfügbaren Aktionen für die jeweilige lizenzierte Bereitstellung.
+Customer integration to prove|Kundenseitige Integration zum Nachweis
+The work order, cross-system evidence correlation, workload-to-agent binding, exact-action policy and cross-system response checks are reference integrations. Validate each configured route and controller independently. Verify a refused old request and a working unrelated request. An alert or stop acknowledgement alone does not establish both outcomes.|Arbeitsauftrag, systemübergreifende Belegverknüpfung, Zuordnung des Workloads zum Agenten, Richtlinie für konkrete Aktionen und systemübergreifende Reaktionsprüfungen sind Referenzintegrationen. Prüfe jeden eingerichteten Pfad und jede Steuerung unabhängig. Belege die Ablehnung der alten und den Erfolg einer unabhängigen Anfrage. Ein Alarm oder eine Stoppbestätigung allein belegt beides nicht.
+Keep the tools you already run|Vorhandene Werkzeuge weiterverwenden
+OpenShell and agentgateway are this deployment’s runtime and tool gateway. Evaluate an existing isolated runtime or Amazon Bedrock AgentCore Runtime. Gateway options include IBM DataPower Interact Gateway, Azure API Management and AWS AgentCore Gateway. Test each option against the same enforcement contract. QRadar or Microsoft Sentinel can retain the audit evidence.|OpenShell und agentgateway sind die Laufzeit und das Werkzeug-Gateway dieser Bereitstellung. Prüfe eine vorhandene isolierte Laufzeit oder Amazon Bedrock AgentCore Runtime. Zu den Gateway-Optionen zählen IBM DataPower Interact Gateway, Azure API Management und AWS AgentCore Gateway. Stelle an alle Optionen dieselben Anforderungen. QRadar oder Microsoft Sentinel können Auditbelege aufbewahren.
+IBM Shared Signals private preview|Private Vorschau von IBM Shared Signals
 `);
  return Object.freeze(translations);
 })();

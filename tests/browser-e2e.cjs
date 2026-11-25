@@ -128,9 +128,10 @@ async function tap(el){
   });
   await new Promise(resolve=>requestAnimationFrame(resolve));
 }
-async function capture(name){
+async function capture(name,anchor){
  if(!window.captureScene)return;
- window.scrollTo(0,0);
+ if(anchor)anchor.scrollIntoView({block:'start'});
+ else window.scrollTo(0,0);
  await new Promise(requestAnimationFrame);
  await new Promise((resolve,reject)=>{
   window.finishCapture=error=>error?reject(Error(error)):resolve();
@@ -250,7 +251,14 @@ async function immersionReview(){
     await tap(q('[data-ticket-preview=RE-204]'));
     ensure(q('#ticket-preview-RE-204').textContent.includes('Permit')&&q('#ticket-preview-RE-999')&&!novaStates.resist.ticket,'Preview should compare both decisions without creating a ticket');
    }
-   await action(next.label);
+   if(stage==='authorize'&&['events','history'].includes(next.id)){
+    await tap(q('[data-read-path='+next.id+']'));
+    ensure(q('[data-two-paths] .route-outcome').textContent.includes('Allowed'),'Missing visible read receipt');
+    if(next.id==='events'){
+     await tap(q('[data-read-scope-test]'));
+     ensure(q('[data-two-paths]').textContent.includes('Railway Events API returned zero records.'),'Changed train did not show a resource refusal');
+    }
+   }else await action(next.label);
    if(remote)ensure(novaStates[stage].room===priorRoom&&novaStates[stage].events.at(-1).environment===next.room,'A remote call moved the player or misattributed the event');
    if(next.id===checkpoint)break;
    if(++count>60)throw Error('Nova did not finish');
@@ -309,6 +317,21 @@ async function immersionReview(){
  await runNova('resist');
  ensure(novaStates.resist.deliveryReceipt.digest==='SIM-M-304-REPORT-2','Fresh approval did not bind the edited copy');
  ensure(q('#game').textContent.includes('Stage complete'),'No stage completion receipt');
+ await tap(q('[data-work-order] > summary'));
+ ensure(q('[data-work-order][open]')&&!q('[data-work-order] [data-order-event=verify-retired]').closest('[hidden]'),
+  'The completed work order is not visible');
+ const rows=Object.fromEntries(['credential','discover','scope','lease','events','history','try-other-train','risk-signal','close','verify-retired','verify-unrelated']
+  .map(id=>[id,q('[data-order-event='+id+']')?.textContent]));
+ ensure(rows.credential?.includes('Vault Radar')&&rows.discover?.includes('IBM Identity Protection'),'The discovery sources were conflated');
+ ensure(rows.scope?.includes('agent:nova')&&rows.scope.includes('spiffe://railway.example/nova/build')&&rows.scope.includes('M-101/run-'),
+  'The agent, workload and execution identities are missing');
+ ensure(rows.lease?.includes('15 simulated minutes')&&rows.events?.includes('Allowed')&&rows.history?.includes('Allowed')&&rows['try-other-train']?.includes('Denied'),
+  'The two paths and parameter change are missing from the shared work order');
+ ensure(rows['risk-signal']?.includes('IBM Identity Protection')&&rows.close?.includes('Customer response policy')&&
+  rows['verify-retired']?.includes('Railway Events API and Maintenance API')&&rows['verify-unrelated']?.includes('M-105')&&rows['verify-unrelated'].includes('Allowed'),
+  'The risk source, configured action or independent closeout results are missing');
+ ensure(document.documentElement.scrollWidth<=innerWidth,'The opened work order spills past the viewport');
+ await capture('nova-work-order',q('[data-work-order]'));
  await customerTest();
  ensure(localStorage.getItem('trust-boundaries-household-1')===alexSave,'Nova changed Alex’s saved game');
  return {width:innerWidth,stagePlaythroughs:8,joPhoneOutage:true,reapprovalAfterPause:true};
@@ -474,6 +497,11 @@ async function verifyReference(send){
  const component=await openFrame("document.querySelector('#detailTitle').textContent.includes('PostgreSQL')");
  assert.equal(await component("document.querySelector('#detail').hidden"),false);
  assert.equal(await component("document.querySelector('#full').classList.contains('active')"),true);
+ await evaluate("document.querySelector('.architecture-return').click()");
+ await evaluate("document.querySelector('[data-work-order] button').click()");
+ const portfolio=await openFrame("document.querySelector('.portfolio').open");
+ assert.match(await portfolio("document.querySelector('.portfolio').textContent"),/Documented product capabilities[\s\S]*private preview[\s\S]*Customer integration to prove/);
+ assert.match(await portfolio("document.querySelector('.portfolio').textContent"),/DataPower Interact Gateway/);
  const tree=await send('Accessibility.getFullAXTree');
  assert(tree.nodes.some(node=>node.name?.value?.includes('Return to Nova')));
  await evaluate("document.querySelector('#reset-game').click()");
@@ -618,17 +646,28 @@ async function germanReview(){
     q('[data-ticket-preview=RE-204]').click();
     check(q('#ticket-preview-RE-204').textContent.includes('gesonderten Ausführung'),'German ticket preview permit is missing');
    }
-   const target=remote||q('[data-nova-station='+next.station+']');
-   check(target?.textContent.includes(tr(next.label))&&tr(next.label)!==next.label,'German Nova action missing for '+next.id);
+   const path=q('[data-read-path='+next.id+']');
+   const target=path||remote||q('[data-nova-station='+next.station+']');
+   const label=path?(next.id==='events'?'Try the OAuth API read':'Try the Vault-backed read'):next.label;
+   check(target?.textContent.includes(tr(label))&&tr(label)!==label,'German Nova action missing for '+next.id);
    target.click();
    check(q('#nova-reply p')?.textContent===tr(next.reply)&&tr(next.reply)!==next.reply,'German Nova dialogue missing for '+next.id);
    if(remote)check(q('#nova-reply small span')?.textContent===tr(NovaRailway.scenes[next.room]),'Remote receipt location is untranslated');
+   if(next.id==='events'){
+    q('[data-read-scope-test]').click();
+    check(q('[data-two-paths]').textContent.includes('keine Datensätze zurückgegeben'),'The German scope refusal is missing');
+   }
    check(document.documentElement.scrollWidth<=innerWidth,'German Nova scene overflows after '+next.id);
    check([...document.querySelectorAll('.nova-navigation button')].every(button=>button.scrollWidth<=button.clientWidth+1),'German room label clips');
   }
   check(NovaRailway.complete(novaStates[id]),'German Nova stage did not finish: '+id);
   checkCustomerTest('nova',id);
  }
+ q('[data-work-order] > summary').click();
+ check(q('[data-work-order][open] > summary').textContent.includes('Arbeitsauftrag und Nachweise'),'German work order heading is missing');
+ check(q('[data-order-event=verify-retired]').textContent.includes('Ablehnungen an den Ressourcen'),'German retired-access proof is missing');
+ check(q('[data-order-event=verify-unrelated]').textContent.includes('Erlaubt'),'German M-105 proof is missing');
+ check(document.documentElement.scrollWidth<=innerWidth,'The German work order spills past the viewport');
  await capture('german-nova');
  await tap(q('.topbar nav a[href="#architecture"]'));
  return {width:innerWidth,germanStages:8,languageSwitchPreservesView:true};
@@ -650,6 +689,7 @@ async function verifyGermanGuide(send){
  assert.equal(await evaluate("document.querySelector('#stepCounter').textContent.startsWith('Schritt 1')",context),true);
  assert.equal(await evaluate("document.querySelector('#stepTitle').textContent.includes('nach Finanzdaten')",context),true);
  assert.equal(await evaluate("document.querySelector('#architectureCanvas').textContent.includes('Mitarbeiterzugang')",context),true);
+ assert.match(await evaluate("document.querySelector('.portfolio summary').textContent",context),/Referenzbereitstellung und Alternativen/);
  await evaluate("document.querySelector('[data-stage=\"3\"]').click();document.querySelector('[data-layer=\"6\"]').click()",context);
  assert.match(await evaluate("document.querySelector('#labDecision').textContent",context),/^ERLAUBT/);
  assert.match(await evaluate("document.querySelector('#labResponse').textContent",context),/automatische Reaktion ist aus/);
@@ -675,6 +715,7 @@ async function directGerman(){
  cases.push(await testPage(1280,900,immersionReview));
  cases.push(await testPage(1280,900,surfaceReview));
  cases.push(await testPage(320,844,germanReview,verifyGermanGuide));
+ cases.push(await testPage(1280,900,germanReview,verifyGermanGuide));
  cases.push(await testPage(390,844,directGerman,undefined,'?lang=de#build'));
  console.log(JSON.stringify(cases,null,2));
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>chrome.kill());
