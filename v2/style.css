@@ -112,3 +112,14 @@ select { display: block; width: 100%; background: var(--panel); color: var(--ink
 .outside .shadow-furniture{left:14%;bottom:22%;width:28%;height:58%;border-radius:0;background:#d7baa5;box-shadow:inset 0 -4px #a68b80}
 .outside .shadow-furniture::before{background:#735969;border:0;bottom:99%;height:33%;left:-8%;width:116%;clip-path:polygon(50% 0,100% 100%,0 100%)}
 .outside .shadow-furniture::after{content:"";position:absolute;bottom:0;left:53%;width:24%;height:56%;background:#80677a;border-radius:3px 3px 0 0}
+
+.room-scenarios,.permission-slip{border-top:1px solid var(--line);margin:0}
+.room-scenarios>summary{padding:0 12px}
+.permission-slip{border-radius:0;border-inline:0;border-bottom:0}
+.permission-slip dl{display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.permission-slip dt{font-size:.85rem;color:var(--accent);font-weight:650}
+.permission-slip dd{overflow-wrap:anywhere}
+.case-location{scroll-margin-top:12px}
+.case-view{min-height:80px}
+.case-actions .choice{min-height:52px}
+@media(max-width:400px){.permission-slip dl{grid-template-columns:1fr}}

@@ -11,6 +11,8 @@ The Agent House is the v3 edition of Trust Boundaries, a point-and-click adventu
 
 Select the highlighted action to advance. Other objects and people let you inspect the scene or test a boundary. Each stage saves its own progress on the current device. The grandparents can observe indoors. A conversation or paper handoff outside stays beyond their view.
 
+**Optional security scenarios** appear in the rooms from BUILD onward. Try a registered phone that fails verification, a signed assignment that exceeds the issuer’s authority, an edited workbook, or a revoked read that was already waiting to execute. Scenario choices and evidence stay separate from the main assignment. From AUTHORIZE onward, find the digital permission slip inside the scene after the parents approve the conductor notes.
+
 [Architecture](https://lpassig.github.io/trust-boundaries/#architecture) is a browsable reference with product roles, request sequences, deployment options and pilot checklists. It uses a worked customer handover to show how the household controls could translate to a workplace.
 
 ## Build and verify

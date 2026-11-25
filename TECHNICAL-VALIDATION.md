@@ -11,6 +11,8 @@ The Agent House illustrates scope and enforcement with simulated household contr
 
 The grandparents observe the indoors. The home router sees requests routed through it. The delivery channel checks its own electronic destination. A conversation or paper handoff outside those controls remains a residual risk.
 
+The optional scenarios model identity and device posture as separate issuance checks, scope-bound delegation, exact-output approval, order constraints and duplicate handling, authorization at commit, scoped offline leases, independent audit evidence, shared budgets, provenance, and retirement of a device. Scenarios replay fictional events in browser state. They show what a production control should verify and give the player a visible receipt or refusal.
+
 The technical reference describes a worked enterprise deployment and links to relevant documentation. It distinguishes the customer’s business authorization, runtime enforcement, credential control and resource enforcement. The reference exercises no live authorization path.
 
 Run `node --test tests/*.test.cjs` for state and reference checks. Run `python3 build-v2.py --check` to confirm the generated build matches its standalone resources.

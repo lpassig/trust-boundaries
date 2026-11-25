@@ -3,10 +3,14 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let stored=true;
 const HOUSEHOLD_SAVE='trust-boundaries-household-1';
+const CHECK_SAVE='trust-boundaries-checks-1';
 const household=Object.fromEntries(Object.keys(ShadowStory.stages).map(stage=>[stage,ShadowStory.fresh(stage)]));
+let checkPaths={};
 try{
  const saved=JSON.parse(localStorage.getItem(HOUSEHOLD_SAVE));
  for(const stage of Object.keys(household))household[stage]=ShadowStory.restore(stage,saved?.[stage]);
+ const savedChecks=JSON.parse(localStorage.getItem(CHECK_SAVE));
+ if(savedChecks&&typeof savedChecks==='object')checkPaths=savedChecks;
 }catch{stored=false;}
 function button(label,callback,style='primary',detail='',icon=''){
  const id='choice-'+(++button.id);button.bindings.push([id,callback]);
@@ -34,7 +38,8 @@ const architectureViews = [
  ['runtime','Runtime and containment'],
  ['deployment','Deployment options'],
  ['pilots','Pilot checklists'],
- ['threats','Threat coverage']
+ ['threats','Threat coverage'],
+ ['house','Household controls']
 ];
 
 function architectureComponentName(id){
@@ -143,12 +148,33 @@ function architectureDeployment(){
    ${protocolSourceLinks(option.sources)}</details>`).join('')}</div>`;
 }
 
+function householdBoundaries(){
+ const controls=[
+  ['Outside → house','Grandparents and the entrance camera observe who or what comes in. The home router checks device admission on its own network.'],
+  ['Assignment issuer → Alex','The school contact or signature verifier checks the issuer. Jo separately checks the scope of the issuer’s authority.'],
+  ['Alex → phone','The family uses a known identity and device registration. The verifier supplies a fresh device check before the cabinet issues a key.'],
+  ['Phone → app','The phone checks the approved app and time window.'],
+  ['App → external service','The router checks the destination on its network. The homework and shopping services check the actual request.'],
+  ['Alex → family laptop','The cabinet issues the scoped slip. The laptop checks the active grant, resource and operation at use.'],
+  ['Alex → Mia','The linked assignment authorizes proofreading on one draft under Mia’s identity. The usage meter charges the parent mission.'],
+  ['Assignment → assignment','The laptop and workbook service enforce separate scopes and notes for the train and Munich assignments.'],
+  ['Notepad → workbook','The workbook tracks which sources contributed to sections. Review holds an unverified section.'],
+  ['Workbook → recipient','The school channel checks the actual revision and approved recipient.'],
+  ['Jo → parents’ authority','The key cabinet enforces delegated administrative scope and hard rules.'],
+  ['Alex → observation log','An independent store keeps forwarded records and refuses edits by Alex’s profile.']
+ ];
+ return `<h2>Who enforces each boundary?</h2><dl class="architecture-evidence">${controls.map(([path,control])=>`<dt>${esc(path)}</dt><dd>${esc(control)}</dd>`).join('')}</dl>
+ <p>These are configured controls in the stories. The household cannot observe every conversation, device or network outside its boundaries.</p>
+ <p class="sources"><a href="https://www.rfc-editor.org/rfc/rfc9334.html">IETF attestation architecture</a> · <a href="https://www.rfc-editor.org/rfc/rfc9396.html">OAuth rich authorization requests</a> · <a href="https://www.w3.org/TR/prov-overview/">W3C provenance overview</a></p>`;
+}
+
 function showArchitecture(view='boundaries',flowId='read',componentId=null,focusControl=false){
  const {flows}=ArchitectureReference;
  const boundary=flowId;
  if(!flows[flowId])flowId='read';
  const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):
-  view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='pilots'?architecturePilots():view==='threats'?architectureThreats():architectureMap(componentId);
+  view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='pilots'?architecturePilots():view==='threats'?architectureThreats():
+  view==='house'?householdBoundaries():architectureMap(componentId);
  showScreen('Mission-bound authorization',
   `<p>Use this reference to connect controls in The Agent House with a workplace deployment. The customer handover is a worked example.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -189,6 +215,60 @@ function architecturePilots(){
   `<details class="product-card"><summary><b>${esc(pilot?.label||question)}</b><span>${esc(product)}</span></summary>
   <p>${esc(fit)}</p>${pilot?`<p>${esc(pilot.integration)}</p>${buyerPilotChecklist(pilot)}`:''}
   <p class="sources">${sources.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p></details>`).join('')}</div>`;
+}
+
+function digitalSlip(story){
+ const slip=TrustChecks.permissionSlip(story,ShadowStory.reached,ShadowStory.suspended);
+ if(!slip)return '';
+ return `<details class="debrief permission-slip"><summary>Digital permission slip · ${esc(slip.status)}</summary>
+  <p>Grant generation ${slip.generation}. The laptop checks the current grant before returning the file.</p>
+  <dl>${slip.fields.map(([field,value])=>`<div><dt>${esc(field)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
+  <p class="small-print">This is the player’s view of the authorization. A deployment can keep some fields in the authorization service and look them up when needed.</p></details>`;
+}
+
+function showTrustCheck(stage,id,newPath){
+ const data=TrustChecks.cases[id],story=household[stage];
+ if(!data||!TrustChecks.matches(data,stage)||ShadowStory.suspended(story))return showHousehold(stage);
+ const saveKey=stage+'/'+id;
+ const {current,history,path}=TrustChecks.replay(id,newPath??checkPaths[saveKey]);
+ if(newPath){
+  checkPaths[saveKey]=path;
+  try{localStorage.setItem(CHECK_SAVE,JSON.stringify(checkPaths));}catch{stored=false;}
+ }
+ const evidence=history.filter(item=>item.evidence);
+ const rooms=ShadowStory.rooms;
+ const priorRoom=history.at(-2)?.room;
+ showScreen(data.title,`
+  <p class="case-location">${priorRoom&&priorRoom!==current.room?`${esc(rooms[priorRoom])} → `:''}<b>${esc(rooms[current.room])}</b> · ${esc(data.object)}</p>
+  <section class="shadow-scene" aria-label="${esc(rooms[current.room])}">
+   <div class="shadow-view ${current.room} case-view" aria-hidden="true"><div class="shadow-furniture"></div></div>
+   <div class="shadow-reply" role="status"><b>${esc(current.actor)}</b><p>${esc(current.text)}</p></div>
+   ${current.actions.length?`<div class="shadow-objects case-actions">${current.actions.map(([label,target],index)=>{
+    const room=data.nodes[target]?.room||current.room;
+    return button(label,()=>showTrustCheck(stage,id,[...path,index]),'choice',room!==current.room?rooms[room]:'');
+   }).join('')}</div>`:''}
+  </section>
+  ${evidence.length?`<details class="debrief" ${!current.actions.length?'open':''}><summary>Decision evidence</summary><ol class="route-list">
+  ${evidence.map(item=>`<li><b>${esc(item.actor)}</b> · ${esc(item.evidence)}</li>`).join('')}</ol></details>`:''}
+  <div class="actions">${button('Return to the assignment',()=>{showHousehold(stage);$('#screen-title').focus();})}
+   ${path.length?button('Restart this scenario',()=>showTrustCheck(stage,id,[]),'secondary'):''}</div>`,
+  `${ShadowStory.stages[stage].tag} · OPTIONAL SCENARIO`);
+ $('.shadow-reply').setAttribute('tabindex','-1');
+ $('.shadow-reply').focus({preventScroll:true});
+ $('.case-location').scrollIntoView({block:'start'});
+}
+
+function roomTrustChecks(story){
+ if(ShadowStory.suspended(story))return '';
+ const checks=TrustChecks.entries(story.stage,story.room);
+ if(!checks.length)return '';
+ return `<details class="room-scenarios">
+  <summary>Optional security scenarios · ${checks.length}</summary>
+  <div class="shadow-objects">${checks.map(([id,{title,object}])=>{
+   const path=checkPaths[story.stage+'/'+id];
+   return button(title,()=>showTrustCheck(story.stage,id),'choice',
+    object+(path?.length?' · Resume or restart':''));
+  }).join('')}</div></details>`;
 }
 
 function showHousehold(stage,look=null){
@@ -262,6 +342,8 @@ function showHousehold(stage,look=null){
    <div class="shadow-view ${room}"><div class="shadow-furniture" aria-hidden="true"></div>${items.includes('laptop')?'<div class="shadow-laptop" aria-hidden="true"></div>':''}
     <div class="shadow-actors">${items.filter(key=>Object.hasOwn(figures,key)).map(control).join('')}</div></div>
    <div class="shadow-objects">${items.filter(key=>!Object.hasOwn(figures,key)).map(control).join('')}</div>
+   ${digitalSlip(state)}
+   ${roomTrustChecks(state)}
   </section>
   ${log}
   ${incident&&!paused?`<p class="small-print">The parents cleared the incident under fresh permission. The retired sessions remain closed.</p>`:''}
@@ -294,7 +376,7 @@ function showIntro(){
    const status=ShadowStory.complete(household[stage])?' · Completed':household[stage].index?' · In progress':'';
    return button(data.title,()=>navigate(stageRoutes[stage]),'choice',data.tag+status+' · '+stageIntroductions[stage]);
   }).join('')}</div>
-  <p class="small-print">Select the highlighted action to advance. Other people and objects let you look closer or test a boundary. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
+  <p class="small-print">Select the highlighted action to advance. From Stage 1, open <b>Optional security scenarios</b> in a room to test a control and return to the assignment. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'TRUST BOUNDARIES');
 }
 function renderRoute(){
