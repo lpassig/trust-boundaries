@@ -15,4 +15,6 @@ The optional scenarios model identity and device posture as separate issuance ch
 
 The technical reference describes a worked enterprise deployment and links to relevant documentation. It distinguishes the customer’s business authorization, runtime enforcement, credential control and resource enforcement. The reference exercises no live authorization path.
 
+Nova’s railway story is a replay over fixed synthetic evidence. Registries, workload and posture admission, verified mission versions, leases, task budgets, artifact bindings, protected monitoring, and the response workflow are illustrative integrations. The staging model enforces the serialized ticket fixture at commit, requires current connector approval and a current permit, preserves a committed ticket through containment, and refuses to complete recovery while any controller is unverified. The four-point risk threshold is a game mechanic. Private-preview IBM Verify and Agent Identity SSF remediation is explicitly labelled in Security Operations. No operation connects to a real tool, data service, or railway system.
+
 Run `node --test tests/*.test.cjs` for state and reference checks. Run `python3 build-v2.py --check` to confirm the generated build matches its standalone resources.

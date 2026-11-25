@@ -40,7 +40,8 @@ const architectureViews = [
  ['deployment','Deployment options'],
  ['pilots','Pilot checklists'],
  ['threats','Threat coverage'],
- ['house','Household controls']
+ ['house','Household controls'],
+ ['railway','Nova’s railway deployment']
 ];
 
 function architectureComponentName(id){
@@ -175,7 +176,7 @@ function showArchitecture(view='boundaries',flowId='read',componentId=null,focus
  if(!flows[flowId])flowId='read';
  const body=view==='boundaries'?architectureBoundaries(boundary):view==='design'?architectureDesign():view==='sequences'?architectureFlow(flowId):
   view==='runtime'?architectureRuntime():view==='deployment'?architectureDeployment():view==='pilots'?architecturePilots():view==='threats'?architectureThreats():
-  view==='house'?householdBoundaries():architectureMap(componentId);
+  view==='house'?householdBoundaries():view==='railway'?novaArchitecture():architectureMap(componentId);
  showScreen('Mission-bound authorization',
   `<p>Use this reference to connect controls in The Agent House with a workplace deployment. The customer handover is a worked example.</p>
   <nav class="architecture-nav" aria-label="Architecture sections">${architectureViews.map(([id,label])=>`<button class="secondary" data-architecture-view="${id}" aria-pressed="${id===view}">${label}</button>`).join('')}</nav>
@@ -407,6 +408,7 @@ function showHousehold(stage,look=null,device=null){
   <details class="debrief"><summary>How this applies at work</summary><p>${esc(closing[2])}</p></details>`:''}
   <div class="actions">${!step&&upNext?button(`Continue to Stage ${chapter+1}`,()=>navigate(stageRoutes[upNext])):''}
    ${!step&&chapter>=2?button('Explore the technical reference',()=>navigate('architecture'),'secondary'):''}
+   ${!step?button('Compare with Nova at this stage',()=>navigate(novaStageRoute(stage)),'secondary'):''}
    ${index?button(`Replay Stage ${chapter}`,()=>set(ShadowStory.fresh(stage)),'secondary'):''}${button('All stages',()=>navigate(''),'secondary')}</div>`, `${data.tag} · ALEX`);
  $$('[data-shadow-room]').forEach(control=>control.onclick=()=>{
   set(ShadowStory.visit(state,control.dataset.shadowRoom));
@@ -426,7 +428,8 @@ function showIntro(){
  const started=Object.values(household).some(state=>state.index>0);
  showScreen('The Agent House',`
   <p>Help Alex complete assignments as he earns more independence. Each stage returns to the same four rooms and gives you new ways to test who can grant access, what enforces it, and when it ends.</p>
-  <div class="actions">${current?button(started?'Continue the game':'Start the game',()=>navigate(stageRoutes[current])):''}</div>
+  <div class="actions">${current?button(started?'Continue Alex':'Play Alex',()=>navigate(stageRoutes[current])):''}
+   ${button('Play Nova’s technical journey',()=>navigate('nova'),'secondary')}</div>
   <h2>Choose a stage</h2>
   <div class="stage-list choices">${Object.entries(ShadowStory.stages).map(([stage,data])=>{
    const status=ShadowStory.complete(household[stage])?' · Completed':household[stage].index?' · In progress':'';
@@ -438,7 +441,10 @@ function showIntro(){
 function renderRoute(){
  const route=location.hash.slice(1);
  const stage=Object.keys(stageRoutes).find(key=>stageRoutes[key]===route);
+ const novaStage=Object.keys(NovaRailway.stages).find(key=>novaStageRoute(key)===route);
  if(stage)showHousehold(stage);
+ else if(novaStage)showNova(novaStage);
+ else if(route==='nova')showNovaIntro();
  else if(route==='architecture')showArchitecture();
  else showIntro();
  $('#screen-title').focus({preventScroll:true});

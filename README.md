@@ -4,6 +4,8 @@
 
 The Agent House is the v3 edition of Trust Boundaries, a point-and-click adventure about who may grant access, what tools enforce, and how to check that access ended. The game follows Alex through the same four rooms as he earns more independence.
 
+**[Play Nova’s railway investigation](https://lpassig.github.io/trust-boundaries/#nova)** to follow the same four stages in the external environment, agent runtime, enterprise resources and security control plane. The technical route covers shadow discovery, registered and verified bootstrap, dynamic access to RE-204 resources, Mira’s scoped delegation, and committing one authorized maintenance ticket. The last stage includes 17 optional security tests and a containment replay with independent confirmations. Alex and Nova save progress separately.
+
 - **[Stage 0 · UNKNOWN](https://lpassig.github.io/trust-boundaries/#shadow)** follows Tom’s private request through discovery, investigation and containment.
 - **[Stage 1 · BUILD](https://lpassig.github.io/trust-boundaries/#build)** uses a verified school assignment and a time-limited phone to complete a solar-system workbook.
 - **[Stage 2 · AUTHORIZE](https://lpassig.github.io/trust-boundaries/#authorize)** lets Alex identify a better source and ask for temporary, read-only access to the conductor notes.

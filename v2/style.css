@@ -148,3 +148,15 @@ select { display: block; width: 100%; background: var(--panel); color: var(--ink
 .device-display .shadow-reply{border-bottom:0}
 .device-display .is-speaking{outline:2px solid var(--amber);outline-offset:-2px}
 @media(max-width:360px){.device-frame.handset{padding-inline:6px}.device-display .shadow-objects{grid-template-columns:minmax(0,1fr)}}
+
+.nova-scene{margin:14px 0;border:1px solid #4c626d;border-radius:14px;overflow:hidden;background:#18232d}
+.nova-location{padding:22px 16px 14px;background:repeating-linear-gradient(90deg,#26394655 0 28px,transparent 28px 32px),linear-gradient(135deg,#273d4c,#202b3a)}
+.nova-scene.resources .nova-location{background:linear-gradient(135deg,#334c5b,#20303c)}
+.nova-scene.security .nova-location{background:linear-gradient(135deg,#323c5b,#232638)}
+.nova-scene.external .nova-location{background:linear-gradient(135deg,#394753,#222c39)}
+.nova-location h2{margin:0 0 6px}
+.nova-location p,.nova-next p{margin:0}
+.nova-next,.nova-actions{padding:10px 12px}
+.nova-next button{margin-top:6px}
+.nova-scene .shadow-objects{background:#17212c}
+.nova-scene .shadow-objects .choice{justify-content:flex-start}
