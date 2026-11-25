@@ -90,7 +90,7 @@ test('Nova credential receipt has one inspection destination and creates no auth
 
 test('incoming-message art appears only when later work has arrived in V2',()=>{
  const vm=require('node:vm'),fs=require('node:fs');const context=vm.createContext({});
- vm.runInContext(fs.readFileSync(require.resolve('../assets/art.js'),'utf8'),context);
+ vm.runInContext(fs.readFileSync(require.resolve('../assets/people.js'),'utf8')+'\n'+fs.readFileSync(require.resolve('../assets/art.js'),'utf8'),context);
  for(const mode of ['teen','agent']){
   const render=hasIncoming=>vm.runInContext(`roomArt('${mode}',1,{step:7,hasIncoming:${hasIncoming}})`,context);
   assert.doesNotMatch(render(false),/data-event="(?:phone-message|retrieved-document)"/);

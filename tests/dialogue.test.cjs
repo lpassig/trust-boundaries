@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 const R=require('../v2/rules.js'),I=require('../v2/interactions.js');
 const context=vm.createContext({});
-vm.runInContext(fs.readFileSync(require.resolve('../assets/art.js'),'utf8'),context);
+vm.runInContext(fs.readFileSync(require.resolve('../assets/people.js'),'utf8')+'\n'+fs.readFileSync(require.resolve('../assets/art.js'),'utf8'),context);
 vm.runInContext(fs.readFileSync(require.resolve('../v2/story.js'),'utf8'),context);
 function helperReview(mode){
  let s=R.act(R.fresh(),mode,'begin').state;

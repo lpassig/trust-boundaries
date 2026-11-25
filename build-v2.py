@@ -11,9 +11,9 @@ args = parser.parse_args()
 html = (src / 'index.html').read_text(encoding='utf-8')
 html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + (src / 'style.css').read_text(encoding='utf-8') + '\n</style>')
 for name, path in [
-    ('../assets/art.js', root / 'assets/art.js'),
+    ('../assets/people.js', root / 'assets/people.js'),
     ('../assets/protocols.js', root / 'assets/protocols.js'),
-    *[(name, src / name) for name in ['story.js', 'rules.js', 'interactions.js', 'trace.js', 'products.js', 'architecture.js', 'decision-lab.js', 'shadow.js', 'ui.js']],
+    *[(name, src / name) for name in ['products.js', 'architecture.js', 'shadow.js', 'ui.js']],
 ]:
     code = path.read_text(encoding='utf-8').replace('</script', '<\\/script')
     html = html.replace(f'<script src="{name}"></script>', '<script>\n' + code + '\n</script>')

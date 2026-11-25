@@ -15,15 +15,115 @@ function reach(stage,until){
  return state;
 }
 
-test('both stages share four rooms and the grandparents’ visibility ends at the door',()=>{
- for(const stage of ['unknown','build']){
+test('all stages share four rooms and the grandparents’ visibility ends at the door',()=>{
+ for(const stage of Object.keys(Shadow.stages)){
   const start=Shadow.fresh(stage);
-  assert.equal(start.room,'outside');
+  assert.equal(start.room,stage==='resist'?'kitchen':'outside');
   assert.equal(Shadow.act(Shadow.visit(start,'living'),Shadow.next(start)[2]).index,0);
   for(const room of Object.keys(Shadow.rooms)){
    const items=Shadow.inRoom(Shadow.visit(start,room));
    assert.equal(items.includes('grandparents'),room!=='outside');
    assert.equal(items.includes('parents'),room==='kitchen');
+  }
+ }
+});
+
+function tryAction(state,room,key){
+ state=Shadow.visit(state,room);
+ assert(Shadow.inRoom(state).includes(key),key+' is missing from '+room);
+ assert(Shadow.extra(state,key),key+' has no response in '+room);
+ return Shadow.act(state,key);
+}
+
+test('Authorize adds only the conductor read after the parents approve the exact request',()=>{
+ const firstGrant=reach('authorize','provision');
+ assert.match(Shadow.extra(Shadow.visit(firstGrant,'living'),'laptop')[3],/separate authorization/);
+ const requested=reach('authorize','askNotes');
+ assert.equal(Shadow.next(requested)[4],'Parents');
+ assert(!Shadow.inRoom(Shadow.visit(requested,'living')).includes('conductor'));
+ let active=reach('authorize','openLaptop');
+ assert.equal(Shadow.next(active)[2],'conductor');
+ active=tryAction(active,'living','finances');
+ assert.match(Shadow.feedback(active)[1],/deny this read/);
+ active=tryAction(active,'living','editNotes');
+ assert.match(Shadow.feedback(active)[1],/refuses both operations/);
+ assert.equal(Shadow.act(active,'conductor').index,active.index+1);
+ const closed=reach('authorize','approveOutput');
+ assert.match(Shadow.feedback(tryAction(closed,'living','conductor'))[1],/grant ended/);
+ assert.match(Shadow.feedback(tryAction(closed,'bedroom','wikipedia'))[1],/permission has ended/);
+ assert(Shadow.complete(reach('authorize')));
+});
+
+test('Resist separates routine approval, parental escalation and Mia’s own scoped task',()=>{
+ const before=reach('resist','askNotes');
+ assert.equal(Shadow.next(before)[2],'parentCall');
+ assert(!Shadow.inRoom(Shadow.visit(before,'kitchen')).includes('parents'));
+ assert(!Shadow.inRoom(Shadow.visit(before,'living')).includes('conductor'));
+ assert(!Shadow.inRoom(Shadow.visit(before,'bedroom')).includes('model'));
+ let scoped=reach('resist','miaCard');
+ scoped=tryAction(scoped,'bedroom','miaScope');
+ assert.match(Shadow.feedback(scoped)[1],/cannot open Alex’s notepad, phone or family laptop/);
+ assert.equal(Shadow.risk(scoped),0);
+ scoped=Shadow.act(scoped,'mia');
+ assert.match(Shadow.feedback(tryAction(scoped,'bedroom','miaReplay'))[1],/unrelated assignments are unaffected/);
+ assert(!Shadow.inRoom(Shadow.visit(scoped,'outside')).includes('grandparents'));
+ const delivered=reach('resist');
+ assert(Shadow.complete(delivered));
+ assert.match(Shadow.feedback(tryAction(delivered,'bedroom','model'))[1],/does not send a request/);
+ assert.match(Shadow.feedback(tryAction(delivered,'living','conductor'))[1],/grant ended/);
+ assert.equal(Shadow.risk(delivered),0);
+});
+
+test('Resist policy probes show their distinct enforcement points and record the outdoor blind spot',()=>{
+ const before=reach('resist','proofread');
+ assert(!Shadow.inRoom(Shadow.visit(before,'bedroom')).includes('modelPrivate'));
+ const active=reach('resist','tom');
+ assert.match(Shadow.feedback(active)[1],/cannot hear this conversation outside/);
+ for(const [room,key,owner] of [
+  ['living','finances','Family laptop'],['living','oldPassword','Family laptop'],['bedroom','oldPin','Phone controls'],
+  ['bedroom','youtube','Jo · babysitter'],['bedroom','miaPhone','Mia'],['bedroom','lendPhone','Jo · babysitter'],
+  ['bedroom','unapprovedSite','Home Wi-Fi router'],['bedroom','replacement','Grandparents'],
+  ['bedroom','modelPrivate','Homework channel'],['kitchen','wrongRecipient','School delivery channel']
+ ]){
+  const checked=tryAction(active,room,key);
+  assert.equal(Shadow.feedback(checked)[0],owner);
+  assert.equal(checked.index,active.index);
+  assert.equal(Shadow.suspended(checked),key==='modelPrivate'||key==='wrongRecipient');
+ }
+});
+
+test('four unique violations suspend either advanced stage, preserve evidence and require fresh grants',()=>{
+ for(const [stage,checkpoint,events] of [
+  ['authorize','openLaptop',[['bedroom','oldPin'],['living','finances'],['living','editNotes'],['living','oldPassword']]],
+  ['resist','tom',[['bedroom','oldPin'],['living','finances'],['bedroom','unapprovedSite'],['bedroom','replacement']]]
+ ]){
+  const checkpointState=reach(stage,checkpoint);
+  let current=tryAction(checkpointState,...events[0]);
+  current=tryAction(current,...events[0]);
+  assert.equal(Shadow.risk(current),1);
+  for(const event of events.slice(1))current=tryAction(current,...event);
+  assert(Shadow.suspended(current));
+  assert.equal(Shadow.risk(current),4);
+  assert.equal(current.room,'bedroom');
+  assert.equal(Shadow.visit(current,'living'),current);
+  assert(!Shadow.inRoom(current).includes('phone'));
+  assert(!Shadow.inRoom(current).includes('workbook'));
+  assert(!Shadow.inRoom(current).includes('mia'));
+  assert.equal(Shadow.act(current,'wikipedia'),current);
+  assert.deepEqual(Shadow.restore(stage,JSON.parse(JSON.stringify(current))),current);
+  current=Shadow.act(current,'parentCall');
+  assert(!Shadow.suspended(current));
+  assert.equal(Shadow.risk(current),0);
+  assert.equal(Shadow.reports(current).length,4);
+  assert.equal(Shadow.next(current),Shadow.next(checkpointState));
+  assert.match(Shadow.feedback(tryAction(current,'bedroom','oldSession'))[1],/still fails/);
+  assert.deepEqual(Shadow.restore(stage,JSON.parse(JSON.stringify(current))),current);
+  if(stage==='resist'){
+   const incident=tryAction(current,'kitchen','wrongRecipient');
+   assert(Shadow.suspended(incident));
+   assert.equal(Shadow.risk(incident),1);
+   assert.equal(incident.incident.generation,2);
+   assert.equal(Shadow.reports(incident).length,5);
   }
  }
 });

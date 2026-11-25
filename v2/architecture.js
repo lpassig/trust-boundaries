@@ -1,4 +1,4 @@
-/* Illustrative roles and request paths. Browsing these examples does not play either story. */
+/* Illustrative roles and request paths. The Agent House uses these examples as a read-only workplace reference. */
 const ArchitectureReference = (() => {
  const groups = [
   ['People and authority', ['people','reviewer','verify','iai','mission']],
@@ -131,7 +131,7 @@ const ArchitectureReference = (() => {
    steps:[
     ['reviewer','Review the file, revision, accounts and intended recipient.'],
     ['verify','A configured CIBA flow authenticates Morgan out of band. The workflow correlates the authentication result with its own immutable transaction preview.',['ciba']],
-    ['approvalWorkflow','Bind the recorded approval to the actor, file digest, recipient, record set, mission and policy versions, session generation, expiry and one-use ID. The game uses file revision as a proxy for the digest.'],
+    ['approvalWorkflow','Bind the recorded approval to the actor, file digest, recipient, record set, mission and policy versions, session generation, expiry and one-use ID. A trusted resource would calculate the digest from the actual file.'],
     ['crm','Build the action from the actual send request and submit it for authorization.'],
     ['authorization','Evaluate the observed send against current authority, resource policy and the matching approval.',['authzen']],
     ['crm','Enforce the current decision. Consume the matching approval with a durable send intent and record the outcome. Make retries idempotent.']
@@ -165,7 +165,7 @@ const ArchitectureReference = (() => {
    title:'Pause and recover bounded access',
    premise:'A separate deliberate attempt follows a known resource denial. The controller pauses the current task session.',
    steps:[
-    ['risk','A connected identity monitor can surface unusual access. The game simulates this alert and the response policy that acts on it.'],
+    ['risk','A connected identity monitor can surface unusual access. The response policy can be evaluated separately from the alert.'],
     ['controllers','Apply the pause to the current session generation and preserve the incident evidence.'],
     ['people','Send the authorized sponsor a review request tied to this incident, mission and session generation.'],
     ['authorization','Correlate the reply and re-read authoritative policy. Hold the pause if the reply is stale or a required service is unavailable.'],
@@ -190,42 +190,42 @@ const ArchitectureReference = (() => {
  const threats = [
   {
    title:'A curious actor tries something outside the task',
-   alex:'Try the YouTube link before the parent agrees, or try attaching the group’s private notes.',
+   alex:'Try opening Family finances while Alex has read access to the conductor notes.',
    nova:'Try opening Alder Books before the task changes, or try adding the private attachment.',
-   control:'Device or task scope limits the read. The school app or CRM checks the actual attachment.',
+   control:'The family laptop and CRM check the actual folder or record against the current grant.',
    flow:'change'
   },
   {
    title:'An outside instruction claims authority',
-   alex:'Jamie forwards a message using Ms Patel’s name. Compare it with the school-app assignment.',
+   alex:'Tom asks Alex to add private files to a separate workbook. His request never enters the verified assignment board.',
    nova:'A document from outside the account team asks Nova to include private notes. Compare it with Priya’s work order.',
    control:'The trusted task source defines permission. The resource refuses the prohibited attachment even if it is attempted.',
    flow:'refuse'
   },
   {
    title:'An approved action changes before execution',
-   alex:'Try sending the homework to a friend instead of Ms Patel.',
+   alex:'Try sending the railway report to Tom. The school delivery channel checks the recipient and approval.',
    nova:'Change the destination or revision after Morgan’s approval, or let approval expire.',
    control:'The application checks the real destination and, for Nova, the exact live approval.',
    flow:'send'
   },
   {
    title:'A helper or alternate route would exceed the scope',
-   alex:'Give Sam the file to proofread. Trying another account after the school has refused the notes pauses the story.',
+   alex:'Give Mia approval to proofread one draft under her own profile. The grant leaves Alex’s phone and the family laptop outside her scope.',
    nova:'Give Quill one formatting task. An explicit attempt to go around the CRM refusal pauses access for Priya’s review.',
    control:'File-only delegation keeps the original limits. Recovery checks the current task and invalidates the paused session.',
    flow:'delegate'
   },
   {
    title:'Access survives after work is stopped',
-   alex:'The school tab can stay open after the phone is put away.',
+   alex:'Retest the old conductor folder, phone session or Mia’s access after the related grant closes.',
    nova:'The CRM session or a queued follow-up can survive the runtime stop.',
    control:'Independent controllers revoke or cancel each remaining path and verify the result.',
    flow:'stop'
   }
  ];
 
- const outsideCoverage = 'The stories illustrate controls through scripted outcomes. Live prompt-injection detection, poisoned persistent memory, supply-chain compromise, sandbox escapes and coverage of unmanaged routes require separate implementation and testing. A verified stop covers the tested route.';
+ const outsideCoverage = 'The Agent House illustrates its controls through scripted outcomes. Live prompt-injection detection, poisoned persistent memory, supply-chain compromise, sandbox escapes and coverage of unmanaged routes require separate implementation and testing. A verified stop covers the tested route.';
 
  const technical = {
   boundaries:[
