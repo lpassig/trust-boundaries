@@ -166,6 +166,11 @@ const NovaRailway=(()=>{
  const normalNext=s=>stages[s.stage].steps[s.index];
  const complete=s=>!normalNext(s)&&!s.incident;
  const visit=(s,room)=>Object.hasOwn(scenes,room)?{...s,room}:s;
+ function runtimeStatus(s){
+  if(s.incident)return s.incident.confirmed.includes('runtime')?'Stopped and verified':'Stop requested · awaiting confirmation';
+  if(s.stage==='unknown'&&reached(s,'contain')||s.stage==='resist'&&reached(s,'close'))return 'Stopped';
+  return null;
+ }
  function resourceRead(s,resource,request={}){
   const {stage}=s;
   const {asset='RE-204',missionId=missionIds[stage],operation='read'}=request;
@@ -237,8 +242,12 @@ const NovaRailway=(()=>{
   if(!s.incident.reviewed)return step('investigate','security','soc','Reconstruct the incident','');
   return step('recover','security','admission','Reauthorize a fresh runtime','');
  }
- function record(s,id,owner,reply,decision,points=0){
-  return {...s,reply:{owner,reply},events:[...s.events,{id,owner,decision,points,environment:s.room,version:s.version,runtime:s.generation}]};
+ function record(s,id,owner,reply,decision,points=0,details={}){
+  const context=mission(s);
+  const event={id,owner,decision,points,environment:s.room,version:s.version,runtime:s.generation,
+   missionId:context?.id??null,missionVersion:context?.version??null,subject:context?.subject??null,
+   resource:owner,action:id,decisionSource:null,enforcer:null,...details};
+  return {...s,reply:{owner,reply},events:[...s.events,event]};
  }
  function act(s,id,replaying=false){
   const current=next(s);
@@ -300,9 +309,21 @@ const NovaRailway=(()=>{
    if(id==='provider'&&s.admission!=='Verified')return s;
    if(id==='mira'&&(s.childGrant?.status!=='Active'||s.childGrant.version!==s.version))return s;
    const resource={events:'kafka',history:'database',remaining:'astra'}[id];
-   if(resource&&resourceRead(s,resource,id==='remaining'?{asset:'RE-105',missionId:'M-105'}:{}).status!=='Allowed')return s;
+   const separateRead={asset:'RE-105',missionId:'M-105'};
+   if(resource&&resourceRead(s,resource,id==='remaining'?separateRead:{}).status!=='Allowed')return s;
    const state=id==='grant'?{...s,version:s.version+1}:s;
-   const result=record(state,id,stations[current.station][0],current.reply,id==='commit'?'Committed':'Recorded');
+   const owner=stations[current.station][0];
+   const outcome={
+    grant:['Approved',{decisionSource:owner,action:'amend-mission'}],
+    events:['Allowed',{resource:'kafka/RE-204',action:'read',enforcer:'Kafka access service'}],
+    history:['Allowed',{resource:'incident-history/RE-204',action:'read',enforcer:'Incident history service'}],
+    internal:['Denied',{resource:'incident-history',action:'read',enforcer:'OpenShell and approved connector'}],
+    remaining:['Allowed',{resource:'documentation/RE-105',action:'read',missionId:separateRead.missionId,missionVersion:1,subject:null,
+     enforcer:'Documentation search'}],
+    commit:['Committed',{resource:'maintenance/RE-204',action:'create-maintenance-ticket',enforcer:owner}],
+    deliver:['Delivered',{resource:'report-delivery',action:'deliver',enforcer:owner}]
+   }[id]??['Recorded',{}];
+   const result=record(state,id,owner,current.reply,outcome[0],0,outcome[1]);
    return {...result,index:s.index+1,admission:id==='bootstrap'?'Verified':s.admission,credentialVersion:id==='ticketCredential'?s.version:s.credentialVersion,
     permit:id==='permit'?s.version:s.permit,artifactRevision:id==='draft'?1:s.artifactRevision,
     databaseLease:id==='lease'?{id:'DB-M204-1',generation:1,status:'Active'}:
@@ -372,6 +393,6 @@ const NovaRailway=(()=>{
   };
  }
  return {scenes,stages,stations,checks,controllers,ticketRequest,ticketDecision,resourceRead,reportRequest,deliveryDecision,sharedBudget,
-  fresh,visit,reached,next,complete,available,act,restore,mission};
+  fresh,visit,reached,next,complete,available,act,restore,mission,runtimeStatus};
 })();
 if(typeof module!=='undefined')module.exports=NovaRailway;

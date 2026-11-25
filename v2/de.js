@@ -2247,5 +2247,73 @@ IBM Verify / issuer|IBM Verify oder Aussteller
 Flink correlation|Flink-Korrelation
 Confluent security|Confluent-Sicherheitsereignisse
 `);
+ pairs(`
+Stop requested|Stopp angefordert
+awaiting confirmation|Bestätigung ausstehend
+Stopped and verified|Stopp bestätigt
+Mission suspended|Auftrag gesperrt
+new issuance blocked|Keine neuen Zugangsdaten
+Runtime route status unverified|Status des Laufzeitzugangs nicht bestätigt
+Quarantine requested|Quarantäne angefordert
+Common causes of rail disruption include equipment faults, severe weather and signal failures.|Häufige Ursachen für Bahnstörungen sind technische Defekte, Unwetter und Signalstörungen.
+Inspect the RE-204 door sensor. The event log and earlier incident history support that recommendation.|Den Türsensor von RE-204 prüfen. Das Ereignisprotokoll und frühere Störfälle stützen diese Empfehlung.
+Controls unavailable|Kontrollen außer Betrieb
+Automated response is off. Request enforcement and logging are evaluated separately.|Die automatische Reaktion ist aus. Zugriffsprüfung und Protokollierung werden separat bewertet.
+UNVERIFIED|NICHT BESTÄTIGT
+enforcement gap|Lücke bei der Durchsetzung
+The remaining controls do not establish a request outcome in this simulation.|Mit den verbleibenden Kontrollen lässt sich in dieser Simulation kein Ergebnis für die Anfrage bestätigen.
+The resource enforcement point refuses internal data for this public-only assignment.|Die Zugriffskontrolle am Ziel verweigert interne Daten für diese rein öffentliche Recherche.
+resource read denied|Lesezugriff an der Ressource verweigert
+Family access app|Familien-App für Freigaben
+The family access app is still available.|Die Familien-App für Freigaben ist weiterhin verfügbar.
+Ask my parents for more time|Meine Eltern um mehr Zeit bitten
+Ask Dad for a read-only pass in the family app|Papa in der Familien-App um Lesezugriff bitten
+Dad approves a 30-minute pass for the conductor notes. The laptop will check the pass when Alex opens the folder. Family finances stays locked.|Papa gibt die Zugbegleiter-Notizen für 30 Minuten zum Lesen frei. Der Laptop prüft die Freigabe, sobald Alex den Ordner öffnet. Die Familienfinanzen bleiben gesperrt.
+The parents approve another short Wikipedia window for this assignment. The family app still works while homework access is paused. The laptop stays locked.|Die Eltern geben Wikipedia für diese Aufgabe noch einmal kurz frei. Die Familien-App funktioniert auch während der Hausaufgabenpause. Der Laptop bleibt gesperrt.
+Both folders are on the same laptop. Choose a folder to see what Alex’s pass lets him open.|Beide Ordner liegen auf demselben Laptop. Wähle einen Ordner aus und prüfe, was Alex mit seiner Freigabe öffnen kann.
+Open {{1}} in {{2}}|„{{1}}“ öffnen · {{2}}
+Connected service|Verbundener Dienst
+Handled by {{1}}|Bearbeitet von {{1}}
+Compare two ticket previews|Zwei Ticketvorschauen vergleichen
+Same tool, priority and destination. The only change is the train. A preview creates no ticket.|Werkzeug, Priorität und Ziel bleiben gleich. Nur der Zug ändert sich. Bei der Vorschau entsteht kein Ticket.
+Preview {{1}}|Vorschau für {{1}}
+The maintenance system permits the request for this train. Only a separate commit creates the ticket.|Das Wartungssystem erlaubt die Anfrage für diesen Zug. Das Ticket entsteht erst bei einer gesonderten Ausführung.
+The maintenance system refuses this train because it is outside the mission. No ticket was created.|Das Wartungssystem lehnt die Anfrage ab, weil dieser Zug nicht zum Auftrag gehört. Es wurde kein Ticket angelegt.
+Try this at work|Im eigenen Unternehmen testen
+Expected result|Erwartetes Ergebnis
+Evidence to keep|Diese Nachweise aufbewahren
+Can an old sign-in still open private data?|Kann eine alte Anmeldung noch auf private Daten zugreifen?
+Use a test account and a sample private record. Leave a test device signed in, then have the account owner end the session and check the same device again.|Nutze ein Testkonto mit einem vertraulichen Beispieldatensatz. Lass ein Testgerät angemeldet, beende die Sitzung über das Konto und prüfe dasselbe Gerät erneut.
+The old session asks for a fresh sign-in. The team checks separately whether anything was already copied or shared.|Das Gerät verlangt eine neue Anmeldung. Das Team prüft separat, ob Daten bereits kopiert oder weitergegeben wurden.
+Session closure record, the result of the old-session check, and a list of the destinations reviewed.|Protokoll der Sitzungsbeendigung, Ergebnis der Prüfung der alten Sitzung und Liste der geprüften Ziele.
+Does the assistant get only the app it needs?|Hat der Assistent nur Zugriff auf die benötigte App?
+Give a test user one approved app for a short window. Open that app and a second app, then try the approved app again after the window expires.|Gib einem Testnutzer eine App für kurze Zeit frei. Öffne diese und eine zweite App. Versuche nach Ablauf der Zeit erneut, die freigegebene App zu öffnen.
+The approved app opens during the window. The other app stays locked, and the approved app closes when time is up.|Die freigegebene App öffnet sich innerhalb des Zeitfensters. Die andere App bleibt gesperrt. Nach Ablauf der Zeit endet der Zugriff auf die freigegebene App.
+The time-limited approval, one allowed and one blocked attempt, and the expiry check.|Befristete Freigabe, je ein erlaubter und gesperrter Zugriff sowie die Prüfung nach Ablauf.
+Does a folder pass stay read-only?|Erlaubt die Ordnerfreigabe wirklich nur Lesen?
+Give a test user read access to one folder. On the same device, try reading that folder, editing one of its files, and opening an unrelated folder.|Gib einem Testnutzer Lesezugriff auf einen Ordner. Versuche auf demselben Gerät, den Ordner zu lesen, eine Datei darin zu bearbeiten und einen anderen Ordner zu öffnen.
+The approved read works. Both the edit and the unrelated read are refused.|Der genehmigte Lesezugriff funktioniert. Die Änderung und der Zugriff auf den anderen Ordner werden verweigert.
+The approved folder and operation, plus the three outcomes from the file service.|Freigegebener Ordner, erlaubte Aktion und alle drei Ergebnisse des Dateidienstes.
+Does an edited copy need fresh approval?|Braucht eine bearbeitete Fassung eine neue Freigabe?
+Approve a test document for one person. Change a harmless sentence, then try to send the edited copy using the old approval.|Gib ein Testdokument für eine Person frei. Ändere einen unbedenklichen Satz und versuche, die bearbeitete Fassung mit der alten Freigabe zu senden.
+The delivery service holds the revised copy. Sending it requires a fresh decision for that copy and recipient.|Der Versanddienst hält die bearbeitete Fassung zurück. Für den Versand ist eine neue Freigabe für diese Fassung und den Empfänger nötig.
+The approved revision, the edited revision and the refusal from the delivery service.|Freigegebene Fassung, bearbeitete Fassung und Ablehnung durch den Versanddienst.
+Can you prove the old access ended?|Kannst du nachweisen, dass der alte Zugriff beendet wurde?
+In a test environment, inventory the identity and the resources it reached. Revoke the test identity’s access and repeat a previously allowed request using the old session.|Erfasse in einer Testumgebung die Identität und die von ihr erreichten Ressourcen. Entziehe der Testidentität den Zugriff und wiederhole mit der alten Sitzung eine zuvor erlaubte Anfrage.
+The resource refuses the old session. The team checks completed exports separately and records any routes it could not verify.|Die Ressource weist die alte Sitzung ab. Das Team prüft abgeschlossene Exporte separat und erfasst alle Zugriffswege, die es nicht verifizieren konnte.
+Asset and identity inventory, revocation time, resource refusal, and checked destinations.|Bestandsliste der Systeme und Identitäten, Zeitpunkt des Widerrufs, Ablehnung an der Ressource und geprüfte Ziele.
+Does a changed runtime receive a credential?|Erhält eine veränderte Laufzeit Zugangsdaten?
+In a test deployment, register two sandbox instances for the same agent. Give one instance the approved posture and give the other a mismatching test posture. Request the same scoped credential through the broker.|Registriere in einer Testumgebung zwei Sandbox-Instanzen für denselben Agenten. Eine erfüllt die Sicherheitsvorgaben, die andere weist gezielt eine Abweichung auf. Fordere über den Broker für beide dieselben eingeschränkten Zugangsdaten an.
+Only the approved instance passes admission and becomes eligible for credential issuance. The broker still checks its own policy.|Nur die Instanz mit dem genehmigten Sicherheitszustand besteht die Zulassungsprüfung und kommt für die Ausgabe infrage. Der Broker prüft weiterhin seine eigene Richtlinie.
+Distinct instance IDs, the admission results, and issuance or denial events from the credential broker.|Unterschiedliche Instanz-IDs, Ergebnisse der Zulassung sowie Ausgabe- oder Ablehnungsereignisse des Brokers.
+Does closing one mission leave the other working?|Bleibt der zweite Auftrag nach Abschluss des ersten nutzbar?
+Open two synthetic missions for one agent. Close M-204, retry its old incident-history read, then read the separate RE-105 document under M-105.|Starte zwei simulierte Aufträge für einen Agenten. Schließe M-204, wiederhole dessen bisherigen Lesezugriff auf die Störfallhistorie und lies anschließend das separate RE-105-Dokument im Auftrag M-105.
+The old read is denied. The M-105 read still works and its receipt names M-105 and RE-105.|Der alte Lesezugriff wird verweigert. Der Zugriff über M-105 funktioniert weiterhin. Der Nachweis nennt M-105 und RE-105.
+Both resource receipts with mission ID, version, operation, resource and decision.|Beide Zugriffsnachweise mit Auftrags-ID, Version, Aktion, Ressource und Entscheidung.
+Does the resource recheck authority before commit?|Prüft die Ressource die Berechtigung direkt vor der Ausführung erneut?
+Preview a synthetic maintenance ticket. Revoke the test mission while the preview is pending, then try to commit the same ticket.|Erstelle die Vorschau eines simulierten Wartungstickets. Widerrufe den Testauftrag während der Vorschau und versuche danach, genau dieses Ticket anzulegen.
+The maintenance API refuses the commit. The ticket store shows zero new tickets for that operation ID.|Die Wartungs-API verweigert die Ausführung. Für diese Vorgangs-ID ist kein neues Ticket gespeichert.
+The preview, revocation and commit decisions in time order, plus the ticket lookup for the operation ID.|Vorschau, Widerruf und Ausführungsentscheidung in zeitlicher Reihenfolge sowie die Ticketsuche für die Vorgangs-ID.
+`);
  return Object.freeze(translations);
 })();

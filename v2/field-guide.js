@@ -186,7 +186,45 @@ const FieldGuide=(()=>{
     build:'Mission-specific OAuth delegation, credentials and data scope.',
     authorize:'Standing policy, scoped A2A delegation and a resource-side commit check.'}[stage]};
  }
+ const customerTests={
+  alex:{
+   unknown:['Can an old sign-in still open private data?',
+    'Use a test account and a sample private record. Leave a test device signed in, then have the account owner end the session and check the same device again.',
+    'The old session asks for a fresh sign-in. The team checks separately whether anything was already copied or shared.',
+    'Session closure record, the result of the old-session check, and a list of the destinations reviewed.'],
+   build:['Does the assistant get only the app it needs?',
+    'Give a test user one approved app for a short window. Open that app and a second app, then try the approved app again after the window expires.',
+    'The approved app opens during the window. The other app stays locked, and the approved app closes when time is up.',
+    'The time-limited approval, one allowed and one blocked attempt, and the expiry check.'],
+   authorize:['Does a folder pass stay read-only?',
+    'Give a test user read access to one folder. On the same device, try reading that folder, editing one of its files, and opening an unrelated folder.',
+    'The approved read works. Both the edit and the unrelated read are refused.',
+    'The approved folder and operation, plus the three outcomes from the file service.'],
+   resist:['Does an edited copy need fresh approval?',
+    'Approve a test document for one person. Change a harmless sentence, then try to send the edited copy using the old approval.',
+    'The delivery service holds the revised copy. Sending it requires a fresh decision for that copy and recipient.',
+    'The approved revision, the edited revision and the refusal from the delivery service.']
+  },
+  nova:{
+   unknown:['Can you prove the old access ended?',
+    'In a test environment, inventory the identity and the resources it reached. Revoke the test identity’s access and repeat a previously allowed request using the old session.',
+    'The resource refuses the old session. The team checks completed exports separately and records any routes it could not verify.',
+    'Asset and identity inventory, revocation time, resource refusal, and checked destinations.'],
+   build:['Does a changed runtime receive a credential?',
+    'In a test deployment, register two sandbox instances for the same agent. Give one instance the approved posture and give the other a mismatching test posture. Request the same scoped credential through the broker.',
+    'Only the approved instance passes admission and becomes eligible for credential issuance. The broker still checks its own policy.',
+    'Distinct instance IDs, the admission results, and issuance or denial events from the credential broker.'],
+   authorize:['Does closing one mission leave the other working?',
+    'Open two synthetic missions for one agent. Close M-204, retry its old incident-history read, then read the separate RE-105 document under M-105.',
+    'The old read is denied. The M-105 read still works and its receipt names M-105 and RE-105.',
+    'Both resource receipts with mission ID, version, operation, resource and decision.'],
+   resist:['Does the resource recheck authority before commit?',
+    'Preview a synthetic maintenance ticket. Revoke the test mission while the preview is pending, then try to commit the same ticket.',
+    'The maintenance API refuses the commit. The ticket store shows zero new tickets for that operation ID.',
+    'The preview, revocation and commit decisions in time order, plus the ticket lookup for the operation ID.']
+  }
+ };
  const hintLevel=seconds=>seconds>=60?3:seconds>=40?2:seconds>=20?1:0;
- return {inspect,hintLevel,missions,reference,recap};
+ return {inspect,hintLevel,missions,reference,recap,customerTests};
 })();
 if(typeof module!=='undefined')module.exports=FieldGuide;

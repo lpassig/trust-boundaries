@@ -72,6 +72,12 @@ p, li, dd { color: var(--muted); }
 .stage-debrief dl { display: grid; gap: 8px; }
 .stage-debrief dt { color: var(--accent); font-size: 14px; font-weight: 700; }
 .stage-debrief dd { margin-inline-start: 0; }
+.customer-test summary>span { display: block; margin-inline-start: 1.2em; font-weight: 400; }
+.nova-workbench { padding: 12px 16px; background: #192632; border-block: 1px solid #425966; }
+.nova-workbench h3, .nova-workbench p { margin-block: 0 8px; }
+.nova-workbench .choice { width: 100%; }
+.nova-workbench [data-ticket-preview][aria-describedby] { color: #101e24; background: #a7efd8; }
+.nova-preview-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; }
 .route-list { padding-inline-start: 22px; }
 .route-list li + li { margin-top: 6px; }
 

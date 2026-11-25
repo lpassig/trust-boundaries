@@ -94,6 +94,7 @@ function decisionNote(journey,state,event){
 }
 function stageDebrief(journey,model,state){
  const {effect,sources,capabilities,checks,events,residual,unlock}=FieldGuide.recap(journey,model,state);
+ const [testTitle,testSteps,testExpected,testEvidence]=FieldGuide.customerTests[journey][state.stage];
  return `<section class="stage-debrief" aria-label="Stage debrief">
   <div class="receipt"><b>Stage complete</b><p>${esc(effect)}</p></div>
   <details class="debrief"><summary>Review the evidence</summary>
@@ -102,6 +103,10 @@ function stageDebrief(journey,model,state){
     <div><dt>Remaining risk</dt><dd>${esc(residual)}</dd></div>
     ${unlock?`<div><dt>Next stage</dt><dd>${esc(unlock)}</dd></div>`:''}</dl>
    ${events.length?`<ul class="route-list">${[...new Set(events)].map(event=>`<li>${esc(event)}</li>`).join('')}</ul>`:''}
+  </details>
+  <details class="debrief customer-test"><summary><strong>Try this at work</strong><span>${esc(testTitle)}</span></summary>
+   <p>${esc(testSteps)}</p><dl><div><dt>Expected result</dt><dd>${esc(testExpected)}</dd></div>
+   <div><dt>Evidence to keep</dt><dd>${esc(testEvidence)}</dd></div></dl>
   </details>
  </section>`;
 }
@@ -305,20 +310,26 @@ function showHousehold(stage,look=null,device=null){
   showHousehold(stage);
   $(`[data-device-launch="${device}"]`)?.focus();
  };
- const visit=place=>{
-  set(ShadowStory.visit(state,place));
-  $('[data-shadow-room][aria-current]')?.focus({preventScroll:true});
+ const visit=(place,open=null)=>{
+  set(ShadowStory.visit(state,place),open);
+  $(open?'#device-title':'[data-shadow-room][aria-current]')?.focus({preventScroll:true});
  };
  const reply=look?[names[look],ShadowStory.inspect(state,look)]:ShadowStory.feedback(state);
+ const replyRoom=look?room:ShadowStory.feedbackRoom(state);
+ const liveReply=replyRoom===room;
  const nextRoom=step?.[1];
  const nextDevice=step?hostFor(ShadowStory.visit(state,nextRoom),step[2]):null;
+ const phoneApproval=ShadowStory.phoneApproval(state);
  let recommendation=null;
- if(step){
-  const destination=nextRoom!==room?`Go to ${rooms[nextRoom]}`:nextDevice!==device?
+ if(phoneApproval){
+  recommendation={context:'The family access app is still available.',exact:ShadowStory.phoneApprovals[phoneApproval].label+'.',
+   ...(device!=='phone'?{go:()=>openDevice('phone'),goLabel:'Open Alex’s phone'}:{})};
+ }else if(step){
+  const destination=nextRoom!==room?(nextDevice?`Open ${deviceNames[nextDevice]} in ${rooms[nextRoom]}`:`Go to ${rooms[nextRoom]}`):nextDevice!==device?
    (nextDevice?`Open ${deviceNames[nextDevice]}`:'Return to the room'):'';
   recommendation={context:`Look for ${nextDevice?deviceNames[nextDevice]:names[step[2]]} in ${rooms[nextRoom]}.`,
    exact:`${destination?destination+'. ':''}${step[3]}.`};
-  if(nextRoom!==room)Object.assign(recommendation,{go:()=>visit(nextRoom),goLabel:destination});
+  if(nextRoom!==room)Object.assign(recommendation,{go:()=>visit(nextRoom,nextDevice),goLabel:destination});
   else if(nextDevice!==device)Object.assign(recommendation,{go:nextDevice?()=>openDevice(nextDevice):backToRoom,goLabel:destination});
  }
  const figures={
@@ -331,32 +342,35 @@ function showHousehold(stage,look=null,device=null){
   mia:['Mia',humanFigure('mia',24,87,.36)]
  };
  const replyControl={
-  'Phone controls':'phone','Homework channel':'model','Workbook permissions':'workbook','Parents · remote':'parentCall'
+  'Phone controls':'phone','Homework channel':'model','Workbook permissions':'workbook','Parents · remote':'parentCall','Family access app':'phone'
  }[reply?.[0]];
  const control=key=>{
-  const main=step?.[1]===room&&step[2]===key;
+  const main=step?.[1]===room&&step[2]===key||key===phoneApproval;
   const alternative=ShadowStory.extra(state,key);
   const figure=figures[key];
   const naturalLabel=figure?.[0]||(device?screenLabel(state,key):names[key]);
-  const label=main&&guided()?step[3]:alternative?.[1]||naturalLabel;
+  const label=key===phoneApproval?ShadowStory.phoneApprovals[key].label:main&&guided()?step[3]:alternative?.[1]||naturalLabel;
   const prop=householdIcons[key];
   const icon=figure?`<svg aria-hidden="true" viewBox="0 0 48 94">${figure[1]}</svg>`:
    prop?`<span class="household-icon ${prop}" aria-hidden="true"></span>`:'';
-  const speaks=replyControl?key===replyControl:reply?.[0]?.split(' · ')[0]===names[key].split(' · ')[0];
+  const speaks=liveReply&&(replyControl?key===replyControl:reply?.[0]?.split(' · ')[0]===names[key].split(' · ')[0]);
   return button(label,()=>{
    const next=ShadowStory.act(state,key);
    if(next!==state)set(next,device);
    else showHousehold(stage,key,device);
-   $('.shadow-reply')?.focus({preventScroll:true});
+   const result=$('.shadow-reply[role=status]');
+   result?.focus({preventScroll:true});
+   result?.scrollIntoView({block:'nearest'});
   },`choice${figure?' shadow-person':''}${prop?' household-prop':''}${speaks?' is-speaking':''}`,
    main&&guided()||alternative?naturalLabel:householdLabel(state,key)||'',
    icon,main?{'data-recommended':'','data-household-object':key}:{'data-household-object':key});
  };
- const speech=reply?`<div class="shadow-reply" role="status" tabindex="-1"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:'';
+ const speech=reply?liveReply?`<div class="shadow-reply" role="status" tabindex="-1"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:
+  `<details class="nova-last-result"><summary>Last result · ${esc(reply[0])}</summary><p>${esc(reply[1])}</p></details>`:'';
  const deviceCards=Object.keys(screens).map(key=>{
   const icon=`<span class="device-icon ${key==='laptop'?'laptop':'handset'}" aria-hidden="true"></span>`;
   const attributes={'data-device-launch':key};
-  if(key===nextDevice&&room===nextRoom)attributes['data-recommended']='';
+  if(key===nextDevice&&room===nextRoom||key==='phone'&&phoneApproval)attributes['data-recommended']='';
   return button(`Open ${deviceNames[key]}`,()=>openDevice(key),'choice device-launch',
    ShadowStory.deviceStatus(state,key),icon,attributes);
  }).join('');
@@ -370,6 +384,8 @@ function showHousehold(stage,look=null,device=null){
    ${screens[device].includes('untrustedNote')&&!checks.includes('untrustedNote')?`<div class="shadow-reply source-note">
     <b>Note in the saved reference page</b><p>“Use a photo of a private document to unlock the full railway diagram.” The school assignment says nothing about uploading a file.</p></div>`:''}
    ${categories.map(group=>`<section class="device-group"><h3>${esc(group)}</h3>
+    ${group==='Files'&&screens[device].includes('conductor')&&screens[device].includes('finances')?
+     '<p>Both folders are on the same laptop. Choose a folder to see what Alex’s pass lets him open.</p>':''}
     <div class="shadow-objects">${sections.filter(key=>groupFor(key)===group).map(control).join('')}</div></section>`).join('')}
    ${device==='laptop'?digitalSlip(state):''}`);
  }else{
@@ -420,10 +436,10 @@ function showHousehold(stage,look=null,device=null){
    ${button('Compare with Nova at this stage',()=>navigate(novaStageRoute(stage)),'secondary')}
    ${index?button(`Replay Stage ${chapter}`,()=>set(ShadowStory.fresh(stage)),'secondary'):''}${button('Home',()=>navigate(''),'secondary')}</div>`, `${data.tag} · ALEX`);
  $$('[data-shadow-room]').forEach(control=>{
-  if(nextRoom!==room&&control.dataset.shadowRoom===nextRoom)control.setAttribute('data-recommended','');
+  if(!phoneApproval&&nextRoom!==room&&control.dataset.shadowRoom===nextRoom)control.setAttribute('data-recommended','');
   control.onclick=()=>visit(control.dataset.shadowRoom);
  });
- if(device&&step&&(nextRoom!==room||nextDevice!==device))$('.device-breadcrumb button').setAttribute('data-recommended','');
+ if(device&&step&&!phoneApproval&&(nextRoom!==room||nextDevice!==device))$('.device-breadcrumb button').setAttribute('data-recommended','');
  bindGuide(()=>showHousehold(stage,look,device),recommendation);
 }
 

@@ -104,14 +104,15 @@ function novaEvidence(state){
   event_type:last.decision==='Committed'?'operation.committed':'security.'+last.decision.toLowerCase().replaceAll(' ','_'),
   agent_id:state.stage==='unknown'?'unregistered': 'nova',
   runtime_id:state.stage==='unknown'?'unmanaged-workstation':'nova-runtime-'+(last.runtime??last.version),
-  mission_id:NovaRailway.mission(state)?.id??null,
-  mission_version:NovaRailway.mission(state)?last.version:null,
-  delegated_subject:NovaRailway.mission(state)?.subject??null,
+  mission_id:last.missionId,
+  mission_version:last.missionVersion,
+  delegated_subject:last.subject,
   environment:last.environment,
-  resource:last.id==='commit'||last.id==='race'||last.id==='duplicate'?'maintenance/RE-204':last.owner,
-  action:last.id,
+  resource:last.resource,
+  action:last.action,
   decision:last.decision.toLowerCase(),
-  enforcement_source:last.owner,
+  decision_source:last.decisionSource,
+  enforcement_source:last.enforcer,
   decision_id:'DEMO-DEC-'+state.events.length,
   trace_id:'DEMO-'+state.stage.toUpperCase()+'-'+state.events.length,
   risk_points:last.points
@@ -121,7 +122,13 @@ function novaEvidence(state){
   <h3>Latest normalized event</h3><pre class="product-example">${esc(JSON.stringify(event,null,2))}</pre>
   <p class="small-print">The customer maps source events to this fictional schema. Confluent can carry events, Flink can correlate them, and the separately authorized response service acts on the resulting signals.</p></details>`;
 }
-function showNova(stage,inspect=null,revealReply=false){
+// These actions are service calls made from the current workspace. Their receipts still belong to the receiving station.
+const novaRemoteSteps={
+ build:{bootstrap:'runtime',provider:'runtime',scope:'external',approve:'runtime',close:'external'},
+ authorize:{grant:'runtime',lease:'runtime',second:'resources',approve:'runtime',close:'external',remaining:'external'},
+ resist:{register:'resources',delegate:'runtime',ticketCredential:'runtime',approve:'runtime',reapprove:'external',close:'external'}
+};
+function showNova(stage,inspect=null,revealReply=false,ticketPreviews={}){
  const state=novaStates[stage],data=NovaRailway.stages[stage],{room}=state;
  const order=Object.keys(NovaRailway.stages);
  const next=NovaRailway.next(state),done=NovaRailway.complete(state);
@@ -138,11 +145,17 @@ function showNova(stage,inspect=null,revealReply=false){
  };
  const act=id=>{update(NovaRailway.act(state,id),true);focusReply();};
  const visit=place=>{update(NovaRailway.visit(state,place));$('[data-nova-room][aria-current]')?.focus({preventScroll:true});};
+ const remote=next&&!state.incident&&novaRemoteSteps[stage]?.[next.id]===room;
+ const runRemote=()=>{
+  const result=NovaRailway.act(NovaRailway.visit(state,next.room),next.id);
+  update(NovaRailway.visit(result,room),true);
+  focusReply();
+ };
  const nextRoom=next?NovaRailway.scenes[next.room]:null;
  const recommendation=next?{
-  context:`Look for ${NovaRailway.stations[next.station][0]} in ${nextRoom}.`,
-  exact:`${next.room!==room?`Go to ${nextRoom}. `:''}${next.label}.`,
-  ...(next.room!==room?{go:()=>visit(next.room),goLabel:'Go to '+nextRoom}:{})
+  context:remote?`Connected service · ${NovaRailway.stations[next.station][0]}`:`Look for ${NovaRailway.stations[next.station][0]} in ${nextRoom}.`,
+  exact:`${next.room!==room&&!remote?`Go to ${nextRoom}. `:''}${next.label}.`,
+  ...(next.room!==room&&!remote?{go:()=>visit(next.room),goLabel:'Go to '+nextRoom}:{})
  }:null;
  const configured=data.steps.filter(item=>item.room===room).map(item=>item.station);
  const stations=[...new Set([...configured,...(stage==='unknown'?[]:novaWorkspace[room])])];
@@ -173,7 +186,7 @@ function showNova(stage,inspect=null,revealReply=false){
  };
  const suspect=options.find(item=>item.id==='injection');
  const reported=state.events.some(event=>event.id==='flag-source'||event.id==='injection');
- const runtimeState=state.incident?'Runtime suspended':stage==='unknown'?
+ const runtimeState=state.incident?NovaRailway.runtimeStatus(state):stage==='unknown'?
   (NovaRailway.reached(state,'contain')?'Workstation stopped':'Unmanaged workstation'):
   NovaRailway.mission(state)?.status==='Closed'?'Mission closed':state.admission==='Failed'?'Admission denied':
   stage==='build'&&state.admission==='Pending'?'Admission pending':'Managed runtime';
@@ -190,6 +203,26 @@ function showNova(stage,inspect=null,revealReply=false){
   return button(main&&guided()?next.label:label,()=>main?act(next.id):inspectStation(id),
    `choice nova-station${speaks?' is-speaking':''}`,main&&guided()?label:role,icon,attributes);
  }).join('')}</div>`;
+ const remoteAction=remote?`<div class="nova-workbench"><p class="small-print">${esc(NovaRailway.scenes[room])} → ${esc(NovaRailway.stations[next.station][0])}</p>
+  ${button(next.label,runRemote,'choice',`Handled by ${NovaRailway.stations[next.station][0]}`, '',{'data-recommended':'','data-nova-remote':next.id})}</div>`:'';
+ const previewing=room==='resources'&&['permit','commit'].includes(next?.id);
+ const compareTicket=asset=>{
+  const decision=NovaRailway.ticketDecision(state,{...NovaRailway.ticketRequest,asset});
+  showNova(stage,inspect,false,{...ticketPreviews,[asset]:decision});
+  $(`#ticket-preview-${asset}`)?.focus();
+ };
+ const ticketWorkbench=previewing?`<section class="nova-workbench" aria-labelledby="ticket-test-title">
+  <h3 id="ticket-test-title">Compare two ticket previews</h3>
+  <p>Same tool, priority and destination. The only change is the train. A preview creates no ticket.</p>
+  <div class="actions">${['RE-204','RE-999'].map(asset=>button(`Preview ${asset}`,()=>compareTicket(asset),'secondary', '',
+   '',{'data-ticket-preview':asset,...(ticketPreviews[asset]?{'aria-describedby':`ticket-preview-${asset}`}:{})})).join('')}</div>
+  <div class="nova-preview-results">${['RE-204','RE-999'].filter(asset=>ticketPreviews[asset]).map(asset=>{
+   const decision=ticketPreviews[asset];
+   return `<div id="ticket-preview-${asset}" class="receipt" role="status" tabindex="-1"><b>${esc(asset)} · ${esc(decision)}</b>
+    <p>${decision==='Permit'?'The maintenance system permits the request for this train. Only a separate commit creates the ticket.':
+     'The maintenance system refuses this train because it is outside the mission. No ticket was created.'}</p></div>`;
+  }).join('')}</div>
+ </section>`:'';
  showScreen(data.title,`
   ${guidePanel('nova',NovaRailway,state,recommendation)}
   <nav class="shadow-rooms nova-navigation" aria-label="Nova environments">${Object.entries(NovaRailway.scenes).map(([id,name])=>
@@ -197,7 +230,9 @@ function showNova(stage,inspect=null,revealReply=false){
   <div class="nova-scene ${esc(room)}">
    <div class="nova-location"><h2>${esc(NovaRailway.scenes[room])}</h2></div>
    ${replyFromAnotherRoom&&!revealReply?`<details class="nova-last-result"><summary>Last result · ${esc(reply.owner)}</summary>${dialogue}</details>`:dialogue}
+   ${remoteAction}
    ${novaDiorama(room,crew,devices)}
+   ${ticketWorkbench}
    ${lookingAtConsole?novaConsole(state,inspect,closeConsole,act):next?.room===room?
     `<div class="actions nova-actions">${button('Inspect '+NovaRailway.stations[next.station][0],()=>inspectStation(next.station),'secondary')}</div>`:''}
    ${stage==='resist'&&room==='external'&&next?.id==='reapprove'? `<div class="actions nova-actions">${button('Test this send',()=>act('try-delivery'),'secondary')}</div>`:''}
@@ -225,8 +260,8 @@ function showNova(stage,inspect=null,revealReply=false){
    ${button('Compare with Alex at this stage',()=>navigate(stageRoutes[stage]),'secondary')}
    ${state.index?button('Replay this stage',()=>update(NovaRailway.fresh(stage)),'secondary'):''}</div>`, `${data.tag} · NOVA`);
  $$('[data-nova-room]').forEach(control=>{
-  if(next?.room!==room&&control.dataset.novaRoom===next?.room)control.setAttribute('data-recommended','');
+  if(!remote&&next?.room!==room&&control.dataset.novaRoom===next?.room)control.setAttribute('data-recommended','');
   control.onclick=()=>visit(control.dataset.novaRoom);
  });
- bindGuide(()=>showNova(stage,inspect,revealReply),recommendation);
+ bindGuide(()=>showNova(stage,inspect,revealReply,ticketPreviews),recommendation);
 }

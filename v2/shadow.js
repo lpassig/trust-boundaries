@@ -98,6 +98,7 @@ const ShadowStory=(()=>{
   schoolContact:'School contact card',houseRules:'House rules',babysitter:'Jo · babysitter',parentCall:'Parents · remote call',mia:'Mia',miaBoard:'Mia’s assignment board',
   miaPhone:'Mia’s phone',conductor:'Conductor notes folder',finances:'Family finances folder',editNotes:'Read-only file',model:'ChatGPT homework channel',oldSession:'Retired session',
   accessLog:'Incident log',router:'Home Wi-Fi router',camera:'Hallway camera feed',untrustedNote:'Suspicious source note',timeOverride:'Phone time limit',oldPin:'Old phone PIN',oldPassword:'Old laptop password',
+  askTime:'Family access app',requestNotes:'Family access app',
   lendPhone:'Alex’s managed phone',unapprovedSite:'Other websites',modelPrivate:'Private attachment',wrongRecipient:'Workbook delivery',miaReplay:'Mia’s draft access',miaScope:'Mia’s task permissions'};
  const unknownChecks={
   cabinet:['kitchen','Try the cabinet','Locked cabinet','The cabinet stays locked. The known devices and copies remain in custody.'],
@@ -128,7 +129,8 @@ const ShadowStory=(()=>{
  const fresh=(stage='unknown')=>({stage,room:stage==='resist'?'kitchen':'outside',index:0,checks:[],lastCheck:null,reports:[],incident:null});
  const suspended=s=>s.incident?.status==='suspended';
  const next=s=>suspended(s)?review(s):stages[s.stage].steps[s.index];
- const reached=(s,id)=>stages[s.stage].steps.slice(0,s.index).some(([step])=>step===id);
+ const reached=(s,id)=>!(s.remoteApproval==='askTime'&&['laptop','askLaptop','denyLaptop'].includes(id))&&
+  stages[s.stage].steps.slice(0,s.index).some(([step])=>step===id);
  const complete=s=>!next(s);
  const visit=(s,room)=>Object.hasOwn(rooms,room)&&(!suspended(s)||room==='bedroom')?{...s,room}:s;
  const risk=s=>s.reports.length-(s.incident?.[suspended(s)?'start':'reportCount']??0);
@@ -186,8 +188,23 @@ const ShadowStory=(()=>{
   }
   return null;
  }
+ const phoneApprovals={
+  askTime:{stage:'build',from:'laptop',through:'extend',label:'Ask my parents for more time',
+   reply:'The parents approve another short Wikipedia window for this assignment. The family app still works while homework access is paused. The laptop stays locked.'},
+  requestNotes:{stage:'authorize',from:'askNotes',through:'grantNotes',label:'Ask Dad for a read-only pass in the family app',
+   reply:'Dad approves a 30-minute pass for the conductor notes. The laptop will check the pass when Alex opens the folder. Family finances stays locked.'}
+ };
+ const phoneApproval=s=>s.room==='bedroom'&&Object.keys(phoneApprovals).find(key=>{
+  const {stage,from}=phoneApprovals[key];
+  return s.stage===stage&&next(s)?.[0]===from;
+ });
  function act(s,key){
   const step=next(s);
+  if(Object.hasOwn(phoneApprovals,key)&&key===phoneApproval(s)){
+   const through=phoneApprovals[key].through;
+   const approved=stages[s.stage].steps.findIndex(([id])=>id===through)+1;
+   return {...s,index:approved,lastCheck:null,remoteApproval:key};
+  }
   if(step?.[1]===s.room&&step[2]===key){
    if(suspended(s))return {...s,incident:{...s.incident,status:'cleared'},lastCheck:null};
    return {...s,index:s.index+1,lastCheck:null};
@@ -240,7 +257,8 @@ const ShadowStory=(()=>{
  const screenGroups={
   phone:{
    youtube:'Apps',games:'Apps',messaging:'Apps',model:'Apps',modelPrivate:'Apps',delivery:'Apps',wrongRecipient:'Apps',
-   wikipedia:'Browser',unapprovedSite:'Browser',untrustedNote:'Browser',timer:'Controls',timeOverride:'Controls',oldPin:'Controls',oldSession:'Controls'
+   wikipedia:'Browser',unapprovedSite:'Browser',untrustedNote:'Browser',timer:'Controls',timeOverride:'Controls',oldPin:'Controls',oldSession:'Controls',
+   askTime:'Controls',requestNotes:'Controls'
   },
   laptop:{laptop:'Session',conductor:'Files',finances:'Files',editNotes:'Files',oldPassword:'Session'},
   miaPhone:{miaPhone:'Profile',miaScope:'Workbook',miaReplay:'Workbook'},
@@ -261,6 +279,8 @@ const ShadowStory=(()=>{
    if(device)(screens[device]??=[]).push(key);
    else if(key!=='phone')objects.push(key);
   }
+  const approval=phoneApproval(s);
+  if(approval)screens.phone?.push(approval);
   return {objects,screens};
  }
  function deviceStatus(s,device){
@@ -336,13 +356,22 @@ const ShadowStory=(()=>{
   return `${names[key]} is here in ${rooms[s.room]}.`;
  }
  const reports=s=>s.reports.map(key=>[attempts[key][1],attempts[key][2]]);
+ function latestApproval(s){
+  const approval=phoneApprovals[s.remoteApproval];
+  return approval?.through===stages[s.stage].steps[s.index-1]?.[0]?approval:null;
+ }
  const feedback=s=>suspended(s)?attempts[s.incident.trigger].slice(2,4):
   s.lastCheck?extra(visit(s,s.lastCheck.room),s.lastCheck.key)?.slice(2,4):
   s.incident?.status==='cleared'&&s.incident.index===s.index?review(s).slice(4):
+  latestApproval(s)?['Family access app',latestApproval(s).reply]:
   stages[s.stage].steps[s.index-1]?.slice(4);
+ const feedbackRoom=s=>suspended(s)?s.room:s.lastCheck?.room??
+  (s.incident?.status==='cleared'&&s.incident.index===s.index||latestApproval(s)?'bedroom':stages[s.stage].steps[s.index-1]?.[1]);
  function restore(stage,value){
   if(value?.stage!==stage||!Object.hasOwn(rooms,value.room)||!Number.isInteger(value.index)||value.index<0||value.index>stages[stage].steps.length)return fresh(stage);
   const state={...fresh(stage),room:value.room,index:value.index};
+  const approval=Object.hasOwn(phoneApprovals,value.remoteApproval)?phoneApprovals[value.remoteApproval]:null;
+  if(approval?.stage===stage&&reached(state,approval.through))state.remoteApproval=value.remoteApproval;
   // Older Shadow AI saves recorded the balance before moving the laptop.
   if(stage==='unknown'&&!Array.isArray(value.reports)&&state.index===10)state.index=9;
   state.checks=Array.isArray(value.checks)?[...new Set(value.checks.filter(key=>typeof key==='string'&&Object.hasOwn(names,key)))]:[];
@@ -363,7 +392,7 @@ const ShadowStory=(()=>{
   if(Object.hasOwn(rooms,value.lastCheck?.room)&&extra(visit(state,value.lastCheck.room),value.lastCheck.key))state.lastCheck=value.lastCheck;
   return state;
  }
- return {rooms,stages,names,fresh,next,complete,reached,visit,act,extra,inRoom,inspect,restore,suspended,risk,limit,reports,feedback,
-  deviceNames,screenGroups,screenGroup,hostFor,roomSurface,deviceStatus,screenLabel};
+ return {rooms,stages,names,fresh,next,complete,reached,visit,act,extra,inRoom,inspect,restore,suspended,risk,limit,reports,feedback,feedbackRoom,
+  deviceNames,screenGroups,screenGroup,hostFor,roomSurface,deviceStatus,screenLabel,phoneApproval,phoneApprovals};
 })();
 if(typeof module!=='undefined')module.exports=ShadowStory;

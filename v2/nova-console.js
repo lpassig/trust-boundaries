@@ -23,11 +23,11 @@ function novaConsole(state,station,close,act){
   }
  }
  if(station==='sandbox'||station==='admission'){
-  const runtimeStopped=unknown&&reached('contain')||suspended||state.stage==='resist'&&closed;
-  field('Runtime',runtimeStopped?'Stopped':unknown?'Unmanaged workstation':`nova-runtime-${state.generation}`);
-  field('Admission',runtimeStopped?'Closed':unknown?'Unverified':state.admission==='Failed'?'Posture failed · issuance blocked':
+  const stopStatus=NovaRailway.runtimeStatus(state);
+  field('Runtime',stopStatus??(unknown?'Unmanaged workstation':`nova-runtime-${state.generation}`));
+  field('Admission',suspended?'Mission suspended · new issuance blocked':stopStatus?'Closed':unknown?'Unverified':state.admission==='Failed'?'Posture failed · issuance blocked':
    state.admission==='Pending'?'Waiting for workload and posture checks':'Verified for the current deployment');
-  field('Network',runtimeStopped?'Agent route unavailable':unknown?'Broad workstation access':stageNetwork(state));
+  field('Network',suspended&&!state.incident.confirmed.includes('runtime')?'Runtime route status unverified':stopStatus?'Agent route unavailable':unknown?'Broad workstation access':stageNetwork(state));
   if(station==='sandbox')field('Research plan',mission?.scope??'Review the request before running a managed task.');
  }
  if(station==='identity'){
@@ -63,7 +63,8 @@ function novaConsole(state,station,close,act){
  }
  if(station==='memory'||station==='artifact'){
   field('Workspace',unknown?'Local to the workstation':mission?.memory??'Awaiting a mission');
-  field('Status',suspended||unknown&&reached('contain')?'Quarantined':closed?'Archived':
+  field('Status',suspended?(state.incident.confirmed.includes('artifacts')?'Quarantined':'Quarantine requested · awaiting confirmation'):
+   unknown&&reached('contain')?'Quarantined':closed?'Archived':
    NovaRailway.deliveryDecision(state)==='Permit'?'Exact copy approved':reached('draft')?'Draft ready':reached('research')||reached('plan')?'Source notes available':'Empty');
   if(reached('second'))field('Separate workspace','M-105 · RE-105 documentation only');
   if(reached('draft')&&!suspended)field('Provenance',state.stage==='build'?'Public railway documentation':
@@ -86,8 +87,11 @@ function novaConsole(state,station,close,act){
  }
  const reportControls=station==='artifact'&&state.stage==='resist'&&reached('approve')&&!reached('deliver')&&!suspended;
  if(['artifact','delivery','review'].includes(station)&&state.artifactRevision&&!suspended){
-  field('Current report',state.artifactRevision===1?'Revision 1 · Inspect door sensor D3 before the next service.':
-   'Revision 2 · Inspect door sensor D3 and confirm the connector is seated before the next service.');
+  const report=state.stage==='build'?'Revision 1 · Common causes of rail disruption include equipment faults, severe weather and signal failures.':
+   state.stage==='authorize'?'Revision 1 · Inspect the RE-204 door sensor. The event log and earlier incident history support that recommendation.':
+   state.artifactRevision===1?'Revision 1 · Inspect door sensor D3 before the next service.':
+   'Revision 2 · Inspect door sensor D3 and confirm the connector is seated before the next service.';
+  field('Current report',report);
   if(state.approval)field('Approved report',state.approval.request.digest);
   if(station==='delivery')field('Delivery service',NovaRailway.deliveryDecision(state));
  }

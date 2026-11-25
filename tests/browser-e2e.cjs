@@ -178,6 +178,11 @@ async function immersionReview(){
   await tap(q('[data-shadow-room="'+room+'"]'));
  };
  const novaRoom=async room=>tap(q('[data-nova-room="'+room+'"]'));
+ const customerTest=async ()=>{
+  ensure(document.querySelectorAll('.customer-test').length===1,'Missing or duplicate customer test');
+  await tap(q('.customer-test summary'));
+  ensure(q('.customer-test[open]').textContent.includes('Evidence to keep'),'Customer test omits evidence');
+ };
  const stages=['unknown','build','authorize','resist'];
  for(const [index,stage] of stages.entries()){
   await home();
@@ -187,12 +192,33 @@ async function immersionReview(){
   while(!ShadowStory.complete(household[stage])){
    const prior=household[stage];
    const [id,room,key,label]=ShadowStory.next(prior);
+   if(stage==='build'&&id==='laptop'&&innerWidth<500){
+    await deviceAction('Ask my parents for more time');
+    ensure(household.build.room==='bedroom'&&ShadowStory.next(household.build)[0]==='finishResearch','Extension did not keep Alex on his phone');
+    ensure(q('.shadow-reply').textContent.includes('The laptop stays locked'),'Extension granted too much access');
+    continue;
+   }
+   if(stage==='authorize'&&id==='askNotes'){
+    await deviceAction('Ask Dad for a read-only pass in the family app');
+    ensure(household.authorize.room==='bedroom'&&ShadowStory.next(household.authorize)[0]==='openLaptop','The folder request should complete on Alex’s phone');
+    ensure(q('.shadow-reply').textContent.includes('Family finances stays locked'),'The family app overgranted folder access');
+    continue;
+   }
    await alexRoom(room);
+   if(stage==='authorize'&&id==='readNotes'){
+    await deviceAction('Try to open Family finances');
+    ensure(q('.shadow-reply').textContent.includes('deny this read'),'Laptop did not enforce folder scope');
+   }
    await deviceAction(label);
    ensure(household[stage].index===prior.index+1,'Alex stalled at '+id);
+   if(stage==='build'&&id==='verify'){
+    await alexRoom('bedroom');
+    ensure(!q('.shadow-reply[role=status]')&&q('.nova-last-result summary').textContent.includes('Parents'),'Parents’ reply followed Alex out of the kitchen');
+   }
    if(stage==='authorize'&&id==='approveOutput')ensure(q('#game').textContent.includes('Ready to deliver'),'Alex’s receipt is unclear');
    if(++count>50)throw Error('Alex did not finish');
   }
+  await customerTest();
  }
  await alexRoom('kitchen');
  await tap(q('.room-scenarios summary'));
@@ -215,8 +241,17 @@ async function immersionReview(){
   let count=0;
   while(!NovaRailway.complete(novaStates[stage])){
    const next=NovaRailway.next(novaStates[stage]);
-   await novaRoom(next.room);
+   const priorRoom=novaStates[stage].room;
+   const remote=q('[data-nova-remote]')&&checkpoint!=='bootstrap'&&checkpoint!=='approve';
+   if(!remote&&priorRoom!==next.room)await novaRoom(next.room);
+   if(next.id==='permit'){
+    await tap(q('[data-ticket-preview=RE-999]'));
+    ensure(q('#ticket-preview-RE-999').textContent.includes('outside the mission')&&!novaStates.resist.ticket,'Preview created or allowed the wrong ticket');
+    await tap(q('[data-ticket-preview=RE-204]'));
+    ensure(q('#ticket-preview-RE-204').textContent.includes('Permit')&&q('#ticket-preview-RE-999')&&!novaStates.resist.ticket,'Preview should compare both decisions without creating a ticket');
+   }
    await action(next.label);
+   if(remote)ensure(novaStates[stage].room===priorRoom&&novaStates[stage].events.at(-1).environment===next.room,'A remote call moved the player or misattributed the event');
    if(next.id===checkpoint)break;
    if(++count>60)throw Error('Nova did not finish');
   }
@@ -233,6 +268,12 @@ async function immersionReview(){
    ensure(NovaRailway.next(novaStates.build).id==='restore-posture','Failed posture did not offer recovery');
   }
   await runNova(stage);
+  if(stage==='authorize'){
+   const json=[...document.querySelectorAll('details pre')].find(item=>item.textContent.includes('"mission_id"'));
+   const evidence=JSON.parse(json.textContent);
+   ensure(evidence.mission_id==='M-105'&&evidence.resource==='documentation/RE-105'&&evidence.decision==='allowed','RE-105 evidence names the wrong mission or result');
+  }
+  await customerTest();
   await action('Continue to the next stage');
  }
  await capture('nova-resist');
@@ -249,6 +290,12 @@ async function immersionReview(){
  await tap(q('.room-scenarios summary'));
  await action('Test a classified model payload');
  ensure(novaStates.resist.incident&&novaStates.resist.approvalVersion===null,'An incident did not retire the prior report approval');
+ await novaRoom('runtime');
+ await action('Runtime console');
+ ensure(q('.nova-console').textContent.includes('Stop requested · awaiting confirmation'),'Runtime reports a stop before confirmation');
+ await runNova('resist','ack-runtime');
+ await action('Runtime console');
+ ensure(q('.nova-console').textContent.includes('Stopped and verified'),'Verified runtime stop is missing from the console');
  await runNova('resist','recover');
  ensure(NovaRailway.next(novaStates.resist).id==='approve','Recovered mission skips reapproval');
  await runNova('resist','approve');
@@ -262,6 +309,7 @@ async function immersionReview(){
  await runNova('resist');
  ensure(novaStates.resist.deliveryReceipt.digest==='SIM-M-304-REPORT-2','Fresh approval did not bind the edited copy');
  ensure(q('#game').textContent.includes('Stage complete'),'No stage completion receipt');
+ await customerTest();
  ensure(localStorage.getItem('trust-boundaries-household-1')===alexSave,'Nova changed Alex’s saved game');
  return {width:innerWidth,stagePlaythroughs:8,joPhoneOutage:true,reapprovalAfterPause:true};
 }
@@ -405,6 +453,13 @@ async function verifyReference(send){
  }
  assert.equal(sequences,15);
  assert.equal(await inspect("document.querySelector('#labDecision').textContent.startsWith('PERMIT')"),true);
+ await inspect("document.querySelector('[data-layer=\"6\"]').click()");
+ assert.match(await inspect("document.querySelector('#labDecision').textContent"),/^PERMIT/);
+ assert.match(await inspect("document.querySelector('#labResponse').textContent"),/Automated response is off/);
+ await inspect("let request=document.querySelector('#labRequest');request.value='finance';request.dispatchEvent(new Event('change'))");
+ assert.match(await inspect("document.querySelector('#labDecision').textContent"),/^DENY/);
+ await inspect("document.querySelector('[data-layer=\"4\"]').click()");
+ assert.match(await inspect("document.querySelector('#labDecision').textContent"),/^UNVERIFIED/);
  await evaluate("document.querySelector('.architecture-return').click()");
  assert.equal(await evaluate('location.hash'),'#nova-authorize');
  assert.equal(await evaluate("NovaRailway.reached(novaStates.authorize,'history')"),true);
@@ -497,6 +552,14 @@ async function germanReview(){
  const q=selector=>document.querySelector(selector);
  const check=(condition,message)=>{if(!condition)throw Error(message);};
  const lang=()=>document.documentElement.lang;
+ const checkCustomerTest=(journey,stage)=>{
+  const card=q('.customer-test');
+  const [title,steps,result,evidence]=FieldGuide.customerTests[journey][stage];
+  check(document.querySelectorAll('.customer-test').length===1,'German stage is missing its customer test');
+  card.querySelector('summary').click();
+  check(card.open&&[title,steps,result,evidence].every(part=>tr(part)!==part&&card.textContent.includes(tr(part))),
+   'German customer test is incomplete for '+journey+'/'+stage);
+ };
  await tap(q('#language-game'));
  check(lang()==='de'&&q('.topbar nav a').textContent==='Startseite','German did not switch on');
  check(q('#home-alex').textContent.includes('Zu Hause'),'German start page is missing Alex’s introduction');
@@ -510,6 +573,16 @@ async function germanReview(){
   for(let i=0;i<40;i++){
    const state=household[id],next=ShadowStory.next(state);
    if(!next)break;
+   const inApp=ShadowStory.phoneApproval(state);
+   if(inApp){
+    if(!q('[data-device-screen=phone]'))q('[data-device-launch=phone]').click();
+    const request=q(`[data-household-object=${inApp}]`);
+    const {label,reply}=ShadowStory.phoneApprovals[inApp];
+    check(tr(label)!==label&&request.textContent.includes(tr(label)),'The family app request is untranslated');
+    request.click();
+    check(tr(reply)!==reply&&q('.shadow-reply').textContent.includes(tr(reply)),'The family app request has no German result');
+    continue;
+   }
    const [,room,key,label,,reply]=next;
    if(q('.device-breadcrumb button'))q('.device-breadcrumb button').click();
    q('[data-shadow-room='+room+']').click();
@@ -522,6 +595,7 @@ async function germanReview(){
    check(document.documentElement.scrollWidth<=innerWidth,'German Alex scene overflows after '+label);
   }
   check(ShadowStory.complete(household[id]),'German Alex stage did not finish: '+id);
+  checkCustomerTest('alex',id);
  }
  await tap(q('[data-shadow-room=bedroom]'));
  await tap(q('.room-scenarios summary'));
@@ -536,8 +610,15 @@ async function germanReview(){
   for(let i=0;i<40;i++){
    const next=NovaRailway.next(novaStates[id]);
    if(!next)break;
-   q('[data-nova-room='+next.room+']').click();
-   const target=q('[data-nova-station='+next.station+']');
+   const remote=q('[data-nova-remote]');
+   if(!remote)q('[data-nova-room='+next.room+']').click();
+   if(next.id==='permit'){
+    q('[data-ticket-preview=RE-999]').click();
+    check(q('#ticket-preview-RE-999').textContent.includes('nicht zum Auftrag gehört'),'German ticket preview refusal is missing');
+    q('[data-ticket-preview=RE-204]').click();
+    check(q('#ticket-preview-RE-204').textContent.includes('gesonderten Ausführung'),'German ticket preview permit is missing');
+   }
+   const target=remote||q('[data-nova-station='+next.station+']');
    check(target?.textContent.includes(tr(next.label))&&tr(next.label)!==next.label,'German Nova action missing for '+next.id);
    target.click();
    check(q('#nova-reply p')?.textContent===tr(next.reply)&&tr(next.reply)!==next.reply,'German Nova dialogue missing for '+next.id);
@@ -545,6 +626,7 @@ async function germanReview(){
    check([...document.querySelectorAll('.nova-navigation button')].every(button=>button.scrollWidth<=button.clientWidth+1),'German room label clips');
   }
   check(NovaRailway.complete(novaStates[id]),'German Nova stage did not finish: '+id);
+  checkCustomerTest('nova',id);
  }
  await capture('german-nova');
  await tap(q('.topbar nav a[href="#architecture"]'));
@@ -567,6 +649,9 @@ async function verifyGermanGuide(send){
  assert.equal(await evaluate("document.querySelector('#stepCounter').textContent.startsWith('Schritt 1')",context),true);
  assert.equal(await evaluate("document.querySelector('#stepTitle').textContent.includes('nach Finanzdaten')",context),true);
  assert.equal(await evaluate("document.querySelector('#architectureCanvas').textContent.includes('Mitarbeiterzugang')",context),true);
+ await evaluate("document.querySelector('[data-stage=\"3\"]').click();document.querySelector('[data-layer=\"6\"]').click()",context);
+ assert.match(await evaluate("document.querySelector('#labDecision').textContent",context),/^ERLAUBT/);
+ assert.match(await evaluate("document.querySelector('#labResponse').textContent",context),/automatische Reaktion ist aus/);
  await send('Page.reload');
  for(let tries=0;tries<30;tries++){
   if(await evaluate("document.readyState==='complete'&&typeof household!=='undefined'"))break;

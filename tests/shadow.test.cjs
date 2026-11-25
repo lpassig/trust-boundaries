@@ -35,6 +35,30 @@ function tryAction(state,room,key){
  return Shadow.act(state,key);
 }
 
+test('Alex can request a fresh Wikipedia window from the phone where access expired',()=>{
+ const expired=reach('build','retry');
+ assert(Shadow.roomSurface(expired).screens.phone.includes('askTime'));
+ assert.equal(Shadow.act(Shadow.visit(expired,'living'),'askTime').index,expired.index);
+ const approved=Shadow.act(expired,'askTime');
+ assert.equal(approved.room,'bedroom');
+ assert.equal(Shadow.next(approved)[0],'finishResearch');
+ assert.equal(Shadow.reached(approved,'laptop'),false);
+ assert.equal(Shadow.feedbackRoom(Shadow.visit(approved,'kitchen')),'bedroom');
+ assert.match(Shadow.feedback(Shadow.restore('build',approved))[1],/family app still works/);
+ assert.equal(Shadow.feedbackRoom(Shadow.visit(reach('build','verify'),'bedroom')),'kitchen');
+});
+
+test('the family app adds the same conductor-only pass without a kitchen detour',()=>{
+ const planned=reach('authorize','source');
+ assert(Shadow.roomSurface(planned).screens.phone.includes('requestNotes'));
+ const approved=Shadow.restore('authorize',Shadow.act(planned,'requestNotes'));
+ assert.equal(approved.room,'bedroom');
+ assert.match(Shadow.feedback(approved)[1],/Family finances stays locked/);
+ const signedIn=Shadow.act(Shadow.visit(approved,'living'),'laptop');
+ assert.match(Shadow.feedback(Shadow.act(signedIn,'finances'))[1],/deny this read/);
+ assert(Shadow.reached(Shadow.act(signedIn,'conductor'),'readNotes'));
+});
+
 test('Authorize adds only the conductor read after the parents approve the exact request',()=>{
  const firstGrant=reach('authorize','provision');
  assert.match(Shadow.extra(Shadow.visit(firstGrant,'living'),'laptop')[3],/separate authorization/);

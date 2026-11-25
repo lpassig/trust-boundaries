@@ -39,6 +39,25 @@ test('mission expansion versions the grant without changing the runtime',()=>{
  const end=walk('authorize');
  assert.equal(Nova.mission(end).status,'Closed');
  assert.match(end.reply.reply,/M-105/);
+ const evidence=Nova.restore('authorize',end).events.at(-1);
+ assert.deepEqual([evidence.missionId,evidence.missionVersion,evidence.resource,evidence.action,evidence.decision],
+  ['M-105',1,'documentation/RE-105','read','Allowed']);
+ assert.equal(evidence.enforcer,'Documentation search');
+ assert.equal(granted.events.at(-1).decisionSource,'Business policy decision');
+ assert.equal(granted.events.at(-1).enforcer,null);
+});
+
+test('containment requests a runtime stop until the runtime controller verifies it',()=>{
+ let state=apply(walk('resist','plan'),'disclosure','runtime');
+ assert(state.incident);
+ assert.equal(Nova.runtimeStatus(state),'Stop requested · awaiting confirmation');
+ while(Nova.next(state).id!=='ack-runtime'){
+  const step=Nova.next(state);
+  state=apply(state,step.id,step.room);
+ }
+ assert.equal(Nova.runtimeStatus(Nova.restore('resist',state)),'Stop requested · awaiting confirmation');
+ state=apply(state,'ack-runtime','runtime');
+ assert.equal(Nova.runtimeStatus(Nova.restore('resist',state)),'Stopped and verified');
 });
 
 test('Resist opens a distinct mission for the same asset and restores existing progress',()=>{
