@@ -339,6 +339,7 @@ async function explorationReview(){
  await tap(q('[data-nova-room=resources]'));
  await action('Incident history');
  check(q('.nova-console table').textContent.includes('INC-117'),'Expected incident row is absent');
+ check(q('.console-table').scrollWidth<=q('.console-table').clientWidth,'Mobile incident table clips its columns');
  await capture('nova-database-console');
  await action('Close console');
  await tap(q('.decision-note summary'));
@@ -376,6 +377,7 @@ async function verifyReference(send){
   return script=>evaluate(script,context);
  }
  const inspect=await openFrame("document.querySelector('#seqSelect option:checked')?.textContent.includes('actual resource parameters')");
+ assert.equal(await inspect("document.querySelector('.nav button[aria-current]').dataset.jump"),'sequences');
  assert.equal(await evaluate("document.querySelector('iframe').contentDocument"),null);
  assert.match(await inspect("document.querySelector('#seqSource').textContent"),/^sequenceDiagram/);
  assert.equal(await inspect("document.querySelectorAll('#seqCanvas [data-msg]').length"),11);

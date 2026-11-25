@@ -236,6 +236,10 @@ body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-temp
 .console-table table { border-collapse: collapse; width: 100%; font-size: 14px; text-align: left; }
 .console-table caption { text-align: left; color: var(--nova-accent); font-weight: 700; padding-bottom: 5px; }
 .console-table th, .console-table td { border-bottom: 1px solid #405564; padding: 6px 8px; min-width: 72px; }
+@media (max-width: 560px) {
+ .console-table table { table-layout: fixed; font-size: 12px; }
+ .console-table th, .console-table td { min-width: 0; padding-inline: 4px; overflow-wrap: anywhere; }
+}
 .nova-inbox { border-left: 3px solid var(--amber); }
 .nova-inbox .actions, .nova-console p:last-child { margin-bottom: 0; }
 .nova-dialogue{position:relative;margin:0 12px 12px;padding:10px 13px;border:1px solid #526877;border-radius:12px;background:#213541}
