@@ -59,7 +59,7 @@ function showNovaIntro(){
   <div class="nova-intro">
    <div><p>Follow the same four maturity stages as Alex. Help Nova investigate a disruption at a fictional railway company.</p>
     <div class="actions">${next?button(started?'Continue Nova':'Start Nova',()=>navigate(novaStageRoute(next))):''}
-     ${button('Play Alex',()=>navigate(''),'secondary')}${button('Explore the architecture',()=>navigate('architecture'),'secondary')}</div></div>
+     ${button('Home',()=>navigate(''),'secondary')}${button('Explore the architecture',()=>navigate('architecture'),'secondary')}</div></div>
    ${novaDiorama('external',`<div class="nova-crew" aria-hidden="true">${novaSprite()}</div>`)}
   </div>
   <h2>Choose a stage</h2><div class="stage-list choices">${Object.entries(NovaRailway.stages).map(([stage,data])=>{

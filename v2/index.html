@@ -12,11 +12,22 @@
  <header class="topbar">
   <a class="brand" href="#">The Agent House</a>
   <nav aria-label="Main navigation">
-   <a class="quiet" href="#">Stages</a>
+   <a class="quiet" href="#">Home</a>
    <a class="quiet" href="#architecture">Architecture</a>
+   <button class="quiet" id="reset-game" type="button">Reset</button>
   </nav>
  </header>
  <main id="game"></main>
+ <dialog id="reset-dialog" aria-labelledby="reset-title" aria-describedby="reset-description">
+  <form method="dialog">
+   <h2 id="reset-title">Reset progress?</h2>
+   <p id="reset-description">This clears saved progress for Alex, Nova and the optional scenarios on this device.</p>
+   <div class="actions">
+    <button class="secondary" type="submit" value="cancel" autofocus>Cancel</button>
+    <button class="primary" type="submit" value="reset">Reset progress</button>
+   </div>
+  </form>
+ </dialog>
  <script src="../assets/people.js"></script>
  <script src="shadow.js"></script>
  <script src="trust-checks.js"></script>

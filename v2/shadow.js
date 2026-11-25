@@ -3,7 +3,7 @@ const ShadowStory=(()=>{
  const rooms={outside:'Outside the house',bedroom:'Alex’s room',living:'Living room',kitchen:'Kitchen'};
  const amount='€4,280';
  const stages={
-  unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',opening:'Tom’s waiting on the pavement. He has a dare for Alex, and nobody inside can hear it.',steps:[
+  unknown:{title:'Stage 0 · Unknown',tag:'UNKNOWN',opening:'Tom’s waiting on the pavement. He has a dare for Alex, and nobody inside can hear it.',steps:[
    ['tom','outside','tom','Meet Tom','Tom','“I bet you can’t find out how much your parents have in their joint account.” Tom hands Alex a card with the dare on it. Nobody inside sees it.'],
    ['accept','outside','card','Accept Tom’s assignment','Alex','Alex takes the card home. He wants to prove Tom wrong, but neither of them has permission from the account holders.'],
    ['pin','bedroom','board','Pin Tom’s assignment','Alex','Tom’s card goes on Alex’s personal board beside assignments from other people. His parents know nothing about it or the secret phone.'],
@@ -22,7 +22,7 @@ const ShadowStory=(()=>{
    ['disclose','kitchen','alex','Tell them whether Tom got the workbook','Alex','“I read the balance and wrote it twice. Tom hasn’t got the workbook.” The parents record what Alex reports about sharing.'],
    ['contain','kitchen','parents','Hear the parents’ decision','Parents','“We’ve signed out of the bank and set the laptop to ask for a sign-in. Put the phone, laptop, notepad and workbook in the cabinet. We’ll lock it and take Tom’s card down.”']
   ]},
-  build:{title:'Stage 1 · AI Assistant',tag:'BUILD',opening:'The teacher is outside with a new assignment. Help Alex get permission, finish the work and deliver it to the right person.',steps:[
+  build:{title:'Stage 1 · Build',tag:'BUILD',opening:'The teacher is outside with a new assignment. Help Alex get permission, finish the work and deliver it to the right person.',steps:[
    ['teacher','outside','teacher','Meet Ms Patel','Ms Patel','“Research the planets and prepare a workbook by Friday.” Ms Patel signs the card and hands it to Alex.'],
    ['take','outside','card','Accept the solar-system assignment','Alex','Alex takes the signed card home to ask for permission.'],
    ['verify','kitchen','parents','Show my parents the signed card','Parents','They recognize Ms Patel and confirm the assignment and signature through their saved school contact. They approve the objective, Friday deadline and workbook.'],
@@ -50,7 +50,7 @@ const ShadowStory=(()=>{
    ['deliver','outside','teacher','Deliver the approved workbook to Ms Patel','Ms Patel','Alex hands Ms Patel the approved workbook. She confirms receipt.'],
    ['close','kitchen','parents','Report delivery and close the assignment','Parents','They mark the card complete and take it off the active board. They archive the notepad and a workbook copy. A new assignment needs new approval.']
   ]},
-  authorize:{title:'Stage 2 · Semi-Autonomous',tag:'AUTHORIZE',opening:'Ms Patel has a new assignment about trains. Alex can choose how to research it, and his parents can authorize a new source while he works.',steps:[
+  authorize:{title:'Stage 2 · Authorize',tag:'AUTHORIZE',opening:'Ms Patel has a new assignment about trains. Alex can choose how to research it, and his parents can authorize a new source while he works.',steps:[
    ['teacher','outside','teacher','Meet Ms Patel about the train project','Ms Patel','“Explain how a train gets moving and stops. Write a workbook for Friday.” She signs the card and gives it to Alex.'],
    ['take','outside','card','Take the signed assignment home','Alex','Alex takes the card to the kitchen, where the family keeps its approved assignments.'],
    ['verify','kitchen','parents','Show my parents the signed train assignment','Parents','They check the card against the assignment in their saved school contact and approve the workbook for Ms Patel. Alex can decide how to do the research.'],
@@ -67,7 +67,7 @@ const ShadowStory=(()=>{
    ['approveOutput','kitchen','parents','Approve delivery and end research access','Parents','They approve this workbook for Ms Patel and close the Wikipedia and laptop grants. Alex has the approved copy ready to deliver. The laptop still refuses the conductor folder.'],
    ['deliver','outside','teacher','Deliver the train workbook to Ms Patel','Ms Patel','She confirms she received the approved workbook. The assignment is now complete, and Alex can archive the card.']
   ]},
-  resist:{title:'Stage 3 · Governed Autonomy',tag:'RESIST',opening:'Alex’s parents are about to leave on vacation. Start in the kitchen to see what they delegate to the babysitter, then help Alex complete a new railway report.',steps:[
+  resist:{title:'Stage 3 · Resist',tag:'RESIST',opening:'Alex’s parents are about to leave on vacation. Start in the kitchen to see what they delegate to the babysitter, then help Alex complete a new railway report.',steps:[
    ['handover','kitchen','parents','Listen to the handover before vacation','Parents','They introduce the babysitter, Jo, to Alex and Mia. Jo can approve routine school resources from the house rules, verify assignments and request exceptions. The parents keep the authority to change those rules or approve sensitive resources.'],
    ['miaSetup','kitchen','mia','See how Mia gets her own access','Mia','“I have my own phone and assignment board.” Mia’s permissions belong to her. The grandparents continue observing indoors and report concerns to Jo and the parents.'],
    ['teacher','outside','teacher','Get the signed railway report assignment','Ms Patel','“Explain how a railway operates, with a technical explanation and an illustration.” Ms Patel signs the card and gives it to Alex.'],

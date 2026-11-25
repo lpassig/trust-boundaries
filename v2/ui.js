@@ -229,7 +229,7 @@ function showHousehold(stage,look=null,device=null){
   <div class="actions">${!step&&upNext?button(`Continue to Stage ${chapter+1}`,()=>navigate(stageRoutes[upNext])):''}
    ${!step&&chapter>=2?button('Explore the technical reference',()=>navigate('architecture'),'secondary'):''}
    ${!step?button('Compare with Nova at this stage',()=>navigate(novaStageRoute(stage)),'secondary'):''}
-   ${index?button(`Replay Stage ${chapter}`,()=>set(ShadowStory.fresh(stage)),'secondary'):''}${button('All stages',()=>navigate(''),'secondary')}</div>`, `${data.tag} · ALEX`);
+   ${index?button(`Replay Stage ${chapter}`,()=>set(ShadowStory.fresh(stage)),'secondary'):''}${button('Home',()=>navigate(''),'secondary')}</div>`, `${data.tag} · ALEX`);
  $$('[data-shadow-room]').forEach(control=>control.onclick=()=>{
   set(ShadowStory.visit(state,control.dataset.shadowRoom));
   $('[data-shadow-room][aria-current]')?.focus({preventScroll:true});
@@ -237,36 +237,47 @@ function showHousehold(stage,look=null,device=null){
 }
 
 const stageRoutes={unknown:'shadow',build:'build',authorize:'authorize',resist:'resist'};
-const stageIntroductions={
- unknown:'Find out what happens when a hidden phone and an open bank session go unnoticed.',
- build:'Research the solar system with a school assignment and a managed phone.',
- authorize:'Find a better source and get read-only access to one folder.',
- resist:'Work with Jo and Mia, then see which controls respond when someone crosses a boundary.'
+const maturityStages={
+ unknown:['Discover unmanaged activity and contain what it reached.','Find out what happens when a hidden phone and an open bank session go unnoticed.'],
+ build:['Verify who is acting and give them a controlled place to work.','Research the solar system with a school assignment and a managed phone.'],
+ authorize:['Grant access for a specific task and check that it ends with the work.','Find a better source and get read-only access to one folder.'],
+ resist:['Limit delegated actions and verify containment when something goes wrong.','Work with Jo and Mia, then see which controls respond when someone crosses a boundary.']
 };
+function maturityChoice(stage,journey,model,state,route,summary){
+ const name=journey==='alex'?'Alex':'Nova';
+ const action=model.complete(state)?'Review':state.index?'Continue':'Play';
+ return button(`${action} ${name}`,()=>navigate(route),'choice',summary,'',{
+  'data-home-journey':journey,
+  'aria-describedby':'maturity-'+stage
+ });
+}
 function showIntro(){
- const current=Object.keys(household).find(stage=>!ShadowStory.complete(household[stage]));
- const started=Object.values(household).some(state=>state.index>0);
- showScreen('The Agent House',`
-  <p>Help Alex complete assignments as he earns more independence. Each stage returns to the same four rooms and gives you new ways to test who can grant access, what enforces it, and when it ends.</p>
-  <div class="actions">${current?button(started?'Continue Alex':'Play Alex',()=>navigate(stageRoutes[current])):''}
-   ${button('Play Nova’s technical journey',()=>navigate('nova'),'secondary')}</div>
-  <h2>Choose a stage</h2>
-  <div class="stage-list choices">${Object.entries(ShadowStory.stages).map(([stage,data])=>{
-   const status=ShadowStory.complete(household[stage])?' · Completed':household[stage].index?' · In progress':'';
-   return button(data.title,()=>navigate(stageRoutes[stage]),'choice',data.tag+status+' · '+stageIntroductions[stage]);
-  }).join('')}</div>
-  <p class="small-print">Select the highlighted action to advance. Open a phone or laptop to use its apps, browser and files. From Stage 1, open <b>Optional security scenarios</b> to test a control. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
+ showScreen('Raise the BAR',`
+  <p>Explore four stages of AI security maturity. Follow Alex at home or Nova at a railway company. Start at Unknown for the full story, or jump to the stage you want to explore.</p>
+  <div class="stage-list choices">${Object.entries(maturityStages).map(([stage,[lesson,alexSummary]])=>`
+   <section class="maturity-card" data-maturity="${stage}" aria-labelledby="maturity-${stage}">
+    <h2 id="maturity-${stage}">${esc(ShadowStory.stages[stage].title)}</h2>
+    <p>${esc(lesson)}</p>
+    <div class="maturity-journeys">
+     ${maturityChoice(stage,'alex',ShadowStory,household[stage],stageRoutes[stage],alexSummary)}
+     ${maturityChoice(stage,'nova',NovaRailway,novaStates[stage],novaStageRoute(stage),NovaRailway.stages[stage].summary)}
+    </div>
+   </section>`).join('')}</div>
+  <p class="small-print">${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'TRUST BOUNDARIES');
 }
 function renderRoute(){
  const route=location.hash.slice(1);
  const architectureOpen=route==='architecture';
  document.body.classList.toggle('architecture-open',architectureOpen);
- const link=$('.topbar a[href="#architecture"]');
- if(architectureOpen)link.setAttribute('aria-current','page');
- else link.removeAttribute('aria-current');
  const stage=Object.keys(stageRoutes).find(key=>stageRoutes[key]===route);
  const novaStage=Object.keys(NovaRailway.stages).find(key=>novaStageRoute(key)===route);
+ const atHome=!stage&&!novaStage&&route!=='nova'&&!architectureOpen;
+ for(const link of $$('.topbar nav a')){
+  const current=link.hash==='#architecture'?architectureOpen:atHome;
+  if(current)link.setAttribute('aria-current','page');
+  else link.removeAttribute('aria-current');
+ }
  if(stage)showHousehold(stage);
  else if(novaStage)showNova(novaStage);
  else if(route==='nova')showNovaIntro();
@@ -283,6 +294,22 @@ $$('.topbar a').forEach(link=>link.onclick=event=>{
  if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
  event.preventDefault();
  navigate(link.hash.slice(1));
+});
+const resetDialog=$('#reset-dialog');
+$('#reset-game').onclick=()=>{
+ resetDialog.returnValue='';
+ resetDialog.showModal();
+};
+resetDialog.addEventListener('close',()=>{
+ if(resetDialog.returnValue!=='reset')return;
+ for(const stage of Object.keys(household))household[stage]=ShadowStory.fresh(stage);
+ for(const stage of Object.keys(novaStates))novaStates[stage]=NovaRailway.fresh(stage);
+ checkPaths={};
+ try{
+  for(const key of [HOUSEHOLD_SAVE,NOVA_SAVE,CHECK_SAVE])localStorage.removeItem(key);
+  stored=true;
+ }catch{stored=false;}
+ navigate('');
 });
 window.addEventListener('hashchange',renderRoute);
 renderRoute();
