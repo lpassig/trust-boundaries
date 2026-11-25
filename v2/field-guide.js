@@ -2,19 +2,19 @@
 const FieldGuide=(()=>{
  const missions={
   alex:{
-   unknown:['Tom’s dare','Follow the dare and find out how the family discovers and stops the unauthorized activity.',[
-    ['tom','Find out what Tom wants'],['watch','Explore the hidden phone'],['revisit','Trace the exposed bank account'],
+   unknown:['Tom’s dare','Follow Tom’s dare and find out what the family does when they catch Alex.',[
+    ['tom','Find out what Tom wants'],['watch','Explore the hidden phone'],['revisit','Find the bank page left open'],
     ['record','Make the two written copies'],['discover','Investigate what happened'],['contain','Close the session and secure the copies']]],
    build:['The solar-system workbook','Finish Ms Patel’s workbook with an approved phone and deliver it to her.',[
-    ['teacher','Verify and approve the assignment'],['request','Set up the phone for homework'],['review','Collect facts and start the workbook'],
-    ['expire','Renew the research window'],['finishResearch','Finish the workbook'],['reviewOutput','Approve, deliver and archive it']]],
+    ['teacher','Check the task with the teacher'],['request','Set up the phone for homework'],['review','Collect facts and start the workbook'],
+    ['expire','Ask for more time'],['finishResearch','Finish the workbook'],['reviewOutput','Get the okay, deliver the workbook and put it away']]],
    authorize:['The train research workbook','Use an approved public source and ask for exactly the extra access the workbook needs.',[
     ['teacher','Verify the train assignment'],['provision','Research with approved resources'],['source','Get permission for the conductor notes'],
     ['openLaptop','Read the approved folder and write the workbook'],['reviewOutput','Approve the copy, end access and deliver']]],
-   resist:['The railway report','Finish a railway report while Jo handles routine decisions and the parents stay in charge of sensitive access.',[
-    ['handover','Set up Jo’s authority and Mia’s access'],['teacher','Verify the report assignment'],
+   resist:['The railway report','Finish a railway report while Jo looks after Alex and calls the parents about anything private.',[
+    ['handover','Find out what Jo and Mia are allowed to do'],['teacher','Verify the report assignment'],
     ['provision','Get routine access and request an exception'],['openLaptop','Read the notes and create the illustration'],
-    ['askMia','Delegate proofreading and handle Tom’s request'],['reviewOutput','Approve, deliver and retire access']]]
+    ['askMia','Ask Mia to check spelling and hear Tom out'],['reviewOutput','Get the okay, hand it in and end extra access']]]
   },
   nova:{
    unknown:['The unmanaged railway job','Trace an unverified request to its data and confirm which routes the company can contain.',[
@@ -49,12 +49,12 @@ const FieldGuide=(()=>{
    if(stage==='build'&&reached('register'))return ['Registered','Runtime admission and a mission are still required.'];
    return ['Awaiting authorization','Protected operations need a verified mission.'];
   }
-  if(model.suspended(state))return ['Paused for review','Alex’s assignment access is suspended. The parents can review the incident.'];
+  if(model.suspended(state))return ['Paused for review','Alex’s extra access is on hold while his parents check what happened.'];
   if(stage==='unknown')return model.complete(state)?
-   ['Contained','The bank session is closed, and the known devices and copies are secured.']:
-   ['Unmanaged','Tom’s dare gives Alex no permission to open the bank account.'];
+   ['Bank signed out','The parents signed out of the bank and locked away the devices and copies they found.']:
+   ['No permission','Tom’s dare gives Alex no permission to open the bank account.'];
   if(reached('approveOutput'))return ['Research access closed','Only the approved copy is ready for Ms Patel.'];
-  if(reached('expire')&&!reached('extend'))return ['Window expired','Wikipedia needs a new homework window.'];
+  if(reached('expire')&&!reached('extend'))return ['Window expired','Ask the parents for more time on Wikipedia.'];
   if(reached('grantNotes')){
    const rights=['Wikipedia','temporary read-only conductor notes'];
    if(reached('grantModel'))rights.push('public-facts illustration');
@@ -62,8 +62,8 @@ const FieldGuide=(()=>{
    return ['Active',rights.join(' · ')];
   }
   if(reached('provision'))return ['Active','Wikipedia during the approved homework window.'];
-  if(reached('verify'))return ['Assignment verified','The family still needs to grant device access.'];
-  return ['Awaiting approval','The family needs to verify the assignment.'];
+  if(reached('verify'))return ['Assignment verified','The family still needs to say which apps Alex can use.'];
+  return ['Awaiting approval','The family needs to check that the school task is real.'];
  };
  function inspect(journey,model,state){
   const [title,objective,groups]=missions[journey][state.stage];
@@ -81,19 +81,19 @@ const FieldGuide=(()=>{
  const storyReferences={
   alex:{
    unknown:{
-    ignore:['shadow','A dismissible reminder',['YouTube displayed a reminder. Alex could dismiss it and keep watching.','Nova could continue spending against an external model without an enforced budget.']],
-    statement:['shadow','Inherited access',['The bank trusted an existing session and returned the balance. Alex had no permission from the owners.','The CRM and Kafka saw inherited accounts when the unmanaged Nova connected.']],
+    ignore:['shadow','Why YouTube kept playing',['YouTube displayed a reminder. Alex could dismiss it and keep watching.','Nova could continue spending against an external model without an enforced budget.']],
+    statement:['shadow','Why the bank page opened',['The bank showed the balance because Alex’s parents were already signed in. They hadn’t said he could see it.','The CRM and Kafka saw inherited accounts when the unmanaged Nova connected.']],
     discover:['shadow','Independent observation',['The grandparents reported what they found indoors. The parents still had to investigate and close access.','Security operations has visibility only into the sources it can observe.']],
     contain:['shadow','Tested boundaries',['The parents signed out of the bank and secured the known devices and copies.','Nova’s SOC verifies affected routes individually. Neither story can guarantee visibility into an unrelated outside device.']]
    },
    build:{
     verify:['bootstrap','Verified issuer',['The parents used a school contact they already trusted to verify Ms Patel and the assignment.','Nova verifies the requester’s identity and authority separately from runtime admission.']],
-    provision:['model-tool','An enforced app limit',['The parents approved Wikipedia and a time window. The phone applies the rule.','Nova’s runtime and configured gateway allow only the approved model and tool routes.']],
+    provision:['model-tool','Who controls what opens on the phone',['The parents approved Wikipedia and a time window. The phone applies the rule.','Nova’s runtime and configured gateway allow only the approved model and tool routes.']],
     retry:['model-tool','A real access limit',['The phone refused the same website after the window expired. The parents can renew the window.','A model gateway can enforce a counter or deadline independently of the agent’s request.']]
    },
    authorize:{
     grantNotes:['expand','Permission for a specific folder',['Dad approved one read-only folder for the workbook. The pass lets Alex ask the laptop for it.','Vault can authorize a credential. The receiving service separately enforces the observed read.']],
-    readNotes:['observed-read','Read-only at the file',['The laptop checks the folder and operation. An edit or read of Family finances is outside the permission.','Nova’s resource enforcement point checks the actual asset, operation and time window.']],
+    readNotes:['observed-read','Why Alex can read the notes but can’t edit them',['The laptop checks the folder and operation. An edit or read of Family finances is outside the permission.','Nova’s resource enforcement point checks the actual asset, operation and time window.']],
     approveOutput:['isolation','Access ends before delivery',['The parents approved the current copy and ended research access. The approved copy can still go to Ms Patel.','Nova’s closed mission loses its credentials without affecting independent work.']]
    },
    resist:{

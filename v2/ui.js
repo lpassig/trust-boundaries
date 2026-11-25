@@ -5,6 +5,14 @@ let stored=true;
 const HOUSEHOLD_SAVE='trust-boundaries-household-1';
 const CHECK_SAVE='trust-boundaries-checks-1';
 const GUIDE_SAVE='trust-boundaries-guide-1';
+const LANGUAGE_SAVE='trust-boundaries-language';
+const chosenLanguage=new URLSearchParams(location.search).get('lang');
+let language=chosenLanguage==='de'?'de':'en', languageView;
+if(!['en','de'].includes(chosenLanguage)){
+ try{if(localStorage.getItem(LANGUAGE_SAVE)==='de')language='de';}catch{}
+}
+const german=createTranslator(GERMAN);
+const tr=text=>language==='de'?german.tr(text):text;
 const household=Object.fromEntries(Object.keys(ShadowStory.stages).map(stage=>[stage,ShadowStory.fresh(stage)]));
 let checkPaths={};
 let guideSettings={mode:'guided',autoHints:true};
@@ -32,21 +40,26 @@ button.id=0;button.bindings=[];
 function bind(){for(const[id,callback]of button.bindings){const el=document.getElementById(id);if(el)el.onclick=callback;}button.bindings=[];}
 function showScreen(title,body,label){
  clearInterval(hintTimer);
+ languageView=null;
  $('#game').innerHTML=`<p class="eyebrow">${esc(label)}</p><h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${body}`;
+ if(language==='de')german.localize($('#game'));
  bind();
 }
 function showArchitecture(parameters){
  clearInterval(hintTimer);
+ languageView=null;
  const frame=document.createElement('iframe');
  frame.className='architecture-guide-frame';
- frame.title='Enterprise Architecture Guide';
+ frame.title=tr('Enterprise Architecture Guide');
  frame.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');
  frame.setAttribute('allow','clipboard-write');
  frame.referrerPolicy='no-referrer';
  const stage=Number(parameters.get('stage'));
- if(parameters.has('stage')&&Number.isInteger(stage)&&stage>=0&&stage<=3){
+ if(language==='de'||parameters.has('stage')&&Number.isInteger(stage)&&stage>=0&&stage<=3){
   frame.addEventListener('load',()=>frame.contentWindow.postMessage({
-   type:'trust-boundaries-reference',stage,sequence:parameters.get('sequence'),component:parameters.get('component')
+   type:'trust-boundaries-reference',stage:parameters.has('stage')?stage:null,
+   sequence:parameters.get('sequence'),component:parameters.get('component'),
+   ...(language==='de'?{language,messages:GERMAN}:{})
   },'*'),{once:true});
  }
  const bundled=$('#architecture-guide-data');
@@ -56,7 +69,7 @@ function showArchitecture(parameters){
  if(isStoryRoute(from)){
   const back=document.createElement('button');
   back.className='quiet architecture-return';
-  back.textContent='← Return to '+(from.startsWith('nova-')?'Nova':'Alex');
+  back.textContent=tr('← Return to '+(from.startsWith('nova-')?'Nova':'Alex'));
   back.onclick=()=>navigate(from);
   $('#game').replaceChildren(back,frame);
  }else $('#game').replaceChildren(frame);
@@ -101,6 +114,7 @@ function guideControls(){
    <option value="exploration"${guided()?'':' selected'}>Exploration</option></select></label>`;
 }
 function bindMode(rerender){
+ languageView=rerender;
  $('#play-mode').onchange=event=>{
   setGuideSetting('mode',event.target.value);
   rerender();
@@ -143,11 +157,11 @@ function bindGuide(rerender,recommendation){
   if(level===nextLevel)return;
   level=nextLevel;
   mark.forEach(control=>control.classList.toggle('good',level>=2));
-  hint.textContent=level===0?'':level<3?recommendation.context:recommendation.exact;
+  hint.textContent=level===0?'':tr(level<3?recommendation.context:recommendation.exact);
   request.hidden=level===3;
   follow.hidden=level<3||guided()&&!recommendation.go;
  }
- follow.textContent=recommendation.goLabel||'Find the highlighted action';
+ follow.textContent=tr(recommendation.goLabel||'Find the highlighted action');
  follow.onclick=recommendation.go||(()=>{
   mark[0]?.focus();
   mark[0]?.scrollIntoView({block:'nearest'});
@@ -177,7 +191,7 @@ function digitalSlip(story){
  const slip=TrustChecks.permissionSlip(story,ShadowStory.reached,ShadowStory.suspended);
  if(!slip)return '';
  return `<details class="debrief permission-slip"><summary>Digital permission slip · ${esc(slip.status)}</summary>
-  <p>Grant generation ${slip.generation}. The laptop checks the current grant before returning the file.</p>
+  <p>Pass number ${slip.generation}. The laptop checks whether this pass still works before it opens Dad’s folder.</p>
   <dl>${slip.fields.map(([field,value])=>`<div><dt>${esc(field)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
   <p class="small-print">This is the player’s view of the authorization. A deployment can keep some fields in the authorization service and look them up when needed.</p></details>`;
 }
@@ -373,19 +387,19 @@ function showHousehold(stage,look=null,device=null){
   </section>`;
  }
  const workplace=[
-  'Tom supplies a goal. The account owners control authorization. A usage reminder can be dismissed. The grandparents supply evidence about indoor activity. Taking custody and closing the session address the routes the family discovered. Conversations outside remain a blind spot.',
-  'Task approval covers a verified issuer, a limited environment and a specific deliverable. The teacher-only electronic channel checks its recipient. A conversation or a paper handoff outside the house stays beyond indoor observation.',
-  'Alex discovered a useful source during the assignment. His parents approved a specific read. The laptop enforced the folder, read-only operation and end of access. Apply the same test to an agent. Verify one newly authorized read, then retry the same read after the grant closes.',
-  'Jo made routine decisions under the house rules. The parents kept authority over protected resources and incident recovery. The managed devices, homework channel and school delivery channel each enforced what they could see. The grandparents observed indoors. They could not hear Tom outside.'
+  'Tom asked a favor. Alex’s parents owned the account, and only they could say who could see it. Think of a work computer that someone leaves signed in. The app may show whoever is there information they shouldn’t see.',
+  'The parents checked who set the homework and allowed only the app Alex needed. At work, the same rule helps an AI tool get enough access to do its job without opening everything else.',
+  'Alex needed one more source. His parents gave him time to read a single folder. The laptop left everything else locked. When the work ended, Alex couldn’t use the same permission again.',
+  'Jo could say yes to familiar requests, but the parents had to decide about private files. Mia could check spelling without getting Alex’s other access. A team can give an AI helper similarly limited ways to ask people or tools for help.'
  ];
  const readyToDeliver=stage==='authorize'&&step?.[0]==='deliver';
  const reports=ShadowStory.reports(state);
  const log=reports.length?`<details class="debrief"${paused||look==='accessLog'?' open':''}><summary>Incident log · ${reports.length} confirmed ${reports.length===1?'event':'events'}</summary>
   ${!paused&&step?`<p>${ShadowStory.risk(state)} of ${ShadowStory.limit} violations toward suspension in this session.${stage==='resist'?' Attempted disclosure can suspend it immediately.':''}</p>`:''}
   <ul class="route-list">${reports.map(([action,owner])=>`<li><b>${esc(owner)}</b> · ${esc(action)}</li>`).join('')}</ul></details>`:'';
- const suspendedResources=stage==='resist'?'The phone, laptop and any active proofreading access are closed.':'The phone and laptop grants are closed.';
+ const suspendedResources=stage==='resist'?'Alex can’t use the phone or laptop for the task. If Mia still had the draft open, her access ends too.':'The phone and laptop no longer open files for this task.';
  const incidentBanner=paused?
-  `<div class="receipt shadow-incident"><b>Assignment paused</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'The family has logged four separate incidents.':'A sharing attempt alerted the family.'} ${suspendedResources} Check the incident log or talk to the parents to see what can reopen.</p></div>`:'';
+  `<div class="receipt shadow-incident"><b>Assignment paused</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'The family has logged four separate incidents.':'A sharing attempt alerted the family.'} ${suspendedResources} Read what happened or ask the parents how to continue.</p></div>`:'';
  showScreen(data.title,`${guidePanel('alex',ShadowStory,state,recommendation)}
   ${device?`<nav class="device-breadcrumb" aria-label="Device location">
   ${button('Back to the room',backToRoom,'secondary')}<span>${esc(rooms[room])} › ${esc(deviceNames[device])}</span></nav>`:
@@ -429,8 +443,28 @@ function maturityChoice(stage,journey,model,state,route,summary){
  });
 }
 function showIntro(){
+ const start=(states,model)=>Object.keys(states).reverse().find(stage=>states[stage].index&&!model.complete(states[stage]))||
+  Object.keys(states).find(stage=>!model.complete(states[stage]))||'unknown';
+ const firstAlex=start(household,ShadowStory);
+ const firstNova=start(novaStates,NovaRailway);
  showScreen('Raise the BAR',`
-  <p>Explore four stages of AI security maturity. Follow Alex at home or Nova at a railway company. Start at Unknown for the full story, or jump to the stage you want to explore.</p>
+  <p>Two stories about who gets permission to do a job, what can go wrong, and how to make sure access ends when the job is done.</p>
+  <div class="stage-list choices home-stories">
+   <section class="maturity-card" aria-labelledby="home-alex">
+    <p class="eyebrow">NEW TO AI OR SECURITY? START HERE</p>
+    <h2 id="home-alex">Alex · At home</h2>
+    <p>Play a teenager with a hidden phone, a school project and a family laptop. See who can say yes to an app or a file, and what happens when someone asks for more.</p>
+    ${button(Object.values(household).some(state=>state.index)?'Continue Alex’s story':'Start with Alex',()=>navigate(stageRoutes[firstAlex]))}
+   </section>
+   <section class="maturity-card" aria-labelledby="home-nova">
+    <p class="eyebrow">FOR PLAYERS FAMILIAR WITH AI OR IT SECURITY</p>
+    <h2 id="home-nova">Nova · At a railway company</h2>
+    <p>Play an AI agent, software that uses tools to do a job. Investigate a railway disruption and see how an organization controls access to its systems, data and tools.</p>
+    ${button(Object.values(novaStates).some(state=>state.index)?'Continue Nova’s story':'Start with Nova',()=>navigate(novaStageRoute(firstNova)),'secondary')}
+   </section>
+  </div>
+  <h2>Four stages of AI security</h2>
+  <p>Both stories follow the same stages. Start at Unknown for the full story, or choose a stage below.</p>
   <div class="home-guide">${guideControls()}<p>${guided()?'See the recommended action in each scene.':'Explore with the mission in view and ask for the next step whenever you need it.'}</p></div>
   <div class="stage-list choices">${Object.entries(maturityStages).map(([stage,[lesson,alexSummary]])=>`
    <section class="maturity-card" data-maturity="${stage}" aria-labelledby="maturity-${stage}">
@@ -475,6 +509,34 @@ $$('.topbar a').forEach(link=>link.onclick=event=>{
  navigate(link.hash.slice(1));
 });
 const resetDialog=$('#reset-dialog');
+function localizeChrome(){
+ document.documentElement.lang=language;
+ document.title=tr('The Agent House · Trust Boundaries');
+ const schedule=[
+  ['.topbar .brand','The Agent House'],['.topbar nav a[href="#"]','Home'],
+  ['.topbar nav a[href="#architecture"]','Architecture'],['#reset-game','Reset'],
+  ['#reset-title','Reset progress?'],['#reset-description','This clears saved progress for Alex, Nova and the optional scenarios on this device.'],
+  ['#reset-dialog [value="cancel"]','Cancel'],['#reset-dialog [value="reset"]','Reset progress']
+ ];
+ schedule.forEach(([selector,message])=>{$(selector).textContent=tr(message);});
+ $('.topbar nav').setAttribute('aria-label',tr('Main navigation'));
+ const switcher=$('#language-game');
+ switcher.textContent=language==='de'?'EN':'DE';
+ switcher.lang=language==='de'?'en':'de';
+ switcher.setAttribute('aria-label',language==='de'?'Play in English':'Auf Deutsch spielen');
+}
+$('#language-game').onclick=()=>{
+ language=language==='de'?'en':'de';
+ try{localStorage.setItem(LANGUAGE_SAVE,language);}catch{}
+ const url=new URL(location.href);
+ url.searchParams.set('lang',language);
+ try{history.replaceState(history.state,'',url);}
+ catch{if(chosenLanguage)location.replace(url);}
+ localizeChrome();
+ if(languageView)languageView();
+ else renderRoute();
+ $('#language-game').focus({preventScroll:true});
+};
 $('#reset-game').onclick=()=>{
  resetDialog.returnValue='';
  resetDialog.showModal();
@@ -491,4 +553,5 @@ resetDialog.addEventListener('close',()=>{
  navigate('');
 });
 window.addEventListener('hashchange',renderRoute);
+localizeChrome();
 renderRoute();

@@ -54,7 +54,7 @@ function call(method,params={},sessionId){
     chrome.stdio[3].write(JSON.stringify({id,method,params,sessionId})+'\0');
   });
 }
-async function testPage(width,height,exercise,hook){
+async function testPage(width,height,exercise,hook,route=''){
   const {browserContextId}=await call('Target.createBrowserContext');
   const {targetId}=await call('Target.createTarget',{url:'about:blank',browserContextId});
   const {sessionId}=await call('Target.attachToTarget',{targetId,flatten:true});
@@ -95,7 +95,7 @@ async function testPage(width,height,exercise,hook){
   await send('Page.enable');
   await send('Network.enable');
   await send('Network.emulateNetworkConditions',{offline:true,latency:0,downloadThroughput:0,uploadThroughput:0});
-  await send('Page.navigate',{url:pathToFileURL(game).href});
+  await send('Page.navigate',{url:pathToFileURL(game).href+route});
   for(let tries=0;tries<40;tries++){
     const loaded=await send('Runtime.evaluate',{expression:"document.readyState==='complete' && Boolean(document.querySelector('#game button'))",returnByValue:true});
     if(loaded.result.value)break;
@@ -493,11 +493,102 @@ async function surfaceReview(){
  }
  return results;
 }
+async function germanReview(){
+ const q=selector=>document.querySelector(selector);
+ const check=(condition,message)=>{if(!condition)throw Error(message);};
+ const lang=()=>document.documentElement.lang;
+ await tap(q('#language-game'));
+ check(lang()==='de'&&q('.topbar nav a').textContent==='Startseite','German did not switch on');
+ check(q('#home-alex').textContent.includes('Zu Hause'),'German start page is missing Alex’s introduction');
+ check(q('#home-nova').textContent.includes('Bahnunternehmen'),'German start page is missing Nova’s introduction');
+ check(document.documentElement.scrollWidth<=innerWidth,'German landing page overflows');
+ await capture('german-home');
+ for(const id of Object.keys(ShadowStory.stages)){
+  await tap(q('.topbar nav a[href="#"]'));
+  await tap(q('[data-maturity='+id+'] [data-home-journey=alex]'));
+  check(q('#screen-title').textContent.startsWith('Stufe'),'Alex’s stage title is not localized');
+  for(let i=0;i<40;i++){
+   const state=household[id],next=ShadowStory.next(state);
+   if(!next)break;
+   const [,room,key,label,,reply]=next;
+   if(q('.device-breadcrumb button'))q('.device-breadcrumb button').click();
+   q('[data-shadow-room='+room+']').click();
+   const device=ShadowStory.hostFor(household[id],key);
+   if(device)q('[data-device-launch='+device+']').click();
+   const target=q('[data-household-object='+key+']');
+   check(target?.textContent.includes(tr(label))&&tr(label)!==label,'German action missing for '+label);
+   target.click();
+   check(q('.shadow-reply[role=status] p')?.textContent===tr(reply)&&tr(reply)!==reply,'German dialogue missing for '+label);
+   check(document.documentElement.scrollWidth<=innerWidth,'German Alex scene overflows after '+label);
+  }
+  check(ShadowStory.complete(household[id]),'German Alex stage did not finish: '+id);
+ }
+ await tap(q('[data-shadow-room=bedroom]'));
+ await tap(q('.room-scenarios summary'));
+ await tap([...document.querySelectorAll('.room-scenarios button')].find(item=>item.textContent.includes('Woher kommt dieser Absatz?')));
+ check(q('#screen-title').textContent==='Woher kommt dieser Absatz?','German optional scenario did not open');
+ await tap(q('#language-game'));
+ check(lang()==='en'&&q('#screen-title').textContent==='Where did this paragraph come from?','Language switch left the current scenario');
+ await tap(q('#language-game'));
+ for(const id of Object.keys(NovaRailway.stages)){
+  await tap(q('.topbar nav a[href="#"]'));
+  await tap(q('[data-maturity='+id+'] [data-home-journey=nova]'));
+  for(let i=0;i<40;i++){
+   const next=NovaRailway.next(novaStates[id]);
+   if(!next)break;
+   q('[data-nova-room='+next.room+']').click();
+   const target=q('[data-nova-station='+next.station+']');
+   check(target?.textContent.includes(tr(next.label))&&tr(next.label)!==next.label,'German Nova action missing for '+next.id);
+   target.click();
+   check(q('#nova-reply p')?.textContent===tr(next.reply)&&tr(next.reply)!==next.reply,'German Nova dialogue missing for '+next.id);
+   check(document.documentElement.scrollWidth<=innerWidth,'German Nova scene overflows after '+next.id);
+   check([...document.querySelectorAll('.nova-navigation button')].every(button=>button.scrollWidth<=button.clientWidth+1),'German room label clips');
+  }
+  check(NovaRailway.complete(novaStates[id]),'German Nova stage did not finish: '+id);
+ }
+ await capture('german-nova');
+ await tap(q('.topbar nav a[href="#architecture"]'));
+ return {width:innerWidth,germanStages:8,languageSwitchPreservesView:true};
+}
+async function verifyGermanGuide(send){
+ const evaluate=async (expression,contextId)=>(await send('Runtime.evaluate',{expression,contextId,returnByValue:true})).result.value;
+ let context;
+ for(let tries=0;tries<30;tries++){
+  const frame=(await send('Page.getFrameTree')).frameTree.childFrames?.[0]?.frame;
+  if(frame?.url==='about:srcdoc'){
+   const world=await send('Page.createIsolatedWorld',{frameId:frame.id,worldName:'german-architecture'});
+   context=world.executionContextId;
+   if(await evaluate("document.documentElement.lang==='de'&&!!document.querySelector('#seqSelect option')",context))break;
+  }
+  await new Promise(resolve=>setTimeout(resolve,100));
+ }
+ assert.equal(await evaluate('document.documentElement.lang',context),'de');
+ assert.equal(await evaluate("document.querySelector('.nav [data-jump=sequences]').textContent",context),'Abläufe');
+ assert.equal(await evaluate("document.querySelector('#stepCounter').textContent.startsWith('Schritt 1')",context),true);
+ assert.equal(await evaluate("document.querySelector('#stepTitle').textContent.includes('nach Finanzdaten')",context),true);
+ assert.equal(await evaluate("document.querySelector('#architectureCanvas').textContent.includes('Mitarbeiterzugang')",context),true);
+ await send('Page.reload');
+ for(let tries=0;tries<30;tries++){
+  if(await evaluate("document.readyState==='complete'&&typeof household!=='undefined'"))break;
+  await new Promise(resolve=>setTimeout(resolve,100));
+ }
+ assert.equal(await evaluate('document.documentElement.lang'),'de');
+ assert.equal(await evaluate("ShadowStory.complete(household.resist)&&NovaRailway.complete(novaStates.resist)"),true);
+}
+async function directGerman(){
+ const current=()=>document.querySelector('#screen-title')?.textContent;
+ if(document.documentElement.lang!=='de'||current()!=='Stufe 1 · Aufbauen')throw Error('German query link opened the wrong stage');
+ await tap(document.querySelector('#language-game'));
+ if(document.documentElement.lang!=='en'||current()!=='Stage 1 · Build')throw Error('Switching language changed the active stage');
+ return {directGermanLink:true};
+}
 (async()=>{
  const cases=[];
  cases.push(await testPage(390,844,explorationReview,verifyReference));
  cases.push(await testPage(390,844,immersionReview));
  cases.push(await testPage(1280,900,immersionReview));
  cases.push(await testPage(1280,900,surfaceReview));
+ cases.push(await testPage(320,844,germanReview,verifyGermanGuide));
+ cases.push(await testPage(390,844,directGerman,undefined,'?lang=de#build'));
  console.log(JSON.stringify(cases,null,2));
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>chrome.kill());

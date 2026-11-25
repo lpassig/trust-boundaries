@@ -4,7 +4,9 @@
 
 The Agent House is the v3 edition of Trust Boundaries, a point-and-click adventure about who may grant access, what tools enforce, and how to check that access ended. The game follows Alex through the same four rooms as he earns more independence.
 
-**Home** shows both journeys at each stage of the Raise the BAR maturity model. **Reset** clears both journeys and optional scenario progress on this device after confirmation.
+**Home** shows both journeys at each stage of the Raise the BAR maturity model. Start with **Alex** if you are new to AI or security. Choose **Nova** for the enterprise workflow and technical controls. **Reset** clears both journeys and optional scenario progress on this device after confirmation.
+
+Use **DE / EN** to switch languages while keeping progress. The German edition includes both stories, optional scenarios and the interactive architecture guide. [Auf Deutsch spielen](https://lpassig.github.io/trust-boundaries/?lang=de)
 
 **Guided** highlights the next interaction. **Exploration** keeps the assignment, permissions and milestones visible and lets players find their own way between checkpoints. Switch modes at any time. In Exploration, select **Show next step** for exact help, or use the optional idle hints. Open **Mission checklist** to review progress and change the idle-hint setting.
 
