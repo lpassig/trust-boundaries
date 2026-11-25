@@ -9,7 +9,7 @@ The Agent House is the v3 edition of Trust Boundaries, a point-and-click adventu
 - **[Stage 2 · AUTHORIZE](https://lpassig.github.io/trust-boundaries/#authorize)** lets Alex identify a better source and ask for temporary, read-only access to the conductor notes.
 - **[Stage 3 · RESIST](https://lpassig.github.io/trust-boundaries/#resist)** gives Jo limited approval authority and Mia a separate draft-only assignment. Follow the approved route or test how the household responds to a violation.
 
-Select the highlighted action to advance. Other objects and people let you inspect the scene or test a boundary. Each stage saves its own progress on the current device. The grandparents can observe indoors. A conversation or paper handoff outside stays beyond their view.
+Select the highlighted action to advance. Open a phone to use its apps and browser, or open the family laptop to inspect its sign-in, browser session or files. People and physical objects stay in the room. Each stage saves its own progress on the current device. The grandparents can observe indoors. A conversation or paper handoff outside stays beyond their view.
 
 **Optional security scenarios** appear in the rooms from BUILD onward. Try a registered phone that fails verification, a signed assignment that exceeds the issuer’s authority, an edited workbook, or a revoked read that was already waiting to execute. Scenario choices and evidence stay separate from the main assignment. From AUTHORIZE onward, find the digital permission slip inside the scene after the parents approve the conductor notes.
 

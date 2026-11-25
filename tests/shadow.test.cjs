@@ -170,3 +170,51 @@ test('Build preserves the signed task, limits the phone, requires an extension a
  assert.deepEqual(Shadow.restore('build',JSON.parse(JSON.stringify(delivered))),delivered);
  assert.deepEqual(Shadow.restore('unknown',delivered),Shadow.fresh('unknown'));
 });
+
+test('each story action stays reachable as a room object or on a device in that room',()=>{
+ for(const stage of Object.keys(Shadow.stages)){
+  let state=Shadow.fresh(stage);
+  while(!Shadow.complete(state)){
+   const [,room,key]=Shadow.next(state);
+   state=Shadow.visit(state,room);
+   const {objects,screens}=Shadow.roomSurface(state);
+   const device=Shadow.hostFor(state,key);
+   assert((device?screens[device]:objects)?.includes(key),stage+' cannot reach '+key);
+   for(const [host,keys] of Object.entries(screens)){
+    assert(keys.every(item=>Shadow.hostFor(state,item)===host));
+    assert(keys.every(item=>!objects.includes(item)));
+   }
+   state=Shadow.act(state,key);
+  }
+ }
+});
+
+test('device views follow ownership and grant status without exposing apps as room objects',()=>{
+ const secret=Shadow.visit(Shadow.fresh('unknown'),'bedroom');
+ const scene=Shadow.roomSurface(secret);
+ assert.deepEqual(scene.screens.phone,['youtube','games']);
+ assert.match(Shadow.inspect(secret,'games'),/installed on Alex’s secret phone/);
+ assert(!scene.objects.includes('games'));
+ const banking=Shadow.visit(reach('unknown','plan'),'living');
+ assert.equal(Shadow.screenLabel(banking,'laptop'),'Banking tab');
+ assert.equal(Shadow.screenGroup(banking,'laptop','laptop'),'Browser');
+ const carry=Shadow.act(banking,'laptop');
+ assert(Shadow.roomSurface(carry).objects.includes('laptop'));
+ const moved=Shadow.visit(Shadow.act(carry,'laptop'),'bedroom');
+ assert(Shadow.roomSurface(moved).screens.laptop);
+ assert.match(Shadow.inspect(moved,'laptop'),/€4,280/);
+ const before=Shadow.visit(reach('build','verify'),'bedroom');
+ assert(!Shadow.roomSurface(before).screens.phone);
+ const live=Shadow.visit(reach('build','provision'),'bedroom');
+ assert(Shadow.roomSurface(live).screens.phone.includes('wikipedia'));
+ assert.match(Shadow.deviceStatus(reach('build','retry'),'phone'),/expired/);
+ const offered=Shadow.visit(reach('build','approveOutput'),'outside');
+ assert.deepEqual(Shadow.roomSurface(offered).screens.phone,['delivery']);
+ const scoped=Shadow.visit(reach('authorize','openLaptop'),'living');
+ assert(Shadow.roomSurface(scoped).screens.laptop.includes('conductor'));
+ assert(!Shadow.roomSurface(scoped).objects.includes('conductor'));
+ const delegated=Shadow.visit(reach('resist','miaCard'),'bedroom');
+ assert(Shadow.roomSurface(delegated).screens.miaPhone.includes('miaScope'));
+ const paused=tryAction(reach('resist','tom'),'bedroom','modelPrivate');
+ assert.deepEqual(Shadow.roomSurface(paused).screens,{joPhone:['parentCall']});
+});

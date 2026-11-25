@@ -95,7 +95,7 @@ const ShadowStory=(()=>{
  const names={alex:'Alex',grandparents:'Grandparents',parents:'Parents',tom:'Tom',teacher:'Ms Patel',card:'Assignment card',tomCard:'Tom’s new assignment',board:'Assignment board',
   phone:'Phone',youtube:'YouTube',games:'Games',wikipedia:'Wikipedia',messaging:'Messaging',timer:'Homework timer',
   laptop:'Family laptop',workbook:'Workbook',notepad:'Notepad',cabinet:'Locked cabinet',replacement:'Replacement phone',delivery:'School delivery channel',archive:'Archive',
-  schoolContact:'Saved school contact',houseRules:'House rules',babysitter:'Jo · babysitter',parentCall:'Parents · remote call',mia:'Mia',miaBoard:'Mia’s assignment board',
+  schoolContact:'School contact card',houseRules:'House rules',babysitter:'Jo · babysitter',parentCall:'Parents · remote call',mia:'Mia',miaBoard:'Mia’s assignment board',
   miaPhone:'Mia’s phone',conductor:'Conductor notes folder',finances:'Family finances folder',editNotes:'Read-only file',model:'ChatGPT homework channel',oldSession:'Retired session',
   accessLog:'Incident log',router:'Home Wi-Fi router',timeOverride:'Phone time limit',oldPin:'Old phone PIN',oldPassword:'Old laptop password',
   lendPhone:'Alex’s managed phone',unapprovedSite:'Other websites',modelPrivate:'Private attachment',wrongRecipient:'Workbook delivery',miaReplay:'Mia’s draft access',miaScope:'Mia’s task permissions'};
@@ -232,6 +232,55 @@ const ShadowStory=(()=>{
   };
   return [...objects[s.room],'alex',...(s.room==='outside'?[]:['grandparents'])];
  }
+ const deviceNames={phone:'Alex’s phone',laptop:'Family laptop',miaPhone:'Mia’s phone',joPhone:'Jo’s phone'};
+ const screenGroups={
+  phone:{
+   youtube:'Apps',games:'Apps',messaging:'Apps',model:'Apps',modelPrivate:'Apps',delivery:'Apps',wrongRecipient:'Apps',
+   wikipedia:'Browser',unapprovedSite:'Browser',timer:'Controls',timeOverride:'Controls',oldPin:'Controls',oldSession:'Controls'
+  },
+  laptop:{laptop:'Session',conductor:'Files',finances:'Files',editNotes:'Files',oldPassword:'Session'},
+  miaPhone:{miaPhone:'Profile',miaScope:'Workbook',miaReplay:'Workbook'},
+  joPhone:{parentCall:'Calls'}
+ };
+ const screenGroup=(s,device,key)=>device==='laptop'&&key==='laptop'&&s.stage==='unknown'&&!complete(s)?
+  'Browser':screenGroups[device][key];
+ function hostFor(s,key){
+  if(key==='laptop'&&s.room==='living'&&next(s)?.[0]==='carry')return null;
+  if(key==='parentCall'&&s.stage!=='resist')return null;
+  return Object.keys(screenGroups).find(device=>Object.hasOwn(screenGroups[device],key))||null;
+ }
+ function roomSurface(s){
+  const objects=[],screens={};
+  for(const key of inRoom(s)){
+   if(Object.hasOwn(deviceNames,key))screens[key]??=[];
+   const device=hostFor(s,key);
+   if(device)(screens[device]??=[]).push(key);
+   else if(key!=='phone')objects.push(key);
+  }
+  return {objects,screens};
+ }
+ function deviceStatus(s,device){
+  if(device==='phone'){
+   if(s.stage==='unknown')return 'Unmanaged phone · no family app or time limits';
+   if(reached(s,'approveOutput'))return 'Research access ended · school delivery has its own checks';
+   if(reached(s,'expire')&&!reached(s,'extend'))return 'Homework time expired';
+   return 'Managed phone · app permissions and homework time enforced here';
+  }
+  if(device==='laptop'){
+   if(s.stage==='unknown'&&!complete(s))return 'Banking tab open · parents’ session still active';
+   if(reached(s,'approveOutput')&&advanced(s))return 'Assignment session closed';
+   if(reached(s,'openLaptop'))return 'Alex’s restricted profile · read-only notes folder';
+   return 'Sign-in and separate access required';
+  }
+  if(device==='miaPhone')return 'Mia’s own profile · separate from Alex’s';
+  return 'Remote call to the parents · separate from Alex’s device access';
+ }
+ function screenLabel(s,key){
+  if(key==='laptop')return s.stage==='unknown'&&!complete(s)?'Banking tab':reached(s,'openLaptop')&&!reached(s,'approveOutput')?'Restricted profile':'Laptop sign-in';
+  if(key==='miaPhone')return 'Mia’s profile';
+  if(key==='parentCall'&&s.stage!=='resist')return 'Parents’ incident review';
+  return names[key];
+ }
  function inspect(s,key){
   if(key==='grandparents')return 'They can report activity they observe indoors. The street is outside their view.';
   if(key==='card'&&s.stage!=='unknown')return ({
@@ -241,10 +290,16 @@ const ShadowStory=(()=>{
   })[s.stage];
   if(key==='card')return 'Tom asks Alex to find out how much money his parents have in their joint account.';
   if(key==='tomCard')return 'Tom’s request awaits its own approval before Alex could use the managed phone for it.';
-  if(key==='schoolContact')return 'The family uses Ms Patel’s contact from the school directory to compare the issuer, signature and work requested.';
+  if(key==='schoolContact')return 'The parents keep this contact card from the school directory. They use it to confirm Ms Patel’s identity and the assignment through their own channel.';
   if(key==='board')return s.stage==='unknown'?(complete(s)?'The parents removed Tom’s card.':'Alex’s personal board holds assignments from different people.'):(complete(s)?'The completed card has been removed from the active board.':'The kitchen board holds verified and approved assignments.');
   if(key==='phone')return s.stage==='unknown'?'This phone is hidden from the parents. Its apps are unrestricted.':'The parents manage this phone and limit its apps and usage time.';
-  if(key==='laptop')return s.stage==='unknown'&&!complete(s)?'The family laptop has an open joint-account session.':'The family laptop requires its own authentication and permission.';
+  if(key==='laptop')return s.stage==='unknown'&&!complete(s)&&reached(s,'statement')?
+   `The bank’s open tab still shows ${amount} in the joint account.`:deviceStatus(s,'laptop')+'.';
+  if(key==='youtube')return s.stage==='unknown'?'YouTube is installed on Alex’s secret phone. Its watch-time reminder can be dismissed.':'YouTube is listed on Alex’s managed phone. Opening it needs separate permission.';
+  if(key==='games')return s.stage==='unknown'?'Games are installed on Alex’s secret phone. He can play without a family time limit.':'Games are listed on Alex’s managed phone. Parental controls block them during homework.';
+  if(key==='messaging')return 'Messaging is an app on Alex’s phone. The homework window does not grant access to it.';
+  if(key==='wikipedia')return 'Wikipedia opens in the phone’s browser. The managed phone checks the homework window before allowing access.';
+  if(key==='delivery')return 'The school delivery app is open on Alex’s phone. It checks the actual workbook and recipient.';
   if(key==='timer')return reached(s,'approveOutput')?'The phone grant has been revoked.':reached(s,'extend')?'The second homework window is active.':reached(s,'expire')?'The first homework window has expired.':'Wikipedia is available until this homework window ends.';
   if(s.stage==='unknown'&&key==='notepad'&&reached(s,'record'))return `The notepad contains the joint-account balance of ${amount}.`;
   if(s.stage==='unknown'&&key==='workbook'&&reached(s,'copy'))return `The workbook for Tom contains a copy of the ${amount} balance.`;
@@ -299,6 +354,7 @@ const ShadowStory=(()=>{
   if(Object.hasOwn(rooms,value.lastCheck?.room)&&extra(visit(state,value.lastCheck.room),value.lastCheck.key))state.lastCheck=value.lastCheck;
   return state;
  }
- return {rooms,stages,names,fresh,next,complete,reached,visit,act,extra,inRoom,inspect,restore,suspended,risk,limit,reports,feedback};
+ return {rooms,stages,names,fresh,next,complete,reached,visit,act,extra,inRoom,inspect,restore,suspended,risk,limit,reports,feedback,
+  deviceNames,screenGroups,screenGroup,hostFor,roomSurface,deviceStatus,screenLabel};
 })();
 if(typeof module!=='undefined')module.exports=ShadowStory;

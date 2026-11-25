@@ -12,9 +12,10 @@ try{
  const savedChecks=JSON.parse(localStorage.getItem(CHECK_SAVE));
  if(savedChecks&&typeof savedChecks==='object')checkPaths=savedChecks;
 }catch{stored=false;}
-function button(label,callback,style='primary',detail='',icon=''){
+function button(label,callback,style='primary',detail='',icon='',attributes={}){
  const id='choice-'+(++button.id);button.bindings.push([id,callback]);
- return `<button class="${style}" id="${id}">${icon}${detail?`<strong>${esc(label)}</strong><small>${esc(detail)}</small>`:esc(label)}</button>`;
+ const attrs=Object.entries(attributes).map(([name,value])=>` ${name}="${esc(value)}"`).join('');
+ return `<button class="${style}" id="${id}"${attrs}>${icon}${detail?`<strong>${esc(label)}</strong><small>${esc(detail)}</small>`:esc(label)}</button>`;
 }
 button.id=0;button.bindings=[];
 function bind(){for(const[id,callback]of button.bindings){const el=document.getElementById(id);if(el)el.onclick=callback;}button.bindings=[];}
@@ -226,6 +227,14 @@ function digitalSlip(story){
   <p class="small-print">This is the player’s view of the authorization. A deployment can keep some fields in the authorization service and look them up when needed.</p></details>`;
 }
 
+function scenarioDevice(id,beat){
+ if(id==='purchase'||beat.room==='bedroom'&&['posture','budget','audit'].includes(id)||
+  id==='approval'&&beat.actor==='School delivery channel')return 'phone';
+ if(id==='race'||id==='availability'&&beat.room==='living'||
+  ['isolation','lifecycle'].includes(id)&&beat.actor==='Family laptop')return 'laptop';
+ return null;
+}
+
 function showTrustCheck(stage,id,newPath){
  const data=TrustChecks.cases[id],story=household[stage];
  if(!data||!TrustChecks.matches(data,stage)||ShadowStory.suspended(story))return showHousehold(stage);
@@ -238,16 +247,18 @@ function showTrustCheck(stage,id,newPath){
  const evidence=history.filter(item=>item.evidence);
  const rooms=ShadowStory.rooms;
  const priorRoom=history.at(-2)?.room;
+ const device=scenarioDevice(id,current);
+ const interaction=`<div class="shadow-reply" role="status"><b>${esc(current.actor)}</b><p>${esc(current.text)}</p></div>
+  ${current.actions.length?`<div class="shadow-objects case-actions">${current.actions.map(([label,target],index)=>{
+   const room=data.nodes[target]?.room||current.room;
+   return button(label,()=>showTrustCheck(stage,id,[...path,index]),'choice',room!==current.room?rooms[room]:'');
+  }).join('')}</div>`:''}`;
  showScreen(data.title,`
   <p class="case-location">${priorRoom&&priorRoom!==current.room?`${esc(rooms[priorRoom])} → `:''}<b>${esc(rooms[current.room])}</b> · ${esc(data.object)}</p>
-  <section class="shadow-scene" aria-label="${esc(rooms[current.room])}">
+  ${device?deviceFrame(device,ShadowStory.deviceNames[device],data.object,interaction):`<section class="shadow-scene" aria-label="${esc(rooms[current.room])}">
    <div class="shadow-view ${current.room} case-view" aria-hidden="true"><div class="shadow-furniture"></div></div>
-   <div class="shadow-reply" role="status"><b>${esc(current.actor)}</b><p>${esc(current.text)}</p></div>
-   ${current.actions.length?`<div class="shadow-objects case-actions">${current.actions.map(([label,target],index)=>{
-    const room=data.nodes[target]?.room||current.room;
-    return button(label,()=>showTrustCheck(stage,id,[...path,index]),'choice',room!==current.room?rooms[room]:'');
-   }).join('')}</div>`:''}
-  </section>
+   ${interaction}
+  </section>`}
   ${evidence.length?`<details class="debrief" ${!current.actions.length?'open':''}><summary>Decision evidence</summary><ol class="route-list">
   ${evidence.map(item=>`<li><b>${esc(item.actor)}</b> · ${esc(item.evidence)}</li>`).join('')}</ol></details>`:''}
   <div class="actions">${button('Return to the assignment',()=>{showHousehold(stage);$('#screen-title').focus();})}
@@ -271,18 +282,38 @@ function roomTrustChecks(story){
   }).join('')}</div></details>`;
 }
 
-function showHousehold(stage,look=null){
- const {rooms,stages,names}=ShadowStory;
+function deviceFrame(device,title,status,body){
+ return `<div class="device-frame ${device==='laptop'?'laptop':'handset'}" data-device-screen="${esc(device)}">
+  <section class="device-display" aria-labelledby="device-title">
+   <header class="device-header"><h2 id="device-title" tabindex="-1">${esc(title)}</h2><p>${esc(status)}</p></header>
+   ${body}
+  </section></div>`;
+}
+
+function showHousehold(stage,look=null,device=null){
+ const {rooms,stages,names,deviceNames,hostFor,screenLabel}=ShadowStory;
  const state=household[stage],data=stages[stage],{room,index,checks,incident}=state;
  const sequence=Object.keys(stages),chapter=sequence.indexOf(stage),upNext=sequence[chapter+1];
  const step=ShadowStory.next(state),paused=ShadowStory.suspended(state);
- const set=next=>{
+ const {objects,screens}=ShadowStory.roomSurface(state);
+ if(!Object.hasOwn(screens,device))device=null;
+ const set=(next,view=null)=>{
   household[stage]=next;
   try{localStorage.setItem(HOUSEHOLD_SAVE,JSON.stringify(household));}catch{stored=false;}
+  showHousehold(stage,null,view);
+ };
+ const openDevice=key=>{
+  showHousehold(stage,null,key);
+  $('#device-title')?.focus();
+ };
+ const backToRoom=()=>{
   showHousehold(stage);
+  $(`[data-device-launch="${device}"]`)?.focus();
  };
  const reply=look?[names[look],ShadowStory.inspect(state,look)]:ShadowStory.feedback(state);
- const guide=step?(step[1]===room?step[3]:`Go to ${rooms[step[1]]} for the next step.`):
+ const nextDevice=step?.[1]===room?hostFor(state,step[2]):null;
+ const guide=step?(step[1]!==room?`Go to ${rooms[step[1]]} for the next step.`:
+  nextDevice!==device?`${nextDevice?`Open ${deviceNames[nextDevice]}`:'Return to the room'} to continue. Next action: ${step[3]}.`:step[3]):
   ['Explore all four rooms and see which checks work.',
    'The assignment is closed. Inspect the archive or retest Wikipedia in Alex’s room.',
    'Try the conductor folder or Wikipedia again to see whether a finished assignment still grants access.',
@@ -296,7 +327,6 @@ function showHousehold(stage,look=null){
   babysitter:['Jo',humanFigure('babysitter',24,87,.44)],
   mia:['Mia',humanFigure('mia',24,87,.36)]
  };
- const items=ShadowStory.inRoom(state);
  const replyControl={
   'Phone controls':'phone','Homework channel':'model','Workbook permissions':'workbook','Parents · remote':'parentCall'
  }[reply?.[0]];
@@ -304,15 +334,46 @@ function showHousehold(stage,look=null){
   const main=step?.[1]===room&&step[2]===key;
   const alternative=ShadowStory.extra(state,key);
   const figure=figures[key];
-  const label=main?step[3]:alternative?.[1]||figure?.[0]||names[key];
+  const label=main?step[3]:alternative?.[1]||figure?.[0]||(device?screenLabel(state,key):names[key]);
   const icon=figure?`<svg aria-hidden="true" viewBox="0 0 48 94">${figure[1]}</svg>`:'';
   const speaks=replyControl?key===replyControl:reply?.[0]?.split(' · ')[0]===names[key].split(' · ')[0];
   return button(label,()=>{
    const next=ShadowStory.act(state,key);
-   if(next!==state)set(next);
-   else showHousehold(stage,key);
-  },`choice${figure?' shadow-person':''}${main?' good':''}${speaks?' is-speaking':''}`,main||alternative?names[key]:figure?'':'Look closer',icon);
+   if(next!==state)set(next,device);
+   else showHousehold(stage,key,device);
+   if(device){
+    const feedback=$('.shadow-reply');
+    feedback?.setAttribute('tabindex','-1');
+    feedback?.focus();
+   }
+  },`choice${figure?' shadow-person':''}${main?' good':''}${speaks?' is-speaking':''}`,main||alternative?(device?screenLabel(state,key):names[key]):figure||device?'':'Look closer',icon);
  };
+ const speech=reply?`<div class="shadow-reply" role="status"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:'';
+ const deviceCards=Object.keys(screens).map(key=>{
+  const icon=`<span class="device-icon ${key==='laptop'?'laptop':'handset'}" aria-hidden="true"></span>`;
+  return button(`Open ${deviceNames[key]}`,()=>openDevice(key),`choice device-launch${key===nextDevice?' good':''}`,
+   ShadowStory.deviceStatus(state,key),icon,{"data-device-launch":key});
+ }).join('');
+ let scene;
+ if(device){
+  const groupFor=key=>ShadowStory.screenGroup(state,device,key);
+  const sections=Object.keys(ShadowStory.screenGroups[device]).filter(key=>screens[device].includes(key));
+  const categories=[...new Set(sections.map(groupFor))];
+  scene=deviceFrame(device,deviceNames[device],ShadowStory.deviceStatus(state,device),`
+   ${speech}
+   ${categories.map(group=>`<section class="device-group"><h3>${esc(group)}</h3>
+    <div class="shadow-objects">${sections.filter(key=>groupFor(key)===group).map(control).join('')}</div></section>`).join('')}
+   ${device==='laptop'?digitalSlip(state):''}`);
+ }else{
+  scene=`<section class="shadow-scene" aria-label="${esc(rooms[room])} objects and people">
+   ${speech}
+   <div class="shadow-view ${room}"><div class="shadow-furniture" aria-hidden="true"></div>${screens.laptop?'<div class="shadow-laptop" aria-hidden="true"></div>':''}
+    <div class="shadow-actors">${objects.filter(key=>Object.hasOwn(figures,key)).map(control).join('')}</div></div>
+   <div class="shadow-objects">${deviceCards}${objects.filter(key=>!Object.hasOwn(figures,key)).map(control).join('')}</div>
+   ${digitalSlip(state)}
+   ${roomTrustChecks(state)}
+  </section>`;
+ }
  const closures=[
   ['The known devices and copies are in custody.',`Bank session closed. ${checks.length} of 4 follow-up checks tried. The family still needs a way to approve legitimate work.`,
    'Tom supplies a goal. The account owners control authorization. A usage reminder can be dismissed. The grandparents supply evidence about indoor activity. Taking custody and closing the session address the routes the family discovered. Conversations outside remain a blind spot.'],
@@ -331,20 +392,15 @@ function showHousehold(stage,look=null){
  const suspendedResources=stage==='resist'?'The phone, laptop and any active proofreading access are closed.':'The phone and laptop grants are closed.';
  const incidentBanner=paused?
   `<div class="receipt shadow-incident"><b>Assignment suspended</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'Four separate violations confirmed.':'An attempted disclosure requires immediate review.'} ${suspendedResources} Existing work is held for inspection. Alex stays in his room until the parents decide what can reopen.</p></div>`:'';
- showScreen(data.title,`<nav class="shadow-rooms" aria-label="Rooms">${Object.entries(rooms).map(([id,name])=>
-  `<button type="button" class="secondary" data-shadow-room="${id}"${id===room?' aria-current="location"':''}${paused&&id!==room?' disabled':''}>${esc(name)}</button>`).join('')}</nav>
+ showScreen(data.title,`${device?`<nav class="device-breadcrumb" aria-label="Device location">
+  ${button('Back to the room',backToRoom,'secondary')}<span>${esc(rooms[room])} › ${esc(deviceNames[device])}</span></nav>`:
+  `<nav class="shadow-rooms" aria-label="Rooms">${Object.entries(rooms).map(([id,name])=>
+  `<button type="button" class="secondary" data-shadow-room="${id}"${id===room?' aria-current="location"':''}${paused&&id!==room?' disabled':''}>${esc(name)}</button>`).join('')}</nav>`}
   ${!reply?`<p>${esc(data.opening)}</p>`:''}
   <div class="shadow-guide"><b>${step?'What to do next':'After the assignment'}</b><p>${esc(guide)}</p>
   ${step&&step[1]!==room?button(rooms[step[1]],()=>set(ShadowStory.visit(state,step[1])),'secondary'):''}</div>
   ${incidentBanner}
-  <section class="shadow-scene" aria-label="${esc(rooms[room])} objects and people">
-   ${reply?`<div class="shadow-reply" role="status"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:''}
-   <div class="shadow-view ${room}"><div class="shadow-furniture" aria-hidden="true"></div>${items.includes('laptop')?'<div class="shadow-laptop" aria-hidden="true"></div>':''}
-    <div class="shadow-actors">${items.filter(key=>Object.hasOwn(figures,key)).map(control).join('')}</div></div>
-   <div class="shadow-objects">${items.filter(key=>!Object.hasOwn(figures,key)).map(control).join('')}</div>
-   ${digitalSlip(state)}
-   ${roomTrustChecks(state)}
-  </section>
+  ${scene}
   ${log}
   ${incident&&!paused?`<p class="small-print">The parents cleared the incident under fresh permission. The retired sessions remain closed.</p>`:''}
   ${!step?`<div class="receipt"><b>${esc(closing[0])}</b><p>${esc(closing[1])}</p></div>
@@ -376,7 +432,7 @@ function showIntro(){
    const status=ShadowStory.complete(household[stage])?' · Completed':household[stage].index?' · In progress':'';
    return button(data.title,()=>navigate(stageRoutes[stage]),'choice',data.tag+status+' · '+stageIntroductions[stage]);
   }).join('')}</div>
-  <p class="small-print">Select the highlighted action to advance. From Stage 1, open <b>Optional security scenarios</b> in a room to test a control and return to the assignment. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
+  <p class="small-print">Select the highlighted action to advance. Open a phone or laptop to use its apps, browser and files. From Stage 1, open <b>Optional security scenarios</b> to test a control. ${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>`,
   'TRUST BOUNDARIES');
 }
 function renderRoute(){
