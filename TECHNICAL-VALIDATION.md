@@ -79,7 +79,9 @@ All rules execute in editable browser state. There are no signed tokens, real cr
 
 ## Verification
 
-The current suite passes 217 tests. Authorization lab regressions cover revocation after Permit, independent Vault and business refusals, unverified observation, and a changed request at commit. The story comparison regression verifies that saved evidence pairs the same Alder Books read across mission versions and is preserved on reload. The buyer simulation also checks that an allowed and refused read use distinct request IDs and that only the allowed read produces a success receipt.
+The current suite passes 218 tests. Authorization lab regressions cover revocation after Permit, independent Vault and business refusals, unverified observation, and a changed request at commit. The story comparison regression verifies that saved evidence pairs the same Alder Books read across mission versions and is preserved on reload. The buyer simulation also checks that an allowed and refused read use distinct request IDs and that only the allowed read produces a success receipt.
+
+The UNKNOWN and BUILD household examples use the same four rooms and separate saves. UNKNOWN distinguishes an observed indoor incident from a private outdoor request. BUILD distinguishes a verified assignment, the managed device’s timed grant, and the school channel’s recipient rule. Physical conversations and manual sharing outside remain residual risks. Phone timers and delivery checks are scripted.
 
 Fresh browser playthroughs completed Alex and Nova on desktop and at 390 pixels without opening the hint system. The runs covered Alex’s private-attachment refusal and verified sign-out, Nova’s pre-amendment refusal and reapproved edit, all six product pilot checklists, the three independent shutdown checks, and the source-linked read, send and stop sequences. Browser playthroughs establish that the controls and outcomes are present. A first-time player's explanation is a separate comprehension check.
 

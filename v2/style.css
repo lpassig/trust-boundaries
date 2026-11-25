@@ -509,3 +509,7 @@ dialog.is-reference:has(.sequence-controls) {
 .shadow-reply p{margin:3px 0;font-size:14px;line-height:1.45}
 .shadow-guide{margin:10px 0;font-size:14px}
 .shadow-guide p{margin:0}
+.shadow-view.outside{background:linear-gradient(#a0b3c1 0 59%,#6f8d75 59% 80%,#59606c 80%)}
+.outside .shadow-furniture{left:14%;bottom:22%;width:28%;height:58%;border-radius:0;background:#d7baa5;box-shadow:inset 0 -4px #a68b80}
+.outside .shadow-furniture::before{background:#735969;border:0;bottom:99%;height:33%;left:-8%;width:116%;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.outside .shadow-furniture::after{content:"";position:absolute;bottom:0;left:53%;width:24%;height:56%;background:#80677a;border-radius:3px 3px 0 0}

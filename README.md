@@ -2,7 +2,7 @@
 
 **[Play Trust Boundaries](https://lpassig.github.io/trust-boundaries/)**
 
-**Stage 0 · Shadow AI** is Alex’s optional prologue. Follow Tom’s assignment through the bedroom, living room and kitchen. The grandparents follow Alex, report what they see, and check whether Alex tries either device again after the parents intervene. Open it from the first screen, from **Raise the BAR**, or [play Stage 0 directly](https://lpassig.github.io/trust-boundaries/#shadow).
+Alex’s two household stages share four rooms. In [Stage 0 · Shadow AI](https://lpassig.github.io/trust-boundaries/#shadow), follow Tom’s assignment through discovery, incident review, containment and four follow-up checks. In [Stage 1 · AI Assistant](https://lpassig.github.io/trust-boundaries/#build), verify Ms Patel’s signed assignment, research the planets with a time-limited phone and deliver an approved workbook. The grandparents observe indoors. The outside scene shows what stays beyond their view. Open either stage from the first screen or **Raise the BAR**. Each household stage saves its own progress.
 
 ## Start fresh, then handle changing work
 
@@ -88,7 +88,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **217**.
+- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The test suite runs **218** checks, including the four-room household routes.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 
