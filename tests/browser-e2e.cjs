@@ -796,6 +796,52 @@ async function directGerman(){
  if(document.documentElement.lang!=='en'||current()!=='Stage 1 · Build')throw Error('Switching language changed the active stage');
  return {directGermanLink:true};
 }
+async function maturityGuideReview(){
+ const q=selector=>document.querySelector(selector);
+ const ensure=(value,message)=>{if(!value)throw Error(message);};
+ const guide=()=>q('.maturity-explorer');
+ const selected=()=>q('.maturity-profile:not([hidden])');
+ const choose=level=>tap(q('label:has([name=home-maturity][value='+level+'])'));
+ ensure(!guide().open,'The maturity guide interrupts the story launch');
+ ensure(q('.home-stories button'),'Story launch buttons are missing');
+ await tap(guide().querySelector('summary'));
+ ensure(selected().id==='home-maturity-manual','The manual baseline is missing');
+ ensure(!q('[name=home-maturity][value=unknown]'),'Shadow AI is presented as an autonomy level');
+ for(const [level,stage] of [['manual','build'],['build','build'],['authorize','authorize'],['resist','resist']]){
+  await choose(level);
+  ensure(selected().id==='home-maturity-'+level,'Wrong maturity profile for '+level);
+  ensure(selected().querySelectorAll('dl:not(.maturity-pilot) dt').length===4,'Missing maturity dimensions');
+  ensure(selected().querySelectorAll('.maturity-pilot dd').length===2,'Missing pilot or evidence');
+  ensure(selected().firstElementChild.classList.contains('maturity-launch'),'Launch buttons are below the guide contents');
+  for(const journey of ['alex','nova']){
+   await tap(selected().querySelector('[data-home-journey='+journey+']'));
+   ensure(location.hash==='#'+(journey==='nova'?'nova-':'')+stage,'Wrong direct route for '+level+' and '+journey);
+   await tap(q('.topbar nav a[href="#"]'));
+   ensure(guide().open&&selected().id==='home-maturity-'+level,'Returning from a story lost the selected guide');
+  }
+  ensure(document.documentElement.scrollWidth<=innerWidth,'The maturity guide overflows');
+ }
+ ensure(q('.maturity-value').querySelectorAll('dt').length===3,'Missing value measures');
+ ensure(q('.maturity-explorer a').hostname==='www.tmforum.org','The survey is missing its source');
+ if(document.documentElement.lang==='de'){
+  ensure(guide().querySelector('summary').textContent.includes('Finde deinen Einstieg'),'The maturity guide is not in German');
+  ensure(selected().textContent.includes('Gesteuerte Autonomie')&&
+   selected().textContent.includes('Halte eine erlaubte Testanfrage zurück')&&selected().textContent.includes('Beide Belege für dieselbe Anfrage'),
+   'The RESIST description, pilot or evidence is not in German');
+ }
+ await capture('maturity-'+document.documentElement.lang,guide());
+ await tap(q('#language-game'));
+ ensure(guide().open&&selected().id==='home-maturity-resist','Language switch lost the maturity selection');
+ ensure(!q('.maturity-shadow').open,'Shadow AI details opened without a player action');
+ await tap(q('.maturity-shadow summary'));
+ await tap(q('.maturity-shadow [data-home-journey=alex]'));
+ ensure(location.hash==='#shadow'&&household.unknown.index===0,'Alex’s discovery path did not start at UNKNOWN');
+ await tap(q('.topbar nav a[href="#"]'));
+ ensure(q('.maturity-shadow').open,'The discovery entry lost its expanded state after play');
+ await tap(q('.maturity-shadow [data-home-journey=nova]'));
+ ensure(location.hash==='#nova-unknown'&&novaStates.unknown.index===0,'The discovery path did not start a fresh stage');
+ return {width:innerWidth,maturityGuide:true,languageSwitchPreservedSelection:true};
+}
 async function verifyPilotKeyboard(send){
  const evaluate=async expression=>(await send('Runtime.evaluate',{expression,returnByValue:true})).result.value;
  await send('Page.bringToFront');
@@ -818,6 +864,8 @@ async function verifyPilotKeyboard(send){
  cases.push(await testPage(1280,900,surfaceReview));
  cases.push(await testPage(320,844,germanReview,verifyGermanGuide));
  cases.push(await testPage(1280,900,germanReview,verifyGermanGuide));
+ cases.push(await testPage(1280,900,maturityGuideReview));
+ cases.push(await testPage(320,844,maturityGuideReview,undefined,'?lang=de'));
  cases.push(await testPage(390,844,directGerman,undefined,'?lang=de#build'));
  console.log(JSON.stringify(cases,null,2));
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>chrome.kill());

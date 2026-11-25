@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <meta name="theme-color" content="#151622">
  <meta name="description" content="Follow Alex at home and Nova at a railway company through four stages of AI security.">
- <meta name="application-version" content="1.0.0-rc.3">
+ <meta name="application-version" content="1.0.0-rc.5">
  <title>Trust Boundaries</title>
  <style>
 :root {
@@ -68,10 +68,58 @@ p, li, dd { color: var(--muted); }
 .stage-list button { padding: 14px; }
 .maturity-card { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: var(--panel); }
 .maturity-card h2 { margin-top: 0; }
+.maturity-card[data-maturity] h3 { font: 500 24px/1.2 Georgia, serif; }
 .maturity-journeys { display: grid; gap: 8px; margin-top: auto; }
 .maturity-journeys .choice { background: var(--bg); padding: 10px 12px; }
 .maturity-journeys [data-home-journey="alex"] strong { color: var(--accent); }
 .maturity-journeys [data-home-journey="nova"] strong { color: var(--green); }
+.maturity-explorer {
+ --maturity-accent: #b8d3ff;
+ --maturity-divider: #445971;
+ margin-block: 16px 24px;
+ border: 1px solid var(--maturity-divider);
+ border-radius: 14px;
+ background: #192333;
+}
+.maturity-explorer summary { padding: 12px 16px; color: var(--maturity-accent); }
+.maturity-explorer summary>span { display: block; margin-inline-start: 1.25em; color: var(--muted); font-size: 14px; }
+.maturity-explorer-body { padding: 16px; border-top: 1px solid var(--maturity-divider); }
+.maturity-selector { min-width: 0; margin: 0; padding: 0; border: 0; }
+.maturity-selector legend { margin-bottom: 8px; padding: 0; font-weight: 650; }
+.maturity-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.maturity-option {
+ display: flex; align-items: flex-start; gap: 8px; min-height: 56px;
+ padding: 8px 10px; border: 1px solid var(--maturity-divider); border-radius: 9px;
+ background: #202e41; cursor: pointer; line-height: 1.3; overflow-wrap: anywhere;
+}
+.maturity-option:has(input:checked) { background: var(--maturity-accent); border-color: var(--maturity-accent); color: #142338; }
+.maturity-option:has(input:focus-visible) { outline: 3px solid var(--amber); outline-offset: 2px; }
+.maturity-option input { flex: none; margin: .24em 0 0; accent-color: #204d8c; }
+.maturity-option input:focus-visible { outline: none; }
+.maturity-option small { display: block; margin-top: 4px; font-size: 12px; }
+.maturity-profile { padding-block: 16px; }
+.maturity-launch { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 16px; }
+.maturity-launch p { margin: 0; color: var(--ink); font-weight: 650; }
+.maturity-launch-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.maturity-launch-buttons button { background: #202e41; border-color: #6d8bb0; font-size: 14px; padding-inline: 10px; }
+.maturity-profile h3 { margin-bottom: 6px; }
+.maturity-profile dl, .maturity-value { display: grid; margin: 0; gap: 10px 22px; }
+.maturity-profile dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.maturity-explorer dt { color: var(--maturity-accent); font-weight: 650; }
+.maturity-explorer dd { margin: 0; }
+.maturity-profile .maturity-pilot { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--maturity-divider); }
+.maturity-shadow { border-inline-start: 3px solid var(--amber); padding-inline-start: 10px; margin-bottom: 12px; }
+.maturity-shadow summary { padding: 4px 0; color: var(--amber); font-size: 14px; font-weight: 650; }
+.maturity-shadow p { font-size: 14px; }
+.maturity-shadow .maturity-launch { margin-bottom: 8px; }
+.maturity-value { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.maturity-value>div { border-top: 1px solid var(--maturity-divider); padding-top: 8px; }
+.maturity-explorer-body>.small-print:last-child { margin-bottom: 0; }
+@media (max-width: 620px) {
+ .maturity-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .maturity-option { gap: 6px; padding-inline: 8px; font-size: 14px; }
+ .maturity-profile dl, .maturity-value { grid-template-columns: minmax(0, 1fr); }
+}
 #reset-dialog { width: min(440px, calc(100% - 32px)); border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--panel); color: var(--ink); }
 #reset-dialog::backdrop { background: #0e0c17bf; }
 #reset-dialog h2 { margin-top: 0; }
@@ -1588,6 +1636,63 @@ Start with Alex|Mit Alex anfangen
 Start with Nova|Mit Nova anfangen
 Continue Alex’s story|Alex’ Geschichte fortsetzen
 Continue Nova’s story|Novas Geschichte fortsetzen
+Find your starting point|Finde deinen Einstieg
+Pick a workflow and play the stage that fits.|Wähle einen Arbeitsablauf und spiele die passende Stufe.
+What can AI do in this workflow today?|Was darf die KI in diesem Ablauf heute tun?
+People do the work|Menschen erledigen die Arbeit
+AI drafts for approval|KI entwirft zur Freigabe
+AI asks for the access it needs|KI beantragt Zugriff
+AI acts within standing rules|KI handelt nach Regeln
+Unsure what AI is already running?|Unklar, welche KI schon im Einsatz ist?
+Discover Shadow AI in UNKNOWN|Schatten-KI in UNBEKANNT aufspüren
+Try BUILD next|Als Nächstes AUFBAUEN ausprobieren
+Play the {{1}} stage|Stufe {{1}} spielen
+Manual|Manuell
+Baseline|Basis
+Assisted|Mit Assistenz
+Semi-autonomous|Teilautonom
+Governed autonomy|Gesteuerte Autonomie
+What you see|Was du siehst
+Who decides|Wer entscheidet
+Who does the work|Wer die Arbeit ausführt
+How you verify it|Wie du das Ergebnis prüfst
+People pull together information from separate tools.|Menschen tragen Informationen aus verschiedenen Werkzeugen zusammen.
+A person makes every decision.|Ein Mensch trifft jede Entscheidung.
+People carry out the work, sometimes with scripts.|Menschen führen die Arbeit aus, teilweise mit Skripten.
+People check the result and investigate errors.|Menschen prüfen das Ergebnis und gehen Fehlern nach.
+Measure one repeated task, then try a read-only assistant whose output a person reviews.|Miss den Aufwand für eine wiederkehrende Aufgabe. Teste dann einen Assistenten mit reinem Lesezugriff und lass das Ergebnis von einem Menschen prüfen.
+Time spent on one manual run and one assisted run, plus the reviewer’s decision.|Die Zeit für einen manuellen und einen assistierten Durchlauf sowie die Entscheidung der prüfenden Person.
+The assistant uses approved sources.|Der Assistent nutzt freigegebene Quellen.
+A person decides which recommendations to use.|Ein Mensch entscheidet, welche Empfehlungen umgesetzt werden.
+The assistant researches or drafts. A person approves the final output.|Der Assistent recherchiert oder entwirft einen Text. Ein Mensch gibt das Ergebnis frei.
+The runtime limits the tools. The delivery service checks what is sent.|Die Laufzeitumgebung beschränkt die Werkzeuge. Der Versanddienst prüft, was verschickt wird.
+Give an assistant one approved source. Confirm that a second source stays blocked.|Gib einem Assistenten genau eine freigegebene Quelle. Prüfe, ob eine zweite Quelle gesperrt bleibt.
+The approved source, the blocked request, and the reviewer’s approval for the output.|Die freigegebene Quelle, die blockierte Anfrage und die Freigabe des Ergebnisses durch die prüfende Person.
+Connected tools show records within the task’s scope.|Angebundene Werkzeuge zeigen nur Datensätze, die zum Auftrag gehören.
+People set limits. Policy decides which requests fit those limits.|Menschen setzen Grenzen. Die Richtlinie entscheidet, welche Anfragen zulässig sind.
+The agent investigates and requests the specific access it needs.|Der Agent untersucht den Fall und beantragt genau den Zugriff, den er dafür braucht.
+The receiving system checks the actual request. Retest access when the task closes.|Das empfangende System prüft die konkrete Anfrage. Wiederhole den Zugriff nach Abschluss des Auftrags.
+Try the same read against two test records, one in scope and one outside it.|Teste dieselbe Leseanfrage mit zwei Testdatensätzen. Einer liegt im erlaubten Umfang, der andere außerhalb.
+The allowed read, the refused read, and the permission that explains both.|Der erlaubte und der abgelehnte Lesezugriff sowie die Freigabe, die beide Ergebnisse erklärt.
+Agents share an operational picture through views scoped to each task.|Agenten arbeiten mit einer gemeinsamen Lageübersicht und sehen jeweils die Daten, die ihr Auftrag erlaubt.
+People set rules and approval gates. A trusted event can trigger work under those rules.|Menschen legen Regeln fest und bestimmen, wann eine Freigabe nötig ist. Ein vertrauenswürdiges Ereignis kann unter diesen Regeln einen Auftrag auslösen.
+The agent carries out approved steps and delegates limited work. Sensitive outputs go to a human reviewer.|Der Agent führt genehmigte Schritte aus und delegiert klar begrenzte Aufgaben. Ein Mensch prüft sensible Ergebnisse.
+The receiving system enforces the action. Verify that access ended and account for completed work.|Das empfangende System setzt die Regeln für die Aktion durch. Prüfe, ob der Zugriff beendet ist, und halte bereits ausgeführte Aktionen fest.
+Hold an allowed test request. Close the task, retry that exact request, then check that unrelated work still succeeds.|Halte eine erlaubte Testanfrage zurück. Schließe den Auftrag und wiederhole genau diese Anfrage. Prüfe anschließend, ob ein unabhängiger Auftrag weiterhin funktioniert.
+Both receipts for the same request and the successful unrelated read.|Beide Belege für dieselbe Anfrage und der erfolgreiche Lesezugriff des unabhängigen Auftrags.
+What to test first|Was du zuerst testen kannst
+Shadow AI|Schatten-KI
+Unmanaged AI can appear at any stage. Find out what it reached and verify that the affected access is closed.|Ungesteuerte KI kann auf jeder Stufe auftreten. Finde heraus, worauf sie zugegriffen hat, und prüfe, ob die betroffenen Zugänge gesperrt sind.
+Where to measure value|Woran du den Nutzen misst
+Security|Sicherheit
+Operations|Betrieb
+Cost and revenue|Kosten und Umsatz
+Track how quickly you find and close unexpected access.|Miss, wie schnell du unerwartete Zugriffe erkennst und beendest.
+Measure time spent per task, manual steps or repeat tickets.|Miss die Zeit pro Aufgabe, die Zahl manueller Schritte oder wiederkehrender Tickets.
+Compare the cost per completed task or the value of faster service.|Vergleiche die Kosten pro erledigter Aufgabe oder den Mehrwert einer schnelleren Bearbeitung.
+Choose a measure for your pilot and record a baseline before changing the workflow.|Wähle eine Kennzahl für deinen Pilotversuch und erfasse den Ausgangswert, bevor du den Ablauf änderst.
+In TM Forum’s June 2026 survey of 80 telecom operators, 81% were targeting Level 4 or higher network autonomy by 2030.|In der Umfrage von TM Forum unter 80 Telekommunikationsanbietern vom Juni 2026 strebten 81 % bis 2030 mindestens Stufe 4 der Netzautonomie an.
+TM Forum survey summary|Zusammenfassung der TM-Forum-Umfrage
 Four stages of AI security|Vier Stufen der KI-Sicherheit
 Both stories follow the same stages. Start at Unknown for the full story, or choose a stage below.|Beide Geschichten durchlaufen dieselben Stufen. Starte bei „Unbekannt“, um alles zu erleben, oder wähle unten eine Stufe.
 See the recommended action in each scene.|In jeder Szene siehst du, was du als Nächstes tun kannst.
@@ -5263,10 +5368,93 @@ const maturityStages={
  authorize:['Grant access for a specific task and check that it ends with the work.','Find a better source and get read-only access to one folder.'],
  resist:['Limit delegated actions and verify containment when something goes wrong.','Work with Jo and Mia, then see which controls respond when someone crosses a boundary.']
 };
-function maturityChoice(stage,journey,model,state,route,summary){
- const name=journey==='alex'?'Alex':'Nova';
+const maturityLevels={
+ manual:{title:'Manual',tag:'Baseline',behavior:'People do the work',playStage:'build',details:[
+  'People pull together information from separate tools.',
+  'A person makes every decision.',
+  'People carry out the work, sometimes with scripts.',
+  'People check the result and investigate errors.'
+ ],pilot:'Measure one repeated task, then try a read-only assistant whose output a person reviews.',
+ evidence:'Time spent on one manual run and one assisted run, plus the reviewer’s decision.'},
+ build:{title:'Assisted',tag:'BUILD',behavior:'AI drafts for approval',playStage:'build',details:[
+  'The assistant uses approved sources.',
+  'A person decides which recommendations to use.',
+  'The assistant researches or drafts. A person approves the final output.',
+  'The runtime limits the tools. The delivery service checks what is sent.'
+ ],pilot:'Give an assistant one approved source. Confirm that a second source stays blocked.',
+ evidence:'The approved source, the blocked request, and the reviewer’s approval for the output.'},
+ authorize:{title:'Semi-autonomous',tag:'AUTHORIZE',behavior:'AI asks for the access it needs',playStage:'authorize',details:[
+  'Connected tools show records within the task’s scope.',
+  'People set limits. Policy decides which requests fit those limits.',
+  'The agent investigates and requests the specific access it needs.',
+  'The receiving system checks the actual request. Retest access when the task closes.'
+ ],pilot:'Try the same read against two test records, one in scope and one outside it.',
+ evidence:'The allowed read, the refused read, and the permission that explains both.'},
+ resist:{title:'Governed autonomy',tag:'RESIST',behavior:'AI acts within standing rules',playStage:'resist',details:[
+  'Agents share an operational picture through views scoped to each task.',
+  'People set rules and approval gates. A trusted event can trigger work under those rules.',
+  'The agent carries out approved steps and delegates limited work. Sensitive outputs go to a human reviewer.',
+  'The receiving system enforces the action. Verify that access ended and account for completed work.'
+ ],pilot:'Hold an allowed test request. Close the task, retry that exact request, then check that unrelated work still succeeds.',
+ evidence:'Both receipts for the same request and the successful unrelated read.'}
+};
+const maturityDimensions=['What you see','Who decides','Who does the work','How you verify it'];
+let homeMaturity='manual',homeMaturityOpen=false,homeShadowOpen=false;
+function maturityLaunch(stage,label){
+ return `<div class="maturity-launch">
+  <p>${esc(label)}</p>
+  <div class="maturity-launch-buttons">${maturityChoice(stage,'alex')}${maturityChoice(stage,'nova')}</div>
+ </div>`;
+}
+function homeMaturityGuide(){
+ const levels=Object.entries(maturityLevels);
+ return `<details class="maturity-explorer"${homeMaturityOpen?' open':''}>
+  <summary><strong>Find your starting point</strong><span>Pick a workflow and play the stage that fits.</span></summary>
+  <div class="maturity-explorer-body">
+   <details class="maturity-shadow"${homeShadowOpen?' open':''}>
+    <summary>Unsure what AI is already running?</summary>
+    <p>Unmanaged AI can appear at any stage. Find out what it reached and verify that the affected access is closed.</p>
+    ${maturityLaunch('unknown','Discover Shadow AI in UNKNOWN')}
+   </details>
+   <fieldset class="maturity-selector">
+    <legend>What can AI do in this workflow today?</legend>
+    <div class="maturity-options">${levels.map(([id,{title,tag,behavior}])=>`
+     <label class="maturity-option">
+      <input type="radio" name="home-maturity" value="${id}" aria-controls="home-maturity-${id}"${homeMaturity===id?' checked':''}>
+      <span><strong>${esc(behavior)}</strong><small>${esc(title)} · ${esc(tag)}</small></span>
+     </label>`).join('')}</div>
+   </fieldset>
+   ${levels.map(([id,{title,tag,details,pilot,evidence,playStage}])=>`
+    <section class="maturity-profile" id="home-maturity-${id}" aria-labelledby="home-maturity-title-${id}"${homeMaturity===id?'':' hidden'}>
+     ${maturityLaunch(playStage,id==='manual'?'Try BUILD next':`Play the ${tag} stage`)}
+     <h3 id="home-maturity-title-${id}">${esc(title)} · ${esc(tag)}</h3>
+     <dl>${details.map((detail,index)=>`<div><dt>${esc(maturityDimensions[index])}</dt><dd>${esc(detail)}</dd></div>`).join('')}</dl>
+     <dl class="maturity-pilot">
+      <div><dt>What to test first</dt><dd>${esc(pilot)}</dd></div>
+      <div><dt>Evidence to keep</dt><dd>${esc(evidence)}</dd></div>
+     </dl>
+    </section>`).join('')}
+   <h3>Where to measure value</h3>
+   <dl class="maturity-value">
+    <div><dt>Security</dt><dd>Track how quickly you find and close unexpected access.</dd></div>
+    <div><dt>Operations</dt><dd>Measure time spent per task, manual steps or repeat tickets.</dd></div>
+    <div><dt>Cost and revenue</dt><dd>Compare the cost per completed task or the value of faster service.</dd></div>
+   </dl>
+   <p class="small-print">Choose a measure for your pilot and record a baseline before changing the workflow.</p>
+   <p class="small-print">In TM Forum’s June 2026 survey of 80 telecom operators, 81% were targeting Level 4 or higher network autonomy by 2030.
+    <a href="https://www.tmforum.org/news-insight/newsroom/autonomous-networks-leadership-forum-spotlights-level-4-shift" target="_blank" rel="noopener noreferrer">TM Forum survey summary</a>
+   </p>
+  </div>
+ </details>`;
+}
+function maturityChoice(stage,journey,summary){
+ const alex=journey==='alex';
+ const model=alex?ShadowStory:NovaRailway;
+ const state=(alex?household:novaStates)[stage];
+ const route=alex?stageRoutes[stage]:novaStageRoute(stage);
+ const name=alex?'Alex':'Nova';
  const action=model.complete(state)?'Review':state.index?'Continue':'Play';
- return button(`${action} ${name}`,()=>navigate(route),'choice',summary,'',{
+ return button(`${action} ${name}`,()=>navigate(route),summary?'choice':'secondary',summary,'',{
   'data-home-journey':journey,
   'aria-describedby':'maturity-'+stage
  });
@@ -5292,16 +5480,17 @@ function showIntro(){
     ${button(Object.values(novaStates).some(state=>state.index)?'Continue Nova’s story':'Start with Nova',()=>navigate(novaStageRoute(firstNova)),'secondary')}
    </section>
   </div>
+  ${homeMaturityGuide()}
   <h2>Four stages of AI security</h2>
   <p>Both stories follow the same stages. Start at Unknown for the full story, or choose a stage below.</p>
   <div class="home-guide">${guideControls()}<p>${guided()?'See the recommended action in each scene.':'Explore with the mission in view and ask for the next step whenever you need it.'}</p></div>
   <div class="stage-list choices">${Object.entries(maturityStages).map(([stage,[lesson,alexSummary]])=>`
    <section class="maturity-card" data-maturity="${stage}" aria-labelledby="maturity-${stage}">
-    <h2 id="maturity-${stage}">${esc(ShadowStory.stages[stage].title)}</h2>
+    <h3 id="maturity-${stage}">${esc(ShadowStory.stages[stage].title)}</h3>
     <p>${esc(lesson)}</p>
     <div class="maturity-journeys">
-     ${maturityChoice(stage,'alex',ShadowStory,household[stage],stageRoutes[stage],alexSummary)}
-     ${maturityChoice(stage,'nova',NovaRailway,novaStates[stage],novaStageRoute(stage),NovaRailway.stages[stage].summary)}
+     ${maturityChoice(stage,'alex',alexSummary)}
+     ${maturityChoice(stage,'nova',NovaRailway.stages[stage].summary)}
     </div>
    </section>`).join('')}</div>
   <p class="small-print">${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>
@@ -5309,6 +5498,15 @@ function showIntro(){
   <p class="small-print">Independent educational simulation. The game uses fictional accounts and records. Product names identify the technology illustrated.</p>`,
   'TRUST BOUNDARIES');
  bindMode(showIntro);
+ const explorer=$('.maturity-explorer');
+ explorer.ontoggle=()=>{homeMaturityOpen=explorer.open;};
+ const shadow=explorer.querySelector('.maturity-shadow');
+ shadow.ontoggle=()=>{homeShadowOpen=shadow.open;};
+ explorer.onchange=event=>{
+  if(event.target.name!=='home-maturity')return;
+  homeMaturity=event.target.value;
+  for(const id of Object.keys(maturityLevels))$(`#home-maturity-${id}`).hidden=id!==homeMaturity;
+ };
 }
 function renderRoute(){
  const [route,query='']=location.hash.slice(1).split('?');

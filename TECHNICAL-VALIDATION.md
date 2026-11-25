@@ -21,6 +21,22 @@ The resource console and mandatory Nova reads use the same simulated policy. The
 
 The guide’s replay bindings are illustrative fields. Token exchange carries the subject and actor to an intended audience. Vault checks the separately presented Vault token and applicable authorization details. AuthZEN can carry a Boolean evaluation from the PDP to the resource PEP. The resource observes the actual request and owns enforcement. Production deployment requires verifying the configured issuer and audience, backend permissions, service and controller ownership, replay or sender-binding requirements, and release-specific availability. [OAuth token exchange](https://www.rfc-editor.org/rfc/rfc8693.html), [Vault RAR](https://docs.hashicorp.com/vault/ai/iam/concepts/rar), [AuthZEN Authorization API](https://openid.net/specs/authorization-api-1_0-final.html)
 
+## Release candidate v1.0.0-rc.5
+
+The home guide asks what AI can do in one workflow. Each choice provides direct Alex and Nova launch buttons and pairs the suggested pilot with the evidence to keep. The Shadow AI entry offers direct access to UNKNOWN for both stories.
+
+The standalone candidate and generated Pages HTML have SHA-256 `7aa18f93d3f2c87c7749a4f76d3c51116c37ed8a43d47d2dcae8714db3be6e6a`. The previous Pages commit for rollback is `6d0cd20469970c1fc89d564a90236433a031e9cf`.
+
+All 270 model and reference tests passed. The exact offline build passed direct stage launches, pilot evidence, the UNKNOWN shortcut and language switching in Chrome and Edge at 320 and 1280 px in English and German.
+
+## Release candidate v1.0.0-rc.4
+
+The home screen adds a bilingual maturity guide with four autonomy levels, a first test for each and separate guidance for discovering uncontrolled activity in UNKNOWN. Security, operational and financial value are illustrated with measurable pilot outcomes. TM Forum’s published telecom survey finding is presented with its sample, date and sector. [TM Forum survey summary](https://www.tmforum.org/news-insight/newsroom/autonomous-networks-leadership-forum-spotlights-level-4-shift)
+
+The standalone candidate and generated Pages HTML have SHA-256 `74266eff17a2902379cf6af01743e238072cde0ae6192e4aad473ab37d39edcd`. This version is staged locally.
+
+All 270 model and reference tests passed. Chrome and Edge completed both stories in English and German. The final build passed maturity selection, stage jumps and language-switch checks. Chrome also passed native arrow-key navigation and a 320 px layout check in English.
+
 ## Release candidate v1.0.0-rc.3
 
 The standalone candidate and generated Pages HTML have SHA-256 `e6b967be042693d82f18195ca2b87773e2f16b7fd4627383af3fc16c66c13e86`. The previous Pages commit for rollback is `6621223d220717933da46c161001620c6d137bf0`.

@@ -43,6 +43,63 @@ Start with Alex|Mit Alex anfangen
 Start with Nova|Mit Nova anfangen
 Continue Alex’s story|Alex’ Geschichte fortsetzen
 Continue Nova’s story|Novas Geschichte fortsetzen
+Find your starting point|Finde deinen Einstieg
+Pick a workflow and play the stage that fits.|Wähle einen Arbeitsablauf und spiele die passende Stufe.
+What can AI do in this workflow today?|Was darf die KI in diesem Ablauf heute tun?
+People do the work|Menschen erledigen die Arbeit
+AI drafts for approval|KI entwirft zur Freigabe
+AI asks for the access it needs|KI beantragt Zugriff
+AI acts within standing rules|KI handelt nach Regeln
+Unsure what AI is already running?|Unklar, welche KI schon im Einsatz ist?
+Discover Shadow AI in UNKNOWN|Schatten-KI in UNBEKANNT aufspüren
+Try BUILD next|Als Nächstes AUFBAUEN ausprobieren
+Play the {{1}} stage|Stufe {{1}} spielen
+Manual|Manuell
+Baseline|Basis
+Assisted|Mit Assistenz
+Semi-autonomous|Teilautonom
+Governed autonomy|Gesteuerte Autonomie
+What you see|Was du siehst
+Who decides|Wer entscheidet
+Who does the work|Wer die Arbeit ausführt
+How you verify it|Wie du das Ergebnis prüfst
+People pull together information from separate tools.|Menschen tragen Informationen aus verschiedenen Werkzeugen zusammen.
+A person makes every decision.|Ein Mensch trifft jede Entscheidung.
+People carry out the work, sometimes with scripts.|Menschen führen die Arbeit aus, teilweise mit Skripten.
+People check the result and investigate errors.|Menschen prüfen das Ergebnis und gehen Fehlern nach.
+Measure one repeated task, then try a read-only assistant whose output a person reviews.|Miss den Aufwand für eine wiederkehrende Aufgabe. Teste dann einen Assistenten mit reinem Lesezugriff und lass das Ergebnis von einem Menschen prüfen.
+Time spent on one manual run and one assisted run, plus the reviewer’s decision.|Die Zeit für einen manuellen und einen assistierten Durchlauf sowie die Entscheidung der prüfenden Person.
+The assistant uses approved sources.|Der Assistent nutzt freigegebene Quellen.
+A person decides which recommendations to use.|Ein Mensch entscheidet, welche Empfehlungen umgesetzt werden.
+The assistant researches or drafts. A person approves the final output.|Der Assistent recherchiert oder entwirft einen Text. Ein Mensch gibt das Ergebnis frei.
+The runtime limits the tools. The delivery service checks what is sent.|Die Laufzeitumgebung beschränkt die Werkzeuge. Der Versanddienst prüft, was verschickt wird.
+Give an assistant one approved source. Confirm that a second source stays blocked.|Gib einem Assistenten genau eine freigegebene Quelle. Prüfe, ob eine zweite Quelle gesperrt bleibt.
+The approved source, the blocked request, and the reviewer’s approval for the output.|Die freigegebene Quelle, die blockierte Anfrage und die Freigabe des Ergebnisses durch die prüfende Person.
+Connected tools show records within the task’s scope.|Angebundene Werkzeuge zeigen nur Datensätze, die zum Auftrag gehören.
+People set limits. Policy decides which requests fit those limits.|Menschen setzen Grenzen. Die Richtlinie entscheidet, welche Anfragen zulässig sind.
+The agent investigates and requests the specific access it needs.|Der Agent untersucht den Fall und beantragt genau den Zugriff, den er dafür braucht.
+The receiving system checks the actual request. Retest access when the task closes.|Das empfangende System prüft die konkrete Anfrage. Wiederhole den Zugriff nach Abschluss des Auftrags.
+Try the same read against two test records, one in scope and one outside it.|Teste dieselbe Leseanfrage mit zwei Testdatensätzen. Einer liegt im erlaubten Umfang, der andere außerhalb.
+The allowed read, the refused read, and the permission that explains both.|Der erlaubte und der abgelehnte Lesezugriff sowie die Freigabe, die beide Ergebnisse erklärt.
+Agents share an operational picture through views scoped to each task.|Agenten arbeiten mit einer gemeinsamen Lageübersicht und sehen jeweils die Daten, die ihr Auftrag erlaubt.
+People set rules and approval gates. A trusted event can trigger work under those rules.|Menschen legen Regeln fest und bestimmen, wann eine Freigabe nötig ist. Ein vertrauenswürdiges Ereignis kann unter diesen Regeln einen Auftrag auslösen.
+The agent carries out approved steps and delegates limited work. Sensitive outputs go to a human reviewer.|Der Agent führt genehmigte Schritte aus und delegiert klar begrenzte Aufgaben. Ein Mensch prüft sensible Ergebnisse.
+The receiving system enforces the action. Verify that access ended and account for completed work.|Das empfangende System setzt die Regeln für die Aktion durch. Prüfe, ob der Zugriff beendet ist, und halte bereits ausgeführte Aktionen fest.
+Hold an allowed test request. Close the task, retry that exact request, then check that unrelated work still succeeds.|Halte eine erlaubte Testanfrage zurück. Schließe den Auftrag und wiederhole genau diese Anfrage. Prüfe anschließend, ob ein unabhängiger Auftrag weiterhin funktioniert.
+Both receipts for the same request and the successful unrelated read.|Beide Belege für dieselbe Anfrage und der erfolgreiche Lesezugriff des unabhängigen Auftrags.
+What to test first|Was du zuerst testen kannst
+Shadow AI|Schatten-KI
+Unmanaged AI can appear at any stage. Find out what it reached and verify that the affected access is closed.|Ungesteuerte KI kann auf jeder Stufe auftreten. Finde heraus, worauf sie zugegriffen hat, und prüfe, ob die betroffenen Zugänge gesperrt sind.
+Where to measure value|Woran du den Nutzen misst
+Security|Sicherheit
+Operations|Betrieb
+Cost and revenue|Kosten und Umsatz
+Track how quickly you find and close unexpected access.|Miss, wie schnell du unerwartete Zugriffe erkennst und beendest.
+Measure time spent per task, manual steps or repeat tickets.|Miss die Zeit pro Aufgabe, die Zahl manueller Schritte oder wiederkehrender Tickets.
+Compare the cost per completed task or the value of faster service.|Vergleiche die Kosten pro erledigter Aufgabe oder den Mehrwert einer schnelleren Bearbeitung.
+Choose a measure for your pilot and record a baseline before changing the workflow.|Wähle eine Kennzahl für deinen Pilotversuch und erfasse den Ausgangswert, bevor du den Ablauf änderst.
+In TM Forum’s June 2026 survey of 80 telecom operators, 81% were targeting Level 4 or higher network autonomy by 2030.|In der Umfrage von TM Forum unter 80 Telekommunikationsanbietern vom Juni 2026 strebten 81 % bis 2030 mindestens Stufe 4 der Netzautonomie an.
+TM Forum survey summary|Zusammenfassung der TM-Forum-Umfrage
 Four stages of AI security|Vier Stufen der KI-Sicherheit
 Both stories follow the same stages. Start at Unknown for the full story, or choose a stage below.|Beide Geschichten durchlaufen dieselben Stufen. Starte bei „Unbekannt“, um alles zu erleben, oder wähle unten eine Stufe.
 See the recommended action in each scene.|In jeder Szene siehst du, was du als Nächstes tun kannst.

@@ -460,10 +460,93 @@ const maturityStages={
  authorize:['Grant access for a specific task and check that it ends with the work.','Find a better source and get read-only access to one folder.'],
  resist:['Limit delegated actions and verify containment when something goes wrong.','Work with Jo and Mia, then see which controls respond when someone crosses a boundary.']
 };
-function maturityChoice(stage,journey,model,state,route,summary){
- const name=journey==='alex'?'Alex':'Nova';
+const maturityLevels={
+ manual:{title:'Manual',tag:'Baseline',behavior:'People do the work',playStage:'build',details:[
+  'People pull together information from separate tools.',
+  'A person makes every decision.',
+  'People carry out the work, sometimes with scripts.',
+  'People check the result and investigate errors.'
+ ],pilot:'Measure one repeated task, then try a read-only assistant whose output a person reviews.',
+ evidence:'Time spent on one manual run and one assisted run, plus the reviewer’s decision.'},
+ build:{title:'Assisted',tag:'BUILD',behavior:'AI drafts for approval',playStage:'build',details:[
+  'The assistant uses approved sources.',
+  'A person decides which recommendations to use.',
+  'The assistant researches or drafts. A person approves the final output.',
+  'The runtime limits the tools. The delivery service checks what is sent.'
+ ],pilot:'Give an assistant one approved source. Confirm that a second source stays blocked.',
+ evidence:'The approved source, the blocked request, and the reviewer’s approval for the output.'},
+ authorize:{title:'Semi-autonomous',tag:'AUTHORIZE',behavior:'AI asks for the access it needs',playStage:'authorize',details:[
+  'Connected tools show records within the task’s scope.',
+  'People set limits. Policy decides which requests fit those limits.',
+  'The agent investigates and requests the specific access it needs.',
+  'The receiving system checks the actual request. Retest access when the task closes.'
+ ],pilot:'Try the same read against two test records, one in scope and one outside it.',
+ evidence:'The allowed read, the refused read, and the permission that explains both.'},
+ resist:{title:'Governed autonomy',tag:'RESIST',behavior:'AI acts within standing rules',playStage:'resist',details:[
+  'Agents share an operational picture through views scoped to each task.',
+  'People set rules and approval gates. A trusted event can trigger work under those rules.',
+  'The agent carries out approved steps and delegates limited work. Sensitive outputs go to a human reviewer.',
+  'The receiving system enforces the action. Verify that access ended and account for completed work.'
+ ],pilot:'Hold an allowed test request. Close the task, retry that exact request, then check that unrelated work still succeeds.',
+ evidence:'Both receipts for the same request and the successful unrelated read.'}
+};
+const maturityDimensions=['What you see','Who decides','Who does the work','How you verify it'];
+let homeMaturity='manual',homeMaturityOpen=false,homeShadowOpen=false;
+function maturityLaunch(stage,label){
+ return `<div class="maturity-launch">
+  <p>${esc(label)}</p>
+  <div class="maturity-launch-buttons">${maturityChoice(stage,'alex')}${maturityChoice(stage,'nova')}</div>
+ </div>`;
+}
+function homeMaturityGuide(){
+ const levels=Object.entries(maturityLevels);
+ return `<details class="maturity-explorer"${homeMaturityOpen?' open':''}>
+  <summary><strong>Find your starting point</strong><span>Pick a workflow and play the stage that fits.</span></summary>
+  <div class="maturity-explorer-body">
+   <details class="maturity-shadow"${homeShadowOpen?' open':''}>
+    <summary>Unsure what AI is already running?</summary>
+    <p>Unmanaged AI can appear at any stage. Find out what it reached and verify that the affected access is closed.</p>
+    ${maturityLaunch('unknown','Discover Shadow AI in UNKNOWN')}
+   </details>
+   <fieldset class="maturity-selector">
+    <legend>What can AI do in this workflow today?</legend>
+    <div class="maturity-options">${levels.map(([id,{title,tag,behavior}])=>`
+     <label class="maturity-option">
+      <input type="radio" name="home-maturity" value="${id}" aria-controls="home-maturity-${id}"${homeMaturity===id?' checked':''}>
+      <span><strong>${esc(behavior)}</strong><small>${esc(title)} · ${esc(tag)}</small></span>
+     </label>`).join('')}</div>
+   </fieldset>
+   ${levels.map(([id,{title,tag,details,pilot,evidence,playStage}])=>`
+    <section class="maturity-profile" id="home-maturity-${id}" aria-labelledby="home-maturity-title-${id}"${homeMaturity===id?'':' hidden'}>
+     ${maturityLaunch(playStage,id==='manual'?'Try BUILD next':`Play the ${tag} stage`)}
+     <h3 id="home-maturity-title-${id}">${esc(title)} · ${esc(tag)}</h3>
+     <dl>${details.map((detail,index)=>`<div><dt>${esc(maturityDimensions[index])}</dt><dd>${esc(detail)}</dd></div>`).join('')}</dl>
+     <dl class="maturity-pilot">
+      <div><dt>What to test first</dt><dd>${esc(pilot)}</dd></div>
+      <div><dt>Evidence to keep</dt><dd>${esc(evidence)}</dd></div>
+     </dl>
+    </section>`).join('')}
+   <h3>Where to measure value</h3>
+   <dl class="maturity-value">
+    <div><dt>Security</dt><dd>Track how quickly you find and close unexpected access.</dd></div>
+    <div><dt>Operations</dt><dd>Measure time spent per task, manual steps or repeat tickets.</dd></div>
+    <div><dt>Cost and revenue</dt><dd>Compare the cost per completed task or the value of faster service.</dd></div>
+   </dl>
+   <p class="small-print">Choose a measure for your pilot and record a baseline before changing the workflow.</p>
+   <p class="small-print">In TM Forum’s June 2026 survey of 80 telecom operators, 81% were targeting Level 4 or higher network autonomy by 2030.
+    <a href="https://www.tmforum.org/news-insight/newsroom/autonomous-networks-leadership-forum-spotlights-level-4-shift" target="_blank" rel="noopener noreferrer">TM Forum survey summary</a>
+   </p>
+  </div>
+ </details>`;
+}
+function maturityChoice(stage,journey,summary){
+ const alex=journey==='alex';
+ const model=alex?ShadowStory:NovaRailway;
+ const state=(alex?household:novaStates)[stage];
+ const route=alex?stageRoutes[stage]:novaStageRoute(stage);
+ const name=alex?'Alex':'Nova';
  const action=model.complete(state)?'Review':state.index?'Continue':'Play';
- return button(`${action} ${name}`,()=>navigate(route),'choice',summary,'',{
+ return button(`${action} ${name}`,()=>navigate(route),summary?'choice':'secondary',summary,'',{
   'data-home-journey':journey,
   'aria-describedby':'maturity-'+stage
  });
@@ -489,16 +572,17 @@ function showIntro(){
     ${button(Object.values(novaStates).some(state=>state.index)?'Continue Nova’s story':'Start with Nova',()=>navigate(novaStageRoute(firstNova)),'secondary')}
    </section>
   </div>
+  ${homeMaturityGuide()}
   <h2>Four stages of AI security</h2>
   <p>Both stories follow the same stages. Start at Unknown for the full story, or choose a stage below.</p>
   <div class="home-guide">${guideControls()}<p>${guided()?'See the recommended action in each scene.':'Explore with the mission in view and ask for the next step whenever you need it.'}</p></div>
   <div class="stage-list choices">${Object.entries(maturityStages).map(([stage,[lesson,alexSummary]])=>`
    <section class="maturity-card" data-maturity="${stage}" aria-labelledby="maturity-${stage}">
-    <h2 id="maturity-${stage}">${esc(ShadowStory.stages[stage].title)}</h2>
+    <h3 id="maturity-${stage}">${esc(ShadowStory.stages[stage].title)}</h3>
     <p>${esc(lesson)}</p>
     <div class="maturity-journeys">
-     ${maturityChoice(stage,'alex',ShadowStory,household[stage],stageRoutes[stage],alexSummary)}
-     ${maturityChoice(stage,'nova',NovaRailway,novaStates[stage],novaStageRoute(stage),NovaRailway.stages[stage].summary)}
+     ${maturityChoice(stage,'alex',alexSummary)}
+     ${maturityChoice(stage,'nova',NovaRailway.stages[stage].summary)}
     </div>
    </section>`).join('')}</div>
   <p class="small-print">${stored?'Progress is saved on this device.':'Progress is kept for this visit.'}</p>
@@ -506,6 +590,15 @@ function showIntro(){
   <p class="small-print">Independent educational simulation. The game uses fictional accounts and records. Product names identify the technology illustrated.</p>`,
   'TRUST BOUNDARIES');
  bindMode(showIntro);
+ const explorer=$('.maturity-explorer');
+ explorer.ontoggle=()=>{homeMaturityOpen=explorer.open;};
+ const shadow=explorer.querySelector('.maturity-shadow');
+ shadow.ontoggle=()=>{homeShadowOpen=shadow.open;};
+ explorer.onchange=event=>{
+  if(event.target.name!=='home-maturity')return;
+  homeMaturity=event.target.value;
+  for(const id of Object.keys(maturityLevels))$(`#home-maturity-${id}`).hidden=id!==homeMaturity;
+ };
 }
 function renderRoute(){
  const [route,query='']=location.hash.slice(1).split('?');
