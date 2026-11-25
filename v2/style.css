@@ -66,6 +66,9 @@ p, li, dd { color: var(--muted); }
 .receipt, .debrief { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-block: 10px; background: var(--panel); }
 .receipt { border-left: 3px solid var(--green); }
 .receipt p:last-child { margin: 4px 0 0; }
+.stage-debrief dl { display: grid; gap: 8px; }
+.stage-debrief dt { color: var(--accent); font-size: 14px; font-weight: 700; }
+.stage-debrief dd { margin-inline-start: 0; }
 .route-list { padding-inline-start: 22px; }
 .route-list li + li { margin-top: 6px; }
 
@@ -74,8 +77,42 @@ p, li, dd { color: var(--muted); }
 
 body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
 .architecture-open #game { width: 100%; max-width: none; min-height: 0; margin: 0; padding: 0; }
+.architecture-open #game:has(.architecture-return) { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.architecture-return { justify-self: start; color: var(--accent); margin-inline-start: 8px; }
 .architecture-guide-frame { display: block; width: 100%; height: 100%; border: 0; background: white; }
 .topbar .quiet[aria-current="page"] { background: var(--soft); border-radius: 8px; }
+
+.mission-guide { --mission-accent: var(--accent); background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--mission-accent); border-radius: 12px; padding: 14px 16px; }
+#game:has(.nova-scene) .mission-guide { --mission-accent: #a7efd8; background: #19232e; }
+.mission-guide p { margin-bottom: 8px; }
+.mission-header, .home-guide { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; }
+.home-guide { justify-content: start; }
+.home-guide p { margin: 0; font-size: 14px; }
+.mission-header h2 { margin: 0; font-size: clamp(20px, 3vw, 25px); }
+.mode-control { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; }
+.mode-control select { min-height: 44px; background: var(--bg); color: var(--ink); padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; }
+.mission-progress { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); margin-inline-start: 10px; white-space: nowrap; }
+.mission-progress progress { width: clamp(40px, 17vw, 100px); height: 9px; accent-color: var(--mission-accent); }
+.mission-status, .mission-milestone, #mission-hint { font-size: 14px; }
+.mission-status b, .mission-milestone b { color: var(--mission-accent); margin-inline-end: 5px; }
+.mission-details { border-top: 1px solid var(--line); margin-top: 10px; }
+.mission-details ol { padding-inline-start: 20px; margin-block: 0 8px; }
+.mission-details li { margin-block: 4px; font-size: 14px; }
+.mission-details li span { color: var(--mission-accent); font-weight: 650; }
+.mission-details li[aria-current="step"] { color: var(--ink); }
+.hint-setting { display: flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; color: var(--muted); }
+.mission-hint-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mission-hint-row #mission-hint { margin: 0; }
+.mission-hint-actions:has(button[hidden]:first-child + button[hidden]) { display: none; }
+#mission-hint:empty { display: none; }
+.mission-hint-actions button { font-size: 14px; padding: 6px 10px; }
+.secondary[data-recommended].good { background: var(--soft); border-color: var(--accent); }
+.nova-navigation .secondary[data-recommended].good { background: #25443e; border-color: #a7efd8; }
+@media (max-width: 560px) {
+ #game:has(.mission-guide)>h1 { font-size: 27px; margin-bottom: 12px; }
+ .mission-guide { padding: 10px 12px; }
+ .mission-header { row-gap: 2px; }
+}
 
 .shadow-rooms{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .shadow-rooms button{flex:1 1 90px;min-height:44px;padding:6px 8px}
@@ -86,11 +123,19 @@ body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-temp
 .shadow-view.kitchen{background:linear-gradient(#51433d 0 72%,#3a302e 72%)}
 .shadow-furniture{position:absolute;bottom:20%;left:8%;width:37%;height:38%;border-radius:9px 9px 2px 2px;background:#a181a1;box-shadow:inset 0 -7px #665570}
 .shadow-furniture::before{position:absolute;content:"";bottom:145%;left:8%;width:80%;height:65%;background:repeating-linear-gradient(90deg,#d8bfb3 0 20%,#554761 20% 26%);border:4px solid #796487;border-radius:4px}
+.shadow-detail { position: absolute; isolation: isolate; pointer-events: none; }
+.bedroom .shadow-detail { top: 12%; left: 29%; width: 13%; height: 30%; background: #7f5f74; border: 3px solid #b28f9b; border-radius: 3px; }
+.bedroom .shadow-detail::after { content: ""; position: absolute; inset: 5px 9px; background: repeating-linear-gradient(90deg,#f0ce9f 0 20%,transparent 20% 35%); transform: rotate(-4deg); }
+.living .shadow-detail { top: 10%; left: 8%; width: 11%; height: 34%; border: 4px solid #889c9e; border-radius: 4px; background: linear-gradient(90deg,transparent 44%,#889c9e 44% 56%,transparent 56%),linear-gradient(#8baabd 63%,#688672 63%); }
+.kitchen .shadow-detail { top: 10%; left: 33%; width: 12%; height: 36%; border: 3px solid #ba9c83; border-radius: 4px; background: #806853; }
+.kitchen .shadow-detail::after { content: ""; position: absolute; inset: 5px 7px; background: linear-gradient(90deg,#ebceab 25%,transparent 25% 32%,#ece0c4 32% 70%,transparent 70%); clip-path: polygon(0 0,100% 13%,92% 83%,35% 90%,24% 100%,0 75%); }
+.shadow-view[data-household-stage="unknown"].kitchen .shadow-detail { background: #59463f; }
+.shadow-view[data-household-stage="unknown"].kitchen .shadow-detail::after { display: none; }
 .living .shadow-furniture{height:29%;background:#91a99f;box-shadow:inset 0 -7px #587b78}
 .living .shadow-furniture::before{left:32%;bottom:110%;width:57%;height:94%;background:#27313e;border-color:#758693}
 .kitchen .shadow-furniture{height:45%;border-radius:2px;background:repeating-linear-gradient(90deg,#ae876e 0 28%,#624e47 28% 33%);box-shadow:inset 0 7px #e1c4a8}
 .kitchen .shadow-furniture::before{bottom:115%;height:50%;background:repeating-linear-gradient(90deg,#c8a78e 0 28%,#64514b 28% 33%);border-color:#906d59}
-.shadow-actors{position:relative;z-index:1;display:flex;justify-content:flex-end;align-items:end;flex-wrap:wrap;gap:4px;padding:12px 8px 5px 28%;min-height:125px}
+.shadow-actors{position:relative;z-index:1;display:flex;justify-content:center;align-items:end;flex-wrap:wrap;gap:6px;padding:12px 8px 5px 34%;min-height:125px}
 .shadow-person.choice{display:grid;place-items:center;text-align:center;gap:1px;max-width:145px;min-width:54px;padding:3px 5px;background:#22202de6}
 .shadow-person svg{display:block;width:44px;height:78px}
 .shadow-person strong{font-size:12px}
@@ -102,12 +147,26 @@ body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-temp
 .shadow-objects .choice{display:flex;flex-direction:column;justify-content:center;min-height:50px;padding:7px 9px;overflow-wrap:anywhere}
 .shadow-objects .choice strong{font-size:13px}
 .shadow-objects .choice.good{border-color:var(--accent);box-shadow:inset 3px 0 var(--accent)}
+.shadow-objects .household-prop { display: grid; grid-template-columns: 25px minmax(0, 1fr); align-items: center; justify-content: stretch; gap: 0 8px; }
+.household-prop small { grid-column: 2; }
+.household-icon { display: block; position: relative; width: 23px; height: 21px; grid-row: span 2; border: 2px solid #bd99ca; border-radius: 4px; background: #473652; }
+.household-icon::after { content: ""; position: absolute; inset: 5px 4px; border-block: 1px solid #ecd8ee; }
+.household-icon.book { border-left: 5px solid #bd99ca; }
+.household-icon.board { border-color: #d09b7b; background: #654638; }
+.household-icon.cabinet { border-color: #b4c3ca; background: #37485a; }
+.household-icon.cabinet::after { inset: 6px 7px; border: 1px solid #ecd8ee; }
+.household-icon.folder { height: 16px; background: #664c3b; border-color: #e4b981; }
+.household-icon.folder::after { inset: -5px 8px auto -2px; height: 5px; border: 0; border-radius: 3px 3px 0 0; background: #e4b981; }
+.household-icon.camera::after, .household-icon.browser::after, .household-icon.timer::after { border: 1px solid #ecd8ee; border-radius: 50%; }
+.household-icon.video::after { border: 0; background: #ecd8ee; clip-path: polygon(20% 0, 85% 50%, 20% 100%); }
+.household-icon.apps::after { border: 0; background: repeating-linear-gradient(90deg,#ecd8ee 0 3px,transparent 3px 6px); }
+.shadow-view.paused .shadow-furniture { filter: saturate(.55); }
+.source-note { border-left-color: var(--amber); }
+.custody-note { border-top: 1px solid var(--line); padding: 10px 14px; background: #342a36; }
+.custody-note ul { margin: 6px 0 0; padding-inline-start: 20px; }
 .shadow-scene .is-speaking{outline:2px solid var(--amber);outline-offset:-2px}
 .shadow-reply{margin:0;padding:8px 12px;border-bottom:1px solid var(--line);border-left:3px solid var(--accent);background:var(--soft)}
 .shadow-reply p{margin:3px 0;font-size:14px;line-height:1.45}
-.shadow-guide{margin:10px 0;font-size:14px}
-.shadow-guide p{margin:0}
-.shadow-guide button{margin-top:5px}
 .shadow-incident{border-color:var(--amber)}
 @media(max-width:560px){
  .shadow-actors{padding-left:8px;justify-content:center}
@@ -117,6 +176,8 @@ body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-temp
 .outside .shadow-furniture{left:14%;bottom:22%;width:28%;height:58%;border-radius:0;background:#d7baa5;box-shadow:inset 0 -4px #a68b80}
 .outside .shadow-furniture::before{background:#735969;border:0;bottom:99%;height:33%;left:-8%;width:116%;clip-path:polygon(50% 0,100% 100%,0 100%)}
 .outside .shadow-furniture::after{content:"";position:absolute;bottom:0;left:53%;width:24%;height:56%;background:#80677a;border-radius:3px 3px 0 0}
+.outside .shadow-detail { bottom: 40%; width: 9%; height: 22%; left: 16%; border: 3px solid #946f78; border-radius: 3px; background: linear-gradient(90deg,transparent 44%,#946f78 44% 56%,transparent 56%),#acc6d2; }
+.outside::before { content: ""; position: absolute; bottom: 20%; left: 38%; width: 11%; height: 18%; background: #67866e; border-radius: 60% 45% 0 0; }
 
 .room-scenarios,.permission-slip{border-top:1px solid var(--line);margin:0}
 .room-scenarios>summary{padding:0 12px}
@@ -163,11 +224,20 @@ body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-temp
 .nova-location{padding:16px 16px 10px}
 .nova-location h2{margin:0 0 4px;font-size:clamp(19px,3vw,24px)}
 .nova-location p{margin:0;color:#abbcc8;font-size:13px}
-.nova-next,.nova-actions{padding:9px 16px}
-.nova-next{border-top:1px solid #394b59;background:#15212c}
-.nova-next strong{font-size:13px;color:var(--nova-accent)}
-.nova-next p{margin:0;color:#f1f5f6;font-size:14px}
-.nova-next button{margin-top:7px}
+.nova-actions{padding:0 16px}
+.nova-console { margin: 12px; padding: 14px; background: #14232f; border: 1px solid #596d7b; border-radius: 10px; }
+.console-heading { display: flex; align-items: start; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.console-heading h3 { margin: 0; }
+.console-heading .eyebrow { color: var(--nova-accent); letter-spacing: .08em; }
+.nova-console dl { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,185px),1fr)); gap: 10px; }
+.nova-console dt { font-size: 13px; color: var(--nova-accent); font-weight: 700; }
+.nova-console dd { margin: 0; font-size: 14px; }
+.console-table { overflow: auto; margin-block: 10px; }
+.console-table table { border-collapse: collapse; width: 100%; font-size: 14px; text-align: left; }
+.console-table caption { text-align: left; color: var(--nova-accent); font-weight: 700; padding-bottom: 5px; }
+.console-table th, .console-table td { border-bottom: 1px solid #405564; padding: 6px 8px; min-width: 72px; }
+.nova-inbox { border-left: 3px solid var(--amber); }
+.nova-inbox .actions, .nova-console p:last-child { margin-bottom: 0; }
 .nova-dialogue{position:relative;margin:0 12px 12px;padding:10px 13px;border:1px solid #526877;border-radius:12px;background:#213541}
 .nova-dialogue::after{content:"";position:absolute;left:28px;top:100%;border:7px solid transparent;border-top-color:#526877}
 .nova-dialogue b{color:var(--nova-accent)}
@@ -216,6 +286,9 @@ body.architecture-open { height: 100dvh; min-height: 0; display: grid; grid-temp
 .nova-partner .nova-bot{transform:scale(.86)}
 .nova-partner .bot-head{border-color:#c6a8e4;border-bottom-color:#a282c5}
 .nova-partner .bot-body{background:linear-gradient(150deg,#c5a9e1,#7a659d)}
+.nova-runtime-status { position: absolute; top: 12px; right: 12px; padding: 4px 8px; border: 1px solid #6b8592; border-radius: 6px; background: #192a37; color: #dbf5ef; font-size: 12px; }
+.nova-runtime-status.interrupted { border-color: var(--amber); color: var(--amber); }
+.nova-diorama.runtime:has(.nova-runtime-status.interrupted) .nova-racks { filter: saturate(.45); }
 .nova-character{display:grid;place-items:center;gap:3px;min-width:76px;padding:3px 7px;color:#ecf5f7;font-size:12px;font-weight:750;border-radius:11px;
  text-shadow:0 1px 4px #101b26;background:#19293870}
 .nova-character.is-speaking,.nova-station.is-speaking{outline:2px solid #efd0a0;outline-offset:-2px}

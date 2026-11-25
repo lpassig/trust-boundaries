@@ -2,6 +2,12 @@
 const NovaRailway=(()=>{
  const scenes={external:'Intake & delivery',runtime:'Agent runtime',resources:'Enterprise resources',security:'Security control plane'};
  const missionIds={build:'M-101',authorize:'M-204',resist:'M-304'};
+ const records={
+  crm:[['C-438','Passenger service case','Restricted customer record'],['F-112','Compensation ledger','Confidential financial record']],
+  kafka:[['EV-204-01','08:41','RE-204','Door D3 fails to confirm closed'],['EV-204-02','08:43','RE-204','Departure held · +7 minutes']],
+  database:[['INC-117','RE-204','Intermittent door-position sensor','Connector inspection cleared the fault']],
+  astra:[['KB-042','Door interlock troubleshooting','Isolate the door and inspect sensor alignment'],['KB-105','RE-105 scheduled service','Documentation only · separate mission M-105']]
+ };
  const step=(id,room,station,label,reply)=>({id,room,station,label,reply});
  const stages={
   unknown:{title:'Stage 0 · Unknown',tag:'UNKNOWN',start:'external',summary:'Discover an unmanaged agent, trace what it reached and verify containment.',ending:'The discovered routes are closed. An unmanaged copy outside monitored infrastructure would still be a visibility gap.',steps:[
@@ -53,7 +59,7 @@ const NovaRailway=(()=>{
    step('register','security','mission','Start a new investigation under standing policy',`The mission service validates the event and starts ${missionIds.resist} under an accountable Operations owner. It grants routine reads for this incident on RE-204. The earlier ${missionIds.authorize} permissions stay closed. Safety-critical controls, customer compensation and unrelated data are outside the new grant.`),
    step('plan','runtime','sandbox','Investigate within the approved runtime','The delay starts just after a door warning. Nova checks it against the incident history and maintenance notes, then proposes sending the door-system evidence to Mira for a second opinion.'),
    step('delegate','security','policy','Authorize Mira’s exact sub-mission',`The customer mission service verifies delegation is allowed and issues a package-only analysis task tied to ${missionIds.resist}. Mira authenticates with its own workload identity and does not inherit Nova’s credentials. Both are charged to the parent mission budget.`),
-   step('mira','runtime','mira','Receive Mira’s bounded analysis','Mira returns a likely door-sensor fault with references to the approved technical package. A2A carries the handoff and result in this configuration. Mira’s receiving service enforces the linked scope. The evidence supports an internal maintenance ticket.'),
+   step('mira','runtime','mira','Receive Mira’s bounded analysis','Mira returns a likely door-sensor fault with references to the approved technical package. A2A carries the result. The child grant closes, and both agents have used the shared model budget. The evidence supports an internal maintenance ticket.'),
    step('ticketCredential','security','vault','Authorize the maintenance connector credential','Vault independently authorizes the trusted maintenance connector to obtain scoped access. Nova never receives the raw credential. The receiving maintenance system still needs to authorize the actual ticket request.'),
    step('permit','resources','maintenance','Preview the maintenance request','The maintenance PEP observes Nova’s actual tool, asset RE-204, priority High and Railway Maintenance destination. Mission policy permits the exact request. The tool preview has created no ticket.'),
    step('commit','resources','maintenance','Commit one internal maintenance ticket','The receiving service checks the current mission and observes the exact arguments again before committing. It records ticket MT-204 and the operation identifier. Credential authorization and the live business decision remain independent.'),
@@ -66,6 +72,7 @@ const NovaRailway=(()=>{
  const stations={
   intake:['Work intake','External gateway','Checks who is making a request and sends verified scope to the mission authority.'],
   delivery:['Report delivery','Resource-side PEP','Checks the actual artifact and its recipient at release. A delivery receipt records a completed effect.'],
+  externalSource:['External services','Public research and untrusted destinations','Public information and outside services have separate trust and visibility boundaries. A source can provide evidence without authorizing an action.'],
   sandbox:['Runtime console','NVIDIA OpenShell · Red Hat OpenShift','OpenShift hosts the workload. OpenShell constrains the configured sandbox. Optional NVIDIA Sentry can add out-of-band controls in supported hardware deployments. Runtime reachability and business permission are separate.'],
   model:['Model gateway','Granite · configured model gateway','Mediates access to the named model and applies configured usage and input limits.'],
   gateway:['MCP gateway','agentgateway · configured MCP route','Checks the approved tool route. Tool-name authorization and argument inspection are distinct controls.'],
@@ -74,6 +81,7 @@ const NovaRailway=(()=>{
   artifact:['Report workspace','Governed artifact store','Tracks source lineage and retained copies. Delivery still requires an exact approval.'],
   crm:['Customer CRM','Separate application and session controller','Customer records and payments belong to the resource owner. The CRM decides access and owns the session state.'],
   kafka:['Operational event streams','Confluent Kafka · Flink correlation','Kafka checks topic and operation access. The access service applies train and time-window filters. Flink correlates configured event streams.'],
+  flink:['Event correlation','Apache Flink on Confluent','Correlation creates a candidate signal from configured records. The mission authority verifies the source and standing authority before issuing a grant.'],
   database:['Incident history','PostgreSQL · Vault · optional Boundary','Vault leases credentials. Boundary controls connectivity. The database and access service enforce views and record scope.'],
   astra:['Documentation search','DataStax Astra DB','The retrieval service vets the mission and applies collection and document filters before returning results.'],
   maintenance:['Maintenance system','MCP tool · trusted resource PEP','The maintenance system owns the real ticket arguments, live commitment decision and idempotency record.'],
@@ -100,7 +108,7 @@ const NovaRailway=(()=>{
    probe('old-lease','security','Retest the closed RE-204 lease','Vault and database access service','The old lease and the M-204 resource route fail the retest. M-105 still has its own scope.')
   ],
   resist:[
-   probe('injection','runtime','Inspect an instruction in a retrieved document','Mission PDP and resource PEP','The document claims the manager requested payment data. The active mission contains no such authority. The read is blocked and the source is flagged.',1),
+   probe('injection','runtime','Test the document’s request for payment records','Mission PDP and resource PEP','The document claims the manager requested payment data. The active mission contains no such authority. The read is blocked and the source is flagged.',1),
    probe('tool-update','runtime','Inspect a changed MCP tool inventory','MCP gateway and platform team','The configured allowlist refuses the newly exposed tool. The platform team quarantines the tool version pending review.',1),
    probe('replay','external','Test a copied credential from a different runtime','Receiving service','The request arrived from a different runtime. The receiving service checks the credential’s sender binding and refuses it. An ordinary bearer token could still be replayed while valid.',2),
    probe('tamper','runtime','Test a runtime that fails the current posture check','OpenShell and admission service','Runtime controls refuse the prohibited write. The admission service withholds credentials from a runtime that fails posture verification.',3),
@@ -128,7 +136,23 @@ const NovaRailway=(()=>{
   ['mira','runtime','Mira’s sub-mission','The linked grant is closed. Mira’s unrelated work is unaffected.'],
   ['artifacts','security','Artifact and memory quarantine','Affected artifacts and memory are isolated. Approved evidence remains available.']
  ];
- const fresh=stage=>({stage,room:stages[stage].start,index:0,version:1,generation:1,risk:0,activeChecks:[],events:[],incident:null,credentialVersion:null,permit:null,approvalVersion:null,ticket:null,reply:null});
+ const fresh=stage=>({stage,room:stages[stage].start,index:0,version:1,generation:1,risk:0,activeChecks:[],events:[],incident:null,
+  credentialVersion:null,databaseLease:null,childGrant:null,budgetUsed:0,permit:null,artifactRevision:0,
+  approval:null,approvalVersion:null,deliveryReceipt:null,ticket:null,admission:stage==='build'?'Pending':null,reply:null});
+ const sharedBudget=50000;
+ const reportRequest=s=>({
+  missionId:missionIds[s.stage],operation:'deliver',recipient:'Railway Operations',
+  digest:s.artifactRevision?`SIM-${missionIds[s.stage]}-REPORT-${s.artifactRevision}`:null
+ });
+ function deliveryDecision(s,request=reportRequest(s)){
+  if(s.incident||reached(s,'close'))return 'Mission unavailable';
+  if(s.deliveryReceipt)return 'Prior receipt';
+  if(!s.approval||s.approval.version!==s.version||s.approval.generation!==s.generation)return 'Approval required';
+  const expected=reportRequest(s);
+  const fields=Object.keys(expected);
+  return Object.keys(request).length===fields.length&&fields.every(field=>
+   request[field]===expected[field]&&request[field]===s.approval.request[field])?'Permit':'Approval mismatch';
+ }
  const ticketRequest={operation:'createMaintenanceTicket',missionId:missionIds.resist,asset:'RE-204',priority:'High',team:'Railway Maintenance',operationId:'OP-204-TICKET-1'};
  function ticketDecision(s,request=ticketRequest){
   if(s.stage!=='resist'||s.incident||reached(s,'close'))return 'Mission unavailable';
@@ -142,11 +166,46 @@ const NovaRailway=(()=>{
  const normalNext=s=>stages[s.stage].steps[s.index];
  const complete=s=>!normalNext(s)&&!s.incident;
  const visit=(s,room)=>Object.hasOwn(scenes,room)?{...s,room}:s;
+ function resourceRead(s,resource,request={}){
+  const {stage}=s;
+  const {asset='RE-204',missionId=missionIds[stage],operation='read'}=request;
+  const deny=reason=>({status:'Denied',reason,rows:[]});
+  const permit=(reason,rows)=>({status:'Allowed',reason,rows});
+  if(s.incident)return deny('The resource refuses the suspended mission.');
+  if(operation!=='read')return deny('This route has no write permission.');
+  if(stage==='unknown'){
+   if(!['crm','kafka'].includes(resource))return deny('The workstation has no known route to this resource.');
+   if(reached(s,'contain'))return deny('The affected session and stream access were revoked.');
+   const observed=reached(s,resource);
+   if(!observed)return deny('No matching access receipt has been collected.');
+   return permit('Historical receipt · the resource accepted an inherited identity.',resource==='crm'?records.crm:
+    [['PAY-204-31','Passenger payments topic','Read observed in broker audit']]);
+  }
+  if(resource==='crm')return deny('This mission grants no customer or financial data access.');
+  if(missionId==='M-105'&&stage==='authorize'&&reached(s,'second')){
+   return resource==='astra'&&asset==='RE-105'?permit('M-105 has its own documentation grant.',[records.astra[1]]):
+    deny('M-105 cannot use the RE-204 grant or evidence.');
+  }
+  if(missionId!==missionIds[stage]||asset!=='RE-204')return deny('The actual request is outside this mission and asset scope.');
+  if(reached(s,'close'))return deny('The mission is closed. Its old authorization cannot be reused.');
+  if(stage==='build')return deny('M-101 grants public research only. Enterprise resources are outside its scope.');
+  if(resource==='astra'&&reached(s,'register'))return permit('Governed retrieval returned one in-scope document.',[records.astra[0]]);
+  if(resource==='kafka'&&(stage==='authorize'&&reached(s,'grant')||stage==='resist'&&reached(s,'register'))){
+   if(request.window&&request.window!=='08:40–09:00')return deny('The access service refused the time window. Topic access is still intact.');
+   return permit('The broker allowed the topic read. The resource returned only rows in the approved asset and window.',records.kafka);
+  }
+  if(resource==='database'&&(stage==='authorize'&&reached(s,'lease')||stage==='resist'&&reached(s,'register'))){
+   if(stage==='authorize'&&s.databaseLease?.status!=='Active')return deny('The database connector has no active, in-scope lease.');
+   return permit('The incident service applied the mission scope and read-only view.',records.database);
+  }
+  return deny('No current permission covers this resource.');
+ }
  function available(s,replaying=false){
   if(s.incident)return [];
   return checks[s.stage].filter(item=>{
    if(item.id==='blind')return reached(s,'verify');
-   if(s.stage==='build')return reached(s,'bootstrap');
+   if(s.stage==='build')return reached(s,'bootstrap')&&(replaying||!reached(s,'close')&&
+    (item.id!=='failed-posture'||s.admission==='Verified'&&!reached(s,'provider')));
    if(s.stage==='authorize')return item.id==='old-lease'?reached(s,'close'):reached(s,'lease')&&!reached(s,'close');
    if(item.id==='duplicate')return !!s.ticket&&!reached(s,'close');
    if(item.id==='race')return s.permit===s.version&&!s.ticket;
@@ -157,7 +216,19 @@ const NovaRailway=(()=>{
   }).filter(item=>item.room===s.room);
  }
  function next(s){
-  if(!s.incident)return normalNext(s);
+  if(!s.incident){
+   const current=normalNext(s);
+   if(current?.id==='provider'&&s.admission==='Failed'){
+    return step('restore-posture','security','admission','Restore and verify a fresh runtime','');
+   }
+   if(current?.id==='history'&&s.databaseLease?.status==='Expired'){
+    return step('renew-lease','security','vault','Request a fresh read-only lease','');
+   }
+   if(current?.id==='deliver'&&deliveryDecision(s)!=='Permit'){
+    return step('reapprove','security','review','Ask for approval of this exact copy','');
+   }
+   return current;
+  }
   const pending=controllers.find(([id])=>!s.incident.confirmed.includes(id));
   if(pending){
    const [id,room,name]=pending;
@@ -189,41 +260,99 @@ const NovaRailway=(()=>{
    const result=record(renewed,id,'Mission and admission services','A fresh workload and posture check passes. The owner reauthorizes the previously allowed scope under a new version. Old permits and leases stay closed.','Reauthorized');
    return {...result,risk:0,activeChecks:[],incident:null,permit:null};
   }
+  if(id==='flag-source'&&s.room==='runtime'&&s.stage==='resist'&&reached(s,'plan')&&!reached(s,'close')){
+   if(s.events.some(event=>event.id===id))return s;
+   return record(s,id,'Security operations','Operations holds the instruction for review. Nova can keep the verified door-system notes and finish its investigation.','Reported');
+  }
+  if(s.stage==='resist'&&reached(s,'approve')&&!reached(s,'deliver')){
+   if(s.room==='runtime'&&id==='edit-report'&&s.artifactRevision===1){
+    return {...record(s,id,'Report workspace','The edited conclusion is saved as revision 2. The previous approval still names revision 1.','Edited'),artifactRevision:2};
+   }
+   if(s.room==='runtime'&&id==='restore-report'&&s.artifactRevision===2){
+    return {...record(s,id,'Report workspace','Nova selects the original report for delivery again. The service will check the approval for that revision.','Selected'),artifactRevision:1};
+   }
+   if(s.room==='external'&&id==='try-delivery'&&deliveryDecision(s)!=='Permit'){
+    return record(s,id,'Report delivery','The delivery service compared this report with the approval and held the copy. Nothing was sent.','Denied');
+   }
+  }
+  if(current?.id==='reapprove'&&id==='reapprove'&&s.room==='security'){
+   return {...record(s,id,'Output approval','The reviewer approved this exact revision for the internal Operations inbox.','Approved'),
+    approvalVersion:s.version,approval:{version:s.version,generation:s.generation,request:reportRequest(s)}};
+  }
+  if(current?.id==='restore-posture'&&id==='restore-posture'&&s.room==='security'){
+   return record({...s,generation:s.generation+1,admission:'Verified'},id,'Runtime admission',
+    'The platform team restores the approved deployment and verifies identity and posture for a fresh generation. The failed runtime received no service credential.','Verified');
+  }
+  if(s.stage==='authorize'&&s.room==='security'&&reached(s,'lease')&&!reached(s,'history')){
+   if(id==='expire-lease'&&s.databaseLease?.status==='Active'){
+    return {...record(s,id,'Vault and database connector','The simulated lease expires. The PostgreSQL connector cannot use it for a new read. The separate Kafka grant remains available.','Expired'),
+     databaseLease:{...s.databaseLease,status:'Expired'}};
+   }
+   if(current?.id==='renew-lease'&&id==='renew-lease'){
+    return {...record(s,id,'Vault','Vault independently approves a new read-only lease under the same current mission scope. The original lease remains retired.','Issued'),
+     databaseLease:{id:'DB-M204-'+(s.databaseLease.generation+1),generation:s.databaseLease.generation+1,status:'Active'}};
+   }
+  }
   if(current?.room===s.room&&current.id===id){
    if(id==='permit'&&ticketDecision(s)!=='Permit')return s;
    if(id==='commit'&&(s.permit!==s.version||ticketDecision(s)!=='Permit'))return s;
-   if(id==='deliver'&&s.approvalVersion!==s.version)return s;
+   if(id==='deliver'&&deliveryDecision(s)!=='Permit')return s;
+   if(id==='provider'&&s.admission!=='Verified')return s;
+   if(id==='mira'&&(s.childGrant?.status!=='Active'||s.childGrant.version!==s.version))return s;
+   const resource={events:'kafka',history:'database',remaining:'astra'}[id];
+   if(resource&&resourceRead(s,resource,id==='remaining'?{asset:'RE-105',missionId:'M-105'}:{}).status!=='Allowed')return s;
    const state=id==='grant'?{...s,version:s.version+1}:s;
    const result=record(state,id,stations[current.station][0],current.reply,id==='commit'?'Committed':'Recorded');
-   return {...result,index:s.index+1,credentialVersion:id==='ticketCredential'?s.version:s.credentialVersion,
-    permit:id==='permit'?s.version:s.permit,approvalVersion:id==='approve'?s.version:s.approvalVersion,
+   return {...result,index:s.index+1,admission:id==='bootstrap'?'Verified':s.admission,credentialVersion:id==='ticketCredential'?s.version:s.credentialVersion,
+    permit:id==='permit'?s.version:s.permit,artifactRevision:id==='draft'?1:s.artifactRevision,
+    databaseLease:id==='lease'?{id:'DB-M204-1',generation:1,status:'Active'}:
+     id==='close'&&s.databaseLease?{...s.databaseLease,status:'Revoked'}:s.databaseLease,
+    childGrant:id==='delegate'?{id:'M-304-MIRA-'+s.version,version:s.version,status:'Active',scope:'Technical package only'}:
+     id==='mira'?{...s.childGrant,status:'Closed'}:s.childGrant,
+    budgetUsed:id==='plan'?Math.max(s.budgetUsed,30000):id==='mira'?sharedBudget:s.budgetUsed,
+    approvalVersion:id==='approve'?s.version:s.approvalVersion,
+    approval:id==='approve'?{version:s.version,generation:s.generation,request:reportRequest(s)}:s.approval,
+    deliveryReceipt:id==='deliver'?{...reportRequest(s),version:s.version}:s.deliveryReceipt,
     ticket:id==='commit'?'MT-204':s.ticket};
   }
   const item=available(s,replaying).find(entry=>entry.id===id);
   if(!item)return s;
+  if(id==='failed-posture'&&!reached(s,'provider'))return record({...s,admission:'Failed'},id,item.owner,item.reply,'Denied');
   const points=s.activeChecks.includes(id)?0:item.points;
   const result=record(s,id,item.owner,item.reply,id==='duplicate'?'Prior receipt':'Control checked',points);
   const risk=s.risk+points;
   if(risk<4)return {...result,risk,activeChecks:[...new Set([...s.activeChecks,id])]};
   // A previous-generation connector credential and early permit cannot survive recovery.
-  const redo=(!s.ticket&&reached(s,'ticketCredential'))?'ticketCredential':normalNext(s)?.id==='deliver'?'approve':null;
+  const redo=(!s.ticket&&reached(s,'ticketCredential'))?'ticketCredential':normalNext(s)?.id==='deliver'?'approve':
+   s.childGrant?.status==='Active'?'delegate':null;
   const index=redo?stages.resist.steps.findIndex(item=>item.id===redo):s.index;
-  return {...result,index,risk,room:'security',credentialVersion:null,permit:null,approvalVersion:null,incident:{confirmed:[],reviewed:false,trigger:id}};
+  const childGrant=s.childGrant?.status==='Active'?{...s.childGrant,status:'Suspended'}:s.childGrant;
+  return {...result,index,risk,room:'security',childGrant,credentialVersion:null,permit:null,approval:null,approvalVersion:null,
+   incident:{confirmed:[],reviewed:false,trigger:id}};
  }
  function restore(stage,value){
   if(value?.stage!==stage||!Array.isArray(value.events))return fresh(stage);
   let state=fresh(stage);
+  const extraRooms={'timeout-resource':'resources','flag-source':'runtime','edit-report':'runtime','restore-report':'runtime',
+   'try-delivery':'external','expire-lease':'security'};
   for(const event of value.events){
    // Preserve deliveries already recorded by releases that allowed delivery after recovery.
    const priorDelivery=event?.decision==='Historical receipt'||(!Object.hasOwn(value,'approvalVersion')&&event?.decision==='Recorded');
    if(priorDelivery&&event?.id==='deliver'&&next(state)?.id==='approve'&&state.events.some(item=>item.id==='approve')){
     const delivery=stages[stage].steps[state.index+1];
     const receipt=record(visit(state,delivery.room),'deliver','Report delivery','Operations already received the report. The previous delivery receipt is preserved.','Historical receipt');
-    state={...receipt,index:state.index+2};
+    state={...receipt,index:state.index+2,deliveryReceipt:{...reportRequest(state),version:state.version}};
     continue;
    }
-   const room=event?.id==='timeout-resource'?'resources':next(state)?.id===event?.id?next(state).room:
-    checks[stage].find(item=>item.id===event?.id)?.room;
+   // Earlier saves could record Mira's result after recovery without a distinct child regrant.
+   if(!Object.hasOwn(value,'childGrant')&&event?.id==='mira'&&next(state)?.id==='delegate'&&state.childGrant?.status==='Suspended'){
+    state=act(visit(state,'security'),'delegate',true);
+   }
+   if(!Object.hasOwn(value,'admission')&&event?.id==='provider'&&next(state)?.id==='restore-posture'){
+    state=act(visit(state,'security'),'restore-posture',true);
+   }
+   const room=extraRooms[event?.id]||(next(state)?.id===event?.id?next(state).room:
+    checks[stage].find(item=>item.id===event?.id)?.room);
    if(!room)continue;
    state=act(visit(state,room),event.id,true);
   }
@@ -242,6 +371,7 @@ const NovaRailway=(()=>{
    memory:id+' isolated workspace'
   };
  }
- return {scenes,stages,stations,checks,controllers,ticketRequest,ticketDecision,fresh,visit,reached,next,complete,available,act,restore,mission};
+ return {scenes,stages,stations,checks,controllers,ticketRequest,ticketDecision,resourceRead,reportRequest,deliveryDecision,sharedBudget,
+  fresh,visit,reached,next,complete,available,act,restore,mission};
 })();
 if(typeof module!=='undefined')module.exports=NovaRailway;

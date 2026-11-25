@@ -177,3 +177,98 @@ test('containment retains a completed ticket and independent scope evidence',()=
  assert.equal(Nova.next(state).id,'draft');
  assert.equal(state.ticket,'MT-204');
 });
+
+test('simulated resource rows depend on the mission, observed arguments and scoped credential',()=>{
+ const scoped=walk('authorize','grant');
+ assert.equal(Nova.resourceRead(scoped,'kafka').rows.length,2);
+ assert.deepEqual(Nova.resourceRead(scoped,'kafka',{asset:'RE-105'}).rows,[]);
+ assert.deepEqual(Nova.resourceRead(scoped,'kafka',{window:'09:00–10:00'}).rows,[]);
+ assert.deepEqual(Nova.resourceRead(scoped,'database').rows,[]);
+ assert.deepEqual(Nova.resourceRead(scoped,'crm').rows,[]);
+ const leased=walk('authorize','lease');
+ assert.equal(Nova.resourceRead(leased,'database').rows[0][0],'INC-117');
+ assert.deepEqual(Nova.resourceRead(leased,'database',{operation:'update'}).rows,[]);
+ const closed=walk('authorize','close');
+ assert.deepEqual(Nova.resourceRead(closed,'database').rows,[]);
+ assert.equal(Nova.resourceRead(closed,'astra',{asset:'RE-105',missionId:'M-105'}).rows[0][0],'KB-105');
+ const stopped=apply(walk('resist','plan'),'disclosure','runtime');
+ assert.deepEqual(Nova.resourceRead(stopped,'kafka').rows,[]);
+});
+
+test('players can report malicious content without raising risk or reading protected records',()=>{
+ const planning=walk('resist','plan');
+ const flagged=apply(planning,'flag-source','runtime');
+ assert.equal(flagged.events.at(-1).decision,'Reported');
+ assert.equal(flagged.risk,0);
+ assert.equal(flagged.index,planning.index);
+ assert.deepEqual(Nova.resourceRead(flagged,'crm').rows,[]);
+ assert.deepEqual(Nova.restore('resist',JSON.parse(JSON.stringify(flagged))),flagged);
+});
+
+test('editing the approved artifact requires an exact reapproval at delivery',()=>{
+ const approved=walk('resist','approve');
+ assert.equal(Nova.deliveryDecision(approved,{...Nova.reportRequest(approved),recipient:'Outside inbox'}),'Approval mismatch');
+ const edited=apply(approved,'edit-report','runtime');
+ assert.equal(Nova.deliveryDecision(edited),'Approval mismatch');
+ assert.equal(Nova.next(edited).id,'reapprove');
+ assert.equal(apply(edited,'deliver','external').deliveryReceipt,null);
+ const blocked=apply(edited,'try-delivery','external');
+ assert.equal(blocked.events.at(-1).decision,'Denied');
+ assert.equal(blocked.risk,0);
+ const reapproved=apply(blocked,'reapprove','security');
+ const delivered=apply(reapproved,'deliver','external');
+ assert.equal(delivered.deliveryReceipt.digest,'SIM-M-304-REPORT-2');
+ assert.equal(Nova.deliveryDecision(delivered),'Prior receipt');
+ assert.deepEqual(Nova.restore('resist',JSON.parse(JSON.stringify(delivered))),delivered);
+});
+
+test('database expiry and renewal have independent effects from the Kafka grant',()=>{
+ const leased=walk('authorize','lease');
+ const expired=apply(leased,'expire-lease','security');
+ assert.equal(expired.databaseLease.status,'Expired');
+ assert.equal(Nova.resourceRead(expired,'kafka').status,'Allowed');
+ assert.equal(Nova.resourceRead(expired,'database').status,'Denied');
+ const events=apply(expired,'events','resources');
+ assert.equal(Nova.next(events).id,'renew-lease');
+ const renewed=apply(events,'renew-lease','security');
+ assert.notEqual(renewed.databaseLease.id,leased.databaseLease.id);
+ assert.equal(Nova.resourceRead(renewed,'database').status,'Allowed');
+ assert.equal(Nova.next(renewed).id,'history');
+ assert.deepEqual(Nova.restore('authorize',JSON.parse(JSON.stringify(renewed))),renewed);
+});
+
+test('child proof is generation-bound, its completion closes access, and attempts share the budget',()=>{
+ const delegated=walk('resist','delegate');
+ assert.equal(delegated.childGrant.status,'Active');
+ assert(delegated.budgetUsed<Nova.sharedBudget);
+ const completed=apply(delegated,'mira','runtime');
+ assert.equal(completed.childGrant.status,'Closed');
+ assert.equal(completed.budgetUsed,Nova.sharedBudget);
+ const attempt=apply(completed,'budget','runtime');
+ assert.equal(attempt.budgetUsed,completed.budgetUsed);
+ assert.equal(attempt.risk,0);
+
+ let interrupted=apply(delegated,'disclosure','runtime');
+ assert.equal(interrupted.childGrant.status,'Suspended');
+ for(const [id,room] of Nova.controllers)interrupted=apply(interrupted,'ack-'+id,room);
+ interrupted=apply(interrupted,'investigate','security');
+ interrupted=apply(interrupted,'recover','security');
+ assert.equal(Nova.next(interrupted).id,'delegate');
+ const regranted=apply(interrupted,'delegate','security');
+ assert.equal(regranted.childGrant.version,regranted.version);
+ assert.notEqual(regranted.childGrant.id,delegated.childGrant.id);
+});
+
+test('failed posture blocks the provider credential, and older recorded runs still restore',()=>{
+ const admitted=walk('build','bootstrap');
+ const failed=apply(admitted,'failed-posture','security');
+ assert.equal(failed.admission,'Failed');
+ assert.equal(Nova.next(failed).id,'restore-posture');
+ assert.deepEqual(apply(failed,'provider','security'),failed);
+ const restored=apply(failed,'restore-posture','security');
+ assert(restored.generation>admitted.generation);
+ assert.equal(restored.admission,'Verified');
+ assert.equal(Nova.next(restored).id,'provider');
+ const old={stage:'build',room:'security',events:[...failed.events,{id:'provider'}]};
+ assert.equal(Nova.next(Nova.restore('build',old)).id,'request');
+});

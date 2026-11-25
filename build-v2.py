@@ -17,7 +17,7 @@ html = html.replace('<main id="game"></main>', '<main id="game"></main>\n'
                     + guide.replace('<', '\\u003c') + '</script>')
 for name, path in [
     ('../assets/people.js', root / 'assets/people.js'),
-    *[(name, src / name) for name in ['shadow.js', 'trust-checks.js', 'nova.js', 'nova-ui.js', 'ui.js']],
+    *[(name, src / name) for name in ['shadow.js', 'trust-checks.js', 'nova.js', 'field-guide.js', 'nova-console.js', 'nova-ui.js', 'ui.js']],
 ]:
     code = path.read_text(encoding='utf-8').replace('</script', '<\\/script')
     html = html.replace(f'<script src="{name}"></script>', '<script>\n' + code + '\n</script>')

@@ -13,6 +13,7 @@ const novaSources={
  vault:[['Vault Agentic IAM','https://docs.hashicorp.com/vault/ai/iam'],['Vault Agent Registry','https://docs.hashicorp.com/vault/ai/iam/concepts/agent-registry']],
  gateway:[['agentgateway MCP authorization','https://agentgateway.dev/docs/standalone/main/documentation/configuration/security/authorization/mcp-authz/']],
  kafka:[['Confluent Cloud audit logging','https://docs.confluent.io/cloud/current/monitoring/audit-logging/cloud-audit-log-categories.html'],['Confluent Flink role controls','https://docs.confluent.io/cloud/current/flink/operate-and-deploy/flink-rbac.html']],
+ flink:[['Confluent Flink concepts','https://docs.confluent.io/cloud/current/flink/concepts/overview.html']],
  database:[['Boundary and Vault','https://developer.hashicorp.com/boundary/docs/vault']],
  policy:[['OpenID AuthZEN Authorization API','https://openid.net/specs/authorization-api-1_0-final.html']],
  mira:[['A2A authentication and security','https://a2a-protocol.org/latest/specification/agent-card/']],
@@ -25,12 +26,6 @@ function novaSourceLinks(links){
   `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join(' · ')}</p>`:'';
 }
 const novaStageRoute=stage=>'nova-'+stage;
-const novaPairs={
- external:'Incoming requests and approved delivery routes',
- runtime:'Alex’s room and devices',
- resources:'Alex’s living room and shared resources',
- security:'Alex’s kitchen and the family’s rules'
-};
 const novaRoomProps={
  external:'<span class="nova-city"></span><span class="nova-platform"></span><span class="nova-train"><i></i></span>',
  runtime:'<span class="nova-window"></span><span class="nova-racks"><i></i><i></i></span><span class="nova-desk"></span>',
@@ -38,12 +33,16 @@ const novaRoomProps={
  security:'<span class="nova-wall-display"><i></i><i></i><i></i></span><span class="nova-desk"></span>'
 };
 const novaStationIcons={
- intake:'inbox',delivery:'inbox',sandbox:'console',model:'signal',gateway:'signal',memory:'stack',artifact:'file',
+ intake:'inbox',delivery:'inbox',externalSource:'file',sandbox:'console',model:'signal',gateway:'signal',memory:'stack',artifact:'file',flink:'signal',
  crm:'console',kafka:'signal',database:'stack',astra:'file',maintenance:'console',identity:'badge',admission:'shield',
  vault:'lock',mission:'file',policy:'shield',review:'badge',soc:'signal',mira:'bot'
 };
 const novaProfile=['Nova','Railway investigation agent',
  'Nova reads approved evidence, requests permission for new work and records which service allowed or blocked each action.'];
+const novaWorkspace={
+ external:['intake','delivery','externalSource'],runtime:['sandbox','model','gateway','memory','artifact'],
+ resources:['crm','kafka','database','astra','maintenance'],security:['identity','admission','mission','policy','vault','review','soc']
+};
 function novaSprite(){
  return '<span class="nova-bot" aria-hidden="true"><i class="bot-antenna"></i><i class="bot-head"></i><i class="bot-body"></i></span>';
 }
@@ -73,7 +72,9 @@ function novaMissionCard(state){
  const fields=[['Agent','Nova'],['Authority',mission.subject],['Version',mission.version],['Scope',mission.scope],
   ['Memory',mission.memory],['Approved recipient','Railway Operations']];
  if(state.stage==='authorize')fields.push(['Expiration','60 simulated minutes'],['Model budget','50,000 demo tokens'],['Delegation','No onward delegation']);
- if(state.stage==='resist')fields.push(['Delegation','Mira · technical package only'],['Budget','Shared across Nova and Mira']);
+ if(state.stage==='resist'){
+  fields.push(['Delegation',state.childGrant?state.childGrant.id+' · '+state.childGrant.status:'No child task yet'],['Budget','Shared across Nova and Mira']);
+ }
  return `<details class="debrief permission-slip nova-record"><summary>Mission ${esc(mission.id)} · ${esc(mission.status)}</summary>
   <dl>${fields.map(([label,value])=>`<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
   ${NovaRailway.reached(state,'second')?'<p><b>M-105 remains independent.</b> Its grant covers RE-105 maintenance documents only. It has its own memory namespace and stays active when M-204 closes.</p>':''}
@@ -137,9 +138,20 @@ function showNova(stage,inspect=null,revealReply=false){
  };
  const act=id=>{update(NovaRailway.act(state,id),true);focusReply();};
  const visit=place=>{update(NovaRailway.visit(state,place));$('[data-nova-room][aria-current]')?.focus({preventScroll:true});};
- const stations=[...new Set(data.steps.filter(item=>item.room===room).map(item=>item.station))];
+ const nextRoom=next?NovaRailway.scenes[next.room]:null;
+ const recommendation=next?{
+  context:`Look for ${NovaRailway.stations[next.station][0]} in ${nextRoom}.`,
+  exact:`${next.room!==room?`Go to ${nextRoom}. `:''}${next.label}.`,
+  ...(next.room!==room?{go:()=>visit(next.room),goLabel:'Go to '+nextRoom}:{})
+ }:null;
+ const configured=data.steps.filter(item=>item.room===room).map(item=>item.station);
+ const stations=[...new Set([...configured,...(stage==='unknown'?[]:novaWorkspace[room])])];
+ if(stage!=='resist'&&room==='resources'&&stations.includes('maintenance'))stations.splice(stations.indexOf('maintenance'),1);
+ if(room==='external'&&!stations.includes('externalSource'))stations.push('externalSource');
+ if(stage==='resist'&&room==='resources')stations.push('flink');
  if(state.incident&&next?.room===room&&!stations.includes(next.station))stations.push(next.station);
- const looked=inspect==='nova'?novaProfile:NovaRailway.stations[inspect];
+ const lookingAtConsole=inspect&&inspect!=='nova'&&stations.includes(inspect);
+ const looked=inspect==='nova'?novaProfile:null;
  const reply=looked?{owner:looked[0],reply:looked[2]}:state.reply;
  const replyRoom=!looked&&state.events.at(-1)?.environment;
  const replyFromAnotherRoom=replyRoom&&replyRoom!==room;
@@ -147,29 +159,55 @@ function showNova(stage,inspect=null,revealReply=false){
   ${replyFromAnotherRoom?`<small> · ${esc(NovaRailway.scenes[replyRoom])}</small>`:''}<p>${esc(reply.reply)}</p>
   ${looked?novaSourceLinks(novaSources[inspect]):''}</div>`:'';
  const options=NovaRailway.available(state);
- const inspectStation=id=>{showNova(stage,id);focusReply();};
+ const inspectStation=id=>{
+  showNova(stage,id);
+  if(id==='nova')focusReply();
+  else{
+   $('#nova-console-title').focus({preventScroll:true});
+   $('#nova-console-title').scrollIntoView({block:'nearest'});
+  }
+ };
+ const closeConsole=()=>{
+  showNova(stage);
+  $(`[data-nova-station="${inspect}"]`)?.focus();
+ };
+ const suspect=options.find(item=>item.id==='injection');
+ const reported=state.events.some(event=>event.id==='flag-source'||event.id==='injection');
+ const runtimeState=state.incident?'Runtime suspended':stage==='unknown'?
+  (NovaRailway.reached(state,'contain')?'Workstation stopped':'Unmanaged workstation'):
+  NovaRailway.mission(state)?.status==='Closed'?'Mission closed':state.admission==='Failed'?'Admission denied':
+  stage==='build'&&state.admission==='Pending'?'Admission pending':'Managed runtime';
  const crew=`<div class="nova-crew">${button('Nova',()=>inspectStation('nova'),
   'nova-character'+(inspect==='nova'?' is-speaking':''),'',novaSprite())}</div>
+  ${room==='runtime'?`<span class="nova-runtime-status${state.incident||state.admission==='Failed'?' interrupted':''}">${esc(runtimeState)}</span>`:''}
   ${stations.includes('mira')?`<div class="nova-partner" aria-hidden="true">${novaSprite()}<span>Mira</span></div>`:''}`;
  const devices=`<div class="nova-stations" role="group" aria-label="Stations in this environment">${stations.map(id=>{
   const [label,role]=NovaRailway.stations[id],main=next?.room===room&&next.station===id;
   const speaks=inspect===id||(!looked&&replyRoom===room&&reply?.owner===label);
   const icon=`<span class="nova-station-icon ${novaStationIcons[id]}" aria-hidden="true"></span>`;
-  return button(main?next.label:label,()=>main?act(next.id):inspectStation(id),
-   `choice nova-station${main?' good':''}${speaks?' is-speaking':''}`,main?label:role,icon,
-   {'data-nova-station':id});
+  const attributes={'data-nova-station':id};
+  if(main)attributes['data-recommended']='';
+  return button(main&&guided()?next.label:label,()=>main?act(next.id):inspectStation(id),
+   `choice nova-station${speaks?' is-speaking':''}`,main&&guided()?label:role,icon,attributes);
  }).join('')}</div>`;
  showScreen(data.title,`
+  ${guidePanel('nova',NovaRailway,state,recommendation)}
   <nav class="shadow-rooms nova-navigation" aria-label="Nova environments">${Object.entries(NovaRailway.scenes).map(([id,name])=>
    `<button type="button" class="secondary" data-nova-room="${id}"${id===room?' aria-current="location"':''}>${esc(name)}</button>`).join('')}</nav>
   <div class="nova-scene ${esc(room)}">
-   <div class="nova-location"><h2>${esc(NovaRailway.scenes[room])}</h2><p>${esc(novaPairs[room])}</p></div>
+   <div class="nova-location"><h2>${esc(NovaRailway.scenes[room])}</h2></div>
    ${replyFromAnotherRoom&&!revealReply?`<details class="nova-last-result"><summary>Last result · ${esc(reply.owner)}</summary>${dialogue}</details>`:dialogue}
-   ${next?`<div class="nova-next"><strong>Next action</strong><p>${esc(next.label)}</p>
-     ${next.room!==room?button('Go to '+NovaRailway.scenes[next.room],()=>visit(next.room),'secondary'):''}</div>`:''}
    ${novaDiorama(room,crew,devices)}
-   ${options.length?`<details class="room-scenarios"><summary>Optional security tests · ${options.length}</summary>
-     <div class="shadow-objects">${options.map(item=>button(item.label,()=>act(item.id),'choice',
+   ${lookingAtConsole?novaConsole(state,inspect,closeConsole,act):next?.room===room?
+    `<div class="actions nova-actions">${button('Inspect '+NovaRailway.stations[next.station][0],()=>inspectStation(next.station),'secondary')}</div>`:''}
+   ${stage==='resist'&&room==='external'&&next?.id==='reapprove'? `<div class="actions nova-actions">${button('Test this send',()=>act('try-delivery'),'secondary')}</div>`:''}
+   ${suspect?`<section class="nova-console nova-inbox" aria-labelledby="suspect-title">
+    <h3 id="suspect-title">A note in the retrieved door-system document</h3>
+    <p>${reported?'Security Operations has the note. The verified technical source is still available.':'The footer asks Nova to fetch passenger payment records and claims the manager already approved it.'}</p>
+    <div class="actions">${reported?'':button('Report the suspicious note',()=>act('flag-source'),'secondary')}
+     ${button(suspect.label,()=>act(suspect.id),'secondary')}</div></section>`:''}
+   ${options.some(item=>item.id!=='injection')?`<details class="room-scenarios"><summary>Optional security tests · ${options.length-(suspect?1:0)}</summary>
+     <div class="shadow-objects">${options.filter(item=>item.id!=='injection').map(item=>button(item.label,()=>act(item.id),'choice',
       item.owner+(item.points&&!state.activeChecks.includes(item.id)?' · +'+item.points+' risk':''))).join('')}</div></details>`:''}
    ${state.incident&&next?.id==='ack-resource'&&next.room===room?`<div class="actions nova-actions">${button('Simulate a controller timeout',()=>act('timeout-resource'),'secondary')}</div>`:''}
   </div>
@@ -179,11 +217,16 @@ function showNova(stage,inspect=null,revealReply=false){
     `<li>${esc(name)} · ${state.incident.confirmed.includes(id)?'verified':'unverified'}</li>`).join('')}</ul>`:''}</div>`:''}
   ${novaMissionCard(state)}
   ${room==='resources'?novaTicketCard(state):''}
+  ${decisionNote('nova',state,state.events.at(-1)?.id)}
   ${novaEvidence(state)}
-  ${done?`<div class="receipt"><b>Stage complete</b><p>${esc(data.ending)}</p></div>`:''}
+  ${done?stageDebrief('nova',NovaRailway,state):''}
   <div class="actions">${done&&nextStage?button('Continue to the next stage',()=>navigate(novaStageRoute(nextStage))):''}
    ${button('Nova’s stages',()=>navigate('nova'),'secondary')}
    ${button('Compare with Alex at this stage',()=>navigate(stageRoutes[stage]),'secondary')}
    ${state.index?button('Replay this stage',()=>update(NovaRailway.fresh(stage)),'secondary'):''}</div>`, `${data.tag} · NOVA`);
- $$('[data-nova-room]').forEach(control=>control.onclick=()=>visit(control.dataset.novaRoom));
+ $$('[data-nova-room]').forEach(control=>{
+  if(next?.room!==room&&control.dataset.novaRoom===next?.room)control.setAttribute('data-recommended','');
+  control.onclick=()=>visit(control.dataset.novaRoom);
+ });
+ bindGuide(()=>showNova(stage,inspect,revealReply),recommendation);
 }

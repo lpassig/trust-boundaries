@@ -6,6 +6,8 @@ The Agent House is the v3 edition of Trust Boundaries, a point-and-click adventu
 
 **Home** shows both journeys at each stage of the Raise the BAR maturity model. **Reset** clears both journeys and optional scenario progress on this device after confirmation.
 
+**Guided** highlights the next interaction. **Exploration** keeps the assignment, permissions and milestones visible and lets players find their own way between checkpoints. Switch modes at any time. In Exploration, select **Show next step** for exact help, or use the optional idle hints. Open **Mission checklist** to review progress and change the idle-hint setting.
+
 **[Play Nova’s railway investigation](https://lpassig.github.io/trust-boundaries/#nova)** to follow the same four stages across intake and delivery, the agent runtime, enterprise resources and the security control plane. The technical route covers shadow discovery, registered and verified bootstrap, dynamic access to RE-204 resources, Mira’s scoped delegation, and committing one authorized maintenance ticket. The last stage includes 17 optional security tests and a containment replay with independent confirmations. Alex and Nova save progress separately.
 
 - **[Stage 0 · UNKNOWN](https://lpassig.github.io/trust-boundaries/#shadow)** follows Tom’s private request through discovery, investigation and containment.
@@ -13,14 +15,14 @@ The Agent House is the v3 edition of Trust Boundaries, a point-and-click adventu
 - **[Stage 2 · AUTHORIZE](https://lpassig.github.io/trust-boundaries/#authorize)** lets Alex identify a better source and ask for temporary, read-only access to the conductor notes.
 - **[Stage 3 · RESIST](https://lpassig.github.io/trust-boundaries/#resist)** gives Jo limited approval authority and Mia a separate draft-only assignment. Follow the approved route or test how the household responds to a violation.
 
-Select the highlighted action to advance. Open a phone to use its apps and browser, or open the family laptop to inspect its sign-in, browser session or files. People and physical objects stay in the room. Each stage saves its own progress on the current device. The grandparents can observe indoors. A conversation or paper handoff outside stays beyond their view.
+Open a phone to use its apps and browser, or open the family laptop to inspect its sign-in, browser session or files. Nova’s stations expose synthetic data and viewable permission states. Try the database lease expiry or edit the approved report to see how a downstream service responds. Each stage saves its own progress on the current device. The grandparents can observe indoors. A conversation or paper handoff outside stays beyond their view.
 
 **Optional security scenarios** appear in the rooms from BUILD onward. Try a registered phone that fails verification, a signed assignment that exceeds the issuer’s authority, an edited workbook, or a revoked read that was already waiting to execute. Scenario choices and evidence stay separate from the main assignment. From AUTHORIZE onward, find the digital permission slip inside the scene after the parents approve the conductor notes.
 
-[Architecture](https://lpassig.github.io/trust-boundaries/#architecture) opens the Enterprise Architecture Guide for Nova’s railway scenario. Select a maturity stage, inspect its topology and components, replay a request, or use the decision lab. The guide is bundled into the offline game.
+The Enterprise Architecture Guide contains interactive topologies and 15 sequence diagrams with offline graphics, text transcripts and Mermaid source. Open a relevant sequence from a story decision or a component from a Nova console. The guide also has a decision lab. [Open Architecture](https://lpassig.github.io/trust-boundaries/#architecture)
 
 ## Build and verify
 
 Run `python3 build-v2.py` to generate `play.html`, the compatible offline copy `play-v2.html`, and the GitHub Pages entry in `docs/index.html`. The earlier `/v2/` link redirects to the current game and preserves its URL fragment.
 
-Run `python3 build-v2.py --check` to check all generated files. Run `node --test tests/*.test.cjs` for the household tests and existing reference model checks.
+Run `python3 build-v2.py --check` to check all generated files. Run `node --test tests/*.test.cjs` for state and reference tests. Run `node tests/browser-e2e.cjs` for the offline desktop and mobile Chrome walkthroughs. Set `CHROME` to a Chromium or Chrome executable if it is outside the default location. Set `TRUST_QA_SCREENSHOTS` to an existing directory to capture the stage views.

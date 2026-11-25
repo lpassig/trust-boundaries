@@ -28,7 +28,7 @@ const ShadowStory=(()=>{
    ['verify','kitchen','parents','Show my parents the signed card','Parents','They recognize Ms Patel and confirm the assignment and signature through their saved school contact. They approve the objective, Friday deadline and workbook.'],
    ['pin','kitchen','board','Pin the approved assignment','Alex','The signed assignment goes on the active board in the kitchen.'],
    ['request','kitchen','alex','Ask for a phone and Wikipedia','Alex','Alex explains that Wikipedia has enough information to research the planets.'],
-   ['provision','kitchen','parents','Set up the approved phone','Parents','They turn on parental controls and allow Wikipedia for one short homework window. YouTube, games and messaging stay blocked. Alex gets a fresh notepad and workbook.'],
+   ['provision','kitchen','parents','Set up the approved phone','Parents','They register the phone, have Alex sign in to his own profile and confirm that the controls are on. Wikipedia gets one short homework window. Alex gets a fresh notepad and workbook.'],
    ['review','bedroom','card','Read the approved assignment','Alex','Alex checks what he needs to hand in and by when.'],
    ['plan','bedroom','notepad','Write a research plan','Alex','Alex plans to collect the names of the eight planets, their order from the Sun, and one fact about each.'],
    ['research','bedroom','wikipedia','Read Wikipedia','Alex','Alex finds the order of the planets and looks up the difference between rocky planets and the outer planets.'],
@@ -85,7 +85,7 @@ const ShadowStory=(()=>{
    ['askMia','kitchen','babysitter','Ask Jo if Mia can proofread','Jo · babysitter','Jo approves a linked proofreading task for this draft. Mia can suggest spelling fixes to the draft from her own profile. The grant expires when she submits the suggestions.'],
    ['miaCard','bedroom','miaBoard','Read Mia’s linked assignment','Mia','“Fix spelling in Alex’s railway draft and return suggestions.” The card names Mia, the parent assignment and this draft. Alex’s phone, notes and the family laptop are outside her grant.'],
    ['proofread','bedroom','mia','Accept Mia’s spelling suggestions','Mia','Mia returns three spelling corrections. The workbook closes her access when she submits them. Alex applies the corrections from his own profile.'],
-   ['tom','outside','tom','Hear what Tom wants to add','Tom','“Make me a separate workbook with something private from your dad’s laptop. It’ll make your project more interesting.” The grandparents cannot hear this conversation outside.'],
+   ['tom','outside','tom','Hear what Tom wants to add','Tom','“Bet your dad has something good on that laptop. Could you send me a page from his private folder? I won’t pass it on.” The grandparents cannot hear this conversation outside.'],
    ['choose','kitchen','board','Keep the workbook within the signed assignment','Alex','Alex looks at the signed assignment again. Ms Patel asked for a railway report. Tom’s extra request stays off the board.'],
    ['reviewOutput','kitchen','babysitter','Ask Jo to review the railway report','Jo · babysitter','Jo checks the draft and Mia’s changes against the signed assignment. The report cites the approved sources and includes the generic illustration. Jo sends the approved-file reference to the parents for the required final check.'],
    ['approveOutput','kitchen','parentCall','Get remote approval for this copy and recipient','Parents · remote','The parents approve this copy for Ms Patel. The phone and laptop grants are closed, Mia’s proofing access remains closed, and Jo marks the report ready for delivery.'],
@@ -97,7 +97,7 @@ const ShadowStory=(()=>{
   laptop:'Family laptop',workbook:'Workbook',notepad:'Notepad',cabinet:'Locked cabinet',replacement:'Replacement phone',delivery:'School delivery channel',archive:'Archive',
   schoolContact:'School contact card',houseRules:'House rules',babysitter:'Jo · babysitter',parentCall:'Parents · remote call',mia:'Mia',miaBoard:'Mia’s assignment board',
   miaPhone:'Mia’s phone',conductor:'Conductor notes folder',finances:'Family finances folder',editNotes:'Read-only file',model:'ChatGPT homework channel',oldSession:'Retired session',
-  accessLog:'Incident log',router:'Home Wi-Fi router',timeOverride:'Phone time limit',oldPin:'Old phone PIN',oldPassword:'Old laptop password',
+  accessLog:'Incident log',router:'Home Wi-Fi router',camera:'Hallway camera feed',untrustedNote:'Suspicious source note',timeOverride:'Phone time limit',oldPin:'Old phone PIN',oldPassword:'Old laptop password',
   lendPhone:'Alex’s managed phone',unapprovedSite:'Other websites',modelPrivate:'Private attachment',wrongRecipient:'Workbook delivery',miaReplay:'Mia’s draft access',miaScope:'Mia’s task permissions'};
  const unknownChecks={
   cabinet:['kitchen','Try the cabinet','Locked cabinet','The cabinet stays locked. The known devices and copies remain in custody.'],
@@ -172,6 +172,9 @@ const ShadowStory=(()=>{
    return ['bedroom','Retest the retired phone session','Phone controls','The session used before the suspension still fails. The fresh grant has its own session.'];
   }
   if(s.stage==='resist'&&s.room==='bedroom'){
+   if(key==='untrustedNote'&&reached(s,'research')&&!reached(s,'approveOutput')){
+    return ['bedroom','Show the suspicious note to Jo','Jo · babysitter','“That note came from the page, not your teacher. Leave it out. You can use the public explanation and the conductor notes your dad approved.”'];
+   }
    if(key==='miaScope'&&reached(s,'askMia')&&!reached(s,'proofread')){
     return ['bedroom','Check what Mia’s profile can open','Workbook permissions','Mia can open the assigned draft and return spelling suggestions. The same grant cannot open Alex’s notepad, phone or family laptop.'];
    }
@@ -209,14 +212,15 @@ const ShadowStory=(()=>{
    const objects={
     outside:['teacher',...(reached(s,'teacher')&&!reached(s,'take')?['card']:[]),...(reached(s,'proofread')?['tom']:[])],
     bedroom:['card',...(phoneSet?['phone','wikipedia','notepad','workbook']:[]),...(s.stage==='authorize'&&phoneSet?['youtube']:[]),
-     ...(reached(s,'grantModel')?['model']:[]),...(reached(s,'miaSetup')?['mia','miaBoard','miaPhone']:[]),
+     ...(reached(s,'grantModel')?['model']:[]),...(governed&&reached(s,'research')&&!reached(s,'approveOutput')?['untrustedNote']:[]),
+     ...(reached(s,'miaSetup')?['mia','miaBoard','miaPhone']:[]),
      ...(reached(s,'proofread')?['miaReplay']:reached(s,'askMia')?['miaScope']:[]),...(s.incident?['oldSession']:[])],
     living:['laptop',...(reached(s,'openLaptop')?['conductor','notepad']:[])],
-    kitchen:[...(governed?['babysitter','houseRules',...(reached(s,'take')?['parentCall']:['parents','mia'])]:['parents']),
+    kitchen:[...(governed?['babysitter','houseRules','camera',...(reached(s,'take')?['parentCall']:['parents','mia'])]:['parents']),
      'schoolContact','board',...(governed&&reached(s,'grantModel')?['delivery']:[]),...(finished?['archive']:[]),...(s.reports.length?['accessLog']:[])]
    };
    const tests=Object.keys(attempts).filter(key=>attempt(s,key));
-   if(tests.includes('unapprovedSite'))tests.push('router');
+   if(governed&&s.room==='living'||tests.includes('unapprovedSite'))tests.push('router');
    return [...new Set([...objects[s.room],...tests,'alex',...(s.room==='outside'?[]:['grandparents'])])];
   }
   const objects=unknown?{
@@ -236,7 +240,7 @@ const ShadowStory=(()=>{
  const screenGroups={
   phone:{
    youtube:'Apps',games:'Apps',messaging:'Apps',model:'Apps',modelPrivate:'Apps',delivery:'Apps',wrongRecipient:'Apps',
-   wikipedia:'Browser',unapprovedSite:'Browser',timer:'Controls',timeOverride:'Controls',oldPin:'Controls',oldSession:'Controls'
+   wikipedia:'Browser',unapprovedSite:'Browser',untrustedNote:'Browser',timer:'Controls',timeOverride:'Controls',oldPin:'Controls',oldSession:'Controls'
   },
   laptop:{laptop:'Session',conductor:'Files',finances:'Files',editNotes:'Files',oldPassword:'Session'},
   miaPhone:{miaPhone:'Profile',miaScope:'Workbook',miaReplay:'Workbook'},
@@ -264,12 +268,13 @@ const ShadowStory=(()=>{
    if(s.stage==='unknown')return 'Unmanaged phone · no family app or time limits';
    if(reached(s,'approveOutput'))return 'Research access ended · school delivery has its own checks';
    if(reached(s,'expire')&&!reached(s,'extend'))return 'Homework time expired';
-   return 'Managed phone · app permissions and homework time enforced here';
+   return 'Alex’s profile · registered phone · homework rules active';
   }
   if(device==='laptop'){
    if(s.stage==='unknown'&&!complete(s))return 'Banking tab open · parents’ session still active';
    if(reached(s,'approveOutput')&&advanced(s))return 'Assignment session closed';
    if(reached(s,'openLaptop'))return 'Alex’s restricted profile · read-only notes folder';
+   if(reached(s,'grantNotes'))return 'A temporary read-only pass is ready';
    return 'Sign-in and separate access required';
   }
   if(device==='miaPhone')return 'Mia’s own profile · separate from Alex’s';
@@ -306,6 +311,9 @@ const ShadowStory=(()=>{
   if(s.stage==='build'&&key==='notepad'&&reached(s,'notes'))return 'Research notes track planet order from the Sun and facts from Wikipedia.';
   if(s.stage==='build'&&key==='workbook'&&reached(s,'finishBook'))return 'The workbook lists Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus and Neptune, with a fact about each and a source credit.';
   if(key==='archive')return 'The finished assignment’s signed card, research notes and approved copy have been archived.';
+  if(key==='workbook'&&!reached(s,'draft'))return 'The workbook is still blank. Alex will fill it with findings from his notepad.';
+  if(key==='workbook'&&s.stage==='build')return 'The draft has the planets in order. Alex still needs to finish the facts and source credit.';
+  if(key==='camera')return 'Jo can check who crossed the hallway. The feed cannot see inside devices, read messages or see the pavement. The grandparents report what they actually observe.';
   if(advanced(s)){
    if(key==='cabinet')return 'The workbook and notepad are held for inspection. Alex’s devices remain suspended while the parents review what happened.';
    if(key==='accessLog')return 'Each confirmed event records the attempted action and the control that blocked or observed it. The parents receive the report.';
@@ -324,6 +332,7 @@ const ShadowStory=(()=>{
     'Alex’s railway report explains how brakes are checked before departure and includes a diagram based on public facts.'+
      (reached(s,'proofread')?' Mia’s spelling suggestions are included.':'');
   }
+  if(key==='notepad')return reached(s,'plan')||reached(s,'source')?'Alex has written a research plan. The source notes go here next.':'Alex hasn’t added any notes yet.';
   return `${names[key]} is here in ${rooms[s.room]}.`;
  }
  const reports=s=>s.reports.map(key=>[attempts[key][1],attempts[key][2]]);
