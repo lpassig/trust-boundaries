@@ -49,9 +49,14 @@ test('Authorize adds only the conductor read after the parents approve the exact
  assert.match(Shadow.feedback(active)[1],/refuses both operations/);
  assert.equal(Shadow.act(active,'conductor').index,active.index+1);
  const closed=reach('authorize','approveOutput');
+ assert(!Shadow.complete(closed));
+ assert.equal(Shadow.next(closed)[0],'deliver');
+ assert.match(Shadow.feedback(closed)[1],/ready to deliver/);
  assert.match(Shadow.feedback(tryAction(closed,'living','conductor'))[1],/grant ended/);
  assert.match(Shadow.feedback(tryAction(closed,'bedroom','wikipedia'))[1],/permission has ended/);
- assert(Shadow.complete(reach('authorize')));
+ const delivered=Shadow.act(Shadow.visit(closed,'outside'),'teacher');
+ assert(Shadow.complete(delivered));
+ assert.match(Shadow.feedback(delivered)[1],/confirms she received.*assignment is now complete/);
 });
 
 test('Resist separates routine approval, parental escalation and Mia’s own scoped task',()=>{

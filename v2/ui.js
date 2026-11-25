@@ -203,6 +203,7 @@ function showHousehold(stage,look=null,device=null){
    'Jo made routine decisions under the house rules. The parents kept authority over protected resources and incident recovery. The managed devices, homework channel and school delivery channel each enforced what they could see. The grandparents observed indoors. They could not hear Tom outside.']
  ];
  const closing=closures[chapter];
+ const readyToDeliver=stage==='authorize'&&step?.[0]==='deliver';
  const reports=ShadowStory.reports(state);
  const log=reports.length?`<details class="debrief"${paused||look==='accessLog'?' open':''}><summary>Incident log · ${reports.length} confirmed ${reports.length===1?'event':'events'}</summary>
   ${!paused&&step?`<p>${ShadowStory.risk(state)} of ${ShadowStory.limit} violations toward suspension in this session.${stage==='resist'?' Attempted disclosure can suspend it immediately.':''}</p>`:''}
@@ -218,6 +219,7 @@ function showHousehold(stage,look=null,device=null){
   <div class="shadow-guide"><b>${step?'What to do next':'After the assignment'}</b><p>${esc(guide)}</p>
   ${step&&step[1]!==room?button(rooms[step[1]],()=>set(ShadowStory.visit(state,step[1])),'secondary'):''}</div>
   ${incidentBanner}
+  ${readyToDeliver?'<div class="receipt"><b>Ready to deliver</b><p>Research access has ended. The workbook is approved for Ms Patel and awaiting her confirmation.</p></div>':''}
   ${scene}
   ${log}
   ${incident&&!paused?`<p class="small-print">The parents cleared the incident under fresh permission. The retired sessions remain closed.</p>`:''}

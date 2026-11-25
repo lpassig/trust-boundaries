@@ -64,8 +64,8 @@ const ShadowStory=(()=>{
    ['readNotes','living','conductor','Read the permitted conductor notes','Alex','Alex records the approved pre-departure checklist in his notepad. The source file is read-only.'],
    ['draft','bedroom','workbook','Combine both sources in the workbook','Alex','Alex combines Wikipedia’s explanation with the crew checklist, credits both sources, and decides he has enough to answer Ms Patel’s question.'],
    ['reviewOutput','kitchen','parents','Ask my parents to review the train workbook','Parents','They check the workbook against the signed assignment and confirm the details are approved for school.'],
-   ['approveOutput','kitchen','parents','Approve delivery and close the two grants','Parents','They approve this workbook for Ms Patel, close the Wikipedia and laptop grants, and mark the assignment complete. The laptop enforces the closure even if Alex tries the same folder again.'],
-   ['deliver','outside','teacher','Deliver the train workbook to Ms Patel','Ms Patel','She accepts the approved workbook. Alex folds the completed assignment card into the archive when he gets home.']
+   ['approveOutput','kitchen','parents','Approve delivery and end research access','Parents','They approve this workbook for Ms Patel and close the Wikipedia and laptop grants. Alex has the approved copy ready to deliver. The laptop still refuses the conductor folder.'],
+   ['deliver','outside','teacher','Deliver the train workbook to Ms Patel','Ms Patel','She confirms she received the approved workbook. The assignment is now complete, and Alex can archive the card.']
   ]},
   resist:{title:'Stage 3 · Governed Autonomy',tag:'RESIST',opening:'Alex’s parents are about to leave on vacation. Start in the kitchen to see what they delegate to the babysitter, then help Alex complete a new railway report.',steps:[
    ['handover','kitchen','parents','Listen to the handover before vacation','Parents','They introduce the babysitter, Jo, to Alex and Mia. Jo can approve routine school resources from the house rules, verify assignments and request exceptions. The parents keep the authority to change those rules or approve sensitive resources.'],

@@ -41,6 +41,30 @@ test('mission expansion versions the grant without changing the runtime',()=>{
  assert.match(end.reply.reply,/M-105/);
 });
 
+test('Resist opens a distinct mission for the same asset and restores existing progress',()=>{
+ const authorize=Nova.mission(walk('authorize'));
+ const resist=walk('resist','register');
+ const mission=Nova.mission(resist);
+ assert.equal(authorize.id,'M-204');
+ assert.equal(authorize.status,'Closed');
+ assert.equal(mission.id,'M-304');
+ assert.equal(mission.version,1);
+ assert.notEqual(mission.memory,authorize.memory);
+ assert.equal(Nova.ticketRequest.missionId,mission.id);
+ assert.equal(Nova.ticketRequest.asset,'RE-204');
+ assert.deepEqual(Nova.restore('resist',JSON.parse(JSON.stringify(resist))),resist);
+});
+
+test('Build can assemble the approved template with the model budget exhausted',()=>{
+ const capped=walk('build','budget');
+ assert.match(capped.reply.reply,/blocks further model calls/);
+ assert.match(apply(capped,'egress','runtime').reply.reply,/still checks the mission budget/);
+ const drafting=walk('build','draft');
+ assert.match(drafting.reply.reply,/approved template/);
+ assert.match(drafting.reply.reply,/model stays blocked/);
+ assert.equal(Nova.next(drafting).id,'approve');
+});
+
 test('all 17 optional Resist security tests are reachable and return separate evidence',()=>{
  assert.equal(Nova.checks.resist.length,17);
  for(const entry of Nova.checks.resist){
@@ -63,6 +87,7 @@ test('commit checks the exact resource arguments and records exactly one busines
  let state=walk('resist','ticketCredential');
  assert.equal(Nova.ticketDecision(state),'Permit');
  assert.equal(Nova.ticketDecision(state,{...Nova.ticketRequest,asset:'RE-999'}),'Outside approved operation');
+ assert.equal(Nova.ticketDecision(state,{...Nova.ticketRequest,missionId:'M-204'}),'Outside approved operation');
  assert.equal(Nova.ticketDecision(state,{...Nova.ticketRequest,operation:'issueCompensation'}),'Outside approved operation');
  assert.equal(Nova.ticketDecision(state,{...Nova.ticketRequest,changeConfiguration:true}),'Outside approved operation');
  assert.equal(apply(state,'commit','resources').ticket,null);

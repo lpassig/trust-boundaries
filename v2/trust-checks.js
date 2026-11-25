@@ -137,7 +137,7 @@ const TrustChecks=(()=>{
   const train=story.stage==='authorize';
   const paused=suspended(story);
   const generation=(paused?0:1)+(story.incident?.generation??0);
-  const status=paused?'Suspended · grant revoked':reached(story,'approveOutput')?'Revoked at assignment close':'Active for this homework window';
+  const status=paused?'Suspended · grant revoked':reached(story,'approveOutput')?'Revoked at delivery approval':'Active for this homework window';
   return {generation,status,fields:[
    ['Identity','Alex'],['Acting on behalf of','Alex’s parents · household authority for schoolwork'],
    ['Assignment',train?'Train research #002':'Railway operations report #003'],

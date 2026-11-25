@@ -1,6 +1,7 @@
 /* Offline railway security simulation. All requests, data and receipts are fictional. */
 const NovaRailway=(()=>{
  const scenes={external:'External environment',runtime:'Agent runtime',resources:'Enterprise resources',security:'Security control plane'};
+ const missionIds={build:'M-101',authorize:'M-204',resist:'M-304'};
  const step=(id,room,station,label,reply)=>({id,room,station,label,reply});
  const stages={
   unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',start:'external',summary:'Discover an unmanaged agent, trace what it reached and verify containment.',ending:'The discovered routes are closed. An unmanaged copy outside monitored infrastructure would still be a visibility gap.',steps:[
@@ -23,9 +24,9 @@ const NovaRailway=(()=>{
    step('request','external','intake','Read the verified operations request','The employee authenticates through IBM Verify or the enterprise identity provider. The mission authority checks their role. M-101 covers a summary of common disruptions using public information, with a deadline, budget and internal recipient.'),
    step('scope','security','mission','Activate the public-only mission','The mission registry records the approved objective, model, public research tool, work area and recipient. Internal operations data, CRM, payment data and Kafka are outside M-101.'),
    step('research','runtime','gateway','Research through the approved MCP gateway','Nova retrieves public railway documentation through the approved research tool. The gateway filters the tool route, and only M-101 can write to its mission memory.'),
-   step('budget','runtime','model','Check the model budget','The gateway stops new model calls after the configured limit. The source notes already saved are enough to finish the draft. A budget extension would require a decision.'),
+   step('budget','runtime','model','Check the model budget','The gateway blocks further model calls when the budget runs out. Nova already saved the findings and citations. It can finish the report with the approved template.'),
    step('internal','resources','database','Request internal incident data','OpenShell prevents direct access from the sandbox. The approved connector also denies the request because M-101 permits public research only. The two controls evaluate different things.'),
-   step('draft','runtime','artifact','Draft the public-source report','Nova drafts a report from the retained notes and records the sources used.'),
+   step('draft','runtime','artifact','Assemble the report from saved notes','The report workspace places Nova’s saved findings and citations into the approved template. The model stays blocked and the budget stays exhausted.'),
    step('approve','security','review','Ask a human to approve this exact copy','A configured IBM Verify CIBA flow can authenticate the operations reviewer on a separate device. The customer application records the reviewer’s decision and binds it to the exact report digest, operation and internal recipient.'),
    step('deliver','external','delivery','Release the approved report','The delivery service checks the actual copy and destination. It releases the report to Operations and records delivery.'),
    step('close','security','mission','Close the research mission','The registry closes M-101. The credential and resource owners close mission-specific access. An existing general employee sign-in is separate.')
@@ -49,9 +50,9 @@ const NovaRailway=(()=>{
   ]},
   resist:{title:'Stage 3 · Governed Autonomy',tag:'RESIST',start:'resources',summary:'Investigate an event-triggered incident, delegate to Mira and authorize an exact maintenance ticket.',ending:'The maintenance ticket and approved report are recorded. Task access has ended. Confirmed effects remain in the record.',steps:[
    step('event','resources','kafka','Inspect the RE-204 disruption event','Confluent carries synthetic operational events. Flink groups the door warnings and delay into an investigation signal. The event is input to the authorized mission service.'),
-   step('register','security','mission','Start the investigation under standing policy','A customer mission service validates the event and activates M-204 under an accountable Operations owner. Routine reads are allowed. Safety-critical controls, customer compensation and unrelated data stay outside the grant.'),
+   step('register','security','mission','Start a new investigation under standing policy',`The mission service validates the event and starts ${missionIds.resist} under an accountable Operations owner. It grants routine reads for this incident on RE-204. The earlier ${missionIds.authorize} permissions stay closed. Safety-critical controls, customer compensation and unrelated data are outside the new grant.`),
    step('plan','runtime','sandbox','Investigate within the approved runtime','Nova reads the event window, approved incident history and maintenance notes using the controlled tools. It asks Mira to review the door-system evidence.'),
-   step('delegate','security','policy','Authorize Mira’s exact sub-mission','The customer mission service verifies delegation is allowed and issues a package-only analysis task tied to M-204. Mira authenticates with its own workload identity and does not inherit Nova’s credentials. Both are charged to the parent mission budget.'),
+   step('delegate','security','policy','Authorize Mira’s exact sub-mission',`The customer mission service verifies delegation is allowed and issues a package-only analysis task tied to ${missionIds.resist}. Mira authenticates with its own workload identity and does not inherit Nova’s credentials. Both are charged to the parent mission budget.`),
    step('mira','runtime','mira','Receive Mira’s bounded analysis','Mira returns a likely door-sensor fault with references to the approved technical package. A2A carries the handoff and result in this configuration. Mira’s receiving service enforces the linked scope. The evidence supports an internal maintenance ticket.'),
    step('ticketCredential','security','vault','Authorize the maintenance connector credential','Vault independently authorizes the trusted maintenance connector to obtain scoped access. Nova never receives the raw credential. The receiving maintenance system still needs to authorize the actual ticket request.'),
    step('permit','resources','maintenance','Preview the maintenance request','The maintenance PEP observes Nova’s actual tool, asset RE-204, priority High and Railway Maintenance destination. Mission policy permits the exact request. The tool preview has created no ticket.'),
@@ -59,7 +60,7 @@ const NovaRailway=(()=>{
    step('draft','runtime','artifact','Assemble the incident report and ticket receipt','Nova records which data it used, Mira’s contribution and the actual ticket identifier. No external or safety-critical change was performed.'),
    step('approve','security','review','Approve the exact internal report','The reviewer checks the copy and its intended destination. The delivery service will enforce the approved content and recipient.'),
    step('deliver','external','delivery','Deliver the internal report to Operations','The delivery service checks the copy and destination before release. It records the completed effect separately from session access.'),
-   step('close','security','mission','Close the mission and delegated access','The mission, connector leases, runtime session, and Mira’s M-204 sub-mission are closed in this replay. Mira’s other tasks and earlier confirmed delivery are unaffected.')
+   step('close','security','mission','Close the mission and delegated access',`The mission, connector leases, runtime session, and Mira’s ${missionIds.resist} sub-mission are closed in this replay. Mira’s other tasks and earlier confirmed delivery are unaffected.`)
   ]}
  };
  const stations={
@@ -88,7 +89,7 @@ const NovaRailway=(()=>{
  const checks={
   unknown:[probe('blind','external','Check visibility outside managed infrastructure','SOC','An unrelated unmanaged workstation is outside the available sensors. Confirmed containment covers the tested paths.')],
   build:[
-   probe('egress','runtime','Test an unapproved model destination','OpenShell supervisor','The configured egress policy blocks the test connection. The internal model remains available.'),
+   probe('egress','runtime','Test an unapproved model destination','OpenShell supervisor','The configured egress policy blocks the test connection. The model gateway still checks the mission budget on the approved route.'),
    probe('install','runtime','Request an unapproved tool install','Runtime and deployment policy','The restricted workspace and approved tool inventory refuse the simulated change.'),
    probe('failed-posture','security','Test a registered agent with failed posture','Admission service','Registration and workload identity still resolve. The new posture check fails, so no service credential is issued.')
   ],
@@ -128,7 +129,7 @@ const NovaRailway=(()=>{
   ['artifacts','security','Artifact and memory quarantine','Affected artifacts and memory are isolated. Approved evidence remains available.']
  ];
  const fresh=stage=>({stage,room:stages[stage].start,index:0,version:1,generation:1,risk:0,activeChecks:[],events:[],incident:null,credentialVersion:null,permit:null,ticket:null,reply:null});
- const ticketRequest={operation:'createMaintenanceTicket',asset:'RE-204',priority:'High',team:'Railway Maintenance',operationId:'OP-204-TICKET-1'};
+ const ticketRequest={operation:'createMaintenanceTicket',missionId:missionIds.resist,asset:'RE-204',priority:'High',team:'Railway Maintenance',operationId:'OP-204-TICKET-1'};
  function ticketDecision(s,request=ticketRequest){
   if(s.stage!=='resist'||s.incident||reached(s,'close'))return 'Mission unavailable';
   const fields=Object.keys(ticketRequest);
@@ -216,15 +217,15 @@ const NovaRailway=(()=>{
  }
  function mission(s){
   if(s.stage==='unknown'||!reached(s,s.stage==='build'?'scope':'register'))return null;
-  const resource=['authorize','resist'].includes(s.stage);
+  const id=missionIds[s.stage];
   return {
-   id:resource?'M-204':'M-101',
+   id,
    status:s.incident?'Suspended':reached(s,'close')?'Closed':'Active',
    version:s.version,
-   scope:!resource?'Public documents and internal report only':s.stage==='authorize'&&!reached(s,'grant')?'Approved documentation only':
+   scope:s.stage==='build'?'Public documents and internal report only':s.stage==='authorize'&&!reached(s,'grant')?'Approved documentation only':
     s.stage==='authorize'?'RE-204 operational event window and read-only incident view':'RE-204 reads, package-only delegation and one internal maintenance ticket',
    subject:s.stage==='resist'?'Accountable Operations owner · standing organizational authority':s.stage==='build'?'Verified railway Operations employee':'Railway Operations Manager',
-   memory:resource?'M-204 isolated workspace':'M-101 isolated workspace'
+   memory:id+' isolated workspace'
   };
  }
  return {scenes,stages,stations,checks,controllers,ticketRequest,ticketDecision,fresh,visit,reached,next,complete,available,act,restore,mission};
