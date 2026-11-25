@@ -2,6 +2,8 @@
 
 **[Play Trust Boundaries](https://lpassig.github.io/trust-boundaries/)**
 
+**Stage 0 · Shadow AI** is Alex’s optional prologue. Follow Tom’s assignment through the bedroom, living room and kitchen. The grandparents follow Alex, report what they see, and check whether Alex tries either device again after the parents intervene. Open it from the first screen, from **Raise the BAR**, or [play Stage 0 directly](https://lpassig.github.io/trust-boundaries/#shadow).
+
 ## Start fresh, then handle changing work
 
 Play [Trust Boundaries on GitHub Pages](https://lpassig.github.io/trust-boundaries/), or open `play.html` offline. Choose **Play Alex**, **Play Nova**, or **Explore Architecture** on the opening screen. Select the Trust Boundaries logo to return to those choices. The earlier `/v2/` address redirects to the main game, and `play-v2.html` remains an identical offline copy. Both journeys start without issued task authority. Players read a new request, agree on access, build a first draft, and successfully open and cite the authorized source. Players explicitly send a first draft for feedback before later requests arrive. Alex uses the normal school route; Nova needs a separate exact human approval for the confidential review copy. The final delivery happens after feedback and requires its own current Nova approval.
@@ -86,7 +88,7 @@ Run `python3 build-v2.py --check` to detect missing or stale generated files bef
 - `v2/ui.js`, `v2/style.css`: point-and-click controls, readable decisions, responsive room and dialogs.
 - `tests/dialogue.test.cjs`: helper visibility, marker clearance, and attribution of people, screens, documents and authority responses.
 - `tests/story-flow.test.cjs`: draft-share causality, exact first-copy approval, distinct final delivery, helper visibility and targeting, feedback decisions, save migration, and scene summaries.
-- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **215**.
+- `tests/v2.test.cjs`: full route matrix and key security and story invariants. The interaction, story, dialogue, technical flow, architecture and decision lab tests bring the suite to **217**.
 
 Run `node --test tests/*.test.cjs`. Browser QA covers both fresh openings, first useful reads, genuine amendments, private-note refusal, deliberate-bypass recovery, exact current approval, normal school submission, chosen and absent follow-ups, reload and task-scoped closure. A second complete browser audit also covered smaller-task choices, early helper use, reversible wording edits, approved-but-unused access, the actual report record set, stale-approval denial explanations, and both orders of task-session cleanup. The blocked YouTube video is correctly attributed to the device app profile, while school-private-data checks remain resource-owned. Mobile layout is checked at 390px; console errors and embedded-script syntax are checked before publishing.
 

@@ -483,3 +483,29 @@ dialog.is-reference:has(.sequence-controls) {
 @media (min-width: 561px) {
   dialog[open]:not(.is-reference) { scroll-margin-block: 12px; }
 }
+
+/* Stage zero uses the same dialogue and controls as the other journeys. */
+.shadow-rooms{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.shadow-rooms button{flex:1 1 90px;min-height:44px;padding:6px 8px}
+.shadow-rooms button[aria-current="location"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.shadow-scene{margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.shadow-view{position:relative;min-height:125px;overflow:hidden;background:linear-gradient(#443b58 0 72%,#28283c 72%);isolation:isolate}
+.shadow-view.living{background:linear-gradient(#344851 0 72%,#26373f 72%)}
+.shadow-view.kitchen{background:linear-gradient(#51433d 0 72%,#3a302e 72%)}
+.shadow-furniture{position:absolute;bottom:20%;left:8%;width:37%;height:38%;border-radius:9px 9px 2px 2px;background:#a181a1;box-shadow:inset 0 -7px #665570}
+.shadow-furniture::before{position:absolute;content:"";bottom:145%;left:8%;width:80%;height:65%;background:repeating-linear-gradient(90deg,#d8bfb3 0 20%,#554761 20% 26%);border:4px solid #796487;border-radius:4px}
+.living .shadow-furniture{height:29%;background:#91a99f;box-shadow:inset 0 -7px #587b78}
+.living .shadow-furniture::before{left:32%;bottom:110%;width:57%;height:94%;background:#27313e;border-color:#758693}
+.kitchen .shadow-furniture{height:45%;border-radius:2px;background:repeating-linear-gradient(90deg,#ae876e 0 28%,#624e47 28% 33%);box-shadow:inset 0 7px #e1c4a8}
+.kitchen .shadow-furniture::before{bottom:115%;height:50%;background:repeating-linear-gradient(90deg,#c8a78e 0 28%,#64514b 28% 33%);border-color:#906d59}
+.shadow-view svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.shadow-laptop{width:31px;height:21px;position:absolute;left:27%;bottom:51%;border:3px solid #333244;border-radius:3px;background:#d7cce1;box-shadow:0 4px #aba2bd}
+.living .shadow-laptop{bottom:43%}
+.shadow-objects{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:6px;padding:9px;background:#202130}
+.shadow-objects .choice{display:flex;flex-direction:column;justify-content:center;min-height:50px;padding:7px 9px;overflow-wrap:anywhere}
+.shadow-objects .choice strong{font-size:13px}
+.shadow-objects .choice.good{border-color:var(--accent);box-shadow:inset 3px 0 var(--accent)}
+.shadow-reply{margin:10px 0;padding:8px 12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;background:var(--soft)}
+.shadow-reply p{margin:3px 0;font-size:14px;line-height:1.45}
+.shadow-guide{margin:10px 0;font-size:14px}
+.shadow-guide p{margin:0}

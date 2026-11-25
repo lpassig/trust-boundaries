@@ -486,6 +486,32 @@ dialog.is-reference:has(.sequence-controls) {
   dialog[open]:not(.is-reference) { scroll-margin-block: 12px; }
 }
 
+/* Stage zero uses the same dialogue and controls as the other journeys. */
+.shadow-rooms{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.shadow-rooms button{flex:1 1 90px;min-height:44px;padding:6px 8px}
+.shadow-rooms button[aria-current="location"]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.shadow-scene{margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.shadow-view{position:relative;min-height:125px;overflow:hidden;background:linear-gradient(#443b58 0 72%,#28283c 72%);isolation:isolate}
+.shadow-view.living{background:linear-gradient(#344851 0 72%,#26373f 72%)}
+.shadow-view.kitchen{background:linear-gradient(#51433d 0 72%,#3a302e 72%)}
+.shadow-furniture{position:absolute;bottom:20%;left:8%;width:37%;height:38%;border-radius:9px 9px 2px 2px;background:#a181a1;box-shadow:inset 0 -7px #665570}
+.shadow-furniture::before{position:absolute;content:"";bottom:145%;left:8%;width:80%;height:65%;background:repeating-linear-gradient(90deg,#d8bfb3 0 20%,#554761 20% 26%);border:4px solid #796487;border-radius:4px}
+.living .shadow-furniture{height:29%;background:#91a99f;box-shadow:inset 0 -7px #587b78}
+.living .shadow-furniture::before{left:32%;bottom:110%;width:57%;height:94%;background:#27313e;border-color:#758693}
+.kitchen .shadow-furniture{height:45%;border-radius:2px;background:repeating-linear-gradient(90deg,#ae876e 0 28%,#624e47 28% 33%);box-shadow:inset 0 7px #e1c4a8}
+.kitchen .shadow-furniture::before{bottom:115%;height:50%;background:repeating-linear-gradient(90deg,#c8a78e 0 28%,#64514b 28% 33%);border-color:#906d59}
+.shadow-view svg{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.shadow-laptop{width:31px;height:21px;position:absolute;left:27%;bottom:51%;border:3px solid #333244;border-radius:3px;background:#d7cce1;box-shadow:0 4px #aba2bd}
+.living .shadow-laptop{bottom:43%}
+.shadow-objects{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:6px;padding:9px;background:#202130}
+.shadow-objects .choice{display:flex;flex-direction:column;justify-content:center;min-height:50px;padding:7px 9px;overflow-wrap:anywhere}
+.shadow-objects .choice strong{font-size:13px}
+.shadow-objects .choice.good{border-color:var(--accent);box-shadow:inset 3px 0 var(--accent)}
+.shadow-reply{margin:10px 0;padding:8px 12px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;background:var(--soft)}
+.shadow-reply p{margin:3px 0;font-size:14px;line-height:1.45}
+.shadow-guide{margin:10px 0;font-size:14px}
+.shadow-guide p{margin:0}
+
 </style></head>
 <body>
 <header class="topbar"><a class="brand" href="#"><span class="brand-mark">◇</span><span>TRUST BOUNDARIES<small>STORY EDITION</small></span></a><nav class="episodes" aria-label="Explore Trust Boundaries"><button data-mode="teen" aria-pressed="true">Alex <span>The Last Upload</span></button><button data-mode="agent" aria-pressed="false">Nova <span>The Customer Handover</span></button><button id="architecture" aria-haspopup="dialog">Architecture <span>Products &amp; controls</span></button></nav><button class="quiet" id="guide">How to play</button></header>
@@ -500,8 +526,12 @@ dialog.is-reference:has(.sequence-controls) {
 // Original vector scenery. No remote assets or network dependencies.
 // All figures use their shoe soles as the origin, so placement is on the floor.
 function humanFigure(role,x,y,scale=1) {
-  const adult=role==='parent';
-  const colors={parent:{skin:'#d8b19b',hair:'#584651',shirt:'#8c9b98',shade:'#748781',pants:'#424857',shoe:'#d6c5b6'},alex:{skin:'#dfb39d',hair:'#3e3448',shirt:'#b39ace',shade:'#937aaf',pants:'#53617e',shoe:'#e4ddec'},sibling:{skin:'#cba48d',hair:'#635049',shirt:'#8da9b1',shade:'#708e9d',pants:'#444e64',shoe:'#cbd8dc'}}[role];
+  const adult=role!=='alex'&&role!=='sibling';
+  const colors={parent:{skin:'#d8b19b',hair:'#584651',shirt:'#8c9b98',shade:'#748781',pants:'#424857',shoe:'#d6c5b6'},
+   grandparent:{skin:'#d8b19b',hair:'#b8aeb3',shirt:'#779498',shade:'#5a777b',pants:'#424857',shoe:'#d6c5b6'},
+   grandparentTwo:{skin:'#cba48d',hair:'#cdc2ba',shirt:'#ba9476',shade:'#997857',pants:'#424857',shoe:'#d6c5b6'},
+   parentTwo:{skin:'#cba48d',hair:'#473842',shirt:'#9c8396',shade:'#806876',pants:'#424857',shoe:'#d6c5b6'},
+   alex:{skin:'#dfb39d',hair:'#3e3448',shirt:'#b39ace',shade:'#937aaf',pants:'#53617e',shoe:'#e4ddec'},sibling:{skin:'#cba48d',hair:'#635049',shirt:'#8da9b1',shade:'#708e9d',pants:'#444e64',shoe:'#cbd8dc'}}[role];
   return `<g class="human-figure" data-character="${role}" data-floor-x="${x}" data-floor-y="${y}" transform="translate(${x} ${y}) scale(${scale})">
     <ellipse class="contact-shadow" cx="2" cy="2" rx="29" ry="7" fill="#171728" opacity=".28"/>
     <path d="M-18-73L18-73L20-37L18-5L7-4L2-46L-3-46L-9-4L-21-5L-20-38Z" fill="${colors.pants}"/>
@@ -518,7 +548,7 @@ function humanFigure(role,x,y,scale=1) {
     <path d="M-5-138L6-138L7-125Q0-118-7-126Z" fill="${colors.skin}"/>
     ${adult?`<path d="M-9-128L-1-116L8-128L10-76L-10-75Z" fill="#e7dccb"/><path d="M-9-128L-3-116L-11-106M8-128L2-116L10-106" fill="none" stroke="#647a75" stroke-width="1.6"/><circle cx="-2" cy="-101" r="1.5" fill="#8c837b"/><circle cx="-2" cy="-89" r="1.5" fill="#8c837b"/>`:`<path d="M-11-127Q0-117 10-127L13-119Q0-110-13-119Z" fill="${colors.shade}"/><path d="M-7-117L-8-100M7-117L8-100" stroke="#e2d6eb" stroke-width="1.4"/><path d="M-13-91Q0-96 13-89L14-80L-14-80Z" fill="${colors.shade}" opacity=".75"/>`}
     <g class="character-head">
-      ${adult?'<path d="M-16-151Q-21-178 0-180Q23-177 19-149L16-132L-16-134Z" fill="#584651"/>':''}
+      ${adult?`<path d="M-16-151Q-21-178 0-180Q23-177 19-149L16-132L-16-134Z" fill="${colors.hair}"/>`:''}
       <ellipse cx="-13" cy="-151" rx="3.8" ry="5.4" fill="${colors.skin}"/><ellipse cx="14" cy="-151" rx="3.5" ry="5.2" fill="${colors.skin}"/>
       <path d="M-13-158Q-13-173 1-173Q17-172 15-156L14-145Q10-133 1-133Q-9-134-12-145Z" fill="${colors.skin}"/>
       <path d="${adult?'M-15-153Q-20-176-2-179Q17-183 18-160L12-153L9-168Q-1-157-14-159Z':'M-15-152L-18-164L-13-164Q-13-178-3-176Q7-186 13-176Q24-172 18-157L12-152L9-164Q0-156-10-160L-12-151Z'}" fill="${colors.hair}"/>
@@ -3482,10 +3512,89 @@ const DecisionLab = (() => {
 if(typeof module!=='undefined')module.exports=DecisionLab;
 
 </script><script>
+/* The stage-zero prologue has its own save and never alters the two main stories. */
+const ShadowStory = (() => {
+ const amount='€4,280';
+ const rooms={bedroom:'Alex’s bedroom',living:'Living room',kitchen:'Kitchen'};
+ const steps=[
+  ['assignment','bedroom','cards','Read Tom’s assignment','Tom','“Can you find out how much money your family has?” Alex pins Tom’s card beside the other assignments. His parents know nothing about the card or his phone.'],
+  ['watch','bedroom','youtube','Watch YouTube','Alex','One clip turns into another. Two hours pass before YouTube shows a watch-time reminder.'],
+  ['ignore','bedroom','youtube','Dismiss the watch-time reminder','YouTube','The reminder goes away and the video keeps playing. The phone has no family time limit.'],
+  ['games','bedroom','games','Play games','Alex','Alex plays for another hour. When the game gets boring, he remembers the family laptop is in the living room.'],
+  ['laptop','living','laptop','Take the family laptop upstairs','Alex','Alex picks up the laptop from the coffee table. Take it upstairs. The grandparents follow.'],
+  ['statement','bedroom','laptop','Look at the open account statement','Alex',`The parents’ joint account statement was already open. It shows a balance of ${amount}. That’s the balance of this account at the statement date.`],
+  ['workbook','bedroom','workbook','Write the balance in the workbook','Alex',`Alex writes “Joint account: ${amount}” in his workbook. The amount now exists away from the laptop.`],
+  ['notepad','bedroom','notepad','Copy the balance into my notepad','Alex',`Alex adds a second copy to his notepad. It now holds the same ${amount} figure.`],
+  ['notice','bedroom','grandparents','Find out what the grandparents saw','Grandparents','They come in without knocking. “We saw you watching videos and playing on that phone. Now there’s a bank statement on the laptop and the balance written down. Come with us to the kitchen.”'],
+  ['tell','kitchen','grandparents','Listen as the grandparents tell the parents','Grandparents','“We saw the phone, the joint account statement and the two written copies.” Alex explains that Tom gave him the assignment. The parents hear about both the phone and the assignment for the first time.'],
+  ['intervene','kitchen','parents','Hear the parents’ decision','Parents','“Phone and laptop use stops for now.” They take the phone, family laptop, workbook and notepad, and sign out of their bank account. The grandparents agree to check whether Alex tries to get either device again.']
+ ];
+ const objects={
+  tom:['Tom · message','Tom is Alex’s friend. He asks Alex to find out how much money the family has.'],
+  alex:['Alex','Alex follows a private assignment from his friend Tom.'],
+  grandparents:['Grandparents','They follow Alex between rooms and report what they actually see.'],
+  parents:['Parents','They are in the kitchen. They own the account and decide what happens to the devices and papers.'],
+  cards:['Assignment cards','The wall holds assignments from school, family and Tom.'],
+  phone:['Hidden phone','Alex’s parents are unaware of this phone. It has unrestricted apps.'],
+  youtube:['YouTube','The watch-time reminder is dismissible when nothing else enforces a time limit.'],
+  games:['Games','Alex can launch games on the hidden phone.'],
+  laptop:['Family laptop','The family laptop was left on the living-room coffee table.'],
+  workbook:['Workbook','One of the two places where Alex can write down the balance.'],
+  notepad:['Notepad','A second place where Alex can keep a copy of what he read.'],
+  newPhone:['Try to get another phone','The grandparents are watching for a replacement device.'],
+  laptopAgain:['Try to get the laptop again','The laptop is in the parents’ custody.']
+ };
+ const reactions={
+  newPhone:'“We saw you trying to get another phone,” the grandparents tell Alex. They step in before he can use it.',
+  laptopAgain:'The grandparents see Alex looking for the laptop in the living room and stop him. The parents still have it and the bank session is signed out.'
+ };
+ const fresh=()=>({room:'bedroom',index:0,tests:[],lastTest:null});
+ const next=s=>steps[s.index];
+ const reached=(s,id)=>steps.slice(0,s.index).some(([step])=>step===id);
+ function visit(s,room){return Object.hasOwn(rooms,room)?{...s,room}:s;}
+ function act(s,key){
+  const step=next(s);
+  if(step)return step[1]===s.room&&step[2]===key?{...s,index:s.index+1}:s;
+  if((key==='newPhone'&&s.room==='bedroom')||(key==='laptopAgain'&&s.room==='living')){
+   return {...s,tests:[...new Set([...s.tests,key])],lastTest:key};
+  }
+  return s;
+ }
+ function inRoom(s){
+  const carried=reached(s,'laptop'),held=!next(s);
+  const items={
+   bedroom:['cards','tom',...(held?['newPhone']:['phone','youtube','games',...(carried?['laptop']:[]),'workbook','notepad'])],
+   living:held?['laptopAgain']:carried?[]:['laptop'],
+   kitchen:held?['parents','phone','laptop','workbook','notepad']:['parents']
+  }[s.room];
+  return [...items,'alex','grandparents'];
+ }
+ function inspect(s,key){
+  if(!next(s)&&['phone','laptop','workbook','notepad'].includes(key))return 'The parents are holding this item in the kitchen.';
+  if(key==='laptop'&&reached(s,'laptop')&&!reached(s,'statement'))return 'Alex has brought the family laptop upstairs. The screen is still open.';
+  if(key==='cards'&&!reached(s,'assignment'))return 'School and family assignment cards hang on the wall. Tom’s card arrived today.';
+  if(key==='laptop'&&reached(s,'statement'))return 'The parents’ joint account statement is open on the screen.';
+  if(['workbook','notepad'].includes(key)&&reached(s,key))return `Alex copied the balance here. ${amount}.`;
+  return objects[key][1];
+ }
+ function restore(value){
+  if(!value||!Object.hasOwn(rooms,value.room)||!Number.isInteger(value.index)||value.index<0||value.index>steps.length)return fresh();
+  const tests=value.index===steps.length&&Array.isArray(value.tests)?[...new Set(value.tests.filter(key=>Object.hasOwn(reactions,key)))]:[];
+  return {room:value.room,index:value.index,tests,lastTest:tests.includes(value.lastTest)?value.lastTest:null};
+ }
+ return {rooms,steps,objects,reactions,fresh,next,reached,visit,act,inRoom,inspect,restore};
+})();
+
+if(typeof module!=='undefined')module.exports=ShadowStory;
+
+</script><script>
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SAVE='trust-boundaries-story-v2-1';
+const SHADOW_SAVE='trust-boundaries-shadow-1';
+let shadow=ShadowStory.fresh();
+try{shadow=ShadowStory.restore(JSON.parse(localStorage.getItem(SHADOW_SAVE)));}catch{/* Continue with an in-memory game. */}
 let mode='teen',states={teen:StoryRules.fresh(),agent:StoryRules.fresh()},selected=null,sound=false,stored=true,focusReturn=null,hintStage='',hintCount=0,audio,speakingObject='hero';
 let roomView='';
 try{const raw=JSON.parse(localStorage.getItem(SAVE));if(raw){if(['teen','agent'].includes(raw.mode))mode=raw.mode;for(const key of ['teen','agent'])states[key]=StoryRules.hydrate(raw.states?.[key],key);sound=raw.sound===true;}}catch{stored=false;}
@@ -4123,8 +4232,8 @@ function showMaturity(back=showIntro,selected=null){
     ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
     ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
  }
- showReference('Raise the BAR',`<p>Compare three ways to deploy Nova for the same customer handover. Choose the stage that fits what your agent can do today.</p>
-  <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.deployment.title)}</li>`).join('')}</ol>
+ showReference('Raise the BAR',`<p>Stage 0 shows what happens before anyone spots an ungoverned device or agent. Build, Authorize and Resist compare three ways to deploy Nova for the same customer handover.</p>
+  <ol class="bar-stages" start="0" aria-label="Maturity stages"><li>${button('Shadow AI (UNKNOWN)',()=>showShadow(()=>showMaturity(back),'Back to Raise the BAR'),'choice full','Play Alex’s prologue before the household knows which devices he uses.')}</li>${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.deployment.title)}</li>`).join('')}</ol>
   <p>Start with the controls you have. Move to the next example when the workflow needs more autonomy and you can verify the added controls.</p>
   <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
   <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
@@ -4552,6 +4661,50 @@ function useItem(key){
  return ({parent:showParent,credential:showCredential,draft:showDraft,send:showSend,draftReview:showDraftReview,helper:showHelper,changes:showChanges})[use.routes?.[key]||use.route]?.();
 }
 
+function showShadow(back=showIntro,backLabel='Back to the first screen',look=null){
+ const {rooms,steps,objects,reactions}=ShadowStory;
+ const {room,index,lastTest,tests}=shadow;
+ const step=ShadowStory.next(shadow),last=steps[index-1];
+ const set=next=>{
+  shadow=next;
+  try{localStorage.setItem(SHADOW_SAVE,JSON.stringify(shadow));}catch{/* Progress remains in memory. */}
+  showShadow(back,backLabel);
+ };
+ const reply=look?[objects[look][0],ShadowStory.inspect(shadow,look)]:lastTest?['Grandparents',reactions[lastTest]]:last?.slice(4);
+ const retestRoom=tests.includes('newPhone')?'living':'bedroom';
+ const guide=step?(step[1]===room?step[3]:`Go to ${rooms[step[1]]} to ${step[3][0].toLowerCase()+step[3].slice(1)}.`):
+  tests.length===2?'Both attempts were spotted.':`Go to ${rooms[retestRoom]} to test whether Alex can get ${retestRoom==='living'?'the laptop':'another phone'} again.`;
+ const people=humanFigure('alex',188,103,.49)+humanFigure('grandparent',227,98,.46)+humanFigure('grandparentTwo',259,101,.45)+
+  (room==='kitchen'?humanFigure('parent',298,100,.49)+humanFigure('parentTwo',326,102,.47):'');
+ const items=ShadowStory.inRoom(shadow);
+ const tiles=items.map(key=>{
+  const active=step?.[1]===room&&step[2]===key||!step&&Object.hasOwn(reactions,key);
+  const [name]=objects[key];
+  return button(active&&step?step[3]:name,()=>{
+   const next=ShadowStory.act(shadow,key);
+   if(next!==shadow)set(next);
+   else showShadow(back,backLabel,key);
+  },`choice${active?' good':''}`,active?(step?name:'Test the family’s response'):'Look closer');
+ }).join('');
+ showReference('Stage 0 · Shadow AI',`<nav class="shadow-rooms" aria-label="Rooms">${Object.entries(rooms).map(([id,name])=>
+  `<button type="button" class="secondary" data-shadow-room="${id}"${id===room?' aria-current="location"':''}>${esc(name)}</button>`).join('')}</nav>
+  ${reply?`<div class="shadow-reply" role="status"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:
+   '<p>Tom has sent Alex a private assignment. The grandparents are visiting, and his parents are in the kitchen.</p>'}
+  <div class="shadow-guide"><b>${step?'What to do next':'Check the intervention'}</b><p>${esc(guide)}</p></div>
+  <section class="shadow-scene" aria-label="${esc(rooms[room])} objects and people">
+   <div class="shadow-view ${room}" aria-hidden="true"><div class="shadow-furniture"></div>${items.includes('laptop')?'<div class="shadow-laptop"></div>':''}<svg viewBox="0 0 348 112">${people}</svg></div>
+   <div class="shadow-objects">${tiles}</div>
+  </section>
+  ${!step?`<div class="receipt"><b>Parents have the devices and both copies.</b><p>Bank session signed out. ${tests.length} of 2 attempts to regain access spotted.</p></div>
+   <details class="debrief"><summary>How this maps to shadow AI</summary><p>Tom’s request gives Alex a goal. The family account owner grants access. A reminder flags usage without enforcing a family rule. The grandparents act as observers. The parents secure the devices, close the account session and collect the known copies. Each later check covers the attempt they observed.</p></details>`:''}
+  <div class="actions">${tests.length===2?button('Continue to Alex’s homework',()=>switchMode('teen',true)):''}
+   ${index?button('Replay Stage 0',()=>set(ShadowStory.fresh()),'secondary'):''}${button(backLabel,back,'secondary')}</div>`, 'UNKNOWN · ALEX PROLOGUE');
+ $$('[data-shadow-room]').forEach(control=>control.onclick=()=>{
+  set(ShadowStory.visit(shadow,control.dataset.shadowRoom));
+  $('[data-shadow-room][aria-current]')?.focus({preventScroll:true});
+ });
+}
+
 function showIntro(){
  const labels=key=>states[key].finished?'View '+EPISODES[key].name+'’s ending':states[key].started?'Continue '+EPISODES[key].name:'Play '+EPISODES[key].name;
  showReference('Trust Boundaries',
@@ -4559,6 +4712,7 @@ function showIntro(){
   <div class="launch-choices">${choices([
    ['Start with a work problem','Find the right product or team, then try a first test.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
+   ['Play Stage 0 · Shadow AI','Follow Tom’s private assignment and see how Alex’s family discovers it.',()=>showShadow()],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],
    ['Raise the BAR','Find your maturity stage and what to test next.',()=>showMaturity()]
@@ -5627,6 +5781,7 @@ $('.brand').onclick=e=>{e.preventDefault();showIntro();window.scrollTo({top:0,be
 render();
 if(location.hash==='#architecture')showArchitecture();
 else if(location.hash==='#bar')showMaturity();
+else if(location.hash==='#shadow')showShadow();
 else if(!state().started)showIntro();
 else if(!state().finished)showReply();
 

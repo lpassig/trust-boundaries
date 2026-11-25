@@ -2,6 +2,9 @@
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SAVE='trust-boundaries-story-v2-1';
+const SHADOW_SAVE='trust-boundaries-shadow-1';
+let shadow=ShadowStory.fresh();
+try{shadow=ShadowStory.restore(JSON.parse(localStorage.getItem(SHADOW_SAVE)));}catch{/* Continue with an in-memory game. */}
 let mode='teen',states={teen:StoryRules.fresh(),agent:StoryRules.fresh()},selected=null,sound=false,stored=true,focusReturn=null,hintStage='',hintCount=0,audio,speakingObject='hero';
 let roomView='';
 try{const raw=JSON.parse(localStorage.getItem(SAVE));if(raw){if(['teen','agent'].includes(raw.mode))mode=raw.mode;for(const key of ['teen','agent'])states[key]=StoryRules.hydrate(raw.states?.[key],key);sound=raw.sound===true;}}catch{stored=false;}
@@ -639,8 +642,8 @@ function showMaturity(back=showIntro,selected=null){
     ${button('Match a work problem to a control',()=>showBuyerGuide(reopen,backLabel),'secondary')}
     ${button('Back to all stages',()=>showMaturity(back),'secondary')}</div>`, 'RAISE THE BAR');
  }
- showReference('Raise the BAR',`<p>Compare three ways to deploy Nova for the same customer handover. Choose the stage that fits what your agent can do today.</p>
-  <ol class="bar-stages" aria-label="Maturity stages">${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.deployment.title)}</li>`).join('')}</ol>
+ showReference('Raise the BAR',`<p>Stage 0 shows what happens before anyone spots an ungoverned device or agent. Build, Authorize and Resist compare three ways to deploy Nova for the same customer handover.</p>
+  <ol class="bar-stages" start="0" aria-label="Maturity stages"><li>${button('Shadow AI (UNKNOWN)',()=>showShadow(()=>showMaturity(back),'Back to Raise the BAR'),'choice full','Play Alex’s prologue before the household knows which devices he uses.')}</li>${BAR_STAGES.map(stage=>`<li>${button(title(stage),()=>showMaturity(back,stage),'choice full',stage.deployment.title)}</li>`).join('')}</ol>
   <p>Start with the controls you have. Move to the next example when the workflow needs more autonomy and you can verify the added controls.</p>
   <details class="debrief"><summary>Framework basis</summary><p>The guide adapts Build, Authorize and Resist for a one-workflow pilot. Use the suggested measures to compare your own results with a baseline. Teams can work on these controls in parallel.</p>${protocolSourceLinks(['aiRmf'])}</details>
   <div class="actions">${button('Go back',back,'secondary')}</div>`,'AI AGENT MATURITY');
@@ -1068,6 +1071,50 @@ function useItem(key){
  return ({parent:showParent,credential:showCredential,draft:showDraft,send:showSend,draftReview:showDraftReview,helper:showHelper,changes:showChanges})[use.routes?.[key]||use.route]?.();
 }
 
+function showShadow(back=showIntro,backLabel='Back to the first screen',look=null){
+ const {rooms,steps,objects,reactions}=ShadowStory;
+ const {room,index,lastTest,tests}=shadow;
+ const step=ShadowStory.next(shadow),last=steps[index-1];
+ const set=next=>{
+  shadow=next;
+  try{localStorage.setItem(SHADOW_SAVE,JSON.stringify(shadow));}catch{/* Progress remains in memory. */}
+  showShadow(back,backLabel);
+ };
+ const reply=look?[objects[look][0],ShadowStory.inspect(shadow,look)]:lastTest?['Grandparents',reactions[lastTest]]:last?.slice(4);
+ const retestRoom=tests.includes('newPhone')?'living':'bedroom';
+ const guide=step?(step[1]===room?step[3]:`Go to ${rooms[step[1]]} to ${step[3][0].toLowerCase()+step[3].slice(1)}.`):
+  tests.length===2?'Both attempts were spotted.':`Go to ${rooms[retestRoom]} to test whether Alex can get ${retestRoom==='living'?'the laptop':'another phone'} again.`;
+ const people=humanFigure('alex',188,103,.49)+humanFigure('grandparent',227,98,.46)+humanFigure('grandparentTwo',259,101,.45)+
+  (room==='kitchen'?humanFigure('parent',298,100,.49)+humanFigure('parentTwo',326,102,.47):'');
+ const items=ShadowStory.inRoom(shadow);
+ const tiles=items.map(key=>{
+  const active=step?.[1]===room&&step[2]===key||!step&&Object.hasOwn(reactions,key);
+  const [name]=objects[key];
+  return button(active&&step?step[3]:name,()=>{
+   const next=ShadowStory.act(shadow,key);
+   if(next!==shadow)set(next);
+   else showShadow(back,backLabel,key);
+  },`choice${active?' good':''}`,active?(step?name:'Test the family’s response'):'Look closer');
+ }).join('');
+ showReference('Stage 0 · Shadow AI',`<nav class="shadow-rooms" aria-label="Rooms">${Object.entries(rooms).map(([id,name])=>
+  `<button type="button" class="secondary" data-shadow-room="${id}"${id===room?' aria-current="location"':''}>${esc(name)}</button>`).join('')}</nav>
+  ${reply?`<div class="shadow-reply" role="status"><b>${esc(reply[0])}</b><p>${esc(reply[1])}</p></div>`:
+   '<p>Tom has sent Alex a private assignment. The grandparents are visiting, and his parents are in the kitchen.</p>'}
+  <div class="shadow-guide"><b>${step?'What to do next':'Check the intervention'}</b><p>${esc(guide)}</p></div>
+  <section class="shadow-scene" aria-label="${esc(rooms[room])} objects and people">
+   <div class="shadow-view ${room}" aria-hidden="true"><div class="shadow-furniture"></div>${items.includes('laptop')?'<div class="shadow-laptop"></div>':''}<svg viewBox="0 0 348 112">${people}</svg></div>
+   <div class="shadow-objects">${tiles}</div>
+  </section>
+  ${!step?`<div class="receipt"><b>Parents have the devices and both copies.</b><p>Bank session signed out. ${tests.length} of 2 attempts to regain access spotted.</p></div>
+   <details class="debrief"><summary>How this maps to shadow AI</summary><p>Tom’s request gives Alex a goal. The family account owner grants access. A reminder flags usage without enforcing a family rule. The grandparents act as observers. The parents secure the devices, close the account session and collect the known copies. Each later check covers the attempt they observed.</p></details>`:''}
+  <div class="actions">${tests.length===2?button('Continue to Alex’s homework',()=>switchMode('teen',true)):''}
+   ${index?button('Replay Stage 0',()=>set(ShadowStory.fresh()),'secondary'):''}${button(backLabel,back,'secondary')}</div>`, 'UNKNOWN · ALEX PROLOGUE');
+ $$('[data-shadow-room]').forEach(control=>control.onclick=()=>{
+  set(ShadowStory.visit(shadow,control.dataset.shadowRoom));
+  $('[data-shadow-room][aria-current]')?.focus({preventScroll:true});
+ });
+}
+
 function showIntro(){
  const labels=key=>states[key].finished?'View '+EPISODES[key].name+'’s ending':states[key].started?'Continue '+EPISODES[key].name:'Play '+EPISODES[key].name;
  showReference('Trust Boundaries',
@@ -1075,6 +1122,7 @@ function showIntro(){
   <div class="launch-choices">${choices([
    ['Start with a work problem','Find the right product or team, then try a first test.',()=>showBuyerGuide(showIntro,'Back to the first screen'),'good'],
    [labels('teen'),'Finish a school project before dinner. Start here if you’re new to access controls.',()=>switchMode('teen',true),'good'],
+   ['Play Stage 0 · Shadow AI','Follow Tom’s private assignment and see how Alex’s family discovers it.',()=>showShadow()],
    [labels('agent'),'Deliver a customer brief and see how an AI agent’s permissions are enforced.',()=>switchMode('agent',true),'good'],
    ['Explore Architecture','See the technical design, product roles and request sequences.',()=>showArchitecture()],
    ['Raise the BAR','Find your maturity stage and what to test next.',()=>showMaturity()]
@@ -2143,5 +2191,6 @@ $('.brand').onclick=e=>{e.preventDefault();showIntro();window.scrollTo({top:0,be
 render();
 if(location.hash==='#architecture')showArchitecture();
 else if(location.hash==='#bar')showMaturity();
+else if(location.hash==='#shadow')showShadow();
 else if(!state().started)showIntro();
 else if(!state().finished)showReply();

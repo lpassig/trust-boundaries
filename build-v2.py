@@ -13,7 +13,7 @@ html = html.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + (s
 for name, path in [
     ('../assets/art.js', root / 'assets/art.js'),
     ('../assets/protocols.js', root / 'assets/protocols.js'),
-    *[(name, src / name) for name in ['story.js', 'rules.js', 'interactions.js', 'trace.js', 'products.js', 'architecture.js', 'decision-lab.js', 'ui.js']],
+    *[(name, src / name) for name in ['story.js', 'rules.js', 'interactions.js', 'trace.js', 'products.js', 'architecture.js', 'decision-lab.js', 'shadow.js', 'ui.js']],
 ]:
     code = path.read_text(encoding='utf-8').replace('</script', '<\\/script')
     html = html.replace(f'<script src="{name}"></script>', '<script>\n' + code + '\n</script>')
