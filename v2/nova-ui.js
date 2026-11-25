@@ -31,13 +31,37 @@ const novaPairs={
  resources:'Alex’s living room and shared resources',
  security:'Alex’s kitchen and the family’s rules'
 };
+const novaRoomProps={
+ external:'<span class="nova-city"></span><span class="nova-platform"></span><span class="nova-train"><i></i></span>',
+ runtime:'<span class="nova-window"></span><span class="nova-racks"><i></i><i></i></span><span class="nova-desk"></span>',
+ resources:'<span class="nova-racks"><i></i><i></i><i></i></span><span class="nova-terminal"></span>',
+ security:'<span class="nova-wall-display"><i></i><i></i><i></i></span><span class="nova-desk"></span>'
+};
+const novaStationIcons={
+ intake:'inbox',delivery:'inbox',sandbox:'console',model:'signal',gateway:'signal',memory:'stack',artifact:'file',
+ crm:'console',kafka:'signal',database:'stack',astra:'file',maintenance:'console',identity:'badge',admission:'shield',
+ vault:'lock',mission:'file',policy:'shield',review:'badge',soc:'signal',mira:'bot'
+};
+const novaProfile=['Nova','Railway investigation agent',
+ 'Nova reads approved evidence, requests permission for new work and records which service allowed or blocked each action.'];
+function novaSprite(){
+ return '<span class="nova-bot" aria-hidden="true"><i class="bot-antenna"></i><i class="bot-head"></i><i class="bot-body"></i></span>';
+}
+function novaDiorama(room,figure='',stations=''){
+ return `<div class="nova-diorama ${room}">
+  <div class="nova-scenery" aria-hidden="true">${novaRoomProps[room]}</div>
+  ${figure}${stations}</div>`;
+}
 function showNovaIntro(){
  const next=Object.keys(novaStates).find(stage=>!NovaRailway.complete(novaStates[stage]));
  const started=Object.values(novaStates).some(state=>state.index>0);
  showScreen('Nova’s railway investigation',`
-  <p>Follow the same four maturity stages as Alex. In this technical journey, Nova investigates a disruption at a fictional railway company. The requests, incidents, and business effects are simulations.</p>
-  <div class="actions">${next?button(started?'Continue Nova':'Start Nova',()=>navigate(novaStageRoute(next))):''}
-   ${button('Play Alex',()=>navigate(''),'secondary')}${button('Explore the architecture',()=>navigate('architecture'),'secondary')}</div>
+  <div class="nova-intro">
+   <div><p>Follow the same four maturity stages as Alex. Help Nova investigate a disruption at a fictional railway company.</p>
+    <div class="actions">${next?button(started?'Continue Nova':'Start Nova',()=>navigate(novaStageRoute(next))):''}
+     ${button('Play Alex',()=>navigate(''),'secondary')}${button('Explore the architecture',()=>navigate('architecture'),'secondary')}</div></div>
+   ${novaDiorama('external',`<div class="nova-crew" aria-hidden="true">${novaSprite()}</div>`)}
+  </div>
   <h2>Choose a stage</h2><div class="stage-list choices">${Object.entries(NovaRailway.stages).map(([stage,data])=>{
    const progress=NovaRailway.complete(novaStates[stage])?' · Completed':novaStates[stage].index?' · In progress':'';
    return button(data.title,()=>navigate(novaStageRoute(stage)),'choice',data.tag+progress+' · '+data.summary);
@@ -96,36 +120,54 @@ function novaEvidence(state){
   <h3>Latest normalized event</h3><pre class="product-example">${esc(JSON.stringify(event,null,2))}</pre>
   <p class="small-print">The customer maps source events to this fictional schema. Confluent can carry events, Flink can correlate them, and the separately authorized response service acts on the resulting signals.</p></details>`;
 }
-function showNova(stage,inspect=null){
+function showNova(stage,inspect=null,revealReply=false){
  const state=novaStates[stage],data=NovaRailway.stages[stage],{room}=state;
  const order=Object.keys(NovaRailway.stages);
  const next=NovaRailway.next(state),done=NovaRailway.complete(state);
  const nextStage=order[order.indexOf(stage)+1];
- const update=nextState=>{
+ const update=(nextState,showReply=false)=>{
   novaStates[stage]=nextState;
   try{localStorage.setItem(NOVA_SAVE,JSON.stringify(novaStates));}catch{/* Playing still works in memory. */}
-  showNova(stage);
+  showNova(stage,null,showReply);
  };
- const act=id=>{update(NovaRailway.act(state,id));$('#nova-reply')?.focus({preventScroll:true});};
+ const focusReply=()=>{
+  const reply=$('#nova-reply');
+  reply?.focus({preventScroll:true});
+  reply?.scrollIntoView({block:'nearest'});
+ };
+ const act=id=>{update(NovaRailway.act(state,id),true);focusReply();};
  const visit=place=>{update(NovaRailway.visit(state,place));$('[data-nova-room][aria-current]')?.focus({preventScroll:true});};
  const stations=[...new Set(data.steps.filter(item=>item.room===room).map(item=>item.station))];
  if(state.incident&&next?.room===room&&!stations.includes(next.station))stations.push(next.station);
- const looked=inspect&&NovaRailway.stations[inspect];
+ const looked=inspect==='nova'?novaProfile:NovaRailway.stations[inspect];
  const reply=looked?{owner:looked[0],reply:looked[2]}:state.reply;
+ const replyRoom=!looked&&state.events.at(-1)?.environment;
+ const replyFromAnotherRoom=replyRoom&&replyRoom!==room;
+ const dialogue=reply?`<div class="nova-dialogue" id="nova-reply" tabindex="-1" role="status"><b>${esc(reply.owner)}</b>
+  ${replyFromAnotherRoom?`<small> · ${esc(NovaRailway.scenes[replyRoom])}</small>`:''}<p>${esc(reply.reply)}</p>
+  ${looked?novaSourceLinks(novaSources[inspect]):''}</div>`:'';
  const options=NovaRailway.available(state);
+ const inspectStation=id=>{showNova(stage,id);focusReply();};
+ const crew=`<div class="nova-crew">${button('Nova',()=>inspectStation('nova'),
+  'nova-character'+(inspect==='nova'?' is-speaking':''),'',novaSprite())}</div>
+  ${stations.includes('mira')?`<div class="nova-partner" aria-hidden="true">${novaSprite()}<span>Mira</span></div>`:''}`;
+ const devices=`<div class="nova-stations" role="group" aria-label="Stations in this environment">${stations.map(id=>{
+  const [label,role]=NovaRailway.stations[id],main=next?.room===room&&next.station===id;
+  const speaks=inspect===id||(!looked&&replyRoom===room&&reply?.owner===label);
+  const icon=`<span class="nova-station-icon ${novaStationIcons[id]}" aria-hidden="true"></span>`;
+  return button(main?next.label:label,()=>main?act(next.id):inspectStation(id),
+   `choice nova-station${main?' good':''}${speaks?' is-speaking':''}`,main?label:role,icon,
+   {'data-nova-station':id});
+ }).join('')}</div>`;
  showScreen(data.title,`
-  <nav class="shadow-rooms" aria-label="Nova environments">${Object.entries(NovaRailway.scenes).map(([id,name])=>
+  <nav class="shadow-rooms nova-navigation" aria-label="Nova environments">${Object.entries(NovaRailway.scenes).map(([id,name])=>
    `<button type="button" class="secondary" data-nova-room="${id}"${id===room?' aria-current="location"':''}>${esc(name)}</button>`).join('')}</nav>
   <div class="nova-scene ${esc(room)}">
    <div class="nova-location"><h2>${esc(NovaRailway.scenes[room])}</h2><p>${esc(novaPairs[room])}</p></div>
-   ${reply?`<div class="shadow-reply" id="nova-reply" tabindex="-1" role="status"><b>${esc(reply.owner)}</b><p>${esc(reply.reply)}</p>
-     ${looked?novaSourceLinks(novaSources[inspect]):''}</div>`:''}
+   ${replyFromAnotherRoom&&!revealReply?`<details class="nova-last-result"><summary>Last result · ${esc(reply.owner)}</summary>${dialogue}</details>`:dialogue}
    ${next?`<div class="nova-next"><strong>Next action</strong><p>${esc(next.label)}</p>
      ${next.room!==room?button('Go to '+NovaRailway.scenes[next.room],()=>visit(next.room),'secondary'):''}</div>`:''}
-   <div class="shadow-objects">${stations.map(id=>{
-    const [label,role]=NovaRailway.stations[id],main=next?.room===room&&next.station===id;
-    return button(main?next.label:label,()=>main?act(next.id):showNova(stage,id),'choice'+(main?' good':''),main?label:role);
-   }).join('')}</div>
+   ${novaDiorama(room,crew,devices)}
    ${options.length?`<details class="room-scenarios"><summary>Optional security tests · ${options.length}</summary>
      <div class="shadow-objects">${options.map(item=>button(item.label,()=>act(item.id),'choice',item.owner)).join('')}</div></details>`:''}
    ${state.incident&&next?.id==='ack-resource'&&next.room===room?`<div class="actions nova-actions">${button('Simulate a controller timeout',()=>act('timeout-resource'),'secondary')}</div>`:''}
