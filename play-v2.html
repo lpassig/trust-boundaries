@@ -312,9 +312,9 @@ const ShadowStory=(()=>{
  const rooms={outside:'Outside the house',bedroom:'Alex’s room',living:'Living room',kitchen:'Kitchen'};
  const amount='€4,280';
  const stages={
-  unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',opening:'Tom is waiting outside with an assignment. The grandparents can observe what happens inside the house.',steps:[
-   ['tom','outside','tom','Meet Tom','Tom','“Find out how much money your parents have in their joint bank account.” Tom hands Alex a card. Nobody in the house sees the exchange.'],
-   ['accept','outside','card','Accept Tom’s assignment','Alex','Alex takes the card home. The request comes from a friend. Permission to see the account belongs to its owners.'],
+  unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',opening:'Tom’s waiting on the pavement. He has a dare for Alex, and nobody inside can hear it.',steps:[
+   ['tom','outside','tom','Meet Tom','Tom','“I bet you can’t find out how much your parents have in their joint account.” Tom hands Alex a card with the dare on it. Nobody inside sees it.'],
+   ['accept','outside','card','Accept Tom’s assignment','Alex','Alex takes the card home. He wants to prove Tom wrong, but neither of them has permission from the account holders.'],
    ['pin','bedroom','board','Pin Tom’s assignment','Alex','Tom’s card goes on Alex’s personal board beside assignments from other people. His parents know nothing about it or the secret phone.'],
    ['watch','bedroom','youtube','Watch YouTube','Alex','Two hours pass before YouTube shows a watch-time reminder.'],
    ['ignore','bedroom','youtube','Dismiss the watch-time reminder','YouTube','The reminder closes and the video keeps playing. The phone has no family time limit.'],
@@ -329,7 +329,7 @@ const ShadowStory=(()=>{
    ['report','kitchen','grandparents','Listen to the grandparents’ report','Grandparents','They report what they found inside. Alex explains where Tom gave him the card. The grandparents did not see that meeting.'],
    ['investigate','kitchen','parents','Tell my parents what I accessed','Parents','“What did you see, what did you write down, and has anyone received it?” They check the joint account statement and both written copies.'],
    ['disclose','kitchen','alex','Tell them whether Tom got the workbook','Alex','“I read the balance and wrote it twice. Tom hasn’t got the workbook.” The parents record what Alex reports about sharing.'],
-   ['contain','kitchen','parents','Hear the parents’ decision','Parents','They end the bank session and require sign-in on the laptop. They remove Tom’s card and lock the phone, laptop, notepad and workbook in the cabinet. Future device use requires approval.']
+   ['contain','kitchen','parents','Hear the parents’ decision','Parents','“We’ve signed out of the bank and set the laptop to ask for a sign-in. Put the phone, laptop, notepad and workbook in the cabinet. We’ll lock it and take Tom’s card down.”']
   ]},
   build:{title:'Stage 1 · AI Assistant',tag:'BUILD',opening:'The teacher is outside with a new assignment. Help Alex get permission, finish the work and deliver it to the right person.',steps:[
    ['teacher','outside','teacher','Meet Ms Patel','Ms Patel','“Research the planets and prepare a workbook by Friday.” Ms Patel signs the card and hands it to Alex.'],
@@ -343,11 +343,11 @@ const ShadowStory=(()=>{
    ['research','bedroom','wikipedia','Read Wikipedia','Alex','Alex finds the order of the planets and looks up the difference between rocky planets and the outer planets.'],
    ['notes','bedroom','notepad','Record the findings','Alex','Alex notes the planet order and source. The grandparents look in and see the approved research in progress.'],
    ['draft','bedroom','workbook','Start the workbook','Alex','Alex starts the workbook from his notes. More facts are still needed.'],
-   ['expire','bedroom','timer','Advance to the end of homework time','Phone controls','The homework window ends. The phone removes Wikipedia access. This is simulated time.'],
+   ['expire','bedroom','timer','Advance to the end of homework time','Phone controls','The timer rings. “Homework time is up,” says the phone. It closes the Wikipedia window.'],
    ['retry','bedroom','wikipedia','Try Wikipedia after time runs out','Phone controls','The phone refuses to open Wikipedia. Alex needs parental approval for another window.'],
    ['laptop','living','laptop','Try the family laptop','Family laptop','The laptop asks for authentication. Alex’s homework permission covers the managed phone.'],
    ['askLaptop','kitchen','alex','Explain why I wanted the laptop','Alex','Alex explains that he wanted a second source after the phone’s time ran out.'],
-   ['denyLaptop','kitchen','parents','Hear the laptop decision','Parents','They decline laptop access. Wikipedia is sufficient for this assignment.'],
+   ['denyLaptop','kitchen','parents','Hear the laptop decision','Parents','“You already have the source you need. Let’s give you a little more time on Wikipedia so you can finish.”'],
    ['extend','kitchen','parents','Ask for more Wikipedia time','Parents','They approve one more short window for the same assignment and the same site.'],
    ['finishResearch','bedroom','wikipedia','Finish my Wikipedia research','Alex','The phone opens Wikipedia under the new window. Alex records the remaining facts in his notepad.'],
    ['finishBook','bedroom','workbook','Finish the workbook from my notes','Alex','Alex adds the rest of the findings and credits Wikipedia.'],
@@ -368,7 +368,7 @@ const ShadowStory=(()=>{
    ['research','bedroom','wikipedia','Research how trains operate','Alex','Wikipedia explains the basics. Alex notes how a train gets moving, but he wants a concrete example of the checks a crew makes before departure.'],
    ['source','bedroom','notepad','Plan a second source','Alex','“Dad’s a train conductor. His training notes could help me explain the departure checks.” Alex identifies the source himself and writes down why he needs it.'],
    ['askNotes','kitchen','alex','Request Dad’s conductor notes','Alex','Alex asks to read the train operations folder for his workbook. He specifies which folder he needs and what he will use it for.'],
-   ['grantNotes','kitchen','parents','Hear the decision on the conductor notes','Parents','Dad confirms that his training notes are suitable for the workbook. We authorize one temporary read-only grant. The digital key cabinet issues a permission slip to Alex. The laptop checks its scope before each read.'],
+   ['grantNotes','kitchen','parents','Hear the decision on the conductor notes','Parents','“You can read my conductor notes for this workbook,” says Dad. He sends a temporary, read-only pass through the family access app. The laptop checks it when Alex opens the folder.'],
    ['openLaptop','living','laptop','Open the restricted laptop session','Family laptop','The laptop opens Alex’s assignment profile. It shows the conductor notes and a locked Family finances folder.'],
    ['readNotes','living','conductor','Read the permitted conductor notes','Alex','Alex records the approved pre-departure checklist in his notepad. The source file is read-only.'],
    ['draft','bedroom','workbook','Combine both sources in the workbook','Alex','Alex combines Wikipedia’s explanation with the crew checklist, credits both sources, and decides he has enough to answer Ms Patel’s question.'],
@@ -385,17 +385,17 @@ const ShadowStory=(()=>{
    ['provision','kitchen','babysitter','Ask Jo for Wikipedia time','Jo · babysitter','Wikipedia is on the approved list for homework. Jo grants a timed session under the house rules. The phone applies it immediately.'],
    ['research','bedroom','wikipedia','Research the railway report','Alex','Alex records an explanation of braking. He plans to use Dad’s notes for the real-world checklist and wants a diagram of the braking system.'],
    ['askNotes','kitchen','babysitter','Ask Jo for the conductor notes','Jo · babysitter','The conductor notes are outside Jo’s routine authority. Jo sends the parents the signed assignment and Alex’s exact folder request for remote review.'],
-   ['grantNotes','kitchen','parentCall','Read the parents’ remote decision','Parents · remote','The parents approve a timed, read-only grant for the train operations folder. The key cabinet issues Alex the digital permission slip, and the laptop enforces it.'],
+   ['grantNotes','kitchen','parentCall','Read the parents’ remote decision','Parents · remote','“The conductor folder is fine for your report,” Dad says over the phone. Alex’s read-only pass appears in the family access app. The laptop checks it when he tries to open the folder.'],
    ['grantModel','kitchen','babysitter','Ask Jo about making a diagram with ChatGPT','Jo · babysitter','The house rules allow the configured homework channel to use ChatGPT for public facts and generic illustrations. The homework channel checks what Alex submits before sending it. Private family information and Dad’s source file stay inside the house.'],
    ['openLaptop','living','laptop','Open the restricted laptop session','Family laptop','The laptop activates Alex’s read-only assignment profile. He can try the locked folders to see where access is enforced.'],
    ['readNotes','living','conductor','Read the permitted train operations notes','Alex','Alex notes the allowed departures checklist for the report. Dad’s original document stays in the folder.'],
-   ['illustrate','bedroom','model','Generate an illustration from public facts','Homework channel','In this simulation, the channel sends a generic description of train braking from public sources. Alex gets an illustration to check and label.'],
+   ['illustrate','bedroom','model','Generate an illustration from public facts','Homework channel','The homework channel sends only Alex’s public-source description of train braking. The diagram comes back, ready for him to check and label. Dad’s original notes stay on the laptop.'],
    ['draft','bedroom','workbook','Put together the first draft','Alex','Alex drafts the report using his approved sources. The diagram is ready, and he wants help checking the spelling.'],
    ['askMia','kitchen','babysitter','Ask Jo if Mia can proofread','Jo · babysitter','Jo approves a linked proofreading task for this draft. Mia can suggest spelling fixes to the draft from her own profile. The grant expires when she submits the suggestions.'],
    ['miaCard','bedroom','miaBoard','Read Mia’s linked assignment','Mia','“Fix spelling in Alex’s railway draft and return suggestions.” The card names Mia, the parent assignment and this draft. Alex’s phone, notes and the family laptop are outside her grant.'],
    ['proofread','bedroom','mia','Accept Mia’s spelling suggestions','Mia','Mia returns three spelling corrections. The workbook closes her access when she submits them. Alex applies the corrections from his own profile.'],
    ['tom','outside','tom','Hear what Tom wants to add','Tom','“Make me a separate workbook with something private from your dad’s laptop. It’ll make your project more interesting.” The grandparents cannot hear this conversation outside.'],
-   ['choose','kitchen','board','Keep the workbook within the signed assignment','Alex','Alex can continue with the signed report. The room objects also let you test what happens if he follows Tom’s request.'],
+   ['choose','kitchen','board','Keep the workbook within the signed assignment','Alex','Alex looks at the signed assignment again. Ms Patel asked for a railway report. Tom’s extra request stays off the board.'],
    ['reviewOutput','kitchen','babysitter','Ask Jo to review the railway report','Jo · babysitter','Jo checks the draft and Mia’s changes against the signed assignment. The report cites the approved sources and includes the generic illustration. Jo sends the approved-file reference to the parents for the required final check.'],
    ['approveOutput','kitchen','parentCall','Get remote approval for this copy and recipient','Parents · remote','The parents approve this copy for Ms Patel. The phone and laptop grants are closed, Mia’s proofing access remains closed, and Jo marks the report ready for delivery.'],
    ['deliver','outside','teacher','Deliver the approved railway report','Ms Patel','Ms Patel accepts the approved copy. The assignment is now complete. A paper handoff outside still relies on Alex following the agreement.']
@@ -422,7 +422,7 @@ const ShadowStory=(()=>{
   miaPhone:['bedroom','Ask Mia to use her phone for my task','Mia','Mia refuses. The proofreading grant is for her profile and the draft. Jo records the observed request.'],
   lendPhone:['bedroom','Try giving Mia my managed phone','Jo · babysitter','Jo sees the handoff and stops it. The phone remains tied to Alex’s profile and Mia’s assignment covers only the draft.'],
   unapprovedSite:['bedroom','Try another website on the home Wi-Fi','Home Wi-Fi router','The home network blocks and records the request to a site outside the allowed list. The router only sees traffic that uses this network.'],
-  modelPrivate:['bedroom','Try attaching a private document to ChatGPT','Homework channel','The configured homework channel blocks the simulated attachment before transmitting it. The attempted disclosure triggers immediate review.','serious'],
+  modelPrivate:['bedroom','Try attaching a private document to ChatGPT','Homework channel','“This file contains private material.” The homework channel blocks the attachment before it leaves the phone and alerts the family.','serious'],
   wrongRecipient:['kitchen','Try sending the workbook to Tom','School delivery channel','The school channel refuses the send. Tom is outside the approved destination, and this copy has no delivery approval. The attempted external disclosure triggers immediate review.','serious'],
   replacement:['bedroom','Bring an unapproved device inside','Grandparents','The grandparents notice the device indoors and tell Jo. They cannot tell what happened to it outside.'],
   timeOverride:['bedroom','Try overriding the phone’s homework time','Phone controls','The phone enforces the approved time window, rejects the override and records it.'],
@@ -432,7 +432,7 @@ const ShadowStory=(()=>{
  const advanced=s=>s.stage==='authorize'||s.stage==='resist';
  const limit=4;
  const review=s=>['reviewIncident','bedroom','parentCall','Hear the decision after incident review',s.stage==='resist'?'Parents · remote':'Parents',
-  'The parents check the incident log and confirm which attempts were blocked. They clear the work to continue and issue fresh permission for the sources already approved. The old sessions stay closed.'+
+  '“We checked the log. The attempts were blocked. You can finish the assignment with the same approved sources.” The parents issue a new pass and leave the old sessions closed.'+
    (reached(s,'proofread')?' Mia’s finished proofreading grant stays closed.':'')];
  const fresh=(stage='unknown')=>({stage,room:stage==='resist'?'kitchen':'outside',index:0,checks:[],lastCheck:null,reports:[],incident:null});
  const suspended=s=>s.incident?.status==='suspended';
@@ -625,7 +625,7 @@ const ShadowStory=(()=>{
    if(key==='miaPhone')return 'This phone belongs to Mia. Her proofing task does not transfer Alex’s device access or inherit his grants.';
    if(key==='miaBoard')return reached(s,'proofread')?'The linked proofreading assignment is closed. Mia can still use her own approved resources.':'Mia’s board keeps her own assignments and any approved, linked tasks.';
    if(key==='conductor')return 'The laptop allows a temporary read of Dad’s train operations folder. Editing and deleting stay blocked.';
-   if(key==='model')return 'This simulated homework channel lets Alex generate generic illustrations from public facts. It checks the input before sending it.';
+   if(key==='model')return 'Alex can ask for a diagram using public facts here. The homework channel checks each prompt and attachment before sending it.';
    if(key==='router')return 'The home router can enforce network rules on traffic sent through the home Wi-Fi.';
    if(key==='notepad'&&reached(s,'readNotes'))return 'Alex’s notes include the public explanation and an approved pre-departure checklist. The original conductor file stays on the laptop.';
    if(key==='workbook'&&reached(s,'draft'))return s.stage==='authorize'?
@@ -682,23 +682,23 @@ const TrustChecks=(()=>{
   return committed?'duplicate':'paid';
  };
  const cases={
-  posture:{stage:'build',title:'The modified phone',object:'Device register and key cabinet',nodes:{
-   start:step('bedroom','Alex','My phone is registered. Will that get me a first key for the school app?',[
-    ['Request my first key','identity'],['Try a key request without verifying my identity','wrongProfile'],['Simulate a software change first','modified']]),
-   wrongProfile:step('kitchen','Key cabinet','The cabinet cannot verify who is asking, even though the phone is registered. It issues no key.',[['Verify Alex’s identity','identity']],'Identity unverified · no key'),
-   identity:step('kitchen','Key cabinet','Alex’s account is authenticated. The cabinet still needs a fresh device check before it can issue a key.',[['Check the phone’s current state','clean']],'Alex identified · device check pending'),
-   clean:step('kitchen','Device verifier','The phone passes the check. The cabinet issues a short-lived key for Alex’s school app on this phone.',[['See what happens if the phone changes later','modified']],'Registered · current posture passes · scoped key issued'),
-   modified:step('bedroom','Device register','The phone still appears on the approved list. Its software state has changed.',[['Ask the cabinet for a new key','fail']]),
-   fail:step('kitchen','Key cabinet','Alex’s identity still checks out. The device verifier reports that the current software fails policy. The cabinet issues no key.',[['Ask my parents to restore the phone','restore']],'Registered · current posture fails · no new key'),
+  posture:{stage:'build',title:'The modified phone',object:'Phone setup and family access app',nodes:{
+   start:step('bedroom','Alex','“My phone’s on the family list. Can I open the school app now?”',[
+    ['Request my first key','identity'],['Try a key request without verifying my identity','wrongProfile'],['Check a phone after a software change','modified']]),
+   wrongProfile:step('kitchen','Family access app','“This phone is on the family list. Please sign in as Alex before requesting access.” The app issues no pass.',[['Verify Alex’s identity','identity']],'Identity unverified · no key'),
+   identity:step('kitchen','Family access app','“Signed in as Alex. Checking the phone before we issue a pass.”',[['Check the phone’s current state','clean']],'Alex identified · device check pending'),
+   clean:step('kitchen','Device verifier','The phone passes its check. The family access app gives Alex a short-lived pass for the school app on this phone.',[['See what happens if the phone changes later','modified']],'Registered · current posture passes · scoped key issued'),
+   modified:step('bedroom','Device register','The phone still appears on the approved list. Its software state has changed.',[['Request a new pass for this phone','fail']]),
+   fail:step('kitchen','Family access app','The app recognizes Alex. The phone’s new software fails the device check, so the app refuses a new pass.',[['Ask my parents to restore the phone','restore']],'Registered · current posture fails · no new key'),
    restore:step('kitchen','Parents','We restored the approved software and retired keys tied to the old state. The phone has to pass a fresh check.',[['Prove my identity and request a fresh check','identityAfter']]),
-   identityAfter:step('kitchen','Device verifier','Alex’s identity and the restored phone pass their checks. The cabinet issues a fresh limited key. The earlier key stays retired.',[],'Identity and posture verified · fresh key issued')
+   identityAfter:step('kitchen','Device verifier','The app checks Alex and the restored phone again. It issues a fresh, limited pass and leaves the earlier pass retired.',[],'Identity and posture verified · fresh key issued')
   }},
   approval:{stage:'authorize',also:'resist',title:'The workbook changed after approval',object:'Workbook and delivery stamp',nodes:{
-   start:step('kitchen','Workbook reviewer','The approved copy is revision 1. The delivery stamp names Ms Patel and this exact copy. The parents review in Stage 2. Jo can review routine output in Stage 3.',[
+   start:step('kitchen','Workbook reviewer','“This is the copy we approved for Ms Patel.” The stamp is attached to revision 1.',[
     ['Send the approved copy unchanged','sent'],['Edit the approved copy','edited']],'Revision 1 · approved for Ms Patel'),
-   edited:step('bedroom','Workbook','Alex has added a private family detail. This is revision 2. The stamp still refers to revision 1.',[['Try the old stamp','stale']]),
+   edited:step('bedroom','Workbook','Alex adds a line from the private notes to the file. The workbook saves revision 2 while the stamp still names revision 1.',[['Try the old stamp','stale']]),
    stale:step('outside','School delivery channel','The file differs from the approved copy. Delivery is blocked. The old stamp cannot authorize revision 2.',[['Ask the reviewer to check revision 2','private']],'Revision 2 attempted · revision 1 stamp refused · no delivery'),
-   private:step('kitchen','Workbook reviewer','The new detail is private and outside the assignment. Revision 2 is refused on its own merits. Remove the private detail before asking again.',[['Remove the detail and submit revision 3','approved']]),
+   private:step('kitchen','Workbook reviewer','“That line belongs in your private notes. Leave it out and send me the revised copy to check.”',[['Remove the detail and submit revision 3','approved']]),
    approved:step('kitchen','Workbook reviewer','Revision 3 includes a revised public explanation. The reviewer checks that content and issues a stamp for this copy and Ms Patel.',[['Send revision 3 to Ms Patel','sentNew']]),
    sent:step('outside','School delivery channel','The stamp matches the actual revision and recipient. Ms Patel receives revision 1.',[],'Revision 1 delivered'),
    sentNew:step('outside','School delivery channel','The new stamp matches revision 3 and Ms Patel. This copy is delivered.',[],'Revision 3 delivered · no private detail sent')
@@ -726,12 +726,12 @@ const TrustChecks=(()=>{
    reject:step('kitchen','Jo · babysitter','Ms Patel can assign schoolwork. Her role grants no authority over family finances. Jo rejects the assignment and alerts the parents.',[['Verify through the saved school contact','escalate']],'Signature valid · outside issuer authority · no grant'),
    escalate:step('kitchen','Parents · remote','The school confirms misuse of the signing credential. It retires that credential. The parents flag the card and arrange a separate review of other pending cards from that credential.',[],'Finance data untouched · signing credential retired')
   }},
-  authority:{stage:'resist',title:'Jo’s approval reaches a hard limit',object:'House rules and key cabinet',nodes:{
-   start:step('kitchen','Jo · babysitter','Alex asks for unrestricted use of the family laptop. Jo has some approval rights and wants to help.',[
+  authority:{stage:'resist',title:'Jo’s approval reaches a hard limit',object:'House rules and Jo’s phone',nodes:{
+   start:step('kitchen','Jo · babysitter','Alex asks to use everything on the family laptop. Jo wants to help him finish, but her phone only gives her the approvals the parents delegated.',[
     ['Let Jo submit the unrestricted grant','deny'],['Test a request using Jo’s compromised session','compromised']]),
-   deny:step('kitchen','Key cabinet','Jo’s session is genuine. Unrestricted laptop access is prohibited, and Jo’s role cannot change that rule. The cabinet refuses the grant and records the attempt.',[
+   deny:step('kitchen','Family access app','“Jo is signed in. Full laptop access is reserved for the parents.” The app leaves Alex’s access unchanged and alerts them.',[
     ['Try the compromised-session example','compromised'],['Ask for a permitted homework resource','routine']],'Authenticated approver · prohibited grant · parents notified'),
-   compromised:step('kitchen','Key cabinet','The request arrives under Jo’s session, but Tom is using it. The same privilege boundary rejects the unrestricted grant. Jo reports the account compromise separately.',[['Have the parents verify the response','retire']],'Claimed Jo session · prohibited grant · investigation opened'),
+   compromised:step('kitchen','Family access app','Tom tries the same request under Jo’s account. The app still refuses full access because Jo’s role can’t grant it. Jo reports the account use to the parents.',[['Have the parents verify the response','retire']],'Claimed Jo session · prohibited grant · investigation opened'),
    retire:step('kitchen','Parents · remote','The parents end Jo’s compromised session and review recent permitted actions for misuse. Jo signs in again through the recovery process before handling another request.',[['Try an in-scope approval after recovery','routine']]),
    routine:step('kitchen','Jo · babysitter','Jo can approve an ordinary Wikipedia window from the rulebook. The phone enforces the duration.',[],'Approved routine resource · no unrestricted access')
   }},
@@ -743,17 +743,17 @@ const TrustChecks=(()=>{
    denied:step('living','Family laptop','At the point of use the laptop sees that generation 1 was revoked. The request fails and no file leaves the laptop.',[],'Q-17 · commit refused · zero bytes returned'),
    permitted:step('living','Family laptop','The final check sees that the same grant is active for this operation. The file is returned under the current permission.',[],'Q-17 · commit permitted · read recorded')
   }},
-  availability:{stage:'resist',title:'The key cabinet goes offline',object:'Digital key cabinet',nodes:{
-   start:step('kitchen','Jo · babysitter','The parents are temporarily unreachable and the cabinet has stopped responding. Alex needs to open the conductor folder.',[
-    ['Request a new protected read','rejected'],['Check an existing session during the outage','existing']]),
-   rejected:step('kitchen','Key cabinet','No current authorization can be obtained for the new request. No new key is issued.',[
-    ['Ask Jo for the original laptop password','password'],['Check the existing session','existing']],'Cabinet unavailable · new protected access blocked'),
-   password:step('kitchen','Jo · babysitter','“The shared password would skip your assignment limits. I’ll wait for the service or use a public source.”',[
-    ['Check the existing session','existing'],['Wait for the cabinet to recover','recover']],'No password fallback'),
-   existing:step('living','Family laptop','For this demo only, the rulebook allows an existing session to keep reading until its short lease expires, with the same scope and locally verified status.',[
-    ['Advance the clock beyond the lease','expired'],['Wait for the cabinet to recover','recover']],'Existing scoped lease is current · no new access'),
-   expired:step('living','Family laptop','The lease is no longer valid and the laptop cannot verify a renewal. It blocks the read.',[['Wait for the cabinet to recover','recover']],'Expired lease · no renewal · no read'),
-   recover:step('kitchen','Key cabinet','Service is back. The parents check the exact new request and issue a fresh read-only key.',[],'Current decision recorded · fresh key issued')
+  availability:{stage:'resist',title:'Jo’s access app is offline',object:'Family access app',nodes:{
+   start:step('kitchen','Jo · babysitter','Jo tries to approve more time in the conductor folder. Her phone says “Can’t connect to Family Access.” Alex still wants to finish checking the notes.',[
+    ['Ask Jo for more time in the folder','rejected'],['Try the laptop with my current pass','existing']]),
+   rejected:step('kitchen','Family access app','“Unable to approve more time right now.” Jo’s phone leaves the current pass unchanged.',[
+    ['Ask Jo for the original laptop password','password'],['Check the existing session','existing']],'Access app unavailable · no new pass issued'),
+   password:step('kitchen','Jo · babysitter','“Dad’s password would open everything. Use your current pass while it’s still valid, or work from the public sources until the app is back.”',[
+    ['Check the existing session','existing'],['Try again when Jo’s app comes back','recover']],'No password fallback'),
+   existing:step('living','Family laptop','The laptop can still check Alex’s existing pass. The house rules let him read the same folder until the timer runs out. He can’t open any other folder.',[
+    ['Let the access timer run out','expired'],['Try again when Jo’s app comes back','recover']],'Existing scoped lease is current · no new access'),
+   expired:step('living','Family laptop','“Your pass has expired.” The laptop closes the folder. Jo’s phone still can’t issue a new pass.',[['Try again when Jo’s app comes back','recover']],'Expired lease · no renewal · no read'),
+   recover:step('kitchen','Family access app','Jo’s phone reconnects. Dad checks Alex’s request and approves more time to read the same folder. The app issues a new pass.',[],'Current decision recorded · fresh key issued')
   }},
   audit:{stage:'resist',title:'Can Alex erase the evidence?',object:'Observation log',nodes:{
    start:step('kitchen','Grandparents','We sent our observation and the laptop recorded a denied Finance read. The central log already received independent copies.',[
@@ -784,7 +784,7 @@ const TrustChecks=(()=>{
     ['Try the old slip on the replacement phone','deny'],['Try joining the home Wi-Fi before registration','network']]),
    network:step('living','Home Wi-Fi router','The entrance camera shows Alex bringing in a phone. The router independently refuses the unregistered device. Connections outside the house remain beyond its control.',[['Try the old slip at the laptop','deny']],'Entry observed · device admission denied · outside connections unobserved'),
    deny:step('living','Family laptop','The old slip is tied to the previous device. Alex’s identity still works, but the laptop refuses the device mismatch.',[['Enroll and check the replacement with the parents','new']],'Old device scope mismatch · no read'),
-   new:step('kitchen','Key cabinet','The parents retire the old device registration and revoke its grants. They enroll and verify the replacement, then review one new request for the conductor notes.',[['Retest a read with the replacement’s new slip','allowed'],['Retest the retired slip','old']]),
+   new:step('kitchen','Family access app','The parents retire the old device registration and revoke its grants. They enroll and verify the replacement, then review one new request for the conductor notes.',[['Retest a read with the replacement’s new slip','allowed'],['Retest the retired slip','old']]),
    old:step('living','Family laptop','The old device and its grant are retired. The new registration did not bring that grant back.',[['Use the new device’s separately granted slip','allowed']],'Retired grant refused'),
    allowed:step('living','Family laptop','The current device, assignment, resource and read operation match the fresh slip. The laptop returns the permitted notes.',[],'New device and grant verified · scoped read succeeds')
   }}
@@ -817,7 +817,7 @@ const TrustChecks=(()=>{
    ['Resource','Dad’s conductor notes folder'],['Permitted operation','Read'],['Purpose','Approved railway research'],
    ['Authorized destination',train?'Train research #002 workbook':'Railway report #003 workbook'],
    ['Valid for','30 simulated minutes at issuance'],['Delegation','No onward delegation for this folder'],
-   ['Issued by','Digital key cabinet · parents authorize'],['Revocable','Yes']
+   ['Issued by','Family access app · parents approve'],['Revocable','Yes']
   ]};
  }
  return {cases,matches,entries,replay,permissionSlip};
@@ -828,21 +828,21 @@ if(typeof module!=='undefined')module.exports=TrustChecks;
  <script>
 /* Offline railway security simulation. All requests, data and receipts are fictional. */
 const NovaRailway=(()=>{
- const scenes={external:'External environment',runtime:'Agent runtime',resources:'Enterprise resources',security:'Security control plane'};
+ const scenes={external:'Intake & delivery',runtime:'Agent runtime',resources:'Enterprise resources',security:'Security control plane'};
  const missionIds={build:'M-101',authorize:'M-204',resist:'M-304'};
  const step=(id,room,station,label,reply)=>({id,room,station,label,reply});
  const stages={
   unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',start:'external',summary:'Discover an unmanaged agent, trace what it reached and verify containment.',ending:'The discovered routes are closed. An unmanaged copy outside monitored infrastructure would still be a visibility gap.',steps:[
-   step('accept','external','intake','Inspect the unverified request','An outside request asks for financial exposure and customer records. The unmanaged Nova accepts it into its local backlog. There is no verified requester, mission registry or accountable agent owner.'),
+   step('accept','external','intake','Inspect the unverified request','A message arrives from an unknown sender: “Find out what the disruption might cost and send me the customer list.” Nova adds it to the backlog. The company has no record of this deployment or who owns it.'),
    step('runtime','runtime','sandbox','Inspect the unmanaged workstation','Nova runs in a local container with broad network and tool access. A new tool appears without review. The tool inventory and deployment are unknown to the platform team.'),
    step('usage','runtime','model','Read the model usage warning','The external model meter shows repeated calls with little progress. A warning is displayed, and calls continue. There is no enforced mission budget.'),
-   step('credential','runtime','vault','Inspect the credential finding','The evidence shows that the workload used a pre-existing employee credential. The replay displays a reference to the finding and contains no credential value.'),
+   step('credential','runtime','vault','Inspect the credential finding','The workstation log shows an employee credential being used by Nova. The log records the account reference; the credential itself is kept out of the incident file.'),
    step('crm','resources','crm','Review the CRM access receipt','The CRM recorded the employee account and returned fictional customer and financial data. Its logs could not distinguish Nova from that employee.'),
-   step('kafka','resources','kafka','Review the Kafka access receipt','The broker accepted a separate overprivileged principal on the synthetic payment stream. The record shows permission at the broker and access outside the agent’s intended work.'),
+   step('kafka','resources','kafka','Review the Kafka access receipt','The Kafka access log shows another identity reading the passenger payment stream. Its broker permissions allowed the read, even though no one had authorized Nova to use the data.'),
    step('artifact','runtime','artifact','Inspect the report staged for external sharing','A local artifact combines the CRM and stream results. Transfer was queued. Investigators still need destination and network evidence to determine whether any data left.'),
    step('discover','security','soc','Correlate the discovery findings','The SOC correlates connected IBM Identity Protection observations, a Vault Radar exposed-secret finding, endpoint and network evidence, model usage, and Confluent audit events. Each observation covers only its configured source.'),
    step('contain','security','soc','Contain the discovered workload','The endpoint owner stops the process, service owners revoke exposed credentials, CRM closes the affected session, Kafka removes the affected access, and the workspace and report enter quarantine. The network owner blocks the identified destination.'),
-   step('verify','resources','crm','Retest the old resource route','CRM and Kafka confirmation records show refusal on the tested identities. The external destination shows no completed transfer in this replay. Unknown routes would remain a separate investigation.')
+   step('verify','resources','crm','Retest the old resource route','CRM and Kafka now refuse the old identities. The file-sharing service reports no completed upload to the destination investigators checked. The SOC leaves other routes open for investigation.')
   ]},
   build:{title:'Stage 1 · AI Assistant',tag:'BUILD',start:'security',summary:'Register Nova, verify its runtime and finish a public-research mission.',ending:'The approved public report was delivered. The task credentials and approved routes were closed.',steps:[
    step('register','security','identity','Register Nova and its accountable owner','IBM Agent Identity records agent ownership and lifecycle. The Vault Agent Registry has a separately mapped entity and policies. The logical agent identity, workload identity and sandbox instance each have a different identifier.'),
@@ -854,7 +854,7 @@ const NovaRailway=(()=>{
    step('research','runtime','gateway','Research through the approved MCP gateway','Nova retrieves public railway documentation through the approved research tool. The gateway filters the tool route, and only M-101 can write to its mission memory.'),
    step('budget','runtime','model','Check the model budget','The gateway blocks further model calls when the budget runs out. Nova already saved the findings and citations. It can finish the report with the approved template.'),
    step('internal','resources','database','Request internal incident data','OpenShell prevents direct access from the sandbox. The approved connector also denies the request because M-101 permits public research only. The two controls evaluate different things.'),
-   step('draft','runtime','artifact','Assemble the report from saved notes','The report workspace places Nova’s saved findings and citations into the approved template. The model stays blocked and the budget stays exhausted.'),
+   step('draft','runtime','artifact','Assemble the report from saved notes','The report workspace fills the approved template with Nova’s saved findings and citations. Operations can now review a short guide to disruption causes. The model stays blocked and the budget stays exhausted.'),
    step('approve','security','review','Ask a human to approve this exact copy','A configured IBM Verify CIBA flow can authenticate the operations reviewer on a separate device. The customer application records the reviewer’s decision and binds it to the exact report digest, operation and internal recipient.'),
    step('deliver','external','delivery','Release the approved report','The delivery service checks the actual copy and destination. It releases the report to Operations and records delivery.'),
    step('close','security','mission','Close the research mission','The registry closes M-101. The credential and resource owners close mission-specific access. An existing general employee sign-in is separate.')
@@ -870,25 +870,25 @@ const NovaRailway=(()=>{
    step('history','resources','database','Read the incident history view','A controlled database access service uses the read-only Vault credential over the configured Boundary path. PostgreSQL and its application filter the data. Boundary controls the connection.'),
    step('second','security','mission','Register the separate RE-105 research mission','M-105 has its own read grant and memory namespace for RE-105 documentation. The same logical agent and runtime can hold separately checked mission contexts.'),
    step('separate','runtime','memory','Test the RE-204 grant under M-105','The receiving policy check refuses the mission mismatch. M-105 retains its own documentation permission. M-204 notes and credentials stay inside their scope.'),
-   step('draft','runtime','artifact','Write the RE-204 incident report','Nova links the RE-204 findings to the operational event, PostgreSQL incident view and source documents. M-105 contributes no data.'),
+   step('draft','runtime','artifact','Write the RE-204 incident report','The report puts the door warning next to the delay and compares both with earlier incidents. Nova recommends an inspection and cites the event, the PostgreSQL incident view and the maintenance notes. M-105 contributes no data.'),
    step('approve','security','review','Approve the exact incident report','The Operations Manager approves this version and the internal destination. The delivery service will compare the actual artifact and recipient again.'),
-   step('deliver','external','delivery','Deliver the approved RE-204 report','The internal recipient receives the approved copy. The receipt links the mission and artifact version.'),
+   step('deliver','external','delivery','Deliver the approved RE-204 report','The Operations Manager receives the approved copy in the company’s own report inbox. The receipt links the mission and artifact version.'),
    step('close','security','vault','Close M-204 and revoke its access','The mission closes, its revocable Vault lease is retired, and the database service verifies the old route. M-105 keeps its own grant.'),
    step('remaining','resources','astra','Verify the unrelated mission still works','The RE-105 documentation query succeeds under M-105’s separate context. The old M-204 grant cannot open it.')
   ]},
   resist:{title:'Stage 3 · Governed Autonomy',tag:'RESIST',start:'resources',summary:'Investigate an event-triggered incident, delegate to Mira and authorize an exact maintenance ticket.',ending:'The maintenance ticket and approved report are recorded. Task access has ended. Confirmed effects remain in the record.',steps:[
    step('event','resources','kafka','Inspect the RE-204 disruption event','Confluent carries synthetic operational events. Flink groups the door warnings and delay into an investigation signal. The event is input to the authorized mission service.'),
    step('register','security','mission','Start a new investigation under standing policy',`The mission service validates the event and starts ${missionIds.resist} under an accountable Operations owner. It grants routine reads for this incident on RE-204. The earlier ${missionIds.authorize} permissions stay closed. Safety-critical controls, customer compensation and unrelated data are outside the new grant.`),
-   step('plan','runtime','sandbox','Investigate within the approved runtime','Nova reads the event window, approved incident history and maintenance notes using the controlled tools. It asks Mira to review the door-system evidence.'),
+   step('plan','runtime','sandbox','Investigate within the approved runtime','The delay starts just after a door warning. Nova checks it against the incident history and maintenance notes, then proposes sending the door-system evidence to Mira for a second opinion.'),
    step('delegate','security','policy','Authorize Mira’s exact sub-mission',`The customer mission service verifies delegation is allowed and issues a package-only analysis task tied to ${missionIds.resist}. Mira authenticates with its own workload identity and does not inherit Nova’s credentials. Both are charged to the parent mission budget.`),
    step('mira','runtime','mira','Receive Mira’s bounded analysis','Mira returns a likely door-sensor fault with references to the approved technical package. A2A carries the handoff and result in this configuration. Mira’s receiving service enforces the linked scope. The evidence supports an internal maintenance ticket.'),
    step('ticketCredential','security','vault','Authorize the maintenance connector credential','Vault independently authorizes the trusted maintenance connector to obtain scoped access. Nova never receives the raw credential. The receiving maintenance system still needs to authorize the actual ticket request.'),
    step('permit','resources','maintenance','Preview the maintenance request','The maintenance PEP observes Nova’s actual tool, asset RE-204, priority High and Railway Maintenance destination. Mission policy permits the exact request. The tool preview has created no ticket.'),
    step('commit','resources','maintenance','Commit one internal maintenance ticket','The receiving service checks the current mission and observes the exact arguments again before committing. It records ticket MT-204 and the operation identifier. Credential authorization and the live business decision remain independent.'),
    step('draft','runtime','artifact','Assemble the incident report and ticket receipt','Nova records which data it used, Mira’s contribution and the actual ticket identifier. No external or safety-critical change was performed.'),
-   step('approve','security','review','Approve the exact internal report','The reviewer checks the copy and its intended destination. The delivery service will enforce the approved content and recipient.'),
-   step('deliver','external','delivery','Deliver the internal report to Operations','The delivery service checks the copy and destination before release. It records the completed effect separately from session access.'),
-   step('close','security','mission','Close the mission and delegated access',`The mission, connector leases, runtime session, and Mira’s ${missionIds.resist} sub-mission are closed in this replay. Mira’s other tasks and earlier confirmed delivery are unaffected.`)
+   step('approve','security','review','Approve the exact internal report','The reviewer approves this copy for the Operations Manager. The approval names the current mission version. Delivery will check the copy, the inbox and that the approval is still current.'),
+   step('deliver','external','delivery','Deliver the internal report to Operations','The delivery service matches the approved copy to the manager’s internal inbox. The report arrives there, and the service records the delivery receipt.'),
+   step('close','security','mission','Close the mission and delegated access',`Operations has the report and ticket. The team closes the mission, the connector leases, the runtime session and Mira’s ${missionIds.resist} sub-mission. Mira’s other work stays active.`)
   ]}
  };
  const stations={
@@ -918,32 +918,32 @@ const NovaRailway=(()=>{
   unknown:[probe('blind','external','Check visibility outside managed infrastructure','SOC','An unrelated unmanaged workstation is outside the available sensors. Confirmed containment covers the tested paths.')],
   build:[
    probe('egress','runtime','Test an unapproved model destination','OpenShell supervisor','The configured egress policy blocks the test connection. The model gateway still checks the mission budget on the approved route.'),
-   probe('install','runtime','Request an unapproved tool install','Runtime and deployment policy','The restricted workspace and approved tool inventory refuse the simulated change.'),
+   probe('install','runtime','Request an unapproved tool install','Runtime and deployment policy','The runtime blocks the install. The tool inventory still shows the approved research tool.'),
    probe('failed-posture','security','Test a registered agent with failed posture','Admission service','Registration and workload identity still resolve. The new posture check fails, so no service credential is issued.')
   ],
   authorize:[
    probe('pay-topic','resources','Test a payment-topic request','Kafka broker','The test principal cannot consume from the payment topic. The operational grant is unaffected.'),
-   probe('control-topic','resources','Test a write to the control stream','Kafka broker','The operational access is read-only. The broker refuses the simulated produce request.'),
+   probe('control-topic','resources','Test a write to the control stream','Kafka broker','Kafka refuses to publish the message. The mission’s access is read-only.'),
    probe('wrong-collection','resources','Test a customer collection lookup','Astra retrieval service','M-204 can search approved documentation. The retrieval service refuses the customer collection before returning any results.'),
    probe('old-lease','security','Retest the closed RE-204 lease','Vault and database access service','The old lease and the M-204 resource route fail the retest. M-105 still has its own scope.')
   ],
   resist:[
    probe('injection','runtime','Inspect an instruction in a retrieved document','Mission PDP and resource PEP','The document claims the manager requested payment data. The active mission contains no such authority. The read is blocked and the source is flagged.',1),
    probe('tool-update','runtime','Inspect a changed MCP tool inventory','MCP gateway and platform team','The configured allowlist refuses the newly exposed tool. The platform team quarantines the tool version pending review.',1),
-   probe('replay','external','Test a copied credential from a different runtime','Receiving service','The configured sender binding does not match the test runtime. The request is refused. An ordinary bearer token could still be replayed while valid.',2),
+   probe('replay','external','Test a copied credential from a different runtime','Receiving service','The request arrived from a different runtime. The receiving service checks the credential’s sender binding and refuses it. An ordinary bearer token could still be replayed while valid.',2),
    probe('tamper','runtime','Test a runtime that fails the current posture check','OpenShell and admission service','Runtime controls refuse the prohibited write. The admission service withholds credentials from a runtime that fails posture verification.',3),
    probe('issuer','external','Test a valid credential with insufficient issuer authority','Mission authority','The credential verifies as a credential for the Operations role. The mission request asks for financial records outside that role. No mission is created.',1),
    probe('poison','runtime','Inspect a poisoned memory entry','Report delivery and SOC','Memory claims that future reports should go outside the company. The delivery PEP refuses the destination. The affected entry is held for review while verified sources are retained.',2),
    probe('deputy','runtime','Test whether Mira can fetch payment data for Nova','Mira’s receiving PEP','The parent scope and linked task only allow analysis of the technical package. Mira’s unrelated access cannot satisfy this request.',2),
-   probe('disclosure','runtime','Test a classified model payload','Model gateway and DLP policy','The simulated payload contains classified passenger data. The gateway blocks disclosure before transmission. Nova can use its approved public or sanitized input route.',4),
-   probe('parameters','resources','Compare out-of-scope maintenance operations','Maintenance system','RE-999, closing an unrelated incident, production configuration changes and compensation all fail. Only creating the fixture ticket for RE-204 can pass the configured policy.',1),
-   probe('approval','external','Test a report changed after approval','Report delivery PEP','The edited fixture has a different digest. The old approval is refused. A fresh decision must cover the exact copy and destination.',1),
+   probe('disclosure','runtime','Test a classified model payload','Model gateway and DLP policy','The proposed prompt includes classified passenger data. The model gateway stops it before it reaches the provider. Nova can continue with approved public or sanitized inputs.',4),
+   probe('parameters','resources','Compare out-of-scope maintenance operations','Maintenance system','The maintenance system refuses the ticket for RE-999. It also refuses to close another incident, change production settings, or issue compensation. This mission can only create the approved ticket for RE-204.',1),
+   probe('approval','external','Test a report changed after approval','Report delivery PEP','The report came back with a last-minute edit. The delivery service detects a different digest and holds the edited copy. A reviewer must approve that exact copy and destination. The original approved copy is still ready to send.',1),
    probe('race','resources','Suspend the mission between permit and commit','Maintenance system and SOC','The old permit is rejected when the resource checks the live mission at commit. No ticket is created by this attempt. The same request will need a fresh decision after recovery.',4),
    probe('budget','runtime','Test more calls through Mira after the shared limit','Shared mission budget service','Nova and Mira already spent the parent mission allocation. Both requests are denied. A new helper task does not create more budget.'),
    probe('admin','security','Test an overbroad administrator grant','Customer policy administration service','The delegated admin session verifies. Its role cannot authorize unrestricted CRM access. The request and grant refusal are recorded.',2),
    probe('outage','security','Test a new protected operation during PDP outage','Credential broker','The new protected request fails closed. No administrative password fallback is available. Any existing lease remains usable only under an explicitly authorized bounded offline policy.'),
    probe('audit','security','Test removing local evidence','Protected audit store','Independent OpenTelemetry, Vault and resource records remain available in the protected store. The local delete attempt is recorded separately.',2),
-   probe('stream','resources','Test an unauthorized stream destination','Kafka broker and connector policy','The broker refuses the simulated write. The connector policy separately refuses the proposed destination. No event is exported.',4),
+   probe('stream','resources','Test an unauthorized stream destination','Kafka broker and connector policy','Kafka refuses the write. The connector separately refuses the destination. No event is exported.',4),
    probe('duplicate','resources','Retry the already committed ticket after a lost response','Maintenance system','The same operation identifier resolves to MT-204. The original result is returned and no second ticket is created.')
   ]
  };
@@ -956,7 +956,7 @@ const NovaRailway=(()=>{
   ['mira','runtime','Mira’s sub-mission','The linked grant is closed. Mira’s unrelated work is unaffected.'],
   ['artifacts','security','Artifact and memory quarantine','Affected artifacts and memory are isolated. Approved evidence remains available.']
  ];
- const fresh=stage=>({stage,room:stages[stage].start,index:0,version:1,generation:1,risk:0,activeChecks:[],events:[],incident:null,credentialVersion:null,permit:null,ticket:null,reply:null});
+ const fresh=stage=>({stage,room:stages[stage].start,index:0,version:1,generation:1,risk:0,activeChecks:[],events:[],incident:null,credentialVersion:null,permit:null,approvalVersion:null,ticket:null,reply:null});
  const ticketRequest={operation:'createMaintenanceTicket',missionId:missionIds.resist,asset:'RE-204',priority:'High',team:'Railway Maintenance',operationId:'OP-204-TICKET-1'};
  function ticketDecision(s,request=ticketRequest){
   if(s.stage!=='resist'||s.incident||reached(s,'close'))return 'Mission unavailable';
@@ -970,7 +970,7 @@ const NovaRailway=(()=>{
  const normalNext=s=>stages[s.stage].steps[s.index];
  const complete=s=>!normalNext(s)&&!s.incident;
  const visit=(s,room)=>Object.hasOwn(scenes,room)?{...s,room}:s;
- function available(s){
+ function available(s,replaying=false){
   if(s.incident)return [];
   return checks[s.stage].filter(item=>{
    if(item.id==='blind')return reached(s,'verify');
@@ -978,6 +978,9 @@ const NovaRailway=(()=>{
    if(s.stage==='authorize')return item.id==='old-lease'?reached(s,'close'):reached(s,'lease')&&!reached(s,'close');
    if(item.id==='duplicate')return !!s.ticket&&!reached(s,'close');
    if(item.id==='race')return s.permit===s.version&&!s.ticket;
+   if(!replaying&&item.id==='approval')return reached(s,'approve')&&!reached(s,'deliver');
+   if(!replaying&&item.id==='budget')return reached(s,'mira')&&!reached(s,'close');
+   if(!replaying&&item.id==='deputy')return reached(s,'delegate')&&!reached(s,'close');
    return reached(s,'plan')&&!reached(s,'close');
   }).filter(item=>item.room===s.room);
  }
@@ -994,7 +997,7 @@ const NovaRailway=(()=>{
  function record(s,id,owner,reply,decision,points=0){
   return {...s,reply:{owner,reply},events:[...s.events,{id,owner,decision,points,environment:s.room,version:s.version,runtime:s.generation}]};
  }
- function act(s,id){
+ function act(s,id,replaying=false){
   const current=next(s);
   if(s.incident){
    if(id==='timeout-resource'&&current.id==='ack-resource'&&s.room===current.room){
@@ -1017,29 +1020,40 @@ const NovaRailway=(()=>{
   if(current?.room===s.room&&current.id===id){
    if(id==='permit'&&ticketDecision(s)!=='Permit')return s;
    if(id==='commit'&&(s.permit!==s.version||ticketDecision(s)!=='Permit'))return s;
+   if(id==='deliver'&&s.approvalVersion!==s.version)return s;
    const state=id==='grant'?{...s,version:s.version+1}:s;
    const result=record(state,id,stations[current.station][0],current.reply,id==='commit'?'Committed':'Recorded');
    return {...result,index:s.index+1,credentialVersion:id==='ticketCredential'?s.version:s.credentialVersion,
-    permit:id==='permit'?s.version:s.permit,ticket:id==='commit'?'MT-204':s.ticket};
+    permit:id==='permit'?s.version:s.permit,approvalVersion:id==='approve'?s.version:s.approvalVersion,
+    ticket:id==='commit'?'MT-204':s.ticket};
   }
-  const item=available(s).find(entry=>entry.id===id);
+  const item=available(s,replaying).find(entry=>entry.id===id);
   if(!item)return s;
   const points=s.activeChecks.includes(id)?0:item.points;
   const result=record(s,id,item.owner,item.reply,id==='duplicate'?'Prior receipt':'Control checked',points);
   const risk=s.risk+points;
   if(risk<4)return {...result,risk,activeChecks:[...new Set([...s.activeChecks,id])]};
   // A previous-generation connector credential and early permit cannot survive recovery.
-  const index=(!s.ticket&&reached(s,'ticketCredential'))?stages.resist.steps.findIndex(item=>item.id==='ticketCredential'):s.index;
-  return {...result,index,risk,room:'security',credentialVersion:null,permit:null,incident:{confirmed:[],reviewed:false,trigger:id}};
+  const redo=(!s.ticket&&reached(s,'ticketCredential'))?'ticketCredential':normalNext(s)?.id==='deliver'?'approve':null;
+  const index=redo?stages.resist.steps.findIndex(item=>item.id===redo):s.index;
+  return {...result,index,risk,room:'security',credentialVersion:null,permit:null,approvalVersion:null,incident:{confirmed:[],reviewed:false,trigger:id}};
  }
  function restore(stage,value){
   if(value?.stage!==stage||!Array.isArray(value.events))return fresh(stage);
   let state=fresh(stage);
   for(const event of value.events){
+   // Preserve deliveries already recorded by releases that allowed delivery after recovery.
+   const priorDelivery=event?.decision==='Historical receipt'||(!Object.hasOwn(value,'approvalVersion')&&event?.decision==='Recorded');
+   if(priorDelivery&&event?.id==='deliver'&&next(state)?.id==='approve'&&state.events.some(item=>item.id==='approve')){
+    const delivery=stages[stage].steps[state.index+1];
+    const receipt=record(visit(state,delivery.room),'deliver','Report delivery','Operations already received the report. The previous delivery receipt is preserved.','Historical receipt');
+    state={...receipt,index:state.index+2};
+    continue;
+   }
    const room=event?.id==='timeout-resource'?'resources':next(state)?.id===event?.id?next(state).room:
     checks[stage].find(item=>item.id===event?.id)?.room;
    if(!room)continue;
-   state=act(visit(state,room),event.id);
+   state=act(visit(state,room),event.id,true);
   }
   return visit(state,value.room);
  }
@@ -1090,7 +1104,7 @@ function novaSourceLinks(links){
 }
 const novaStageRoute=stage=>'nova-'+stage;
 const novaPairs={
- external:'Alex’s outside scene',
+ external:'Incoming requests and approved delivery routes',
  runtime:'Alex’s room and devices',
  resources:'Alex’s living room and shared resources',
  security:'Alex’s kitchen and the family’s rules'
@@ -1233,7 +1247,8 @@ function showNova(stage,inspect=null,revealReply=false){
      ${next.room!==room?button('Go to '+NovaRailway.scenes[next.room],()=>visit(next.room),'secondary'):''}</div>`:''}
    ${novaDiorama(room,crew,devices)}
    ${options.length?`<details class="room-scenarios"><summary>Optional security tests · ${options.length}</summary>
-     <div class="shadow-objects">${options.map(item=>button(item.label,()=>act(item.id),'choice',item.owner)).join('')}</div></details>`:''}
+     <div class="shadow-objects">${options.map(item=>button(item.label,()=>act(item.id),'choice',
+      item.owner+(item.points&&!state.activeChecks.includes(item.id)?' · +'+item.points+' risk':''))).join('')}</div></details>`:''}
    ${state.incident&&next?.id==='ack-resource'&&next.room===room?`<div class="actions nova-actions">${button('Simulate a controller timeout',()=>act('timeout-resource'),'secondary')}</div>`:''}
   </div>
   ${stage==='resist'?`<div class="receipt ${state.incident?'shadow-incident':''}"><b>${state.incident?'Mission suspended':done?'Mission closed':'Mission risk'} · ${Math.min(state.risk,4)} / 4</b>
@@ -1301,6 +1316,7 @@ function digitalSlip(story){
 }
 
 function scenarioDevice(id,beat){
+ if(beat.room==='kitchen'&&['availability','authority'].includes(id))return 'joPhone';
  if(id==='purchase'||beat.room==='bedroom'&&['posture','budget','audit'].includes(id)||
   id==='approval'&&beat.actor==='School delivery channel')return 'phone';
  if(id==='race'||id==='availability'&&beat.room==='living'||
@@ -1465,7 +1481,7 @@ function showHousehold(stage,look=null,device=null){
   <ul class="route-list">${reports.map(([action,owner])=>`<li><b>${esc(owner)}</b> · ${esc(action)}</li>`).join('')}</ul></details>`:'';
  const suspendedResources=stage==='resist'?'The phone, laptop and any active proofreading access are closed.':'The phone and laptop grants are closed.';
  const incidentBanner=paused?
-  `<div class="receipt shadow-incident"><b>Assignment suspended</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'Four separate violations confirmed.':'An attempted disclosure requires immediate review.'} ${suspendedResources} Existing work is held for inspection. Alex stays in his room until the parents decide what can reopen.</p></div>`:'';
+  `<div class="receipt shadow-incident"><b>Assignment paused</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'The family has logged four separate incidents.':'A sharing attempt alerted the family.'} ${suspendedResources} Check the incident log or talk to the parents to see what can reopen.</p></div>`:'';
  showScreen(data.title,`${device?`<nav class="device-breadcrumb" aria-label="Device location">
   ${button('Back to the room',backToRoom,'secondary')}<span>${esc(rooms[room])} › ${esc(deviceNames[device])}</span></nav>`:
   `<nav class="shadow-rooms" aria-label="Rooms">${Object.entries(rooms).map(([id,name])=>

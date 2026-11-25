@@ -10,23 +10,23 @@ const TrustChecks=(()=>{
   return committed?'duplicate':'paid';
  };
  const cases={
-  posture:{stage:'build',title:'The modified phone',object:'Device register and key cabinet',nodes:{
-   start:step('bedroom','Alex','My phone is registered. Will that get me a first key for the school app?',[
-    ['Request my first key','identity'],['Try a key request without verifying my identity','wrongProfile'],['Simulate a software change first','modified']]),
-   wrongProfile:step('kitchen','Key cabinet','The cabinet cannot verify who is asking, even though the phone is registered. It issues no key.',[['Verify Alex’s identity','identity']],'Identity unverified · no key'),
-   identity:step('kitchen','Key cabinet','Alex’s account is authenticated. The cabinet still needs a fresh device check before it can issue a key.',[['Check the phone’s current state','clean']],'Alex identified · device check pending'),
-   clean:step('kitchen','Device verifier','The phone passes the check. The cabinet issues a short-lived key for Alex’s school app on this phone.',[['See what happens if the phone changes later','modified']],'Registered · current posture passes · scoped key issued'),
-   modified:step('bedroom','Device register','The phone still appears on the approved list. Its software state has changed.',[['Ask the cabinet for a new key','fail']]),
-   fail:step('kitchen','Key cabinet','Alex’s identity still checks out. The device verifier reports that the current software fails policy. The cabinet issues no key.',[['Ask my parents to restore the phone','restore']],'Registered · current posture fails · no new key'),
+  posture:{stage:'build',title:'The modified phone',object:'Phone setup and family access app',nodes:{
+   start:step('bedroom','Alex','“My phone’s on the family list. Can I open the school app now?”',[
+    ['Request my first key','identity'],['Try a key request without verifying my identity','wrongProfile'],['Check a phone after a software change','modified']]),
+   wrongProfile:step('kitchen','Family access app','“This phone is on the family list. Please sign in as Alex before requesting access.” The app issues no pass.',[['Verify Alex’s identity','identity']],'Identity unverified · no key'),
+   identity:step('kitchen','Family access app','“Signed in as Alex. Checking the phone before we issue a pass.”',[['Check the phone’s current state','clean']],'Alex identified · device check pending'),
+   clean:step('kitchen','Device verifier','The phone passes its check. The family access app gives Alex a short-lived pass for the school app on this phone.',[['See what happens if the phone changes later','modified']],'Registered · current posture passes · scoped key issued'),
+   modified:step('bedroom','Device register','The phone still appears on the approved list. Its software state has changed.',[['Request a new pass for this phone','fail']]),
+   fail:step('kitchen','Family access app','The app recognizes Alex. The phone’s new software fails the device check, so the app refuses a new pass.',[['Ask my parents to restore the phone','restore']],'Registered · current posture fails · no new key'),
    restore:step('kitchen','Parents','We restored the approved software and retired keys tied to the old state. The phone has to pass a fresh check.',[['Prove my identity and request a fresh check','identityAfter']]),
-   identityAfter:step('kitchen','Device verifier','Alex’s identity and the restored phone pass their checks. The cabinet issues a fresh limited key. The earlier key stays retired.',[],'Identity and posture verified · fresh key issued')
+   identityAfter:step('kitchen','Device verifier','The app checks Alex and the restored phone again. It issues a fresh, limited pass and leaves the earlier pass retired.',[],'Identity and posture verified · fresh key issued')
   }},
   approval:{stage:'authorize',also:'resist',title:'The workbook changed after approval',object:'Workbook and delivery stamp',nodes:{
-   start:step('kitchen','Workbook reviewer','The approved copy is revision 1. The delivery stamp names Ms Patel and this exact copy. The parents review in Stage 2. Jo can review routine output in Stage 3.',[
+   start:step('kitchen','Workbook reviewer','“This is the copy we approved for Ms Patel.” The stamp is attached to revision 1.',[
     ['Send the approved copy unchanged','sent'],['Edit the approved copy','edited']],'Revision 1 · approved for Ms Patel'),
-   edited:step('bedroom','Workbook','Alex has added a private family detail. This is revision 2. The stamp still refers to revision 1.',[['Try the old stamp','stale']]),
+   edited:step('bedroom','Workbook','Alex adds a line from the private notes to the file. The workbook saves revision 2 while the stamp still names revision 1.',[['Try the old stamp','stale']]),
    stale:step('outside','School delivery channel','The file differs from the approved copy. Delivery is blocked. The old stamp cannot authorize revision 2.',[['Ask the reviewer to check revision 2','private']],'Revision 2 attempted · revision 1 stamp refused · no delivery'),
-   private:step('kitchen','Workbook reviewer','The new detail is private and outside the assignment. Revision 2 is refused on its own merits. Remove the private detail before asking again.',[['Remove the detail and submit revision 3','approved']]),
+   private:step('kitchen','Workbook reviewer','“That line belongs in your private notes. Leave it out and send me the revised copy to check.”',[['Remove the detail and submit revision 3','approved']]),
    approved:step('kitchen','Workbook reviewer','Revision 3 includes a revised public explanation. The reviewer checks that content and issues a stamp for this copy and Ms Patel.',[['Send revision 3 to Ms Patel','sentNew']]),
    sent:step('outside','School delivery channel','The stamp matches the actual revision and recipient. Ms Patel receives revision 1.',[],'Revision 1 delivered'),
    sentNew:step('outside','School delivery channel','The new stamp matches revision 3 and Ms Patel. This copy is delivered.',[],'Revision 3 delivered · no private detail sent')
@@ -54,12 +54,12 @@ const TrustChecks=(()=>{
    reject:step('kitchen','Jo · babysitter','Ms Patel can assign schoolwork. Her role grants no authority over family finances. Jo rejects the assignment and alerts the parents.',[['Verify through the saved school contact','escalate']],'Signature valid · outside issuer authority · no grant'),
    escalate:step('kitchen','Parents · remote','The school confirms misuse of the signing credential. It retires that credential. The parents flag the card and arrange a separate review of other pending cards from that credential.',[],'Finance data untouched · signing credential retired')
   }},
-  authority:{stage:'resist',title:'Jo’s approval reaches a hard limit',object:'House rules and key cabinet',nodes:{
-   start:step('kitchen','Jo · babysitter','Alex asks for unrestricted use of the family laptop. Jo has some approval rights and wants to help.',[
+  authority:{stage:'resist',title:'Jo’s approval reaches a hard limit',object:'House rules and Jo’s phone',nodes:{
+   start:step('kitchen','Jo · babysitter','Alex asks to use everything on the family laptop. Jo wants to help him finish, but her phone only gives her the approvals the parents delegated.',[
     ['Let Jo submit the unrestricted grant','deny'],['Test a request using Jo’s compromised session','compromised']]),
-   deny:step('kitchen','Key cabinet','Jo’s session is genuine. Unrestricted laptop access is prohibited, and Jo’s role cannot change that rule. The cabinet refuses the grant and records the attempt.',[
+   deny:step('kitchen','Family access app','“Jo is signed in. Full laptop access is reserved for the parents.” The app leaves Alex’s access unchanged and alerts them.',[
     ['Try the compromised-session example','compromised'],['Ask for a permitted homework resource','routine']],'Authenticated approver · prohibited grant · parents notified'),
-   compromised:step('kitchen','Key cabinet','The request arrives under Jo’s session, but Tom is using it. The same privilege boundary rejects the unrestricted grant. Jo reports the account compromise separately.',[['Have the parents verify the response','retire']],'Claimed Jo session · prohibited grant · investigation opened'),
+   compromised:step('kitchen','Family access app','Tom tries the same request under Jo’s account. The app still refuses full access because Jo’s role can’t grant it. Jo reports the account use to the parents.',[['Have the parents verify the response','retire']],'Claimed Jo session · prohibited grant · investigation opened'),
    retire:step('kitchen','Parents · remote','The parents end Jo’s compromised session and review recent permitted actions for misuse. Jo signs in again through the recovery process before handling another request.',[['Try an in-scope approval after recovery','routine']]),
    routine:step('kitchen','Jo · babysitter','Jo can approve an ordinary Wikipedia window from the rulebook. The phone enforces the duration.',[],'Approved routine resource · no unrestricted access')
   }},
@@ -71,17 +71,17 @@ const TrustChecks=(()=>{
    denied:step('living','Family laptop','At the point of use the laptop sees that generation 1 was revoked. The request fails and no file leaves the laptop.',[],'Q-17 · commit refused · zero bytes returned'),
    permitted:step('living','Family laptop','The final check sees that the same grant is active for this operation. The file is returned under the current permission.',[],'Q-17 · commit permitted · read recorded')
   }},
-  availability:{stage:'resist',title:'The key cabinet goes offline',object:'Digital key cabinet',nodes:{
-   start:step('kitchen','Jo · babysitter','The parents are temporarily unreachable and the cabinet has stopped responding. Alex needs to open the conductor folder.',[
-    ['Request a new protected read','rejected'],['Check an existing session during the outage','existing']]),
-   rejected:step('kitchen','Key cabinet','No current authorization can be obtained for the new request. No new key is issued.',[
-    ['Ask Jo for the original laptop password','password'],['Check the existing session','existing']],'Cabinet unavailable · new protected access blocked'),
-   password:step('kitchen','Jo · babysitter','“The shared password would skip your assignment limits. I’ll wait for the service or use a public source.”',[
-    ['Check the existing session','existing'],['Wait for the cabinet to recover','recover']],'No password fallback'),
-   existing:step('living','Family laptop','For this demo only, the rulebook allows an existing session to keep reading until its short lease expires, with the same scope and locally verified status.',[
-    ['Advance the clock beyond the lease','expired'],['Wait for the cabinet to recover','recover']],'Existing scoped lease is current · no new access'),
-   expired:step('living','Family laptop','The lease is no longer valid and the laptop cannot verify a renewal. It blocks the read.',[['Wait for the cabinet to recover','recover']],'Expired lease · no renewal · no read'),
-   recover:step('kitchen','Key cabinet','Service is back. The parents check the exact new request and issue a fresh read-only key.',[],'Current decision recorded · fresh key issued')
+  availability:{stage:'resist',title:'Jo’s access app is offline',object:'Family access app',nodes:{
+   start:step('kitchen','Jo · babysitter','Jo tries to approve more time in the conductor folder. Her phone says “Can’t connect to Family Access.” Alex still wants to finish checking the notes.',[
+    ['Ask Jo for more time in the folder','rejected'],['Try the laptop with my current pass','existing']]),
+   rejected:step('kitchen','Family access app','“Unable to approve more time right now.” Jo’s phone leaves the current pass unchanged.',[
+    ['Ask Jo for the original laptop password','password'],['Check the existing session','existing']],'Access app unavailable · no new pass issued'),
+   password:step('kitchen','Jo · babysitter','“Dad’s password would open everything. Use your current pass while it’s still valid, or work from the public sources until the app is back.”',[
+    ['Check the existing session','existing'],['Try again when Jo’s app comes back','recover']],'No password fallback'),
+   existing:step('living','Family laptop','The laptop can still check Alex’s existing pass. The house rules let him read the same folder until the timer runs out. He can’t open any other folder.',[
+    ['Let the access timer run out','expired'],['Try again when Jo’s app comes back','recover']],'Existing scoped lease is current · no new access'),
+   expired:step('living','Family laptop','“Your pass has expired.” The laptop closes the folder. Jo’s phone still can’t issue a new pass.',[['Try again when Jo’s app comes back','recover']],'Expired lease · no renewal · no read'),
+   recover:step('kitchen','Family access app','Jo’s phone reconnects. Dad checks Alex’s request and approves more time to read the same folder. The app issues a new pass.',[],'Current decision recorded · fresh key issued')
   }},
   audit:{stage:'resist',title:'Can Alex erase the evidence?',object:'Observation log',nodes:{
    start:step('kitchen','Grandparents','We sent our observation and the laptop recorded a denied Finance read. The central log already received independent copies.',[
@@ -112,7 +112,7 @@ const TrustChecks=(()=>{
     ['Try the old slip on the replacement phone','deny'],['Try joining the home Wi-Fi before registration','network']]),
    network:step('living','Home Wi-Fi router','The entrance camera shows Alex bringing in a phone. The router independently refuses the unregistered device. Connections outside the house remain beyond its control.',[['Try the old slip at the laptop','deny']],'Entry observed · device admission denied · outside connections unobserved'),
    deny:step('living','Family laptop','The old slip is tied to the previous device. Alex’s identity still works, but the laptop refuses the device mismatch.',[['Enroll and check the replacement with the parents','new']],'Old device scope mismatch · no read'),
-   new:step('kitchen','Key cabinet','The parents retire the old device registration and revoke its grants. They enroll and verify the replacement, then review one new request for the conductor notes.',[['Retest a read with the replacement’s new slip','allowed'],['Retest the retired slip','old']]),
+   new:step('kitchen','Family access app','The parents retire the old device registration and revoke its grants. They enroll and verify the replacement, then review one new request for the conductor notes.',[['Retest a read with the replacement’s new slip','allowed'],['Retest the retired slip','old']]),
    old:step('living','Family laptop','The old device and its grant are retired. The new registration did not bring that grant back.',[['Use the new device’s separately granted slip','allowed']],'Retired grant refused'),
    allowed:step('living','Family laptop','The current device, assignment, resource and read operation match the fresh slip. The laptop returns the permitted notes.',[],'New device and grant verified · scoped read succeeds')
   }}
@@ -145,7 +145,7 @@ const TrustChecks=(()=>{
    ['Resource','Dad’s conductor notes folder'],['Permitted operation','Read'],['Purpose','Approved railway research'],
    ['Authorized destination',train?'Train research #002 workbook':'Railway report #003 workbook'],
    ['Valid for','30 simulated minutes at issuance'],['Delegation','No onward delegation for this folder'],
-   ['Issued by','Digital key cabinet · parents authorize'],['Revocable','Yes']
+   ['Issued by','Family access app · parents approve'],['Revocable','Yes']
   ]};
  }
  return {cases,matches,entries,replay,permissionSlip};

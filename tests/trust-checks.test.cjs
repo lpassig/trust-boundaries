@@ -69,6 +69,8 @@ test('revocation wins the commit race, and outages fail closed for new or expire
  assert.match(run('race',0,1,0).current.evidence,/commit refused.*zero bytes/);
  assert.match(run('race',0,0).current.evidence,/commit permitted/);
  assert.match(run('availability',0,0).current.evidence,/No password fallback/);
+ assert.match(run('availability').current.text,/phone says “Can’t connect to Family Access/);
+ assert.match(run('availability',0).current.text,/leaves the current pass unchanged/);
  assert.match(run('availability',0,0,0).current.evidence,/Existing scoped lease.*no new access/);
  assert.match(run('availability',0,0,0,0).current.evidence,/Expired lease.*no read/);
 });

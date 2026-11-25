@@ -46,6 +46,7 @@ function digitalSlip(story){
 }
 
 function scenarioDevice(id,beat){
+ if(beat.room==='kitchen'&&['availability','authority'].includes(id))return 'joPhone';
  if(id==='purchase'||beat.room==='bedroom'&&['posture','budget','audit'].includes(id)||
   id==='approval'&&beat.actor==='School delivery channel')return 'phone';
  if(id==='race'||id==='availability'&&beat.room==='living'||
@@ -210,7 +211,7 @@ function showHousehold(stage,look=null,device=null){
   <ul class="route-list">${reports.map(([action,owner])=>`<li><b>${esc(owner)}</b> · ${esc(action)}</li>`).join('')}</ul></details>`:'';
  const suspendedResources=stage==='resist'?'The phone, laptop and any active proofreading access are closed.':'The phone and laptop grants are closed.';
  const incidentBanner=paused?
-  `<div class="receipt shadow-incident"><b>Assignment suspended</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'Four separate violations confirmed.':'An attempted disclosure requires immediate review.'} ${suspendedResources} Existing work is held for inspection. Alex stays in his room until the parents decide what can reopen.</p></div>`:'';
+  `<div class="receipt shadow-incident"><b>Assignment paused</b><p>${ShadowStory.risk(state)===ShadowStory.limit?'The family has logged four separate incidents.':'A sharing attempt alerted the family.'} ${suspendedResources} Check the incident log or talk to the parents to see what can reopen.</p></div>`:'';
  showScreen(data.title,`${device?`<nav class="device-breadcrumb" aria-label="Device location">
   ${button('Back to the room',backToRoom,'secondary')}<span>${esc(rooms[room])} › ${esc(deviceNames[device])}</span></nav>`:
   `<nav class="shadow-rooms" aria-label="Rooms">${Object.entries(rooms).map(([id,name])=>

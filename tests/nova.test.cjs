@@ -68,7 +68,8 @@ test('Build can assemble the approved template with the model budget exhausted',
 test('all 17 optional Resist security tests are reachable and return separate evidence',()=>{
  assert.equal(Nova.checks.resist.length,17);
  for(const entry of Nova.checks.resist){
-  let state=walk('resist',entry.id==='duplicate'?'commit':'permit');
+  const checkpoints={duplicate:'commit',approval:'approve',budget:'mira',deputy:'delegate'};
+  let state=walk('resist',checkpoints[entry.id]||'permit');
   state=Nova.visit(state,entry.room);
   assert(Nova.available(state).some(item=>item.id===entry.id),entry.id);
   const checked=Nova.act(state,entry.id);
@@ -79,6 +80,37 @@ test('all 17 optional Resist security tests are reachable and return separate ev
    assert.equal(repeated.risk,checked.risk,entry.id);
   }
  }
+});
+
+test('report and helper scenarios wait for the relevant story event',()=>{
+ const planning=walk('resist','plan');
+ const nearMira=Nova.visit(planning,'runtime');
+ const nearInbox=Nova.visit(planning,'external');
+ assert(!Nova.available(nearMira).some(item=>['deputy','budget'].includes(item.id)));
+ assert(!Nova.available(nearInbox).some(item=>item.id==='approval'));
+ assert.equal(Nova.act(nearInbox,'approval'),nearInbox);
+});
+
+test('a paused report needs approval under the recovered mission while old deliveries stay recorded',()=>{
+ const approved=walk('resist','approve');
+ assert.equal(approved.approvalVersion,approved.version);
+ let state=apply(approved,'disclosure','runtime');
+ assert(state.incident);
+ assert.equal(state.approvalVersion,null);
+ for(const [key,room] of Nova.controllers)state=apply(state,'ack-'+key,room);
+ state=apply(state,'investigate','security');
+ state=apply(state,'recover','security');
+ assert.equal(Nova.next(state).id,'approve');
+ assert.equal(apply(state,'deliver','external').index,state.index);
+ const oldSave={stage:'resist',room:'external',events:[...state.events,{id:'deliver',decision:'Recorded'}]};
+ const restored=Nova.restore('resist',oldSave);
+ assert.equal(Nova.next(restored).id,'close');
+ assert.equal(restored.events.at(-1).decision,'Historical receipt');
+ assert.deepEqual(Nova.restore('resist',restored),restored);
+ state=apply(state,'approve','security');
+ assert.equal(state.approvalVersion,2);
+ state=apply(state,'deliver','external');
+ assert.equal(Nova.next(state).id,'close');
 });
 
 test('commit checks the exact resource arguments and records exactly one business effect',()=>{

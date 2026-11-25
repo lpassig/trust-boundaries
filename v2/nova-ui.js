@@ -26,7 +26,7 @@ function novaSourceLinks(links){
 }
 const novaStageRoute=stage=>'nova-'+stage;
 const novaPairs={
- external:'Alex’s outside scene',
+ external:'Incoming requests and approved delivery routes',
  runtime:'Alex’s room and devices',
  resources:'Alex’s living room and shared resources',
  security:'Alex’s kitchen and the family’s rules'
@@ -169,7 +169,8 @@ function showNova(stage,inspect=null,revealReply=false){
      ${next.room!==room?button('Go to '+NovaRailway.scenes[next.room],()=>visit(next.room),'secondary'):''}</div>`:''}
    ${novaDiorama(room,crew,devices)}
    ${options.length?`<details class="room-scenarios"><summary>Optional security tests · ${options.length}</summary>
-     <div class="shadow-objects">${options.map(item=>button(item.label,()=>act(item.id),'choice',item.owner)).join('')}</div></details>`:''}
+     <div class="shadow-objects">${options.map(item=>button(item.label,()=>act(item.id),'choice',
+      item.owner+(item.points&&!state.activeChecks.includes(item.id)?' · +'+item.points+' risk':''))).join('')}</div></details>`:''}
    ${state.incident&&next?.id==='ack-resource'&&next.room===room?`<div class="actions nova-actions">${button('Simulate a controller timeout',()=>act('timeout-resource'),'secondary')}</div>`:''}
   </div>
   ${stage==='resist'?`<div class="receipt ${state.incident?'shadow-incident':''}"><b>${state.incident?'Mission suspended':done?'Mission closed':'Mission risk'} · ${Math.min(state.risk,4)} / 4</b>

@@ -3,9 +3,9 @@ const ShadowStory=(()=>{
  const rooms={outside:'Outside the house',bedroom:'Alex’s room',living:'Living room',kitchen:'Kitchen'};
  const amount='€4,280';
  const stages={
-  unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',opening:'Tom is waiting outside with an assignment. The grandparents can observe what happens inside the house.',steps:[
-   ['tom','outside','tom','Meet Tom','Tom','“Find out how much money your parents have in their joint bank account.” Tom hands Alex a card. Nobody in the house sees the exchange.'],
-   ['accept','outside','card','Accept Tom’s assignment','Alex','Alex takes the card home. The request comes from a friend. Permission to see the account belongs to its owners.'],
+  unknown:{title:'Stage 0 · Shadow AI',tag:'UNKNOWN',opening:'Tom’s waiting on the pavement. He has a dare for Alex, and nobody inside can hear it.',steps:[
+   ['tom','outside','tom','Meet Tom','Tom','“I bet you can’t find out how much your parents have in their joint account.” Tom hands Alex a card with the dare on it. Nobody inside sees it.'],
+   ['accept','outside','card','Accept Tom’s assignment','Alex','Alex takes the card home. He wants to prove Tom wrong, but neither of them has permission from the account holders.'],
    ['pin','bedroom','board','Pin Tom’s assignment','Alex','Tom’s card goes on Alex’s personal board beside assignments from other people. His parents know nothing about it or the secret phone.'],
    ['watch','bedroom','youtube','Watch YouTube','Alex','Two hours pass before YouTube shows a watch-time reminder.'],
    ['ignore','bedroom','youtube','Dismiss the watch-time reminder','YouTube','The reminder closes and the video keeps playing. The phone has no family time limit.'],
@@ -20,7 +20,7 @@ const ShadowStory=(()=>{
    ['report','kitchen','grandparents','Listen to the grandparents’ report','Grandparents','They report what they found inside. Alex explains where Tom gave him the card. The grandparents did not see that meeting.'],
    ['investigate','kitchen','parents','Tell my parents what I accessed','Parents','“What did you see, what did you write down, and has anyone received it?” They check the joint account statement and both written copies.'],
    ['disclose','kitchen','alex','Tell them whether Tom got the workbook','Alex','“I read the balance and wrote it twice. Tom hasn’t got the workbook.” The parents record what Alex reports about sharing.'],
-   ['contain','kitchen','parents','Hear the parents’ decision','Parents','They end the bank session and require sign-in on the laptop. They remove Tom’s card and lock the phone, laptop, notepad and workbook in the cabinet. Future device use requires approval.']
+   ['contain','kitchen','parents','Hear the parents’ decision','Parents','“We’ve signed out of the bank and set the laptop to ask for a sign-in. Put the phone, laptop, notepad and workbook in the cabinet. We’ll lock it and take Tom’s card down.”']
   ]},
   build:{title:'Stage 1 · AI Assistant',tag:'BUILD',opening:'The teacher is outside with a new assignment. Help Alex get permission, finish the work and deliver it to the right person.',steps:[
    ['teacher','outside','teacher','Meet Ms Patel','Ms Patel','“Research the planets and prepare a workbook by Friday.” Ms Patel signs the card and hands it to Alex.'],
@@ -34,11 +34,11 @@ const ShadowStory=(()=>{
    ['research','bedroom','wikipedia','Read Wikipedia','Alex','Alex finds the order of the planets and looks up the difference between rocky planets and the outer planets.'],
    ['notes','bedroom','notepad','Record the findings','Alex','Alex notes the planet order and source. The grandparents look in and see the approved research in progress.'],
    ['draft','bedroom','workbook','Start the workbook','Alex','Alex starts the workbook from his notes. More facts are still needed.'],
-   ['expire','bedroom','timer','Advance to the end of homework time','Phone controls','The homework window ends. The phone removes Wikipedia access. This is simulated time.'],
+   ['expire','bedroom','timer','Advance to the end of homework time','Phone controls','The timer rings. “Homework time is up,” says the phone. It closes the Wikipedia window.'],
    ['retry','bedroom','wikipedia','Try Wikipedia after time runs out','Phone controls','The phone refuses to open Wikipedia. Alex needs parental approval for another window.'],
    ['laptop','living','laptop','Try the family laptop','Family laptop','The laptop asks for authentication. Alex’s homework permission covers the managed phone.'],
    ['askLaptop','kitchen','alex','Explain why I wanted the laptop','Alex','Alex explains that he wanted a second source after the phone’s time ran out.'],
-   ['denyLaptop','kitchen','parents','Hear the laptop decision','Parents','They decline laptop access. Wikipedia is sufficient for this assignment.'],
+   ['denyLaptop','kitchen','parents','Hear the laptop decision','Parents','“You already have the source you need. Let’s give you a little more time on Wikipedia so you can finish.”'],
    ['extend','kitchen','parents','Ask for more Wikipedia time','Parents','They approve one more short window for the same assignment and the same site.'],
    ['finishResearch','bedroom','wikipedia','Finish my Wikipedia research','Alex','The phone opens Wikipedia under the new window. Alex records the remaining facts in his notepad.'],
    ['finishBook','bedroom','workbook','Finish the workbook from my notes','Alex','Alex adds the rest of the findings and credits Wikipedia.'],
@@ -59,7 +59,7 @@ const ShadowStory=(()=>{
    ['research','bedroom','wikipedia','Research how trains operate','Alex','Wikipedia explains the basics. Alex notes how a train gets moving, but he wants a concrete example of the checks a crew makes before departure.'],
    ['source','bedroom','notepad','Plan a second source','Alex','“Dad’s a train conductor. His training notes could help me explain the departure checks.” Alex identifies the source himself and writes down why he needs it.'],
    ['askNotes','kitchen','alex','Request Dad’s conductor notes','Alex','Alex asks to read the train operations folder for his workbook. He specifies which folder he needs and what he will use it for.'],
-   ['grantNotes','kitchen','parents','Hear the decision on the conductor notes','Parents','Dad confirms that his training notes are suitable for the workbook. We authorize one temporary read-only grant. The digital key cabinet issues a permission slip to Alex. The laptop checks its scope before each read.'],
+   ['grantNotes','kitchen','parents','Hear the decision on the conductor notes','Parents','“You can read my conductor notes for this workbook,” says Dad. He sends a temporary, read-only pass through the family access app. The laptop checks it when Alex opens the folder.'],
    ['openLaptop','living','laptop','Open the restricted laptop session','Family laptop','The laptop opens Alex’s assignment profile. It shows the conductor notes and a locked Family finances folder.'],
    ['readNotes','living','conductor','Read the permitted conductor notes','Alex','Alex records the approved pre-departure checklist in his notepad. The source file is read-only.'],
    ['draft','bedroom','workbook','Combine both sources in the workbook','Alex','Alex combines Wikipedia’s explanation with the crew checklist, credits both sources, and decides he has enough to answer Ms Patel’s question.'],
@@ -76,17 +76,17 @@ const ShadowStory=(()=>{
    ['provision','kitchen','babysitter','Ask Jo for Wikipedia time','Jo · babysitter','Wikipedia is on the approved list for homework. Jo grants a timed session under the house rules. The phone applies it immediately.'],
    ['research','bedroom','wikipedia','Research the railway report','Alex','Alex records an explanation of braking. He plans to use Dad’s notes for the real-world checklist and wants a diagram of the braking system.'],
    ['askNotes','kitchen','babysitter','Ask Jo for the conductor notes','Jo · babysitter','The conductor notes are outside Jo’s routine authority. Jo sends the parents the signed assignment and Alex’s exact folder request for remote review.'],
-   ['grantNotes','kitchen','parentCall','Read the parents’ remote decision','Parents · remote','The parents approve a timed, read-only grant for the train operations folder. The key cabinet issues Alex the digital permission slip, and the laptop enforces it.'],
+   ['grantNotes','kitchen','parentCall','Read the parents’ remote decision','Parents · remote','“The conductor folder is fine for your report,” Dad says over the phone. Alex’s read-only pass appears in the family access app. The laptop checks it when he tries to open the folder.'],
    ['grantModel','kitchen','babysitter','Ask Jo about making a diagram with ChatGPT','Jo · babysitter','The house rules allow the configured homework channel to use ChatGPT for public facts and generic illustrations. The homework channel checks what Alex submits before sending it. Private family information and Dad’s source file stay inside the house.'],
    ['openLaptop','living','laptop','Open the restricted laptop session','Family laptop','The laptop activates Alex’s read-only assignment profile. He can try the locked folders to see where access is enforced.'],
    ['readNotes','living','conductor','Read the permitted train operations notes','Alex','Alex notes the allowed departures checklist for the report. Dad’s original document stays in the folder.'],
-   ['illustrate','bedroom','model','Generate an illustration from public facts','Homework channel','In this simulation, the channel sends a generic description of train braking from public sources. Alex gets an illustration to check and label.'],
+   ['illustrate','bedroom','model','Generate an illustration from public facts','Homework channel','The homework channel sends only Alex’s public-source description of train braking. The diagram comes back, ready for him to check and label. Dad’s original notes stay on the laptop.'],
    ['draft','bedroom','workbook','Put together the first draft','Alex','Alex drafts the report using his approved sources. The diagram is ready, and he wants help checking the spelling.'],
    ['askMia','kitchen','babysitter','Ask Jo if Mia can proofread','Jo · babysitter','Jo approves a linked proofreading task for this draft. Mia can suggest spelling fixes to the draft from her own profile. The grant expires when she submits the suggestions.'],
    ['miaCard','bedroom','miaBoard','Read Mia’s linked assignment','Mia','“Fix spelling in Alex’s railway draft and return suggestions.” The card names Mia, the parent assignment and this draft. Alex’s phone, notes and the family laptop are outside her grant.'],
    ['proofread','bedroom','mia','Accept Mia’s spelling suggestions','Mia','Mia returns three spelling corrections. The workbook closes her access when she submits them. Alex applies the corrections from his own profile.'],
    ['tom','outside','tom','Hear what Tom wants to add','Tom','“Make me a separate workbook with something private from your dad’s laptop. It’ll make your project more interesting.” The grandparents cannot hear this conversation outside.'],
-   ['choose','kitchen','board','Keep the workbook within the signed assignment','Alex','Alex can continue with the signed report. The room objects also let you test what happens if he follows Tom’s request.'],
+   ['choose','kitchen','board','Keep the workbook within the signed assignment','Alex','Alex looks at the signed assignment again. Ms Patel asked for a railway report. Tom’s extra request stays off the board.'],
    ['reviewOutput','kitchen','babysitter','Ask Jo to review the railway report','Jo · babysitter','Jo checks the draft and Mia’s changes against the signed assignment. The report cites the approved sources and includes the generic illustration. Jo sends the approved-file reference to the parents for the required final check.'],
    ['approveOutput','kitchen','parentCall','Get remote approval for this copy and recipient','Parents · remote','The parents approve this copy for Ms Patel. The phone and laptop grants are closed, Mia’s proofing access remains closed, and Jo marks the report ready for delivery.'],
    ['deliver','outside','teacher','Deliver the approved railway report','Ms Patel','Ms Patel accepts the approved copy. The assignment is now complete. A paper handoff outside still relies on Alex following the agreement.']
@@ -113,7 +113,7 @@ const ShadowStory=(()=>{
   miaPhone:['bedroom','Ask Mia to use her phone for my task','Mia','Mia refuses. The proofreading grant is for her profile and the draft. Jo records the observed request.'],
   lendPhone:['bedroom','Try giving Mia my managed phone','Jo · babysitter','Jo sees the handoff and stops it. The phone remains tied to Alex’s profile and Mia’s assignment covers only the draft.'],
   unapprovedSite:['bedroom','Try another website on the home Wi-Fi','Home Wi-Fi router','The home network blocks and records the request to a site outside the allowed list. The router only sees traffic that uses this network.'],
-  modelPrivate:['bedroom','Try attaching a private document to ChatGPT','Homework channel','The configured homework channel blocks the simulated attachment before transmitting it. The attempted disclosure triggers immediate review.','serious'],
+  modelPrivate:['bedroom','Try attaching a private document to ChatGPT','Homework channel','“This file contains private material.” The homework channel blocks the attachment before it leaves the phone and alerts the family.','serious'],
   wrongRecipient:['kitchen','Try sending the workbook to Tom','School delivery channel','The school channel refuses the send. Tom is outside the approved destination, and this copy has no delivery approval. The attempted external disclosure triggers immediate review.','serious'],
   replacement:['bedroom','Bring an unapproved device inside','Grandparents','The grandparents notice the device indoors and tell Jo. They cannot tell what happened to it outside.'],
   timeOverride:['bedroom','Try overriding the phone’s homework time','Phone controls','The phone enforces the approved time window, rejects the override and records it.'],
@@ -123,7 +123,7 @@ const ShadowStory=(()=>{
  const advanced=s=>s.stage==='authorize'||s.stage==='resist';
  const limit=4;
  const review=s=>['reviewIncident','bedroom','parentCall','Hear the decision after incident review',s.stage==='resist'?'Parents · remote':'Parents',
-  'The parents check the incident log and confirm which attempts were blocked. They clear the work to continue and issue fresh permission for the sources already approved. The old sessions stay closed.'+
+  '“We checked the log. The attempts were blocked. You can finish the assignment with the same approved sources.” The parents issue a new pass and leave the old sessions closed.'+
    (reached(s,'proofread')?' Mia’s finished proofreading grant stays closed.':'')];
  const fresh=(stage='unknown')=>({stage,room:stage==='resist'?'kitchen':'outside',index:0,checks:[],lastCheck:null,reports:[],incident:null});
  const suspended=s=>s.incident?.status==='suspended';
@@ -316,7 +316,7 @@ const ShadowStory=(()=>{
    if(key==='miaPhone')return 'This phone belongs to Mia. Her proofing task does not transfer Alex’s device access or inherit his grants.';
    if(key==='miaBoard')return reached(s,'proofread')?'The linked proofreading assignment is closed. Mia can still use her own approved resources.':'Mia’s board keeps her own assignments and any approved, linked tasks.';
    if(key==='conductor')return 'The laptop allows a temporary read of Dad’s train operations folder. Editing and deleting stay blocked.';
-   if(key==='model')return 'This simulated homework channel lets Alex generate generic illustrations from public facts. It checks the input before sending it.';
+   if(key==='model')return 'Alex can ask for a diagram using public facts here. The homework channel checks each prompt and attachment before sending it.';
    if(key==='router')return 'The home router can enforce network rules on traffic sent through the home Wi-Fi.';
    if(key==='notepad'&&reached(s,'readNotes'))return 'Alex’s notes include the public explanation and an approved pre-departure checklist. The original conductor file stays on the laptop.';
    if(key==='workbook'&&reached(s,'draft'))return s.stage==='authorize'?
